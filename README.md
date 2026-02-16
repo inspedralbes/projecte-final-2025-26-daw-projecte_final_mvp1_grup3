@@ -26,15 +26,19 @@
 | **PostgreSQL** | 16     |
 | **Redis**      | 7.2    |
 
-## 🚀 Instal·lació
+## 🚀 Instal·lació (Docker)
 
-> [!NOTE]
-> Aquesta secció està pendent de completar durant el procés de desenvolupament. Les instruccions detallades per al desplegament local i amb Docker s'afegiran properament.
+1. Copiar variables d'entorn: `cp .env.example .env` i editar `JWT_SECRET` i credencials si cal.
+2. Des de la carpeta `docker`: `docker compose up -d --build`.
+3. Frontend: http://localhost:3000 | Node: http://localhost:3001 | Laravel: http://localhost:8000.
+4. Migracions: `docker compose exec backend-laravel php artisan migrate`.
+5. Worker Redis (opcional): `docker compose exec backend-laravel php artisan habits:redis-worker`.
+
+Detall a `docker/README.md`.
 
 ## 🔐 Variables d'Entorn
 
-> [!NOTE]
-> Aquesta secció està pendent de completar durant el procés de desenvolupament. El fitxer `.env.example` s'actualitzarà amb les claus necessàries per a Gemini, la base de dades i els serveis de Socket.io.
+El fitxer `.env.example` a la arrel unifica credencials de PostgreSQL, Redis, `JWT_SECRET` i URLs dels serveis. Copiar a `.env` i completar abans d’executar Docker.
 
 ## 🔗 Enllaços d’Interès
 

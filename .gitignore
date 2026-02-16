@@ -1,0 +1,99 @@
+# ===========================================
+# Loopy - Gitignore unificado (monorepo)
+# ===========================================
+
+# --- Variables de entorno (nunca subir secretos) ---
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# --- Node (Nuxt + Backend Node) ---
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.npm
+.yarn-integrity
+.pnp.*
+package-lock.json.bak
+
+# --- Nuxt / Frontend ---
+.nuxt/
+.output/
+dist/
+.nitro/
+.cache/
+*.local
+nuxt.d.ts
+
+# --- Laravel / PHP ---
+backend-laravel/vendor/
+backend-laravel/node_modules/
+backend-laravel/.phpunit.result.cache
+backend-laravel/Homestead.json
+backend-laravel/Homestead.yaml
+backend-laravel/auth.json
+backend-laravel/.env
+backend-laravel/.env.backup
+backend-laravel/.phpunit.cache
+backend-laravel/storage/*.key
+
+# Laravel storage (mantener estructura, ignorar contenido generado)
+backend-laravel/storage/logs/*
+!backend-laravel/storage/logs/.gitkeep
+backend-laravel/storage/framework/cache/data/*
+!backend-laravel/storage/framework/cache/data/.gitkeep
+backend-laravel/storage/framework/sessions/*
+!backend-laravel/storage/framework/sessions/.gitkeep
+backend-laravel/storage/framework/views/*
+!backend-laravel/storage/framework/views/.gitkeep
+backend-laravel/storage/app/*
+!backend-laravel/storage/app/.gitkeep
+backend-laravel/bootstrap/cache/*
+!backend-laravel/bootstrap/cache/.gitkeep
+
+# Composer (composer.lock sí se sube para fijar versiones)
+backend-laravel/vendor/
+composer.phar
+
+# --- IDE / Editores ---
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+*.sublime-workspace
+*.sublime-project
+
+# --- Sistema operativo ---
+.DS_Store
+.DS_Store?
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# --- Docker (opcional: no subir volúmenes locales) ---
+# *.log de contenedores si se guardan en repo
+
+# --- Tests / Cobertura ---
+coverage/
+.nyc_output/
+*.lcov
+.phpunit.result.cache
+
+# --- Logs y temporales ---
+*.log
+tmp/
+temp/
+tmp
+temp
+
+# --- Build / artefactos ---
+*.tar.gz
+*.zip
+*.rar

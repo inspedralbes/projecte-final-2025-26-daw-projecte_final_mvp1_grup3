@@ -1,0 +1,144 @@
+# Loopy - Orquestación de microservicios
+# Nuxt :3000 | Node :3001 | Laravel :8000 | Adminer :8080 | PostgreSQL :5433 (host)->5432 | Redis :6380 (host)->6379
+# Si 5432/6379 están libres, puedes usar "5432:5432" y "6379:6379" para conectar desde el host a postgres/redis.
+
+services:
+  postgres:
+    image: postgres:16.2-alpine
+    container_name: loopy-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-loopy}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-loopy_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-loopy_db}
+    ports:
+      - "${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-loopy} -d ${POSTGRES_DB:-loopy_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7.2.4-alpine
+    container_name: loopy-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6380}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  adminer:
+    image: adminer:4.8.1
+    container_name: loopy-adminer
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+    # En el navegador: http://localhost:8080 → Sistema: PostgreSQL, Servidor: postgres, Usuario/BD según .env
+
+  backend-laravel:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.laravel
+    container_name: loopy-laravel
+    restart: unless-stopped
+    working_dir: /var/www
+    ports:
+      - "8000:8000"
+    environment:
+      APP_NAME: Loopy
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_KEY: ${APP_KEY:-base64:AAAAAAAAAAAAAAAAAAAAAA==}
+      APP_URL: http://localhost:8000
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${POSTGRES_DB:-loopy_db}
+      DB_USERNAME: ${POSTGRES_USER:-loopy}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-loopy_secret}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: ${JWT_SECRET:-shared-secret-change-in-production}
+      CACHE_DRIVER: redis
+      SESSION_DRIVER: redis
+      QUEUE_CONNECTION: redis
+    volumes:
+      - ../backend-laravel:/var/www
+      - laravel_vendor:/var/www/vendor
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: php artisan serve --host=0.0.0.0 --port=8000
+
+  backend-node:
+    build:
+      context: ../backend-node
+      dockerfile: ../docker/Dockerfile.node
+    container_name: loopy-node
+    restart: unless-stopped
+    working_dir: /app
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: ${JWT_SECRET:-shared-secret-change-in-production}
+      LARAVEL_URL: http://backend-laravel:8000
+    volumes:
+      - ../backend-node:/app
+      - node_modules:/app/node_modules
+    depends_on:
+      redis:
+        condition: service_healthy
+    command: node src/index.js
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: ../docker/Dockerfile.nuxt
+    container_name: loopy-nuxt
+    restart: unless-stopped
+    working_dir: /app
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      NUXT_HOST: 0.0.0.0
+      NUXT_PORT: 3000
+      SOCKET_URL: http://backend-node:3001
+      API_URL: http://backend-laravel:8000
+      NITRO_PORT: 3000
+    volumes:
+      - ../frontend:/app
+      - nuxt_node_modules:/app/node_modules
+      - nuxt_dist:/app/.nuxt
+    depends_on:
+      - backend-node
+      - backend-laravel
+    command: npm run dev
+
+volumes:
+  postgres_data:
+  redis_data:
+  laravel_vendor:
+  node_modules:
+  nuxt_node_modules:
+  nuxt_dist:

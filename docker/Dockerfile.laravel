@@ -1,0 +1,32 @@
+# Laravel 11.0.0 sobre PHP 8.3.3
+FROM php:8.3.3-cli-alpine
+
+RUN apk add --no-cache \
+    git \
+    unzip \
+    libzip-dev \
+    libpq-dev \
+    icu-dev \
+    linux-headers \
+    $PHPIZE_DEPS
+
+RUN docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql \
+    && docker-php-ext-install -j$(nproc) pdo pdo_pgsql zip pcntl intl opcache
+
+RUN pecl install redis && docker-php-ext-enable redis
+
+ENV COMPOSER_ALLOW_SUPERUSER=1
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+WORKDIR /var/www
+COPY backend-laravel /var/www
+COPY docker/entrypoint-laravel.sh /entrypoint.sh
+RUN sed 's/\r$//' /entrypoint.sh > /tmp/ep && mv /tmp/ep /entrypoint.sh && chmod +x /entrypoint.sh
+
+# Laravel requiere bootstrap/cache existente y escribible para package:discover
+RUN mkdir -p /var/www/bootstrap/cache && chmod -R 775 /var/www/bootstrap/cache
+
+RUN composer install --no-interaction --optimize-autoloader --no-dev
+
+EXPOSE 8000
+ENTRYPOINT ["/entrypoint.sh"]

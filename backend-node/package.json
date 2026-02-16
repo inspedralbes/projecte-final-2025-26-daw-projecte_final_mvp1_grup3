@@ -1,0 +1,19 @@
+{
+  "name": "loopy-backend-node",
+  "version": "1.0.0",
+  "description": "Loopy real-time backend - Node.js + Socket.io",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node src/index.js"
+  },
+  "engines": {
+    "node": "20.11.1"
+  },
+  "dependencies": {
+    "socket.io": "4.7.4",
+    "@google/generative-ai": "^0.21.0",
+    "redis": "^4.6.0",
+    "jsonwebtoken": "^9.0.2"
+  }
+}

@@ -108,7 +108,7 @@ services:
     depends_on:
       redis:
         condition: service_healthy
-    command: node src/index.js
+    command: npm run dev
 
   frontend:
     build:
@@ -123,8 +123,8 @@ services:
       NODE_ENV: development
       NUXT_HOST: 0.0.0.0
       NUXT_PORT: 3000
-      SOCKET_URL: http://backend-node:3001
-      API_URL: http://backend-laravel:8000
+      SOCKET_URL: http://localhost:3001
+      API_URL: http://localhost:8000
       NITRO_PORT: 3000
     volumes:
       - ../frontend:/app

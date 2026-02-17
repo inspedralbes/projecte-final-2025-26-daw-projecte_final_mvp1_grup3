@@ -1,9 +1,95 @@
--- init.sql: Script de inicialización de la base de datos PostgreSQL
--- Ejecutado automáticamente al crear el contenedor por docker-entrypoint-initdb.d
--- Sintaxis PostgreSQL 16
+-- ==========================================================
+-- ESTRUCTURA FINAL DE LA BASE DE DATOS (ESENCIAL)
+-- ==========================================================
 
--- Extensions (opcional)
--- CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- 1. ACCESO E IDENTIDAD
+-- ----------------------------------------------------------
 
--- Las tablas se crearán mediante migraciones de Laravel (artisan migrate)
--- Este fichero puede usarse para grants, schemas o datos iniciales de sistema.
+-- Tabla exclusiva para administración del sistema
+CREATE TABLE ADMINISTRADORS (
+    id SERIAL PRIMARY KEY,
+    nom VARCHAR(100) NOT NULL,
+    email VARCHAR(150) UNIQUE NOT NULL,
+    contrasenya_hash VARCHAR(255) NOT NULL,
+    data_creacio TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabla para los usuarios (Basada en el esquema original)
+CREATE TABLE USUARIS (
+    id SERIAL PRIMARY KEY,
+    nom VARCHAR(100) NOT NULL,
+    email VARCHAR(150) UNIQUE NOT NULL,
+    contrasenya_hash VARCHAR(255) NOT NULL,
+    nivell INT DEFAULT 1,
+    xp_total INT DEFAULT 0,
+    monedes INT DEFAULT 0
+);
+
+-- 2. LOGROS Y MEDALLAS
+-- ----------------------------------------------------------
+
+CREATE TABLE LOGROS_MEDALLES (
+    id SERIAL PRIMARY KEY,
+    nom VARCHAR(100) NOT NULL,
+    descripcio TEXT,
+    tipus VARCHAR(50),
+);
+
+CREATE TABLE USUARIS_LOGROS (
+    usuari_id INT REFERENCES USUARIS(id) ON DELETE CASCADE,
+    logro_id INT REFERENCES LOGROS_MEDALLES(id) ON DELETE CASCADE,
+    data_obtencio DATE DEFAULT CURRENT_DATE,
+    PRIMARY KEY (usuari_id, logro_id)
+);
+
+-- 3. HÁBITOS Y PLANTILLAS
+-- ----------------------------------------------------------
+
+CREATE TABLE PLANTILLES (
+    id SERIAL PRIMARY KEY,
+    creador_id INT REFERENCES USUARIS(id) ON DELETE SET NULL,
+    titol VARCHAR(100) NOT NULL,
+    categoria VARCHAR(50),
+    es_publica BOOLEAN DEFAULT FALSE
+);
+
+CREATE TABLE HABITS (
+    id SERIAL PRIMARY KEY,
+    usuari_id INT REFERENCES USUARIS(id) ON DELETE CASCADE,
+    plantilla_id INT REFERENCES PLANTILLES(id) ON DELETE SET NULL,
+    titol VARCHAR(100) NOT NULL,
+    dificultat VARCHAR(50),
+    frequencia_tipus VARCHAR(50),
+    dies_setmana VARCHAR(50),
+    objectiu_vegades INT DEFAULT 1
+);
+
+CREATE TABLE USUARIS_HABITS (
+    id SERIAL PRIMARY KEY,
+    usuari_id INT REFERENCES USUARIS(id) ON DELETE CASCADE,
+    habit_id INT REFERENCES HABITS(id) ON DELETE CASCADE,
+    data_inici DATE DEFAULT CURRENT_DATE,
+    actiu BOOLEAN DEFAULT TRUE,
+    objetiu_vegades_personalitzat INT DEFAULT 1, 
+    UNIQUE(usuari_id, habit_id) 
+);
+
+-- 4. REGISTRO Y SEGUIMIENTO
+-- ----------------------------------------------------------
+
+CREATE TABLE REGISTRE_ACTIVITAT (
+    id SERIAL PRIMARY KEY,
+    habit_id INT REFERENCES HABITS(id) ON DELETE CASCADE,
+    data TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    acabado BOOLEAN DEFAULT TRUE,
+    xp_guanyada INT DEFAULT 0
+);
+
+CREATE TABLE RATXES (
+    id SERIAL PRIMARY KEY,
+    usuari_id INT REFERENCES USUARIS(id) ON DELETE CASCADE,
+    ratxa_actual INT DEFAULT 0,
+    ratxa_maxima INT DEFAULT 0,
+    ultima_data DATE
+);
+

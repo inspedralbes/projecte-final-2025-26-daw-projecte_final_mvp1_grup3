@@ -6,7 +6,7 @@ export default defineNuxtConfig({
     '@pinia/nuxt',
     '@nuxtjs/tailwindcss',
   ],
-  css: ['~/assets/css/main.css'],
+  // css: ['~/assets/css/main.css'],
   devServer: {
     host: '0.0.0.0',
     port: 3000,

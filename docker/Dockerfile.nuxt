@@ -1,10 +1,13 @@
-# Frontend Nuxt 3.10.1, Tailwind 3.4.1, Pinia 2.1.7 (Node 18 por compatibilidad con vue-macros)
-FROM node:18.20.4-alpine
+# Frontend Nuxt 3.11.2
+FROM node:20.18.3-alpine
 
 WORKDIR /app
 
-COPY package.json package-lock.json* ./
-RUN npm ci --legacy-peer-deps || npm install --legacy-peer-deps
+# Instalar dependencias necesarias para algunas librerías
+RUN apk add --no-cache python3 make g++
+
+COPY package*.json ./
+RUN npm install --legacy-peer-deps
 
 COPY . .
 

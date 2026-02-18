@@ -1,5 +1,11 @@
 <script setup>
+import bosqueImg from '~/assets/img/Bosque.png'
 
+const backgroundStyle = {
+  backgroundImage: `url(${bosqueImg})`,
+  backgroundSize: 'cover',
+  backgroundPosition: 'center'
+}
 </script>
 
 <template>
@@ -22,8 +28,8 @@
             
             <div class="space-y-3">
               <div class="bg-gray-50 rounded-lg p-3">
-                <p class="text-gray-700 font-semibold text-sm">Login Streak</p>
-                <p class="text-2xl font-bold text-orange-500">1/1</p>
+                <p class="text-gray-700 font-semibold text-sm">Mision Diaria</p>
+                <p class="text-2xl font-bold text-orange-500">0/1</p>
               </div>
             </div>
 
@@ -33,14 +39,13 @@
             <!-- Perfil Usuario -->
             <div class="text-center">
               <div class="w-16 h-16 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 mx-auto mb-3 flex items-center justify-center">
-                <span class="text-3xl">👨</span>
+                <span class="text-3xl"></span>
               </div>
-              <h3 class="font-bold text-gray-800 text-sm">Alex Martinez</h3>
-              <p class="text-xs text-gray-500 mb-2">Habit Master</p>
+              <h3 class="font-bold text-gray-800 text-sm">Nombre</h3>
+              <p class="text-xs text-gray-500 mb-2">Etiqueta</p>
               <div class="flex justify-center items-center gap-1 text-xs text-gray-600">
-                <span>Lv 13</span>
+                <span>Lv 1</span>
                 <div class="w-20 h-1 bg-gray-200 rounded-full">
-                  <div class="h-full bg-green-500 rounded-full" style="width: 65%"></div>
                 </div>
               </div>
             </div>
@@ -50,9 +55,9 @@
           <div class="bg-white rounded-2xl shadow-lg p-6">
             <h3 class="text-xs font-bold text-gray-800 uppercase tracking-wide mb-4">Últimos Logros</h3>
             <div class="flex justify-around items-center">
-              <div class="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-lg hover:scale-110 transition">🏅</div>
-              <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-lg hover:scale-110 transition">⭐</div>
-              <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-lg hover:scale-110 transition">🎯</div>
+              <div class="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-lg hover:scale-110 transition"></div>
+              <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-lg hover:scale-110 transition"></div>
+              <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-lg hover:scale-110 transition"></div>
             </div>
           </div>
         </div>
@@ -61,48 +66,28 @@
         <div class="col-span-6 space-y-6">
           
           <!-- Tarjeta Tu Monstruo -->
-          <div class="bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center">
-            <div class="flex items-center justify-between w-full mb-4">
-              <div>
-                <h2 class="text-lg font-bold text-gray-800">TU MONSTRUO</h2>
-                <p class="text-xs text-gray-500">Lv 5 • Guardian de la</p>
-              </div>
-              <div class="text-2xl">✓</div>
-            </div>
+          <div class="rounded-2xl shadow-lg p-8 flex flex-col items-center justify-center relative">
             
-            <!-- Imagen Monstruo -->
-            <div class="w-full h-64 bg-black rounded-xl flex items-center justify-center mb-6">
-              <span class="text-6xl">🔶</span>
-            </div>
+            <!-- Fondo Decorativo -->
+            <div class="absolute inset-0 rounded-2xl opacity-40"></div>
             
-            <p class="text-center text-gray-600 text-sm">¡Lo estás haciendo genial!</p>
-          </div>
-
-          <!-- Tarjetas de Gráficos -->
-          <div class="grid grid-cols-2 gap-6">
-            
-            <!-- Productividad -->
-            <div class="bg-white rounded-2xl shadow-lg p-6">
-              <h3 class="text-xs font-bold text-gray-800 uppercase tracking-wide mb-4">Productividad</h3>
-              <div class="h-32 flex items-end justify-around gap-2">
-                <div class="w-3 bg-blue-300 rounded-t" style="height: 40%"></div>
-                <div class="w-3 bg-blue-400 rounded-t" style="height: 60%"></div>
-                <div class="w-3 bg-blue-300 rounded-t" style="height: 45%"></div>
-                <div class="w-3 bg-blue-500 rounded-t" style="height: 75%"></div>
-                <div class="w-3 bg-blue-400 rounded-t" style="height: 55%"></div>
+            <!-- Contenido -->
+            <div class="relative z-10">
+              <div class="flex items-center justify-between w-full mb-4">
+                <div>
+                  <h2 class="text-lg font-bold text-gray-800">TU MONSTRUO</h2>
+                  <p class="text-xs text-gray-500">Lv 1</p>
+                </div>
+                <div class="text-2xl">✓</div>
               </div>
-            </div>
-
-            <!-- Consistencia -->
-            <div class="bg-white rounded-2xl shadow-lg p-6">
-              <h3 class="text-xs font-bold text-gray-800 uppercase tracking-wide mb-4">Consistencia</h3>
-              <div class="h-32 flex items-end justify-around gap-2">
-                <div class="w-6 bg-purple-300 rounded-t" style="height: 50%"></div>
-                <div class="w-6 bg-purple-400 rounded-t" style="height: 70%"></div>
-                <div class="w-6 bg-purple-300 rounded-t" style="height: 55%"></div>
-                <div class="w-6 bg-purple-500 rounded-t" style="height: 85%"></div>
-                <div class="w-6 bg-purple-400 rounded-t" style="height: 65%"></div>
+              
+              <!-- Imagen Monstruo -->
+               <div class="rounded-2xl shadow-lg p-8 flex flex-col items-center justify-center relative" :style="backgroundStyle" style="min-width: 450px">
+              <div class="w-40 h-40 bg-black rounded-xl flex items-center justify-center mb-6 overflow-hidden mx-auto">
+                  <img src="assets/img/Mascota.png" alt="Tu monstruo" class="w-full h-full object-cover" />
+                </div>
               </div>
+              <p class="text-center text-gray-600 text-sm">¡Lo estás haciendo genial!</p>
             </div>
           </div>
         </div>

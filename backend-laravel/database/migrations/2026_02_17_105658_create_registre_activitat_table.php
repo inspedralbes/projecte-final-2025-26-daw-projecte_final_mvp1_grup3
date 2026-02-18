@@ -14,7 +14,7 @@ return new class extends Migration {
             $table->id();
             $table->unsignedBigInteger('habit_id');
             $table->timestamp('data')->useCurrent();
-            $table->boolean('acabado')->default(true);
+            $table->boolean('completat')->default(true);
             $table->integer('xp_guanyada')->default(0);
             $table->timestamps();
 

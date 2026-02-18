@@ -5,23 +5,25 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
-        Schema::create('usuaris', function (Blueprint $table) {
+        Schema::create('administradors', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('nom');
             $table->string('email')->unique();
             $table->string('password');
-            $table->integer('xp')->default(0);
-            $table->integer('level')->default(1);
-            $table->integer('coins')->default(0);
-            $table->string('avatar_url')->nullable();
             $table->timestamps();
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
-        Schema::dropIfExists('usuaris');
+        Schema::dropIfExists('administradors');
     }
 };

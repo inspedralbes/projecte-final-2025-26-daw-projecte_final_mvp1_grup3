@@ -18,6 +18,7 @@ return new class extends Migration {
             $table->integer('xp_guanyada')->default(0);
             $table->timestamps();
 
+
             $table->foreign('habit_id')->references('id')->on('habits')->onDelete('cascade');
         });
     }

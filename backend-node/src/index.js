@@ -1,29 +1,45 @@
 'use strict';
 
+/**
+ * Servidor principal Node.js (Fase 2).
+ */
 var http = require('http');
 var socketIo = require('socket.io');
-var Server = socketIo.Server;
+var socketHandler = require('./socketHandler');
 var feedbackSubscriber = require('./subscribers/feedbackSubscriber');
 
 var PORT = process.env.PORT || 3001;
+
+// Crear servidor HTTP
 var server = http.createServer(function (req, res) {
   res.writeHead(200, { 'Content-Type': 'application/json' });
-  res.end(JSON.stringify({ service: 'loopy-node', status: 'ok' }));
+  res.end(JSON.stringify({ status: 'Node Backend actiu' }));
 });
 
-var io = new Server(server, {
-  cors: { origin: '*' }
+// Inicialitzar Socket.io
+var io = new socketIo.Server(server, {
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST']
+  }
 });
 
-feedbackSubscriber.attach(io);
+/**
+ * Funció d'arrencada orquestrada.
+ */
+async function bootstrap() {
+  // 1. Escolta feedback de Laravel (Redis Subscribe)
+  await feedbackSubscriber.init(io);
 
-io.on('connection', function (socket) {
-  console.log('Client connected:', socket.id);
-  socket.on('disconnect', function () {
-    console.log('Client disconnected:', socket.id);
+  // 2. Escolta esdeveniments dels clients (Sockets)
+  socketHandler.init(io);
+
+  // 3. Arrencar servidor
+  server.listen(PORT, '0.0.0.0', function () {
+    console.log('Servidor Node actiu al port', PORT);
   });
-});
+}
 
-server.listen(PORT, '0.0.0.0', function () {
-  console.log('Backend Node listening on port', PORT);
+bootstrap().catch(function (error) {
+  console.error('Error en bootstrap:', error);
 });

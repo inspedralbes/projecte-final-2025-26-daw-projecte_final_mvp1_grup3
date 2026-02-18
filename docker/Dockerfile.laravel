@@ -1,5 +1,5 @@
-# Laravel 11.0.0 sobre PHP 8.3.3
-FROM php:8.3.3-cli-alpine
+# Laravel 11.0.0 sobre PHP 8.4
+FROM php:8.4-cli-alpine
 
 RUN apk add --no-cache \
     git \

@@ -12,7 +12,7 @@
           <NuxtLink to="/" class="nav-link">Home</NuxtLink>
         </li>
         <li>
-          <NuxtLink to="/crear" class="nav-link">Crear</NuxtLink>
+          <NuxtLink to="/habits" class="nav-link">Crear</NuxtLink>
         </li>
         <li>
           <NuxtLink to="/catalogo" class="nav-link">Catálogo</NuxtLink>

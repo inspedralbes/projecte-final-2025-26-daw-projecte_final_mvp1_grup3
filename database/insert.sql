@@ -112,5 +112,86 @@ SELECT id, true, 10 FROM HABITS;
 
 -- 6. RATXES
 INSERT INTO RATXES (usuari_id, ratxa_actual, ratxa_maxima, ultima_data)
-VALUES (1, 0, 0, '2026-02-13');
+
+-- 7. CATEGORIES (PAS 1)
+-- ----------------------------------------------------------
+INSERT INTO CATEGORIES (id, nom) VALUES 
+(1, 'Activitat física (Gym Pro)'),
+(2, 'Alimentació (Dieta Mediterrània)'),
+(3, 'Estudi (Concentració Màxima)'),
+(4, 'Lectura (Club de Lectura)'),
+(5, 'Benestar (Mindfulness)'),
+(6, 'Millora d''hàbits (Vida sense Fum)'),
+(7, 'Llar (Neteja Express)'),
+(8, 'Hobby (Modelisme)');
+
+-- Ajustar la seqüència
+SELECT setval('categories_id_seq', (SELECT MAX(id) FROM CATEGORIES));
+
+-- 8. PREGUNTES DE REGISTRE (PAS 2)
+-- ----------------------------------------------------------
+
+-- Activitat física
+INSERT INTO PREGUNTES_REGISTRE (categoria_id, pregunta) VALUES 
+(1, 'Entrenes actualment en un gimnàs de forma regular?'),
+(1, 'El teu objectiu principal és guanyar força o massa muscular?'),
+(1, 'Tens experiència prèvia amb l''aixecament de peses?'),
+(1, 'Disposes d''almenys 45 minuts tres cops per setmana per entrenar?'),
+(1, 'Et agradaria rebre rutines específiques d''exercicis compostos?');
+
+-- Alimentació
+INSERT INTO PREGUNTES_REGISTRE (categoria_id, pregunta) VALUES 
+(2, 'Cuines habitualment els teus propis àpats a casa?'),
+(2, 'Consumes fruites i verdures en gairebé tots els teus àpats diaris?'),
+(2, 'Sols utilitzar oli d''oliva com a greix principal per cuinar?'),
+(2, 'Evites habitualment el consum de begudes ensucrades i refrescos?'),
+(2, 'Et agradaria planificar els teus menús setmanals per evitar menjar qualsevol cosa?');
+
+-- Estudi
+INSERT INTO PREGUNTES_REGISTRE (categoria_id, pregunta) VALUES 
+(3, 'Sols estudiar o treballar en un espai lliure de distraccions?'),
+(3, 'Utilitzes alguna tècnica de gestió del temps (com el mètode Pomodoro)?'),
+(3, 'Et costa arrencar quan tens una tasca complexa o llarga al davant?'),
+(3, 'Utilitzes un calendari o agenda per organitzar els teus exàmens o lliuraments?'),
+(3, 'Sents que aprofites bé les teves hores de major energia durant el dia?');
+
+-- Lectura
+INSERT INTO PREGUNTES_REGISTRE (categoria_id, pregunta) VALUES 
+(4, 'Llegeixes habitualment abans de dormir o mentre vas en transport públic?'),
+(4, 'Tens una llista de llibres pendents que t''agradaria començar aviat?'),
+(4, 'Et marques objectius de pàgines o capítols diaris per avançar?'),
+(4, 'Sols deixar els llibres a mitges per falta de constància o temps?'),
+(4, 'Et agrada anotar o subratllar les idees que més t''inspiren mentre llegeixes?');
+
+-- Benestar
+INSERT INTO PREGUNTES_REGISTRE (categoria_id, pregunta) VALUES 
+(5, 'Dediques almenys 5 minuts al dia a respirar de forma conscient?'),
+(5, 'Sents que pots desconnectar totalment de la feina en arribar a casa?'),
+(5, 'Practiques algun tipus d''estirament o ioga de manera habitual?'),
+(5, 'Sols identificar i analitzar les teves emocions quan estàs sota estrès?'),
+(5, 'Prioritzes tenir un horari de son regular per descansar bé?');
+
+-- Millora d'hàbits
+INSERT INTO PREGUNTES_REGISTRE (categoria_id, pregunta) VALUES 
+(6, 'Estàs convençut que aquest és el moment definitiu per deixar de fumar?'),
+(6, 'Fumes principalment per ansietat o per compromís social amb amics?'),
+(6, 'Has identificat ja els moments del dia en què més necessites fumar?'),
+(6, 'Tens el suport del teu entorn proper (família/amics) en aquest procés?'),
+(6, 'Estàs obert a usar substituts (xiclets, pegats) si el desig és molt fort?');
+
+-- Llar
+INSERT INTO PREGUNTES_REGISTRE (categoria_id, pregunta) VALUES 
+(7, 'Dediques un temps fix cada dia a recollir les zones comunes de la casa?'),
+(7, 'Et resulta fàcil mantenir el teu escriptori o zona de treball neta i ordenada?'),
+(7, 'Prefereixes netejar un poc cada dia que donar-te una pallissa de neteja el dissabte?'),
+(7, 'Tens l''hàbit de fregar els plats immediatament després de dinar?'),
+(7, 'Sents que l''ordre a casa teva t''ajuda a tenir més claredat mental?');
+
+-- Hobby
+INSERT INTO PREGUNTES_REGISTRE (categoria_id, pregunta) VALUES 
+(8, 'Disposes d''un lloc ben il·luminat i fix per treballar en les teves maquetes?'),
+(8, 'Tens ja les eines bàsiques (pinces, pega, pintures) llestes?'),
+(8, 'Et motiva realitzar treballs minuciosos que requereixen molta paciència?'),
+(8, 'Sols dedicar temps a investigar tècniques de pintat o muntatge a internet?'),
+(8, 'Et agradaria compartir fotos dels teus avenços amb altres aficionats?');
 

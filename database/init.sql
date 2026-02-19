@@ -90,6 +90,18 @@ CREATE TABLE RATXES (
     usuari_id INT REFERENCES USUARIS(id) ON DELETE CASCADE,
     ratxa_actual INT DEFAULT 0,
     ratxa_maxima INT DEFAULT 0,
-    ultima_data DATE
+
+-- 5. PREGUNTES DE REGISTRE
+-- ----------------------------------------------------------
+
+CREATE TABLE CATEGORIES (
+    id SERIAL PRIMARY KEY,
+    nom VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE PREGUNTES_REGISTRE (
+    id SERIAL PRIMARY KEY,
+    categoria_id INT REFERENCES CATEGORIES(id) ON DELETE CASCADE,
+    pregunta TEXT NOT NULL
 );
 

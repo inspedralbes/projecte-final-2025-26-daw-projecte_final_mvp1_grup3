@@ -1,4 +1,4 @@
-INSERTS:
+-- INSERTS (dades inicials)
 -- 1. ADMINISTRADORS
 INSERT INTO ADMINISTRADORS (nom, email, contrasenya_hash) 
 VALUES ('admin', 'admin@admin.com', 'admin123');
@@ -7,7 +7,7 @@ VALUES ('admin', 'admin@admin.com', 'admin123');
 INSERT INTO USUARIS (nom, email, contrasenya_hash) 
 VALUES ('llorenç carnicer', 'llorcar@user.com', 'user123');
 
-– 3. LOGROS_MEDALLES
+-- 3. LOGROS_MEDALLES
 INSERT INTO LOGROS_MEDALLES (nom, descripcio, tipus) VALUES
 -- TIEMPO
 ('Primer Encuentro', 'Inicia sesión por primera vez', 'tiempo'),

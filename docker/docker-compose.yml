@@ -15,7 +15,8 @@ services:
       - "${POSTGRES_PORT:-5433}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ../database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - ../database/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+      - ../database/insert.sql:/docker-entrypoint-initdb.d/02-insert.sql:ro
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-loopy} -d ${POSTGRES_DB:-loopy_db}" ]
       interval: 5s
@@ -78,6 +79,7 @@ services:
       QUEUE_CONNECTION: redis
     volumes:
       - ../backend-laravel:/var/www
+      - ../database:/var/database:ro
     depends_on:
       postgres:
         condition: service_healthy

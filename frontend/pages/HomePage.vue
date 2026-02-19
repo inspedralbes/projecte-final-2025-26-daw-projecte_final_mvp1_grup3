@@ -1,11 +1,104 @@
 <script setup>
+import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { io } from 'socket.io-client'
+import { useGameStore } from '~/stores/gameStore.js'
 import bosqueImg from '~/assets/img/Bosque.png'
+
+// Store de Pinia con sistema de rollback
+const gameStore = useGameStore()
 
 const backgroundStyle = {
   backgroundImage: `url(${bosqueImg})`,
   backgroundSize: 'cover',
   backgroundPosition: 'center'
 }
+
+// Socket
+let socket = null
+const isLoading = ref(false)
+const errorMessage = ref('')
+
+// Computables desde el store
+const racha = computed(() => gameStore.racha)
+const xpTotal = computed(() => gameStore.xpTotal)
+const habitos = computed(() => gameStore.habitos)
+const userId = computed(() => gameStore.userId)
+
+// Inicializar socket
+onMounted(() => {
+  // TODO: Obtener userId de autenticación
+  gameStore.setUserId(1)
+
+  // Conectar al servidor de sockets
+  socket = io('http://localhost:3000', {
+    reconnection: true,
+    reconnectionDelay: 1000,
+    reconnectionDelayMax: 5000,
+    reconnectionAttempts: 5
+  })
+
+  socket.on('connect', () => {
+    console.log('✅ Conectado al servidor de sockets:', socket.id)
+  })
+
+  // Escuchar actualizaciones de racha desde el backend
+  socket.on('racha_actualizada', (data) => {
+    console.log('📊 Racha actualizada:', data)
+    gameStore.updateRacha(data.racha)
+  })
+
+  // Escuchar XP ganada desde el backend
+  socket.on('xp_ganada', (data) => {
+    console.log('⭐ XP ganada:', data)
+    gameStore.updateXP(data.xp)
+  })
+
+  socket.on('disconnect', () => {
+    console.log('❌ Desconectado del servidor de sockets')
+  })
+
+  socket.on('error', (error) => {
+    console.error('⚠️ Error en socket:', error)
+  })
+})
+
+// Limpiar socket cuando se desmonta el componente
+onUnmounted(() => {
+  if (socket) {
+    socket.disconnect()
+  }
+})
+
+/**
+ * Completa un hábito con snapshot y rollback automático
+ * - Cambio visual inmediato (0ms latencia)
+ * - Emite al backend
+ * - Si falla: restaura automáticamente
+ */
+const completarHabito = async (habitoId) => {
+  try {
+    isLoading.value = true
+    errorMessage.value = ''
+
+    console.log('🎯 Iniciando completar hábito:', habitoId)
+
+    // Llamar a la acción del store que maneja snapshot + rollback
+    const success = await gameStore.completHabit(habitoId, socket)
+
+    if (!success) {
+      errorMessage.value = 'No se pudo completar el hábito. Los cambios han sido revertidos.'
+      console.error('❌ Fallida la operación - cambios revertidos')
+    } else {
+      console.log('✅ Hábito completado exitosamente')
+    }
+  } catch (error) {
+    console.error('Error completando hábito:', error)
+    errorMessage.value = 'Error al completar el hábito'
+  } finally {
+    isLoading.value = false
+  }
+}
+
 </script>
 
 <template>
@@ -78,7 +171,10 @@ const backgroundStyle = {
                   <h2 class="text-lg font-bold text-gray-800">TU MONSTRUO</h2>
                   <p class="text-xs text-gray-500">Lv 1</p>
                 </div>
-                <div class="text-2xl">✓</div>
+                <div>
+                  <p class="text-2xl font-bold">Racha: {{ racha }}</p>
+                  <p class="text-sm text-green-600">XP Total: {{ xpTotal }}</p>
+                </div>
               </div>
               
               <!-- Imagen Monstruo -->
@@ -103,7 +199,34 @@ const backgroundStyle = {
 
           <!-- Lista de Hábitos -->
           <div class="space-y-3">
-            
+            <!-- Mensaje de error con rollback -->
+            <div v-if="errorMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+              <span class="block sm:inline">{{ errorMessage }}</span>
+              <button 
+                @click="errorMessage = ''"
+                class="absolute top-0 bottom-0 right-0 px-4 py-3"
+              >
+                ✕
+              </button>
+            </div>
+
+            <!-- Hábitos del store -->
+            <div v-for="habito in habitos" :key="habito.id" class="bg-white rounded-lg p-4 shadow flex items-center justify-between">
+              <div>
+                <p class="font-semibold text-gray-800">{{ habito.nombre }}</p>
+                <p class="text-xs text-gray-500">{{ habito.descripcion }} • +{{ habito.xpReward }} XP</p>
+                <p v-if="habito.completado" class="text-xs text-green-600 font-semibold">✓ Completado</p>
+              </div>
+              <button 
+                v-if="!habito.completado"
+                @click="completarHabito(habito.id)"
+                :disabled="isLoading"
+                class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {{ isLoading ? 'Procesando...' : 'Completar' }}
+              </button>
+              <div v-else class="text-green-500 font-bold">✓</div>
+            </div>
           </div>
 
           <!-- Tarjeta Diario -->

@@ -35,15 +35,22 @@ async function getClient() {
 
 /**
  * Afegeix un hàbit completat a la cua de Redis.
- * @param {Object} data - Ha de contenir user_id i habit_id.
+ * @param {string} action - L'acció a realitzar ('CREATE', 'UPDATE', 'DELETE', 'TOGGLE').
+ * @param {number} userId - L'ID de l'usuari (provinent del token).
+ * @param {Object} data - Objecte amb habit_id i/o habit_data (titol, dificultat, etc.).
  */
-async function pushToLaravel(data) {
+async function pushToLaravel(action, userId, data) {
   var c = await getClient();
+
+  // Creem el JSON que Laravel "entendrà"
   var payload = JSON.stringify({
-    user_id: data.user_id,
-    habit_id: data.habit_id
+    action: action,
+    user_id: userId,
+    habit_id: data.habit_id || null, // ID del hàbit (per a UPDATE/DELETE/TOGGLE)
+    habit_data: data.habit_data || null // Tota la info del SQL (titol, dificultat, etc.)
   });
 
+  console.log('Pushing to Redis (' + action + ') for user ' + userId);
   return await c.lPush(habitsQueueKey, payload);
 }
 

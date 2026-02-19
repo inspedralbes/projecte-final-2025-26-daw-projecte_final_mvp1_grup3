@@ -12,12 +12,23 @@ function init(io) {
     io.on('connection', function (socket) {
         console.log('Client connectat:', socket.id);
 
+        socket.on('habit_action', async function (payload) {
+            try {
+                var userId = socket.decoded_token.user_id; // O socket.user.id segons el teu JWT
+                socket.join('user_' + userId);
+                await habitQueue.pushToLaravel(payload.action, userId, payload);
+            } catch (error) {
+                console.error('Error gestionant habit_action:', error);
+            }
+        });
+
         // Escolta quan el frontend comunica un hàbit completat
         socket.on('habit_completed', async function (data) {
             try {
                 console.log('Hàbit rebut:', data);
-                // Enviem a Laravel via Redis
-                await habitQueue.pushToLaravel(data);
+                // NOTA: Ajustem a la nova firma de pushToLaravel
+                var userId = data.user_id; // O socket.decoded_token.user_id si ja tens el middleware real
+                await habitQueue.pushToLaravel('TOGGLE', userId, data);
             } catch (error) {
                 console.error('Error gestionant habit_completed:', error);
             }

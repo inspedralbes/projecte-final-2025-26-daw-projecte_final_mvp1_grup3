@@ -78,7 +78,6 @@ services:
       QUEUE_CONNECTION: redis
     volumes:
       - ../backend-laravel:/var/www
-      - laravel_vendor:/var/www/vendor
     depends_on:
       postgres:
         condition: service_healthy
@@ -138,5 +137,4 @@ services:
 volumes:
   postgres_data:
   redis_data:
-  laravel_vendor:
   node_modules:

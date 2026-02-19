@@ -9,7 +9,7 @@ if [ ! -f .env ]; then
     cp .env.example .env
 fi
 
-# Instalar dependencias de Composer (crea carpeta vendor dentro del contenedor)
+# Instalar dependencias de Composer (vendor en backend-laravel, visible en host i container)
 if [ ! -f vendor/autoload.php ]; then
     echo "Instalando dependencias de Composer (vendor)..."
     composer install --no-interaction --optimize-autoloader

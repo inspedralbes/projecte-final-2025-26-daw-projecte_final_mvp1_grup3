@@ -83,7 +83,7 @@ const backgroundStyle = {
               
               <!-- Imagen Monstruo -->
                <div class="rounded-2xl shadow-lg p-8 flex flex-col items-center justify-center relative" :style="backgroundStyle" style="min-width: 450px">
-              <div class="w-40 h-40 bg-black rounded-xl flex items-center justify-center mb-6 overflow-hidden mx-auto">
+              <div class="w-40 h-40 rounded-xl flex items-center justify-center mb-6 overflow-hidden mx-auto">
                   <img src="assets/img/Mascota.png" alt="Tu monstruo" class="w-full h-full object-cover" />
                 </div>
               </div>
@@ -104,92 +104,9 @@ const backgroundStyle = {
           <!-- Lista de Hábitos -->
           <div class="space-y-3">
             
-            <!-- Hábito 1 - Sin completar -->
-            <div class="bg-white rounded-2xl shadow-md p-4 hover:shadow-lg transition flex items-center justify-between">
-              <div class="flex items-center gap-3 flex-1">
-                <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
-                  ⭕
-                </div>
-                <div>
-                  <p class="font-semibold text-gray-800 text-sm">Meditar</p>
-                  <p class="text-xs text-gray-500">10 mins • Mañana</p>
-                </div>
-              </div>
-              <div class="w-5 h-5 rounded-full border-2 border-red-300"></div>
-            </div>
-
-            <!-- Hábito 2 - Completado -->
-            <div class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl shadow-md p-4 hover:shadow-lg transition flex items-center justify-between border-l-4 border-blue-500">
-              <div class="flex items-center gap-3 flex-1">
-                <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center">
-                  ✓
-                </div>
-                <div>
-                  <p class="font-semibold text-gray-800 text-sm">Beber Agua</p>
-                  <p class="text-xs text-gray-500">2L • Salud</p>
-                </div>
-              </div>
-              <div class="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center">
-                <span class="text-white text-xs">✓</span>
-              </div>
-            </div>
-
-            <!-- Hábito 3 - Sin completar -->
-            <div class="bg-white rounded-2xl shadow-md p-4 hover:shadow-lg transition flex items-center justify-between">
-              <div class="flex items-center gap-3 flex-1">
-                <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
-                  📖
-                </div>
-                <div>
-                  <p class="font-semibold text-gray-800 text-sm">Leer Libro</p>
-                  <p class="text-xs text-gray-500">30 mins • Educación</p>
-                </div>
-              </div>
-              <div class="w-5 h-5 rounded-full border-2 border-purple-300"></div>
-            </div>
-
-            <!-- Hábito 4 - Sin completar -->
-            <div class="bg-white rounded-2xl shadow-md p-4 hover:shadow-lg transition flex items-center justify-between">
-              <div class="flex items-center gap-3 flex-1">
-                <div class="w-10 h-10 rounded-full bg-cyan-100 flex items-center justify-center">
-                  💪
-                </div>
-                <div>
-                  <p class="font-semibold text-gray-800 text-sm">Gimnasio</p>
-                  <p class="text-xs text-gray-500">1 hora • Cuerpo</p>
-                </div>
-              </div>
-              <div class="w-5 h-5 rounded-full border-2 border-cyan-300"></div>
-            </div>
-
-            <!-- Hábito 5 - Sin completar -->
-            <div class="bg-white rounded-2xl shadow-md p-4 hover:shadow-lg transition flex items-center justify-between">
-              <div class="flex items-center gap-3 flex-1">
-                <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
-                  💻
-                </div>
-                <div>
-                  <p class="font-semibold text-gray-800 text-sm">Revisar Código</p>
-                  <p class="text-xs text-gray-500">2h horas • Trabajo</p>
-                </div>
-              </div>
-              <div class="w-5 h-5 rounded-full border-2 border-orange-300"></div>
-            </div>
           </div>
 
           <!-- Tarjeta Diario -->
-          <div class="bg-yellow-300 rounded-2xl shadow-lg p-6">
-            <div class="flex items-center justify-between mb-3">
-              <div class="flex items-center gap-2">
-                <div class="w-6 h-6 bg-yellow-500 rounded flex items-center justify-center">
-                  ✓
-                </div>
-                <h3 class="font-bold text-gray-800 text-sm">Diario</h3>
-              </div>
-              <button class="text-gray-600 hover:text-gray-800">✏️</button>
-            </div>
-            <p class="text-xs text-gray-700 font-semibold">Completado • Hoy</p>
-          </div>
         </div>
       </div>
     </div>

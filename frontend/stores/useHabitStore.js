@@ -1,6 +1,13 @@
 import { defineStore } from 'pinia';
 import { io } from 'socket.io-client';
 
+// Connexió amb el Backend Node.js (Signaling Server)
+// Ajustar la URL segons el teu entorn (ex: http://localhost:3001 o ruta relativa si hi ha proxy)
+var socket = io('http://localhost:3001', {
+  transports: ['websocket', 'polling']
+});
+import { io } from 'socket.io-client';
+
 // Connexió amb el Backend Node.js
 var socket = io('http://localhost:3001', {
   transports: ['websocket', 'polling']
@@ -9,7 +16,7 @@ var socket = io('http://localhost:3001', {
 export const useHabitStore = defineStore('habit', {
   state: function () {
     return {
-      habits: [],
+      llista_habits: [],
       lastSnapshot: null, // Per al rollback en cas d'error del servidor
       loading: false,
       error: null
@@ -55,9 +62,10 @@ export const useHabitStore = defineStore('habit', {
       var habitTrobat = false;
 
       try {
-        for (var i = 0; i < self.habits.length; i++) {
-          if (self.habits[i].id === habitId) {
-            self.habits[i].completat = !self.habits[i].completat;
+        for (var i = 0; i < self.llista_habits.length; i++) {
+          if (self.llista_habits[i].id === habitId) {
+            // Canviar l'estat de completat (toggle)
+            self.llista_habits[i].completat = !self.llista_habits[i].completat;
             habitTrobat = true;
             break;
           }
@@ -72,9 +80,10 @@ export const useHabitStore = defineStore('habit', {
         });
 
       } catch (e) {
+        // 4. Restauració (Rollback) en cas d'error local
         console.error('Error local al marcar hàbit:', e);
         self.error = e.message;
-        self.habits = snapshot;
+        self.llista_habits = snapshot;
       }
     },
 

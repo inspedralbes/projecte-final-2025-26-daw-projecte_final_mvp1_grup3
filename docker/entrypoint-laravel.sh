@@ -21,5 +21,9 @@ if ! grep -q "^APP_KEY=" .env || grep -q "^APP_KEY=$" .env; then
     php artisan key:generate
 fi
 
+# Borrar cache con dev-deps y regenerar (vendor en Docker solo tiene prod; packages.php del host puede tener collision)
+rm -f bootstrap/cache/packages.php bootstrap/cache/services.php
+php artisan package:discover --ansi
+
 echo "Iniciando servidor de Laravel..."
 exec php artisan serve --host=0.0.0.0 --port=8000

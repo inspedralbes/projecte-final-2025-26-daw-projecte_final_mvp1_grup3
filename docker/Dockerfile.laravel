@@ -26,6 +26,9 @@ RUN sed 's/\r$//' /entrypoint.sh > /tmp/ep && mv /tmp/ep /entrypoint.sh && chmod
 # Laravel requiere bootstrap/cache existente y escribible para package:discover
 RUN mkdir -p /var/www/bootstrap/cache && chmod -R 775 /var/www/bootstrap/cache
 
+# Borrar cache generado con dev-deps para que package:discover regenere solo con prod
+RUN rm -f /var/www/bootstrap/cache/packages.php /var/www/bootstrap/cache/services.php
+
 # Instalar dependencias de Laravel y generar APP_KEY en la imagen
 RUN composer install --no-interaction --optimize-autoloader --no-dev && \
     if [ ! -f .env ]; then cp .env.example .env; fi && \

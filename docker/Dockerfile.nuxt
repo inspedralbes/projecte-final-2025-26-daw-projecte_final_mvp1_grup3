@@ -8,6 +8,7 @@ RUN apk add --no-cache python3 make g++
 
 COPY package*.json ./
 RUN npm install --legacy-peer-deps
+RUN npm install -D tailwindcss@3.3.6 postcss@8 autoprefixer@10
 
 COPY . .
 

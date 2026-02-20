@@ -13,7 +13,11 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:api')->group(function () {
-    Route::get('/habits', [HabitController::class, 'index']);
-    Route::get('/habits/{id}', [HabitController::class, 'show']);
-});
+/*
+|--------------------------------------------------------------------------
+| Usuari per defecte: id 1 (administrador). Sense autenticació.
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/habits', [HabitController::class, 'index']);
+Route::get('/habits/{id}', [HabitController::class, 'show']);

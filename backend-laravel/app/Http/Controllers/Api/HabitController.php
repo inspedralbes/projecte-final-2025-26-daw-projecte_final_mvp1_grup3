@@ -21,20 +21,16 @@ class HabitController extends Controller
     //================================ MÈTODES / FUNCIONS ===========
 
     /**
-     * Llista els hàbits de l'usuari autenticat.
+     * Llista els hàbits de l'usuari per defecte (id 1).
      *
-     * A. Comprova que hi ha usuari autenticat.
+     * A. Utilitza l'usuari per defecte amb id 1 (administrador).
      * B. Filtra els hàbits per usuari_id.
      * C. Retorna la col·lecció transformada amb HabitResource.
      */
     public function index(Request $request): JsonResponse
     {
-        // A. Comprovar autenticació
-        $usuariId = auth()->id();
-
-        if ($usuariId === null) {
-            return response()->json(['error' => 'No autenticat'], 401);
-        }
+        // A. Usuari per defecte sense autenticació (id 1)
+        $usuariId = 1;
 
         // B. Filtrar hàbits per usuari i obtenir resultats
         $habits = Habit::where('usuari_id', $usuariId)->get();
@@ -46,18 +42,14 @@ class HabitController extends Controller
     /**
      * Retorna un únic hàbit per ID.
      *
-     * A. Comprova que hi ha usuari autenticat.
+     * A. Utilitza l'usuari per defecte amb id 1 (administrador).
      * B. Cerca l'hàbit i verifica que pertany a l'usuari.
      * C. Retorna l'hàbit transformat o 404.
      */
     public function show(Request $request, int $id): JsonResponse
     {
-        // A. Comprovar autenticació
-        $usuariId = auth()->id();
-
-        if ($usuariId === null) {
-            return response()->json(['error' => 'No autenticat'], 401);
-        }
+        // A. Usuari per defecte sense autenticació (id 1)
+        $usuariId = 1;
 
         // B. Cercar hàbit i comprovar propietat
         $habit = Habit::where('id', $id)->where('usuari_id', $usuariId)->first();

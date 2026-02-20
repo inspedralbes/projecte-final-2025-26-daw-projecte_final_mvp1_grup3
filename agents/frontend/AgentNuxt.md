@@ -27,6 +27,7 @@ Tot i fer servir Vue 3 (Composition API), hem de mantenir la coherència amb l'`
 Les pàgines han de seguir el disseny **Bento Grid** (graella modular).
 - Cada secció de la pàgina ha d'estar encapsulada en un `<div>` o component que representi una "cel·la" del Bento.
 - L'estructura HTML ha de ser semàntica.
+- NO EMOJIS!
 
 ## 5. Integració amb Altres Agents
 - **Lògica**: Per a qualsevol funció JS complexa -> Veure `AgentJavascript.md`.

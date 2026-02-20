@@ -10,9 +10,7 @@ export const useGameStore = defineStore('game', () => {
   const racha = ref(0)
   const xpTotal = ref(0)
   const nivel = ref(1)
-  const habitos = ref([
-    { id: 1, nombre: 'Hábito Ejemplo', descripcion: 'Descripción del hábito', completado: false, xpReward: XP_BASE }
-  ])
+  const habitos = ref([])
 
   const { createSnapshot, commitSnapshot, rollbackStack } = useRollback()
 
@@ -99,6 +97,44 @@ export const useGameStore = defineStore('game', () => {
     nivel.value = newNivel
   }
 
+  const fetchHabitos = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/api/habits')
+      if (!response.ok) {
+        throw new Error(`Error al obtener hábitos: ${response.status}`)
+      }
+      const rawData = await response.json()
+      
+      console.log('📥 Datos crudos de la API:', rawData)
+      
+      // Laravel Resources devuelve { data: [...] }
+      const habitosDelApi = Array.isArray(rawData) ? rawData : (rawData.data || [])
+      
+      console.log('📋 Hábitos extraídos:', habitosDelApi)
+      
+      habitos.value = habitosDelApi.map(habit => ({
+        id: habit.id,
+        nombre: habit.titol || 'Sin nombre',
+        descripcion: `${habit.frequencia_tipus} - Dificultad: ${habit.dificultat}` || '',
+        completado: false,
+        xpReward: XP_BASE,
+        usuari_id: habit.usuari_id,
+        plantilla_id: habit.plantilla_id,
+        dificultat: habit.dificultat,
+        frequencia_tipus: habit.frequencia_tipus,
+        dies_setmana: habit.dies_setmana,
+        objectiu_vegades: habit.objectiu_vegades
+      }))
+      
+      console.log('✅ Hábitos transformados:', habitos.value)
+      return habitos.value
+    } catch (error) {
+      console.error('❌ Error fetching habitos:', error)
+      habitos.value = []
+      return []
+    }
+  }
+
   return {
     userId,
     racha,
@@ -109,6 +145,7 @@ export const useGameStore = defineStore('game', () => {
     updateRacha,
     updateXP,
     setUserId,
-    setNivel
+    setNivel,
+    fetchHabitos
   }
 })

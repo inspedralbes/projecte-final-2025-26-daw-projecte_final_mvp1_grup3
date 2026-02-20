@@ -16,6 +16,7 @@ const backgroundStyle = {
 // Socket
 let socket = null
 const isLoading = ref(false)
+const isLoadingHabitos = ref(false)
 const errorMessage = ref('')
 
 // Computables desde el store
@@ -25,12 +26,24 @@ const habitos = computed(() => gameStore.habitos)
 const userId = computed(() => gameStore.userId)
 
 // Inicializar socket
-onMounted(() => {
+onMounted(async () => {
   // TODO: Obtener userId de autenticación
   gameStore.setUserId(1)
 
+  // Cargar hábitos desde la API
+  isLoadingHabitos.value = true
+  try {
+    await gameStore.fetchHabitos()
+    console.log('✅ Hábitos cargados:', gameStore.habitos)
+  } catch (error) {
+    console.error('❌ Error cargando hábitos:', error)
+    errorMessage.value = 'Error al cargar los hábitos'
+  } finally {
+    isLoadingHabitos.value = false
+  }
+
   // Conectar al servidor de sockets
-  socket = io('http://localhost:3000', {
+  socket = io('http://localhost:3001', {
     reconnection: true,
     reconnectionDelay: 1000,
     reconnectionDelayMax: 5000,
@@ -210,23 +223,35 @@ const completarHabito = async (habitoId) => {
               </button>
             </div>
 
-            <!-- Hábitos del store -->
-            <div v-for="habito in habitos" :key="habito.id" class="bg-white rounded-lg p-4 shadow flex items-center justify-between">
-              <div>
-                <p class="font-semibold text-gray-800">{{ habito.nombre }}</p>
-                <p class="text-xs text-gray-500">{{ habito.descripcion }} • +{{ habito.xpReward }} XP</p>
-                <p v-if="habito.completado" class="text-xs text-green-600 font-semibold">✓ Completado</p>
-              </div>
-              <button 
-                v-if="!habito.completado"
-                @click="completarHabito(habito.id)"
-                :disabled="isLoading"
-                class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {{ isLoading ? 'Procesando...' : 'Completar' }}
-              </button>
-              <div v-else class="text-green-500 font-bold">✓</div>
+            <!-- Loading state -->
+            <div v-if="isLoadingHabitos" class="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded">
+              <span>Cargando hábitos...</span>
             </div>
+
+            <!-- Empty state -->
+            <div v-else-if="habitos.length === 0" class="bg-gray-50 border border-gray-200 text-gray-600 px-4 py-3 rounded text-center">
+              <span>No hay hábitos disponibles</span>
+            </div>
+
+            <!-- Hábitos de la API -->
+            <template v-else>
+              <div v-for="habito in habitos" :key="habito.id" class="bg-white rounded-lg p-4 shadow flex items-center justify-between">
+                <div>
+                  <p class="font-semibold text-gray-800">{{ habito.nombre }}</p>
+                  <p class="text-xs text-gray-500">{{ habito.descripcion }} • +{{ habito.xpReward }} XP</p>
+                  <p v-if="habito.completado" class="text-xs text-green-600 font-semibold">✓ Completado</p>
+                </div>
+                <button 
+                  v-if="!habito.completado"
+                  @click="completarHabito(habito.id)"
+                  :disabled="isLoading"
+                  class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {{ isLoading ? 'Procesando...' : 'Completar' }}
+                </button>
+                <div v-else class="text-green-500 font-bold">✓</div>
+              </div>
+            </template>
           </div>
 
           <!-- Tarjeta Diario -->

@@ -91,9 +91,27 @@
 	</div>
 </template>
 
-<script setup>
-definePageMeta({ layout: false })
-// Página de login estática según diseño; conectar la lógica cuando proceda.
+<script>
+/**
+ * Configuració de la pàgina de Login.
+ * Es desactiva el layout per defecte.
+ */
+definePageMeta({ layout: false });
+
+export default {
+  /**
+   * Retorna les dades inicials del component.
+   */
+  data: function() {
+    return {
+      // De moment no hi ha dades dinàmiques
+    };
+  },
+
+  methods: {
+    // Les funcions es definiran aquí seguint l'estil Agent
+  }
+}
 </script>
 
 <style scoped>

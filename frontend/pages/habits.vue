@@ -20,7 +20,7 @@
             <div class="space-y-4">
               <div>
                 <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Nombre del hábito</label>
-                <input v-model="form.name" type="text" placeholder="Ej: Beber 2L de agua, Leer 30 min..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white transition-all" />
+                <input v-model="form.titol" type="text" placeholder="Ej: Beber 2L de agua, Leer 30 min..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white transition-all" />
               </div>
               
               <div>
@@ -63,7 +63,6 @@
                 <div class="bg-blue-100 p-2 rounded-lg">
                   <span class="text-xl">📅</span>
                 </div>
-                <!-- Fixed typo from User Request: PEsonalizar -> Personalizar for correct spelling if desired, but user said 'Planificación' here -->
                 <h2 class="text-lg font-bold text-gray-800">Planificación</h2>
               </div>
 
@@ -71,14 +70,23 @@
                 <div>
                   <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Frecuencia</label>
                   <div class="flex bg-gray-100 rounded-lg p-1">
-                    <button v-for="freq in frequencies" :key="freq" @click="form.frequency = freq" :class="{'bg-white shadow-sm text-gray-800': form.frequency === freq, 'text-gray-500 hover:text-gray-700': form.frequency !== freq}" class="flex-1 py-1.5 text-sm font-medium rounded-md transition-all">
+                    <button v-for="freq in frequencies" :key="freq" @click="form.frequencia_tipus = freq" :class="{'bg-white shadow-sm text-gray-800': form.frequencia_tipus === freq, 'text-gray-500 hover:text-gray-700': form.frequencia_tipus !== freq}" class="flex-1 py-1.5 text-sm font-medium rounded-md transition-all">
                       {{ freq }}
                     </button>
                   </div>
                 </div>
 
                 <div>
-                   <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Días Objetivo</label>
+                   <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Dificultad</label>
+                   <div class="flex gap-2">
+                     <button v-for="diff in difficulties" :key="diff" @click="form.dificultat = diff" :class="{'bg-green-600 text-white': form.dificultat === diff, 'bg-gray-100 text-gray-600 hover:bg-gray-200': form.dificultat !== diff}" class="flex-1 py-2 text-xs font-bold rounded-lg transition-colors capitalize">
+                       {{ diff }}
+                     </button>
+                   </div>
+                </div>
+
+                <div>
+                   <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Días Objetivo (En {{ form.frequencia_tipus }})</label>
                    <div class="flex justify-between">
                      <button v-for="(day, index) in days" :key="day" @click="toggleDay(index)" :class="{'bg-green-600 text-white': form.selectedDays.indexOf(index) !== -1, 'bg-gray-200 text-gray-600 hover:bg-gray-300': form.selectedDays.indexOf(index) === -1}" class="w-8 h-8 rounded-full text-xs font-bold flex items-center justify-center transition-colors">
                        {{ day }}
@@ -135,7 +143,7 @@
               <h2 class="text-lg font-bold text-gray-800">Mis Hábitos</h2>
             </div>
             
-            <div v-if="habitStore.habits.length === 0" class="text-center py-10 text-gray-400">
+            <div v-if="habitStore.habits?.length === 0" class="text-center py-10 text-gray-400">
               <p>No tienes hábitos aún.</p>
               <p class="text-sm">¡Añade uno nuevo!</p>
             </div>
@@ -146,10 +154,14 @@
                   {{ habit.icon }}
                 </div>
                 <div class="flex-1 min-w-0">
-                  <h3 class="font-bold text-gray-800 truncate">{{ habit.name }}</h3>
-                  <p class="text-xs text-gray-500">{{ habit.frequency }} <span v-if="habit.reminder">• {{ habit.reminder }}</span></p>
+                  <h3 class="font-bold text-gray-800 truncate">{{ habit.titol }}</h3>
+                  <p class="text-xs text-gray-500">{{ habit.frequencia_tipus }} <span v-if="habit.reminder">• {{ habit.reminder }}</span> <span v-if="habit.dificultat">• {{ habit.dificultat }}</span></p>
                 </div>
-                <div class="w-2 h-2 rounded-full bg-green-500"></div>
+                <!-- Delete Button -->
+                <button @click="deleteHabit(habit.id)" class="opacity-0 group-hover:opacity-100 p-2 text-gray-400 hover:text-red-500 transition-all focus:outline-none" title="Borrar hábito">
+                  <span class="text-lg">Borra</span>
+                </button>
+                <div class="w-2 h-2 rounded-full bg-green-500 group-hover:hidden"></div>
               </div>
             </div>
 
@@ -172,16 +184,21 @@ import { useHabitStore } from '../stores/useHabitStore';
 export default {
   setup: function() {
     var habitStore = useHabitStore();
+    
+    // Iniciar listeners si no están ya activos (podrías añadir una bandera en el store para evitar duplicados)
+    habitStore.initSocketListeners();
+    
     return { habitStore: habitStore };
   },
   data: function() {
     return {
       form: {
-        name: '',
+        titol: '',
         motivation: '',
         icon: '💧',
         category: '',
-        frequency: 'Diario',
+        frequencia_tipus: 'Diari',
+        dificultat: 'Fàcil',
         reminder: '08:00',
         selectedDays: [0, 1, 2, 3, 4], // Default Mon-Fri
         color: '#10B981'
@@ -193,7 +210,8 @@ export default {
         { id: 'trabajo', name: 'Trabajo', icon: '💼' },
         { id: 'arte', name: 'Arte', icon: '🎨' }
       ],
-      frequencies: ['Diario', 'Semanal', 'Mensual'],
+      frequencies: ['Diari', 'Setmanal', 'Mensual'],
+      difficulties: ['Fàcil', 'Mitjà', 'Difícil'],
       days: ['L', 'M', 'X', 'J', 'V', 'S', 'D'],
       colors: ['#65A30D', '#3B82F6', '#A855F7', '#F97316', '#EC4899']
     };
@@ -218,7 +236,7 @@ export default {
     },
     createHabit: function() {
       // Basic validation
-      if (!this.form.name) {
+      if (!this.form.titol) {
         alert('Por favor, introduce un nombre para el hábito.');
         return;
       }
@@ -229,13 +247,14 @@ export default {
 
       // Create object to send to store
       var newHabit = {
-        name: this.form.name,
+        titol: this.form.titol,
         motivation: this.form.motivation,
         icon: this.form.icon,
         category: this.form.category,
-        frequency: this.form.frequency,
+        frequencia_tipus: this.form.frequencia_tipus,
+        dificultat: this.form.dificultat,
         reminder: this.form.reminder,
-        days: JSON.parse(JSON.stringify(this.form.selectedDays)), // Deep copy of array
+        dies_setmana: this.form.selectedDays.join(','), // Convert array to comma-separated string for Laravel
         color: this.form.color,
         createdAt: new Date()
       };
@@ -246,13 +265,18 @@ export default {
       // Reset form
       this.resetForm();
     },
+    deleteHabit: function(habitId) {
+      if (confirm('¿Estás seguro de que quieres borrar este hábito?')) {
+        this.habitStore.deleteHabit(habitId);
+      }
+    },
     resetForm: function() {
-      this.form.name = '';
+      this.form.titol = '';
       this.form.motivation = '';
       this.form.icon = '💧';
       this.form.category = '';
-      // Keep some defaults like frequency or days if UX prefers, or reset all
-      this.form.frequency = 'Diario';
+      this.form.frequencia_tipus = 'Diari';
+      this.form.dificultat = 'Fàcil';
       this.form.reminder = '08:00';
     }
   }

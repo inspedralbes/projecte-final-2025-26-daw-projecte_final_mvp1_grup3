@@ -6,7 +6,7 @@
 var redis = require('redis');
 
 var subscriber = null;
-var feedbackChannel = 'feedback_channel';
+var feedbackChannel = 'habits_feedback_channel';
 
 /**
  * Inicialitza la subscripció i connecta amb Socket.io.

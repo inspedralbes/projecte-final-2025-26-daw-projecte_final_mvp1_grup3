@@ -32,9 +32,19 @@ class User extends Model
         'nivell',
         'xp_total',
         'monedes',
+        'missio_diaria_id',
+        'missio_completada',
     ];
 
     //================================ MÈTODES / FUNCIONS ===========
+
+    /**
+     * Missió diària assignada a l'usuari.
+     */
+    public function missioDiaria(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(MissioDiaria::class, 'missio_diaria_id');
+    }
 
     /**
      * Logros i medalles obtinguts per l'usuari.

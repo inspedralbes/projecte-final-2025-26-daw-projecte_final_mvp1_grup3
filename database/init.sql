@@ -22,7 +22,9 @@ CREATE TABLE USUARIS (
     contrasenya_hash VARCHAR(255) NOT NULL,
     nivell INT DEFAULT 1,
     xp_total INT DEFAULT 0,
-    monedes INT DEFAULT 0
+    monedes INT DEFAULT 0,
+    missio_diaria_id INT, -- FK se añade después de crear la tabla de misiones
+    missio_completada BOOLEAN DEFAULT FALSE
 );
 
 -- 2. LOGROS Y MEDALLAS
@@ -34,6 +36,14 @@ CREATE TABLE LOGROS_MEDALLES (
     descripcio TEXT,
     tipus VARCHAR(50)
 );
+
+CREATE TABLE MISSIOS_DIARIES (
+    id SERIAL PRIMARY KEY,
+    titol VARCHAR(100) NOT NULL
+);
+
+-- Añadimos la FK a USUARIS ahora que existe la tabla de misiones
+ALTER TABLE USUARIS ADD CONSTRAINT fk_usuari_missio FOREIGN KEY (missio_diaria_id) REFERENCES MISSIOS_DIARIES(id) ON DELETE SET NULL;
 
 CREATE TABLE USUARIS_LOGROS (
     usuari_id INT REFERENCES USUARIS(id) ON DELETE CASCADE,

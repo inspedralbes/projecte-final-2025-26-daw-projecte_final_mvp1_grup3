@@ -43,50 +43,43 @@
 				</div>
 
 				<!-- Right: Test Quiz -->
-				<div class="grid grid-rows-5 gap-4 h-full">
+				<div class="grid grid-cols-2 gap-4 h-full">
 					<!-- Paso 1: Pregunta Maestra -->
 					<template v-if="selectedCategory === null">
-						<div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 shadow-sm flex flex-col items-center justify-center">
+						<div class="col-span-2 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 shadow-sm flex flex-col items-center justify-center">
 							<div class="text-xs font-bold text-gray-600 text-center">¿En qué área te vas a centrar?</div>
 						</div>
 						<div class="bg-white rounded-xl p-2 shadow-sm flex items-center justify-center cursor-pointer hover:bg-blue-50" @click="selectCategory('gym')">
-							<div class="text-xs font-medium text-gray-700">💪 Actividad Física</div>
+							<div class="text-xs font-medium text-gray-700">💪 Activitat física</div>
 						</div>
 						<div class="bg-white rounded-xl p-2 shadow-sm flex items-center justify-center cursor-pointer hover:bg-green-50" @click="selectCategory('nutrition')">
-							<div class="text-xs font-medium text-gray-700">🥗 Alimentación</div>
+							<div class="text-xs font-medium text-gray-700">🥗 Alimentació</div>
 						</div>
 						<div class="bg-white rounded-xl p-2 shadow-sm flex items-center justify-center cursor-pointer hover:bg-yellow-50" @click="selectCategory('study')">
-							<div class="text-xs font-medium text-gray-700">📚 Estudio</div>
+							<div class="text-xs font-medium text-gray-700">📚 Estudi</div>
 						</div>
 						<div class="bg-white rounded-xl p-2 shadow-sm flex items-center justify-center cursor-pointer hover:bg-purple-50" @click="selectCategory('reading')">
 							<div class="text-xs font-medium text-gray-700">📖 Lectura</div>
 						</div>
 						<div class="bg-white rounded-xl p-2 shadow-sm flex items-center justify-center cursor-pointer hover:bg-pink-50" @click="selectCategory('wellness')">
-							<div class="text-xs font-medium text-gray-700">🧘 Bienestar</div>
+							<div class="text-xs font-medium text-gray-700">🧘 Benestar</div>
+						</div>
+						<div class="bg-white rounded-xl p-2 shadow-sm flex items-center justify-center cursor-pointer hover:bg-red-50" @click="selectCategory('smoking')">
+							<div class="text-xs font-medium text-gray-700">🚭 Vida sense Fum</div>
+						</div>
+						<div class="bg-white rounded-xl p-2 shadow-sm flex items-center justify-center cursor-pointer hover:bg-indigo-50" @click="selectCategory('cleaning')">
+							<div class="text-xs font-medium text-gray-700">🏠 Neteja Express</div>
+						</div>
+						<div class="bg-white rounded-xl p-2 shadow-sm flex items-center justify-center cursor-pointer hover:bg-gray-50" @click="selectCategory('hobby')">
+							<div class="text-xs font-medium text-gray-700">🎨 Modelisme</div>
 						</div>
 					</template>
 
 					<!-- Paso 2: Preguntas de Profundización -->
 					<template v-else>
-						<div class="bg-white rounded-xl p-3 shadow-sm flex flex-col items-center justify-center overflow-hidden">
-							<div class="text-xs font-bold text-gray-600 text-center mb-2">Pregunta 1/5</div>
-							<div class="text-xs text-gray-700 text-center leading-tight">{{ getCurrentQuestions()[0] }}</div>
-						</div>
-						<div class="bg-white rounded-xl p-3 shadow-sm flex flex-col items-center justify-center overflow-hidden">
-							<div class="text-xs font-bold text-gray-600 text-center mb-2">Pregunta 2/5</div>
-							<div class="text-xs text-gray-700 text-center leading-tight">{{ getCurrentQuestions()[1] }}</div>
-						</div>
-						<div class="bg-white rounded-xl p-3 shadow-sm flex flex-col items-center justify-center overflow-hidden">
-							<div class="text-xs font-bold text-gray-600 text-center mb-2">Pregunta 3/5</div>
-							<div class="text-xs text-gray-700 text-center leading-tight">{{ getCurrentQuestions()[2] }}</div>
-						</div>
-						<div class="bg-white rounded-xl p-3 shadow-sm flex flex-col items-center justify-center overflow-hidden">
-							<div class="text-xs font-bold text-gray-600 text-center mb-2">Pregunta 4/5</div>
-							<div class="text-xs text-gray-700 text-center leading-tight">{{ getCurrentQuestions()[3] }}</div>
-						</div>
-						<div class="bg-white rounded-xl p-3 shadow-sm flex flex-col items-center justify-center overflow-hidden">
-							<div class="text-xs font-bold text-gray-600 text-center mb-2">Pregunta 5/5</div>
-							<div class="text-xs text-gray-700 text-center leading-tight">{{ getCurrentQuestions()[4] }}</div>
+						<div v-for="(pregunta, index) in getCurrentQuestions()" :key="pregunta.id" class="bg-white rounded-xl p-3 shadow-sm flex flex-col items-center justify-center overflow-hidden">
+							<div class="text-xs font-bold text-gray-600 text-center mb-2">Pregunta {{ index + 1 }}/{{ getCurrentQuestions().length }}</div>
+							<div class="text-xs text-gray-700 text-center leading-tight">{{ pregunta.pregunta }}</div>
 						</div>
 						<div class="col-span-full mt-2">
 							<button @click="selectCategory(null)" class="w-full bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium py-2 rounded-lg text-xs">VOLVER</button>
@@ -104,67 +97,34 @@ import { ref } from 'vue'
 definePageMeta({ layout: false })
 
 const selectedCategory = ref(null)
+const questions = ref([])
 
-const categories = {
-	gym: {
-		name: 'Gym Pro',
-		questions: [
-			'¿Entrenas actualmente en un gimnasio de forma regular?',
-			'¿Tu objetivo principal es ganar fuerza o masa muscular?',
-			'¿Tienes experiencia previa con el levantamiento de pesas?',
-			'¿Dispones de al menos 45 minutos tres veces por semana para entrenar?',
-			'¿Te gustaría recibir rutinas específicas de ejercicios compuestos?'
-		]
-	},
-	nutrition: {
-		name: 'Dieta Mediterránea',
-		questions: [
-			'¿Cocinas habitualmente tus propias comidas en casa?',
-			'¿Consumes frutas y verduras en casi todas tus comidas diarias?',
-			'¿Sueles utilizar aceite de oliva como grasa principal para cocinar?',
-			'¿Evitas habitualmente el consumo de bebidas azucaradas y refrescos?',
-			'¿Te gustaría planificar tus menús semanales para evitar comer cualquier cosa?'
-		]
-	},
-	study: {
-		name: 'Concentración Máxima',
-		questions: [
-			'¿Sueles estudiar o trabajar en un espacio libre de distracciones?',
-			'¿Utilizas alguna técnica de gestión del tiempo (como el método Pomodoro)?',
-			'¿Te cuesta arrancar cuando tienes una tarea compleja o larga por delante?',
-			'¿Utilizas un calendario o agenda para organizar tus exámenes o entregas?',
-			'¿Sientes que aprovechas bien tus horas de mayor energía durante el día?'
-		]
-	},
-	reading: {
-		name: 'Club de Lectura',
-		questions: [
-			'¿Lees habitualmente antes de dormir o mientras vas en transporte público?',
-			'¿Tienes una lista de libros pendientes que te gustaría empezar pronto?',
-			'¿Te marcas objetivos de páginas o capítulos diarios para avanzar?',
-			'¿Sueles dejar los libros a medias por falta de constancia o tiempo?',
-			'¿Te gusta anotar o subrayar las ideas que más te inspiran mientras lees?'
-		]
-	},
-	wellness: {
-		name: 'Mindfulness',
-		questions: [
-			'¿Dedicas al menos 5 minutos al día a respirar de forma consciente?',
-			'¿Sientes que puedes desconectar totalmente del trabajo al llegar a casa?',
-			'¿Practicas algún tipo de estiramiento o yoga de manera habitual?',
-			'¿Sueles identificar y analizar tus emociones cuando estás bajo estrés?',
-			'¿Priorizas tener un horario de sueño regular para descansar bien?'
-		]
-	}
+const categoryMap = {
+    'gym': 1,
+    'nutrition': 2,
+    'study': 3,
+    'reading': 4,
+    'wellness': 5,
+    'smoking': 6,
+    'cleaning': 7,
+    'hobby': 8
 }
 
-const selectCategory = (category) => {
-	selectedCategory.value = category
+const selectCategory = async (category) => {
+    selectedCategory.value = category
+    if (category) {
+        const categoryId = categoryMap[category]
+        const { data } = await useFetch(`http://localhost:8000/api/preguntes-registre/${categoryId}`)
+        if (data.value && data.value.preguntes) {
+            questions.value = data.value.preguntes
+        }
+    } else {
+        questions.value = []
+    }
 }
 
 const getCurrentQuestions = () => {
-	if (!selectedCategory.value) return []
-	return categories[selectedCategory.value]?.questions || []
+	return questions.value
 }
 </script>
 

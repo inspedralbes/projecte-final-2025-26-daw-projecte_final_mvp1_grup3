@@ -143,13 +143,13 @@
               <h2 class="text-lg font-bold text-gray-800">Els meus Hàbits</h2>
             </div>
             
-            <div v-if="magatzemHabits.habits?.length === 0" class="text-center py-10 text-gray-400">
+            <div v-if="magatzemHabits.llistaHabits?.length === 0" class="text-center py-10 text-gray-400">
               <p>Encara no tens hàbits.</p>
               <p class="text-sm">¡Afegeix-ne un de nou!</p>
             </div>
 
             <div v-else class="space-y-4">
-              <div v-for="habit in magatzemHabits.habits" :key="habit.id" class="flex items-center gap-4 p-4 rounded-xl bg-gray-50 hover:bg-white hover:shadow-md transition-all border border-transparent hover:border-gray-100 group">
+              <div v-for="habit in magatzemHabits.llistaHabits" :key="habit.id" class="flex items-center gap-4 p-4 rounded-xl bg-gray-50 hover:bg-white hover:shadow-md transition-all border border-transparent hover:border-gray-100 group">
                 <div :style="{ backgroundColor: habit.color || '#10B981' }" class="w-12 h-12 rounded-full flex items-center justify-center text-xl text-white shadow-sm">
                    {{ habit.icon }}
                 </div>
@@ -190,7 +190,7 @@ export default {
     var magatzemHabits = useHabitStore();
     
     // B. Activar el seguiment per sockets
-    magatzemHabits.initSocketListeners();
+    magatzemHabits.inicialitzarEscoltadorsSocket();
     
     return { magatzemHabits: magatzemHabits };
   },
@@ -289,7 +289,7 @@ export default {
       };
 
       // C. Cridar a l'acció del magatzem
-      self.magatzemHabits.addHabit(nouHabit);
+      self.magatzemHabits.afegirHabit(nouHabit);
 
       // D. Reiniciar el formulari
       self.reiniciarFormulari();
@@ -302,7 +302,7 @@ export default {
     eliminarHabit: function(idHabit) {
       var self = this;
       if (confirm('Estàs segur que vols esborrar aquest hàbit?')) {
-        self.magatzemHabits.deleteHabit(idHabit);
+        self.magatzemHabits.eliminarHabit(idHabit);
       }
     },
 

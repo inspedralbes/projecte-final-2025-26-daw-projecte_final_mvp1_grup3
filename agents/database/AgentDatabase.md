@@ -1,27 +1,37 @@
-# 🗄️ Agente de Capa de Datos (PostgreSQL & Laravel Models)
+# 🗄️ Agent de Capa de Dades (PostgreSQL & Laravel Models)
 
-## 📋 Contexto del Proyecto
-Este agente es el responsable de mantener la coherencia entre la base de datos **PostgreSQL 16** y los modelos de **Laravel 11**. La capa de datos es el corazón de "Loopy" y cualquier cambio aquí afecta tanto al worker de Redis como a la API REST.
+Aquest document defineix estrictament el comportament de l'agent per a la gestió de la base de dades i els models.
 
-## 🏗️ Estructura y Sincronización
-### SQL (init.sql)
-- El esquema se define en `database/init.sql`.
-- **IMPORTANTE**: Los nombres de tablas y columnas deben ser consistentes (actualmente se usa MAYÚSCULAS en el SQL).
+## 📋 Context del Projecte
+L'agent és l'expert en la **Capa de Dades (SQL)** i la **Capa de Models (Eloquent)**. El seu objectiu és garantir la coherència entre PostgreSQL 16 i Laravel 11, assegurant que les operacions de lectura i escriptura respectin la configuració del sistema.
 
-### Modelos Laravel (app/Models)
-- Cada tabla debe tener su modelo correspondiente en Laravel.
-- Los modelos deben definir explícitamente `$table` si el nombre de la tabla no sigue la convención de plural en inglés de Laravel (ej: `protected $table = 'USUARIS';`).
-- Desactivar `$timestamps` si la tabla no tiene `created_at` y `updated_at`.
+## 🏗️ Estructura i Sincronització
+- **Actualització Directa de SQL:** Quan es demani crear una taula o canviar l'estructura, l'agent **HA D'ACTUALITZAR** directament el fitxer `database/init.sql`.
+- **Noms en SQL:** Els noms de taules i columnes han de ser consistents (actualment s'usa MAJORÚSCULES al SQL).
+- **Prohibit Generar Migracions:** L'agent té prohibit proposar, crear o modificar fitxers a `backend-laravel/database/migrations/`.
+- **Inserció de Dades:** Si la tasca implica dades inicials, l'agent ha d'afegir els `INSERT` corresponents a `database/insert.sql`.
 
-## ⚠️ Reglas Críticas: Acentos y Caracteres Especiales
+## ⚠️ Regles Crítiques: Accents i Caràcters Especials
 > [!WARNING]
-> **PROHIBIDO EL USO DE ACENTOS Y "Ñ"**: Los acentos y caracteres especiales en la base de datos (nombres de tablas, columnas o incluso datos de configuración inicial) provocan errores de codificación y comportamientos inesperados en las consultas.
+> **PROHIBIT L'ÚS D'ACCENTS I "Ñ"**: Els accents i caràcters especials en la base de dades provoquen errors de codificació i comportaments inesperats.
 
-- **Nombres de Tablas/Columnas**: Usar siempre ASCII estándar (ej: `RATXES` en lugar de `RACHAS`, `frequencia` en lugar de `frecuencia`).
-- **Datos en SQL**: Evitar acentos en los `INSERT` iniciales del archivo `insert.sql`.
-- **Modelos**: Asegurar que las propiedades `$fillable` coincidan exactamente con los nombres sin acento de la base de datos.
+- **Dades en SQL:** Evitar accents en els `INSERT` inicials i en els noms de columnes/taules (ex: `RATXES` en lloc de `RACHAS`).
+- **PostgreSQL i Diacrítics:** Recorda que "À" != "A". Utilitza `unaccent()` o `ILIKE` si cal fer cerques sensibles.
 
-## 🛠️ Tareas del Agente
-1. **Doble Validación**: Al modificar una tabla, verificar automáticamente si el modelo de Laravel necesita actualizarse.
-2. **Control de Caracteres**: Escanear cualquier nueva migración o script SQL en busca de acentos o caracteres no ASCII.
-3. **Mantenimiento**: Asegurar que las relaciones (Foreign Keys) estén correctamente definidas en Eloquent (`belongsTo`, `hasMany`).
+## 🛠️ Context Obligatori: app/Models/
+- **Models Laravel:** Cada taula ha de tenir el seu model a `app/Models/`.
+- **Configuració Manual:** Defineix explícitament `$table` si el nom no és l'estàndard de Laravel i desactiva `$timestamps` si no existeixen les columnes `created_at/updated_at`.
+- **Anàlisi previa:** Abans de qualezvol resposta, analitza el fitxer a `app/Models/[NomDelModel].php` per verificar relacions (`belongsTo`, `hasMany`), `casts` i `SoftDeletes`.
+
+## 📜 Estructura de Codi (PHP)
+S'ha de seguir aquest esquema de blocs per a qualezvol proposta de codi PHP als models:
+
+```php
+//================================ NAMESPACES / IMPORTS ============
+
+//================================ PROPIETATS / ATRIBUTS ==========
+
+//================================ MÈTODES / FUNCIONS ===========
+
+//================================ RELACIONS ELOQUENT ===========
+```

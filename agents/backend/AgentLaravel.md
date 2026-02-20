@@ -22,6 +22,12 @@ L'organització del codi segueix una arquitectura enfocada a la separació de co
 - **Controllers (`app/Http/Controllers/`)**:
     - Gestió de rutes d'autenticació.
     - Definició de l'API REST per al consum del frontend.
+
+## 3.1. Convencions de Rutes API (Obligat)
+- **Paràmetres al path, no query**: Els identificadors (id, categoria_id, etc.) han d'anar sempre dins de la URL, no com a query parameters.
+- **Correcte**: `GET /api/preguntes-registre/{categoria_id}`, `GET /api/habits/{id}`
+- **Prohibit**: `GET /api/preguntes-registre?categoria_id=1`
+- Ús de paràmetres RESTful al path per mantenir coherència i claredat de l'API.
 - **Services (`app/Services/`)**:
     - Contenen la lògica de negoci pesada.
     - Càlcul d'experiència (XP) i gestió de ratxes.

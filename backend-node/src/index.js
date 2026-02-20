@@ -7,6 +7,7 @@ var http = require('http');
 var socketIo = require('socket.io');
 var socketHandler = require('./socketHandler');
 var feedbackSubscriber = require('./subscribers/feedbackSubscriber');
+var jwtAuth = require('./middleware/jwtAuth');
 
 var PORT = process.env.PORT || 3001;
 
@@ -23,6 +24,9 @@ var io = new socketIo.Server(server, {
     methods: ['GET', 'POST']
   }
 });
+
+// Aplicar middleware d'autenticació
+io.use(jwtAuth);
 
 /**
  * Funció d'arrencada orquestrada.

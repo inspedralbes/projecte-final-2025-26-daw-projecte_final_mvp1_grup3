@@ -42,6 +42,7 @@ Aquestes regles són **NO NEGOCIABLES**:
     - Totes les funcions han de tenir comentaris explicatius.
     - Els comentaris han de ser en **català**.
     - Estructura pas a pas dins de funcions complexes: `// A. Validar...`, `// B. Processar...`.
+    - NO EMOJIS!
 
 ## 4. Exemple Correcte vs Incorrecte
 

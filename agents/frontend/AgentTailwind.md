@@ -9,6 +9,7 @@ Garantir la coherència visual, l'ús correcte de les classes d'utilitat i la im
 - **Framework**: Tailwind CSS 3.4.1.
 - **Fitxer principal**: `assets/css/main.css` (on s'importen les directives `@tailwind`).
 - **Config**: `tailwind.config.js` per a extensions de tema (colors personalitzats, fonts).
+- NO EMOJIS!
 
 ## 3. Sistema de Disseny: Bento Grid
 La interfície s'ha de pensar com una graella de caixes (cel·les) independents.

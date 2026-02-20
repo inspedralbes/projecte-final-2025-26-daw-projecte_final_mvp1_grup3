@@ -79,10 +79,26 @@
 					<template v-else>
 						<div v-for="(pregunta, index) in getCurrentQuestions()" :key="pregunta.id" class="bg-white rounded-xl p-3 shadow-sm flex flex-col items-center justify-center overflow-hidden">
 							<div class="text-xs font-bold text-gray-600 text-center mb-2">Pregunta {{ index + 1 }}/{{ getCurrentQuestions().length }}</div>
-							<div class="text-xs text-gray-700 text-center leading-tight">{{ pregunta.pregunta }}</div>
+							<div class="text-xs text-gray-700 text-center leading-tight mb-3">{{ pregunta.pregunta }}</div>
+							<div class="flex gap-2">
+								<!-- Botones de respuesta condicionales -->
+								<template v-if="pregunta.pregunta.includes('força o massa muscular')">
+									<button @click="respondre(pregunta.id, 'forza')" :class="['px-3 py-1 text-xs rounded-md', respostes[pregunta.id] === 'forza' ? 'bg-blue-500 text-white' : 'bg-gray-200']">Força</button>
+									<button @click="respondre(pregunta.id, 'massa_muscular')" :class="['px-3 py-1 text-xs rounded-md', respostes[pregunta.id] === 'massa_muscular' ? 'bg-blue-500 text-white' : 'bg-gray-200']">Massa Muscular</button>
+								</template>
+								<template v-else-if="pregunta.pregunta.includes('ansietat o per compromís social')">
+									<button @click="respondre(pregunta.id, 'ansietat')" :class="['px-3 py-1 text-xs rounded-md', respostes[pregunta.id] === 'ansietat' ? 'bg-blue-500 text-white' : 'bg-gray-200']">Per Ansietat</button>
+									<button @click="respondre(pregunta.id, 'compromis')" :class="['px-3 py-1 text-xs rounded-md', respostes[pregunta.id] === 'compromis' ? 'bg-blue-500 text-white' : 'bg-gray-200']">Per Compromís</button>
+								</template>
+								<template v-else>
+									<button @click="respondre(pregunta.id, 'si')" :class="['px-3 py-1 text-xs rounded-md', respostes[pregunta.id] === 'si' ? 'bg-blue-500 text-white' : 'bg-gray-200']">Sí</button>
+									<button @click="respondre(pregunta.id, 'no')" :class="['px-3 py-1 text-xs rounded-md', respostes[pregunta.id] === 'no' ? 'bg-blue-500 text-white' : 'bg-gray-200']">No</button>
+								</template>
+							</div>
 						</div>
-						<div class="col-span-full mt-2">
-							<button @click="selectCategory(null)" class="w-full bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium py-2 rounded-lg text-xs">VOLVER</button>
+						<div class="col-span-full mt-2 grid grid-cols-2 gap-2">
+							<button @click="selectCategory(null)" class="w-full bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium py-2 rounded-lg text-xs">TORNAR</button>
+							<button @click="finalitzarTest" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 rounded-lg text-xs">FINALITZAR</button>
 						</div>
 					</template>
 				</div>
@@ -98,6 +114,7 @@ definePageMeta({ layout: false })
 
 const selectedCategory = ref(null)
 const questions = ref([])
+const respostes = ref({})
 
 const categoryMap = {
     'gym': 1,
@@ -119,16 +136,45 @@ const selectCategory = async (category) => {
             questions.value = data.value.preguntes
         }
     } else {
+		// Netejar respostes en tornar
         questions.value = []
+		respostes.value = {}
     }
 }
 
 const getCurrentQuestions = () => {
 	return questions.value
 }
+
+const respondre = (preguntaId, resposta) => {
+	respostes.value[preguntaId] = resposta
+}
+
+const finalitzarTest = () => {
+	// Aquí es faria un INSERT a la base de dades amb les respostes.
+	// De moment, només les mostrem a la consola.
+	console.log('Respostes a enviar:', JSON.stringify(respostes.value))
+	alert('Test finalitzat! Revisa la consola per veure les teves respostes.')
+	
+	// Tornem a la selecció de categoria
+	selectedCategory.value = null
+	questions.value = []
+	respostes.value = {}
+}
 </script>
 
 <style scoped>
 /* Pequeños ajustes para simular las sombras y el espaciado del diseño */
 .shadow-inner { box-shadow: 0 8px 30px rgba(16,24,40,0.06); }
+
+/* Estils per als botons de resposta seleccionats */
+.bg-blue-500 {
+	background-color: #3b82f6;
+}
+.text-white {
+	color: #ffffff;
+}
+.bg-gray-200 {
+	background-color: #e5e7eb;
+}
 </style>

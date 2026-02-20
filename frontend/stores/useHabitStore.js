@@ -1,8 +1,7 @@
 import { defineStore } from 'pinia';
 import { io } from 'socket.io-client';
 
-// Connexió amb el Backend Node.js (Signaling Server)
-// Ajustar la URL segons el teu entorn (ex: http://localhost:3001 o ruta relativa si hi ha proxy)
+// Connexió amb el Backend Node.js
 var socket = io('http://localhost:3001', {
   transports: ['websocket', 'polling']
 });
@@ -10,81 +9,136 @@ var socket = io('http://localhost:3001', {
 export const useHabitStore = defineStore('habit', {
   state: function () {
     return {
-      llista_habits: [],
+      habits: [],
+      lastSnapshot: null, // Per al rollback en cas d'error del servidor
       loading: false,
       error: null
     };
   },
   actions: {
-    // Inicialitzar els listeners del socket per rebre actualitzacions del servidor
     initSocketListeners: function () {
       var self = this;
-      
-      // Escolta per errors de validació des de Node.js
+      console.log('Iniciant initSocketListeners...');
+
       socket.on('validation_error', function (data) {
         console.error('Error de validació rebut:', data);
-        // Aquí podríem revertir l'estat si tinguéssim accés a la snapshot global o específica
-        // Per simplicitat, podríem recarregar o notificar l'usuari
         self.error = data.message || 'Error de validació';
       });
 
-      // Escolta per actualitzacions confirmades des de Laravel via Node (Redis Pub/Sub -> Socket)
       socket.on('update_xp', function (data) {
+        console.log('Update XP rebut:', data);
         self.actualitzarEstatLocal(data);
+      });
+
+      socket.on('habit_action_confirmed', function (data) {
+        console.log('Acció confirmada pel servidor:', data);
+        if (data.success) {
+          // Si tot ha anat bé, esborrem el snapshot de seguretat
+          self.lastSnapshot = null;
+          console.log('Operació confirmada amb èxit');
+        } else {
+          // B. En cas d'error, ROOLBACK segons AgentFluxGlobal.md
+          console.error('L\'operació ha fallat al servidor. Aplicant Rollback.');
+          if (self.lastSnapshot) {
+            self.habits = self.lastSnapshot;
+            self.lastSnapshot = null;
+          }
+          self.error = "Error al sincronitzar amb el servidor";
+        }
       });
     },
 
     marcarHabit: function (habitId) {
-      // 1. Snapshot: Crear còpia de seguretat per Rollback
-      var snapshot = JSON.parse(JSON.stringify(this.llista_habits));
+      console.log('Marcant hàbit:', habitId);
+      var snapshot = JSON.parse(JSON.stringify(this.habits));
       var self = this;
       var habitTrobat = false;
 
-      // 2. Mutació Optimista: Actualitzar la UI immediatament
       try {
-        for (var i = 0; i < self.llista_habits.length; i++) {
-          if (self.llista_habits[i].id === habitId) {
-            // Canviar l'estat de completat (toggle)
-            self.llista_habits[i].completat = !self.llista_habits[i].completat;
+        for (var i = 0; i < self.habits.length; i++) {
+          if (self.habits[i].id === habitId) {
+            self.habits[i].completat = !self.habits[i].completat;
             habitTrobat = true;
             break;
           }
         }
 
-        if (!habitTrobat) {
-          throw new Error('Hàbit no trobat');
-        }
+        if (!habitTrobat) throw new Error('Hàbit no trobat');
 
-        // 3. Comunicació: Enviar acció al Backend Node
-        // Aquest esdeveniment enviarà la tasca a la Redis Queue per a Laravel
-        socket.emit('mark_habit', { 
-            habit_id: habitId, 
-            timestamp: Date.now() 
-            // En un entorn real, s'enviaria també el JWT token si no s'ha fet al handshake
+        socket.emit('habit_action', {
+          action: 'TOGGLE',
+          habit_id: habitId,
+          timestamp: Date.now()
         });
 
       } catch (e) {
-        // 4. Restauració (Rollback) en cas d'error local
         console.error('Error local al marcar hàbit:', e);
         self.error = e.message;
-        self.llista_habits = snapshot;
+        self.habits = snapshot;
+      }
+    },
+
+    addHabit: function (newHabit) {
+      console.log('Afegint nou hàbit (addHabit inicialitzat):', newHabit);
+      var snapshot = JSON.parse(JSON.stringify(this.habits));
+      var self = this;
+
+      try {
+        // Mutació Optimista
+        var tempHabit = JSON.parse(JSON.stringify(newHabit));
+        tempHabit.id = 'temp-' + Date.now();
+        self.habits.push(tempHabit);
+
+        // Enviem al backend
+        socket.emit('habit_action', {
+          action: 'CREATE',
+          habit_data: newHabit
+        });
+        console.log('Event CREATE enviat al socket');
+
+      } catch (e) {
+        console.error('Error al afegir hàbit:', e);
+        self.habits = snapshot;
+      }
+    },
+
+    deleteHabit: function (habitId) {
+      console.log('Borrant hàbit:', habitId);
+      // A. Snapshot: Guardem l'estat actual abans de modificar
+      var snapshot = JSON.parse(JSON.stringify(this.habits));
+      this.lastSnapshot = snapshot;
+      var self = this;
+      var novaLlista = [];
+
+      try {
+        // B. Mutació Optimista: Eliminem localment de seguida
+        for (var i = 0; i < self.habits.length; i++) {
+          if (self.habits[i].id !== habitId) {
+            novaLlista.push(self.habits[i]);
+          }
+        }
+        self.habits = novaLlista;
+
+        // C. Bridge: Enviem l'event al backend Node.js
+        socket.emit('habit_action', {
+          action: 'DELETE',
+          habit_id: habitId
+        });
+        console.log('Event DELETE enviat al socket');
+
+      } catch (e) {
+        console.error('Error local al borrar hàbit:', e);
+        self.error = 'No s\'ha pogut borrar l\'hàbit localment';
+        self.habits = snapshot;
+        self.lastSnapshot = null;
       }
     },
 
     actualitzarEstatLocal: function (dades) {
-      // Aquesta funció es crida quan arriba la confirmació del servidor (Socket)
-      // dades pot contenir el nou XP, monedes, o l'estat final de l'hàbit
       var self = this;
-      
-      // Exemple: Si rebem la llista actualitzada o canvis específics
-      // En aquest cas, suposem que rebem informació per actualitzar l'hàbit o l'usuari
-      // Si dades inclou 'habits', actualitzem la llista
       if (dades && dades.habits) {
-        self.llista_habits = dades.habits;
+        self.habits = dades.habits;
       }
-      
-      // Nota: L'actualització d'XP i Monedes aniria al useUserStore,
-      // però si la resposta inclou canvis en l'hàbit, els apliquem aquí.
     }
   }
 });

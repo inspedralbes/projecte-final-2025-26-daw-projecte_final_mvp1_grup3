@@ -4,6 +4,11 @@ import { useRollback } from '~/composables/useRollback'
 
 const TIMEOUT_MS = 5000
 const XP_BASE = 10
+const XP_PER_DIFICULTAT = {
+  facil: 100,
+  media: 250,
+  dificil: 400
+}
 
 export const useGameStore = defineStore('game', () => {
   const userId = ref(null)
@@ -36,23 +41,29 @@ export const useGameStore = defineStore('game', () => {
       habitos: habitos.value.map(h => ({ ...h }))
     })
 
-    // Mutación inmediata
+    // Mutación inmediata (solo UI, la lógica de XP/racha es del backend)
     habit.completado = true
-    xpTotal.value += habit.xpReward
-    racha.value += 1
 
     return new Promise((resolve) => {
       const handleResponse = (response) => {
-        socket.off('habit_completed_response', handleResponse)
+        socket.off('update_xp', handleResponse)
         clearTimeout(timeoutId)
 
         // Validar respuesta del backend
-        if (response && response.xp !== undefined && response.racha !== undefined) {
+        if (response && response.xp_total !== undefined && response.ratxa_actual !== undefined) {
           // Actualizar con datos reales del backend
-          xpTotal.value = response.xp
-          racha.value = response.racha
+          xpTotal.value = response.xp_total
+          racha.value = response.ratxa_actual
           commitSnapshot(snapshotId)
-          resolve(true)
+
+          // Refrescar estado desde backend (fuente de verdad)
+          fetchGameState()
+            .then(function () {
+              resolve(true)
+            })
+            .catch(function () {
+              resolve(true)
+            })
         } else {
           // Error en respuesta, hacer rollback
           _restoreState(snapshotId)
@@ -62,7 +73,7 @@ export const useGameStore = defineStore('game', () => {
       }
 
       const timeoutId = setTimeout(() => {
-        socket.off('habit_completed_response', handleResponse)
+        socket.off('update_xp', handleResponse)
         // Timeout, hacer rollback
         _restoreState(snapshotId)
         commitSnapshot(snapshotId)
@@ -70,13 +81,13 @@ export const useGameStore = defineStore('game', () => {
       }, TIMEOUT_MS)
 
       // Escuchar respuesta del backend
-      socket.on('habit_completed_response', handleResponse)
+      socket.on('update_xp', handleResponse)
 
       // Emitir evento al backend
       socket.emit('habit_completed', {
-        userId: userId.value,
-        habitId: habitId,
-        timestamp: new Date().toISOString()
+        user_id: userId.value,
+        habit_id: habitId,
+        data: new Date().toISOString()
       })
     })
   }
@@ -117,7 +128,7 @@ export const useGameStore = defineStore('game', () => {
         nombre: habit.titol || 'Sin nombre',
         descripcion: `${habit.frequencia_tipus} - Dificultad: ${habit.dificultat}` || '',
         completado: false,
-        xpReward: XP_BASE,
+        xpReward: XP_PER_DIFICULTAT[habit.dificultat] || XP_BASE,
         usuari_id: habit.usuari_id,
         plantilla_id: habit.plantilla_id,
         dificultat: habit.dificultat,
@@ -135,6 +146,27 @@ export const useGameStore = defineStore('game', () => {
     }
   }
 
+  const fetchGameState = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/api/game-state')
+      if (!response.ok) {
+        throw new Error(`Error al obtener game-state: ${response.status}`)
+      }
+      const data = await response.json()
+
+      if (data && data.xp_total !== undefined) {
+        xpTotal.value = data.xp_total
+      }
+      if (data && data.ratxa_actual !== undefined) {
+        racha.value = data.ratxa_actual
+      }
+      return data
+    } catch (error) {
+      console.error('❌ Error fetching game-state:', error)
+      return null
+    }
+  }
+
   return {
     userId,
     racha,
@@ -146,6 +178,7 @@ export const useGameStore = defineStore('game', () => {
     updateXP,
     setUserId,
     setNivel,
-    fetchHabitos
+    fetchHabitos,
+    fetchGameState
   }
 })

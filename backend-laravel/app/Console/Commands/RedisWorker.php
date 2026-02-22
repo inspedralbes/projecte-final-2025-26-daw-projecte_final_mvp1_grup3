@@ -45,9 +45,9 @@ class RedisWorker extends Command
     private const COLA_HABITS = 'habits_queue';
 
     /**
-     * Timeout per brpop: 0 = bloqueig indefinit.
+     * Timeout per brpop (segons). Evita connexions bloquejants indefinides que poden ser tancades per Redis.
      */
-    private const TIMEOUT_BRPOP = 0;
+    private const TIMEOUT_BRPOP = 30;
 
     //================================ MÈTODES / FUNCIONS ===========
 
@@ -69,8 +69,17 @@ class RedisWorker extends Command
         $this->info('Worker Redis iniciat. Escoltant la cua «' . self::COLA_HABITS . '»...');
 
         while (true) {
-            // A. brpop bloqueja fins que arribi un element o es faci timeout
-            $resultat = Redis::command('brpop', [self::COLA_HABITS, self::TIMEOUT_BRPOP]);
+            try {
+                // A. brpop bloqueja fins que arribi un element o es faci timeout
+                $resultat = Redis::command('brpop', [self::COLA_HABITS, self::TIMEOUT_BRPOP]);
+            } catch (\Throwable $e) {
+                Log::warning('RedisWorker: error Redis, es reintentarà', [
+                    'error' => $e->getMessage(),
+                    'class' => get_class($e),
+                ]);
+                sleep(2);
+                continue;
+            }
 
             // B. Si no hi ha resultat (timeout o error), continuar el bucle
             if (empty($resultat) || ! is_array($resultat)) {

@@ -25,6 +25,23 @@ const xpTotal = computed(() => gameStore.xpTotal)
 const habitos = computed(() => gameStore.habitos)
 const userId = computed(() => gameStore.userId)
 
+// XP por dificultad (solo visual)
+const xpPerDificultat = {
+  facil: 100,
+  media: 250,
+  dificil: 400
+}
+
+const xpPerHabit = (habito) => {
+  if (habito && habito.dificultat && xpPerDificultat[habito.dificultat]) {
+    return xpPerDificultat[habito.dificultat]
+  }
+  if (habito && habito.xpReward !== undefined) {
+    return habito.xpReward
+  }
+  return 0
+}
+
 // Inicializar socket
 onMounted(async () => {
   // TODO: Obtener userId de autenticación
@@ -34,6 +51,7 @@ onMounted(async () => {
   isLoadingHabitos.value = true
   try {
     await gameStore.fetchHabitos()
+    await gameStore.fetchGameState()
     console.log('✅ Hábitos cargados:', gameStore.habitos)
   } catch (error) {
     console.error('❌ Error cargando hábitos:', error)
@@ -54,16 +72,15 @@ onMounted(async () => {
     console.log('✅ Conectado al servidor de sockets:', socket.id)
   })
 
-  // Escuchar actualizaciones de racha desde el backend
-  socket.on('racha_actualizada', (data) => {
-    console.log('📊 Racha actualizada:', data)
-    gameStore.updateRacha(data.racha)
-  })
-
-  // Escuchar XP ganada desde el backend
-  socket.on('xp_ganada', (data) => {
-    console.log('⭐ XP ganada:', data)
-    gameStore.updateXP(data.xp)
+  // Escuchar feedback unificado desde el backend (Redis -> Node)
+  socket.on('update_xp', (data) => {
+    console.log('⭐ Feedback gamificación:', data)
+    if (data && data.ratxa_actual !== undefined) {
+      gameStore.updateRacha(data.ratxa_actual)
+    }
+    if (data && data.xp_total !== undefined) {
+      gameStore.updateXP(data.xp_total)
+    }
   })
 
   socket.on('disconnect', () => {
@@ -238,7 +255,7 @@ const completarHabito = async (habitoId) => {
               <div v-for="habito in habitos" :key="habito.id" class="bg-white rounded-lg p-4 shadow flex items-center justify-between">
                 <div>
                   <p class="font-semibold text-gray-800">{{ habito.nombre }}</p>
-                  <p class="text-xs text-gray-500">{{ habito.descripcion }} • +{{ habito.xpReward }} XP</p>
+                  <p class="text-xs text-gray-500">{{ habito.descripcion }} • +{{ xpPerHabit(habito) }} XP</p>
                   <p v-if="habito.completado" class="text-xs text-green-600 font-semibold">✓ Completado</p>
                 </div>
                 <button 

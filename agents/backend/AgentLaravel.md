@@ -26,6 +26,7 @@ L'agent ha de respectar estrictament les següents versions i protocols:
 - **Seguretat**: Únic `Issuer` de JWT. S'utilitza una clau secreta compartida (`JWT_SECRET`) per a la validació local.
 - **Comunicació Asíncrona**: Ús de Redis 7.2.4 com a bus de dades (Bridge) per a la sincronització amb el backend de Node.js.
 - **Condicionals**: No utilitzis operadors ternaris, utilitza els classics if i elses o bucles whiles o for/foreach.
+- **Prohibició global**: Cap fitxer de `backend-laravel` pot contenir operadors ternaris.
 
 ## 4. Estructura de Fitxers i Responsabilitats
 

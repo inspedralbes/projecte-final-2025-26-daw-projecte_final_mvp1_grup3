@@ -4,6 +4,7 @@
  * Gestor d'esdeveniments de Socket.io.
  */
 var habitQueue = require('./queues/habitQueue');
+var plantillaQueue = require('./queues/plantillaQueue');
 
 /**
  * Defineix la lògica de recepció de missatges dels clients.
@@ -19,6 +20,16 @@ function init(io) {
                 await habitQueue.pushToLaravel(payload.action, userId, payload);
             } catch (error) {
                 console.error('Error gestionant habit_action:', error);
+            }
+        });
+
+        socket.on('plantilla_action', async function (payload) {
+            try {
+                var userId = socket.decoded_token.user_id; // O socket.user.id segons el teu JWT
+                socket.join('user_' + userId);
+                await plantillaQueue.pushToLaravel(payload.action, userId, payload);
+            } catch (error) {
+                console.error('Error gestionant plantilla_action:', error);
             }
         });
 

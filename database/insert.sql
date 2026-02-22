@@ -112,6 +112,7 @@ SELECT id, true, 10 FROM HABITS;
 
 -- 6. RATXES
 INSERT INTO RATXES (usuari_id, ratxa_actual, ratxa_maxima, ultima_data)
+VALUES (1, 0, 0, CURRENT_TIMESTAMP);
 
 -- 7. CATEGORIES (PAS 1)
 -- ----------------------------------------------------------

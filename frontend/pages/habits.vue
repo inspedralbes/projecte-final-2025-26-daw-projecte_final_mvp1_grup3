@@ -257,7 +257,8 @@
               <div
                 v-for="habit in habitStore.habits"
                 :key="habit.id"
-                class="flex items-center gap-4 p-4 rounded-xl bg-gray-50 hover:bg-white hover:shadow-md transition-all border border-transparent hover:border-gray-100 group"
+                class="flex items-center gap-4 p-4 rounded-xl bg-gray-50 hover:bg-white hover:shadow-md transition-all border border-transparent hover:border-gray-100 group cursor-pointer"
+                @click="openEditModal(habit)"
               >
                 <div
                   :style="{ backgroundColor: habit.color || '#10B981' }"
@@ -276,7 +277,7 @@
                 </div>
                 <button
                   class="text-xs text-red-600 hover:text-red-700 font-semibold px-2 py-1 rounded border border-red-200 hover:border-red-300 transition-colors"
-                  @click="deleteHabit(habit.id)"
+                  @click.stop="deleteHabit(habit.id)"
                 >
                   Borrar
                 </button>
@@ -291,6 +292,103 @@
               </button>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Habit Modal -->
+    <div v-if="isEditModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="closeEditModal"></div>
+      
+      <div class="bg-white rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl relative animate-in fade-in zoom-in duration-200">
+        <div class="p-6 border-b border-gray-100 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div :style="{ backgroundColor: formEdit.color }" class="w-10 h-10 rounded-xl flex items-center justify-center text-xl text-white">
+              {{ formEdit.icon }}
+            </div>
+            <h2 class="text-xl font-bold text-gray-800">Editar Hábito</h2>
+          </div>
+          <button @click="closeEditModal" class="text-gray-400 hover:text-gray-600">
+            <span class="text-2xl">×</span>
+          </button>
+        </div>
+
+        <div class="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
+          <!-- Name -->
+          <div>
+            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Nombre del hábito</label>
+            <input v-model="formEdit.name" type="text" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500" />
+          </div>
+
+          <!-- Icon Selection -->
+          <div>
+            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Cambiar Icono</label>
+            <div class="flex gap-2 flex-wrap">
+              <button v-for="icon in icons" :key="icon" @click="formEdit.icon = icon"
+                :class="formEdit.icon === icon ? 'bg-green-500 text-white' : 'bg-gray-100'"
+                class="w-10 h-10 rounded-full flex items-center justify-center transition-colors">
+                {{ icon }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Category -->
+          <div>
+             <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Categoría</label>
+             <div class="grid grid-cols-2 gap-3">
+               <button v-for="cat in categories" :key="cat.id" @click="formEdit.category = cat.id"
+                 :class="formEdit.category === cat.id ? 'ring-2 ring-green-500 bg-green-50' : 'bg-white border border-gray-200'"
+                 class="p-3 rounded-xl flex items-center gap-3 transition-all">
+                 <span>{{ cat.icon }}</span>
+                 <span class="text-sm font-medium">{{ cat.name }}</span>
+               </button>
+             </div>
+          </div>
+
+          <!-- Frequency & Days -->
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Frecuencia</label>
+              <select v-model="formEdit.frequency" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm">
+                <option v-for="freq in frequencies" :key="freq">{{ freq }}</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Recordatorio</label>
+              <input v-model="formEdit.reminder" type="time" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+            </div>
+          </div>
+
+          <div>
+             <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Días Objetivo</label>
+             <div class="flex justify-between">
+               <button v-for="(day, index) in days" :key="day" @click="toggleEditDay(index)"
+                 :class="formEdit.selectedDays.indexOf(index) !== -1 ? 'bg-green-600 text-white' : 'bg-gray-200'"
+                 class="w-8 h-8 rounded-full text-xs font-bold flex items-center justify-center transition-colors">
+                 {{ day }}
+               </button>
+             </div>
+          </div>
+
+          <!-- Color Selection -->
+          <div>
+            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Color</label>
+            <div class="flex gap-3">
+              <button v-for="color in colors" :key="color" @click="formEdit.color = color"
+                :style="{ backgroundColor: color }"
+                :class="formEdit.color === color ? 'ring-2 ring-gray-400' : 'ring-transparent'"
+                class="w-8 h-8 rounded-full transition-transform hover:scale-110 ring-offset-2"></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-6 bg-gray-50 border-t border-gray-100 flex gap-3">
+          <button @click="closeEditModal" class="flex-1 px-4 py-3 bg-white border border-gray-200 text-gray-600 font-bold rounded-xl hover:bg-gray-100 transition-colors">
+            Cancelar
+          </button>
+          <button @click="updateHabit" class="flex-1 px-4 py-3 bg-green-700 text-white font-bold rounded-xl hover:bg-green-800 shadow-lg shadow-green-700/20 transition-all">
+            Guardar Cambios
+          </button>
         </div>
       </div>
     </div>
@@ -319,6 +417,18 @@ export default {
         frequency: "Diario",
         reminder: "08:00",
         selectedDays: [0, 1, 2, 3, 4], // Default Mon-Fri
+        color: "#10B981",
+      },
+      isEditModalOpen: false,
+      editingHabitId: null,
+      formEdit: {
+        name: "",
+        motivation: "",
+        icon: "💧",
+        category: "",
+        frequency: "Diario",
+        reminder: "08:00",
+        selectedDays: [],
         color: "#10B981",
       },
       icons: ["💧", "📖", "🏃", "🧘", "🚭", "🥗", "💊", "💤"],
@@ -485,6 +595,75 @@ export default {
       // Keep some defaults like frequency or days if UX prefers, or reset all
       this.form.frequency = "Diario";
       this.form.reminder = "08:00";
+    },
+    openEditModal: function (habit) {
+      console.log("🛠️ Abriendo modal para hábito:", habit.name);
+      this.editingHabitId = habit.id;
+      this.formEdit.name = habit.name;
+      this.formEdit.icon = habit.icon;
+      this.formEdit.category = habit.category;
+      this.formEdit.frequency = habit.frequency;
+      this.formEdit.reminder = habit.reminder || "08:00";
+      this.formEdit.color = habit.color || "#10B981";
+
+      // Reconstruct selectedDays from backend format (optional but good for UI consistency)
+      this.formEdit.selectedDays = [0, 1, 2, 3, 4]; // Default if not provided
+      this.isEditModalOpen = true;
+    },
+    closeEditModal: function () {
+      this.isEditModalOpen = false;
+      this.editingHabitId = null;
+    },
+    toggleEditDay: function (index) {
+      var pos = this.formEdit.selectedDays.indexOf(index);
+      if (pos === -1) {
+        this.formEdit.selectedDays.push(index);
+      } else {
+        this.formEdit.selectedDays.splice(pos, 1);
+      }
+    },
+    updateHabit: function () {
+      if (!this.formEdit.name) {
+        alert("Por favor, introduce un nombre.");
+        return;
+      }
+
+      if (!this.socket) {
+        alert("Socket no disponible");
+        return;
+      }
+
+      var frequencia = "diaria";
+      if (this.formEdit.frequency === "Semanal") {
+        frequencia = "semanal";
+      } else if (this.formEdit.frequency === "Mensual") {
+        frequencia = "mensual";
+      }
+
+      var dies = [];
+      for (var i = 0; i < this.formEdit.selectedDays.length; i++) {
+        dies.push(this.formEdit.selectedDays[i] + 1);
+      }
+
+      var updatedData = {
+        titol: this.formEdit.name,
+        dificultat: "facil",
+        frequencia_tipus: frequencia,
+        dies_setmana: dies.join(","),
+        objectiu_vegades: 1,
+        icon: this.formEdit.icon,
+        color: this.formEdit.color,
+        categoria: this.formEdit.category
+      };
+
+      this.isLoading = true;
+      this.socket.emit("habit_action", {
+        action: "UPDATE",
+        habit_id: this.editingHabitId,
+        habit_data: updatedData,
+      });
+
+      this.closeEditModal();
     },
   },
 };

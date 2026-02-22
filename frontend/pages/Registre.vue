@@ -30,6 +30,7 @@
                 >NOM</label
               >
               <input
+                v-model="formulari.nom"
                 type="text"
                 placeholder="El teu nom"
                 class="w-full px-4 py-3 rounded-lg border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-200"
@@ -40,6 +41,7 @@
                 >EMAIL</label
               >
               <input
+                v-model="formulari.email"
                 type="email"
                 placeholder="el.teu.email@exemple.com"
                 class="w-full px-4 py-3 rounded-lg border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-200"
@@ -50,6 +52,7 @@
                 >CONTRASSENYA</label
               >
               <input
+                v-model="formulari.contrasenya"
                 type="password"
                 placeholder="••••••••"
                 class="w-full px-4 py-3 rounded-lg border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-200"
@@ -60,6 +63,7 @@
                 >CONFIRMAR CONTRASSENYA</label
               >
               <input
+                v-model="formulari.confirmacio"
                 type="password"
                 placeholder="••••••••"
                 class="w-full px-4 py-3 rounded-lg border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-200"
@@ -69,6 +73,7 @@
             <div class="pt-2">
               <button
                 type="button"
+                @click="registrarUsuari"
                 class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 rounded-lg"
               >
                 REGISTRAR-SE
@@ -165,7 +170,7 @@
               class="bg-white rounded-xl p-3 shadow-sm flex flex-col items-center justify-center overflow-hidden"
             >
               <div class="text-xs font-bold text-gray-600 text-center mb-2">
-                Pregunta {{ index + 1 }}/{{ obtenirPreguntesActuals().length }}
+                Pregunta {{ index + 1 }}/{{ llistaPreguntes.length }}
               </div>
               <div class="text-xs text-gray-700 text-center leading-tight mb-3">
                 {{ pregunta.pregunta }}
@@ -178,6 +183,7 @@
                   "
                 >
                   <button
+                    type="button"
                     @click="respondre(pregunta.id, 'forza')"
                     :class="[
                       'px-3 py-1 text-xs rounded-md',
@@ -189,6 +195,7 @@
                     Força
                   </button>
                   <button
+                    type="button"
                     @click="respondre(pregunta.id, 'massa_muscular')"
                     :class="[
                       'px-3 py-1 text-xs rounded-md',
@@ -208,6 +215,7 @@
                   "
                 >
                   <button
+                    type="button"
                     @click="respondre(pregunta.id, 'ansietat')"
                     :class="[
                       'px-3 py-1 text-xs rounded-md',
@@ -219,6 +227,7 @@
                     Per Ansietat
                   </button>
                   <button
+                    type="button"
                     @click="respondre(pregunta.id, 'compromis')"
                     :class="[
                       'px-3 py-1 text-xs rounded-md',
@@ -232,6 +241,7 @@
                 </template>
                 <template v-else>
                   <button
+                    type="button"
                     @click="respondre(pregunta.id, 'si')"
                     :class="[
                       'px-3 py-1 text-xs rounded-md',
@@ -243,6 +253,7 @@
                     Sí
                   </button>
                   <button
+                    type="button"
                     @click="respondre(pregunta.id, 'no')"
                     :class="[
                       'px-3 py-1 text-xs rounded-md',
@@ -258,12 +269,14 @@
             </div>
             <div class="col-span-full mt-2 grid grid-cols-2 gap-2">
               <button
+                type="button"
                 @click="seleccionarCategoria(null)"
                 class="w-full bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium py-2 rounded-lg text-xs"
               >
                 TORNAR
               </button>
               <button
+                type="button"
                 @click="finalitzarTest"
                 class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 rounded-lg text-xs"
               >
@@ -280,6 +293,7 @@
 <script>
 /**
  * Configuració de la pàgina de Registre.
+ * Segueix les normes de l'Agent Javascript (ES5 Estricte).
  */
 definePageMeta({ layout: false });
 
@@ -290,8 +304,14 @@ export default {
   data: function () {
     return {
       categoriaSeleccionada: null,
-      preguntes: [],
+      llistaPreguntes: [],
       respostes: {},
+      formulari: {
+        nom: "",
+        email: "",
+        contrasenya: "",
+        confirmacio: ""
+      },
       mapaCategories: {
         gym: 1,
         nutrition: 2,
@@ -307,13 +327,13 @@ export default {
 
   methods: {
     /**
-     * Selecciona una categoria i carrega les preguntes des de l'API.
-     * @param {string} categoria - El nom de la categoria seleccionada.
+     * Selecciona una categoria i carrega les preguntes des de l'API Laravel.
      */
     seleccionarCategoria: async function (categoria) {
       var self = this;
       var idCategoria;
-      var resultat;
+      var base;
+      var resposta;
       var dades;
 
       // A. Assignar la categoria
@@ -324,40 +344,37 @@ export default {
         idCategoria = self.mapaCategories[categoria];
 
         try {
-          var base = self.$config.public.apiUrl;
+          base = self.$config.public.apiUrl;
           if (base.endsWith("/")) {
             base = base.slice(0, -1);
           }
-          // C. Cridar a l'API per obtenir les preguntes
-          resultat = await useFetch(
-            base + "/api/preguntes-registre/" + idCategoria,
-          );
-          dades = resultat.data.value;
+          
+          // C. Cridar a l'API via fetch (GET)
+          resposta = await fetch(base + "/api/preguntes-registre/" + idCategoria);
+          dades = await resposta.json();
 
           if (dades && dades.preguntes) {
-            self.preguntes = dades.preguntes;
+            self.llistaPreguntes = dades.preguntes;
           }
         } catch (error) {
           console.error("Error al carregar les preguntes:", error);
         }
       } else {
         // D. Netejar si es deselecciona
-        self.preguntes = [];
+        self.llistaPreguntes = [];
         self.respostes = {};
       }
     },
 
     /**
-     * Retorna el llistat de preguntes actuals.
+     * Retorna el llistat de preguntes carregades.
      */
     obtenirPreguntesActuals: function () {
-      return this.preguntes;
+      return this.llistaPreguntes;
     },
 
     /**
      * Desa la resposta d'una pregunta específica.
-     * @param {number} preguntaId - L'ID de la pregunta.
-     * @param {string} resposta - La resposta triada.
      */
     respondre: function (preguntaId, resposta) {
       this.respostes[preguntaId] = resposta;
@@ -368,40 +385,46 @@ export default {
      */
     finalitzarTest: function () {
       var self = this;
-      var respostesText;
+      var textRespostes;
 
-      // A. Mostrar respostes per consola (simulació)
-      respostesText = JSON.stringify(self.respostes);
-      console.log("Respostes a enviar:", respostesText);
+      // A. Mostrar respostes per consola
+      textRespostes = JSON.stringify(self.respostes);
+      console.log("Respostes a enviar:", textRespostes);
 
       // B. Alerta de finalització
-      alert(
-        "Test finalitzat! Revisa la consola per veure les teves respostes.",
-      );
+      alert("Test finalitzat! Revisa la consola per veure les teves respostes.");
 
-      // C. Reset de l'estat
+      // C. Reset de l'estat local
       self.categoriaSeleccionada = null;
-      self.preguntes = [];
+      self.llistaPreguntes = [];
       self.respostes = {};
     },
+
+    /**
+     * Acció per registrar un usuari.
+     */
+    registrarUsuari: function () {
+        var self = this;
+        console.log("Intentant registre...");
+        
+        // A. Validar camps
+        if (!self.formulari.nom || !self.formulari.email || !self.formulari.contrasenya) {
+            alert("Si us plau, omple tots els camps.");
+            return;
+        }
+        
+        if (self.formulari.contrasenya !== self.formulari.confirmacio) {
+            alert("Les contrasenyes no coincideixen.");
+            return;
+        }
+
+        // B. Processar registre (simulació)
+        alert("Registre en desenvolupament");
+    }
   },
 };
 </script>
 
 <style scoped>
-/* Pequeños ajustes para simular las sombras y el espaciado del diseño */
-.shadow-inner {
-  box-shadow: 0 8px 30px rgba(16, 24, 40, 0.06);
-}
-
-/* Estils per als botons de resposta seleccionats */
-.bg-blue-500 {
-  background-color: #3b82f6;
-}
-.text-white {
-  color: #ffffff;
-}
-.bg-gray-200 {
-  background-color: #e5e7eb;
-}
+/* Estils locals del registre */
 </style>

@@ -4,6 +4,7 @@
  * Gestor d'esdeveniments de Socket.io.
  */
 var habitQueue = require('./queues/habitQueue');
+var plantillaQueue = require('./queues/plantillaQueue');
 var adminQueue = require('./queues/adminQueue');
 
 /**
@@ -32,6 +33,17 @@ function init(io) {
             }
         });
 
+        socket.on('plantilla_action', async function (payload) {
+            try {
+                var userId = socket.decoded_token.user_id; // O socket.user.id segons el teu JWT
+                socket.join('user_' + userId);
+                await plantillaQueue.pushToLaravel(payload.action, userId, payload);
+            } catch (error) {
+                console.error('Error gestionant plantilla_action:', error);
+            }
+        });
+
+        // Escolta quan el frontend comunica un hàbit completat
         socket.on('habit_completed', async function (data) {
             try {
                 console.log('Hàbit rebut:', data);

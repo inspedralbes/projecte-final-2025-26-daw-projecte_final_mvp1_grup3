@@ -25,14 +25,19 @@ class Habit extends Model
     protected $fillable = [
         'usuari_id',
         'plantilla_id',
+        'categoria_id',
         'titol',
         'dificultat',
         'frequencia_tipus',
         'dies_setmana',
         'objectiu_vegades',
+        'icona',
+        'color',
     ];
 
     //================================ MÈTODES / FUNCIONS ===========
+
+    //================================ RELACIONS ELOQUENT ===========
 
     /**
      * Usuari propietari de l'hàbit.
@@ -48,6 +53,14 @@ class Habit extends Model
     public function plantilla(): BelongsTo
     {
         return $this->belongsTo(Plantilla::class, 'plantilla_id');
+    }
+
+    /**
+     * Categoria de l'hàbit.
+     */
+    public function categoria(): BelongsTo
+    {
+        return $this->belongsTo(Categoria::class, 'categoria_id');
     }
 
     /**

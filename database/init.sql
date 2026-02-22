@@ -52,7 +52,15 @@ CREATE TABLE USUARIS_LOGROS (
     PRIMARY KEY (usuari_id, logro_id)
 );
 
--- 3. HÁBITOS Y PLANTILLAS
+-- 3. CATEGORIES I PREGUNTES
+-- ----------------------------------------------------------
+
+CREATE TABLE CATEGORIES (
+    id SERIAL PRIMARY KEY,
+    nom VARCHAR(100) NOT NULL
+);
+
+-- 4. HÁBITOS Y PLANTILLAS
 -- ----------------------------------------------------------
 
 CREATE TABLE PLANTILLES (
@@ -67,11 +75,14 @@ CREATE TABLE HABITS (
     id SERIAL PRIMARY KEY,
     usuari_id INT REFERENCES USUARIS(id) ON DELETE CASCADE,
     plantilla_id INT REFERENCES PLANTILLES(id) ON DELETE SET NULL,
+    categoria_id INT REFERENCES CATEGORIES(id) ON DELETE SET NULL,
     titol VARCHAR(100) NOT NULL,
     dificultat VARCHAR(50),
     frequencia_tipus VARCHAR(50),
     dies_setmana VARCHAR(50),
-    objectiu_vegades INT DEFAULT 1
+    objectiu_vegades INT DEFAULT 1,
+    icona VARCHAR(50),
+    color VARCHAR(20)
 );
 
 CREATE TABLE USUARIS_HABITS (
@@ -103,13 +114,6 @@ CREATE TABLE RATXES (
     ultima_data TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 5. PREGUNTES DE REGISTRE
--- ----------------------------------------------------------
-
-CREATE TABLE CATEGORIES (
-    id SERIAL PRIMARY KEY,
-    nom VARCHAR(100) NOT NULL
-);
 
 CREATE TABLE PREGUNTES_REGISTRE (
     id SERIAL PRIMARY KEY,

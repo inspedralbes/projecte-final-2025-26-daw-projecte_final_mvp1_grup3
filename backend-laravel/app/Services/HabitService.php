@@ -392,25 +392,45 @@ class HabitService
         if (isset($habitData['plantilla_id'])) {
             $dades['plantilla_id'] = $habitData['plantilla_id'];
         }
+        
         // B. Copiar titol si existeix
         if (isset($habitData['titol'])) {
             $dades['titol'] = $habitData['titol'];
         }
+        
         // C. Copiar dificultat si existeix
         if (isset($habitData['dificultat'])) {
             $dades['dificultat'] = $habitData['dificultat'];
         }
+        
         // D. Copiar frequencia_tipus si existeix
         if (isset($habitData['frequencia_tipus'])) {
             $dades['frequencia_tipus'] = $habitData['frequencia_tipus'];
         }
+        
         // E. Copiar dies_setmana si existeix
         if (isset($habitData['dies_setmana'])) {
             $dades['dies_setmana'] = $habitData['dies_setmana'];
         }
+        
         // F. Copiar objectiu_vegades si existeix
         if (isset($habitData['objectiu_vegades'])) {
             $dades['objectiu_vegades'] = $habitData['objectiu_vegades'];
+        }
+
+        // G. Copiar categoria_id si existeix
+        if (isset($habitData['categoria_id'])) {
+            $dades['categoria_id'] = $habitData['categoria_id'];
+        }
+
+        // H. Copiar icona si existeix
+        if (isset($habitData['icona'])) {
+            $dades['icona'] = $habitData['icona'];
+        }
+
+        // I. Copiar color si existeix
+        if (isset($habitData['color'])) {
+            $dades['color'] = $habitData['color'];
         }
 
         return $dades;

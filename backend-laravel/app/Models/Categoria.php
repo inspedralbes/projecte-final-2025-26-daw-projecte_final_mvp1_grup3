@@ -40,8 +40,23 @@ class Categoria extends Model
      *
      * @return HasMany
      */
+    /**
+     * Obté les preguntes de registre associades a la categoria.
+     *
+     * @return HasMany
+     */
     public function preguntes(): HasMany
     {
         return $this->hasMany(PreguntaRegistre::class, 'categoria_id');
+    }
+
+    /**
+     * Obté els hàbits associats a la categoria.
+     *
+     * @return HasMany
+     */
+    public function habits(): HasMany
+    {
+        return $this->hasMany(Habit::class, 'categoria_id');
     }
 }

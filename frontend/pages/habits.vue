@@ -12,7 +12,7 @@
           >
             <div class="flex items-center gap-3 mb-4">
               <div class="bg-green-100 p-2 rounded-lg">
-                <span class="text-xl">✏️</span>
+                <span class="text-xl">Detalls</span>
               </div>
               <h2 class="text-lg font-bold text-gray-800">
                 Detalls de l'Hàbit
@@ -74,7 +74,7 @@
           >
             <div class="flex items-center gap-3 mb-4">
               <div class="bg-orange-100 p-2 rounded-lg">
-                <span class="text-xl">⭐</span>
+                <span class="text-xl">Categoria</span>
               </div>
               <h2 class="text-lg font-bold text-gray-800">Categoria</h2>
             </div>
@@ -103,7 +103,7 @@
             >
               <div class="flex items-center gap-3 mb-4">
                 <div class="bg-blue-100 p-2 rounded-lg">
-                  <span class="text-xl">📅</span>
+                  <span class="text-xl">Planificació</span>
                 </div>
                 <h2 class="text-lg font-bold text-gray-800">Planificació</h2>
               </div>
@@ -171,7 +171,7 @@
             >
               <div class="flex items-center gap-3 mb-4">
                 <div class="bg-purple-100 p-2 rounded-lg">
-                  <span class="text-xl">🖌️</span>
+                  <span class="text-xl">Estil</span>
                 </div>
                 <h2 class="text-lg font-bold text-gray-800">Personalitzar</h2>
               </div>
@@ -205,7 +205,7 @@
                   }"
                   class="w-10 h-10 rounded-lg flex items-center justify-center text-lg"
                 >
-                  {{ formulari.icona || "📝" }}
+                  {{ formulari.icona }}
                 </div>
                 <div class="h-2 bg-gray-200 rounded w-2/3"></div>
               </div>
@@ -219,7 +219,7 @@
           >
             <span
               class="bg-white text-green-700 rounded-full w-5 h-5 flex items-center justify-center text-xs"
-              >✓</span
+              >V</span
             >
             Crear Hàbit
           </button>
@@ -231,7 +231,7 @@
             class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 h-full"
           >
             <div class="flex items-center gap-3 mb-6">
-              <span class="text-xl text-gray-400">📋</span>
+              <span class="text-xl text-gray-400">Hàbits</span>
               <h2 class="text-lg font-bold text-gray-800">Els Meus Hàbits</h2>
             </div>
 
@@ -424,12 +424,16 @@ export default {
         diesSeleccionats: [],
         color: "#10B981",
       },
-      icones: ["💧", "📖", "🏃", "🧘", "🚭", "🥗", "💊", "💤"],
+      icones: ["Aigua", "Llibre", "Esport", "Meditacio", "Salut", "Menjar", "Medicina", "Descans"],
       categories: [
-        { id: "salud", nom: "Salut", icona: "❤️" },
-        { id: "estudio", nom: "Estudi", icona: "📚" },
-        { id: "trabajo", nom: "Treball", icona: "💼" },
-        { id: "arte", nom: "Art", icona: "🎨" },
+        { id: 1, nom: "Activitat física", icona: "Esport" },
+        { id: 2, nom: "Alimentació", icona: "Nutricio" },
+        { id: 3, nom: "Estudi", icona: "Formacio" },
+        { id: 4, nom: "Lectura", icona: "Cultura" },
+        { id: 5, nom: "Benestar", icona: "Mental" },
+        { id: 6, nom: "Millora d'hàbits", icona: "Social" },
+        { id: 7, nom: "Llar", icona: "Casa" },
+        { id: 8, nom: "Hobby", icona: "Oci" },
       ],
       frequencies: ["Diari", "Setmanal", "Mensual"],
       diesSetmana: ["L", "M", "X", "J", "V", "S", "D"],
@@ -566,6 +570,9 @@ export default {
         frequencia_tipus: frequencia,
         dies_setmana: dies.join(","),
         objectiu_vegades: 1,
+        categoria_id: self.formulari.categoria,
+        icona: self.formulari.icona,
+        color: self.formulari.color,
       };
     },
 
@@ -667,7 +674,7 @@ export default {
       this.idHabitEdicio = hàbit.id;
       this.formulariEdicio.nom = hàbit.nom;
       this.formulariEdicio.icona = hàbit.icona;
-      this.formulariEdicio.categoria = hàbit.categoria;
+      this.formulariEdicio.categoria = hàbit.categoriaId;
       this.formulariEdicio.frequencia = hàbit.frequencia;
       this.formulariEdicio.recordatori = hàbit.recordatori || "08:00";
       this.formulariEdicio.color = hàbit.color || "#10B981";
@@ -730,9 +737,9 @@ export default {
         frequencia_tipus: frequencia,
         dies_setmana: dies.join(","),
         objectiu_vegades: 1,
-        icon: self.formulariEdicio.icona,
+        icona: self.formulariEdicio.icona,
         color: self.formulariEdicio.color,
-        categoria: self.formulariEdicio.categoria
+        categoria_id: self.formulariEdicio.categoria
       };
 
       self.estaCarregant = true;

@@ -261,7 +261,7 @@
                     {{ hàbit.nom }}
                   </h3>
                   <p class="text-xs text-gray-500">
-                    {{ hàbit.frequencia }}
+                    {{ obtenirNomCategoria(hàbit.categoriaId) }}
                     <span v-if="hàbit.recordatori">• {{ hàbit.recordatori }}</span>
                   </p>
                 </div>
@@ -510,6 +510,18 @@ export default {
       } catch (e) {
         self.errorMissatge = e.message || "Error al carregar els hàbits";
       }
+    },
+    /**
+     * Obté el nom de la categoria a partir del seu ID.
+     */
+    obtenirNomCategoria: function (id) {
+       var i;
+       for (i = 0; i < this.categories.length; i++) {
+         if (this.categories[i].id === id) {
+           return this.categories[i].nom;
+         }
+       }
+       return "Sense categoria";
     },
 
     /**

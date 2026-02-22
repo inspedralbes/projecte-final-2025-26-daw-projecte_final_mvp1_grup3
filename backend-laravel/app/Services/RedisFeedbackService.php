@@ -10,8 +10,8 @@ use Illuminate\Support\Facades\Redis;
 
 /**
  * Servei d'emissió de feedback a Redis.
- * Publica els valors actualitzats (XP, ratxa actual, ratxa màxima) al canal
- * 'feedback_channel' perquè el backend Node.js els rebi i els emeti al frontend.
+ * Publica el resultat d'una acció d'hàbits al canal 'feedback_channel'
+ * perquè el backend Node.js el rebi i l'emeti al frontend.
  */
 class RedisFeedbackService
 {
@@ -23,27 +23,13 @@ class RedisFeedbackService
     //================================ MÈTODES / FUNCIONS ===========
 
     /**
-     * Publica el feedback amb els nous valors de gamificació al canal Redis.
+     * Publica un payload genèric de feedback al canal Redis.
      * El payload es serialitza en JSON per ser consumit pel subscriptor Node.js.
      *
-     * @param  int  $usuariId  Identificador de l'usuari
-     * @param  int  $xpTotal  XP total acumulat
-     * @param  int  $ratxaActual  Ratxa actual (dies consecutius)
-     * @param  int  $ratxaMaxima  Rècord de ratxa
+     * @param  array<string, mixed>  $payload
      */
-    public function publicarFeedback(
-        int $usuariId,
-        int $xpTotal,
-        int $ratxaActual,
-        int $ratxaMaxima
-    ): void {
-        $payload = [
-            'usuari_id' => $usuariId,
-            'xp_total' => $xpTotal,
-            'ratxa_actual' => $ratxaActual,
-            'ratxa_maxima' => $ratxaMaxima,
-        ];
-
+    public function publicarPayload(array $payload): void
+    {
         Redis::publish(self::CANAL_FEEDBACK, json_encode($payload));
     }
 }

@@ -1,7 +1,5 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { useRollback } from '~/composables/useRollback'
-
 const TIMEOUT_MS = 5000
 const XP_BASE = 10
 const XP_PER_DIFICULTAT = {
@@ -17,32 +15,11 @@ export const useGameStore = defineStore('game', () => {
   const nivel = ref(1)
   const habitos = ref([])
 
-  const { createSnapshot, commitSnapshot, rollbackStack } = useRollback()
-
-  const _restoreState = (snapshotId) => {
-    const snapshotData = rollbackStack.value[snapshotId]
-    if (!snapshotData) return
-
-    racha.value = snapshotData.snapshot.racha
-    xpTotal.value = snapshotData.snapshot.xpTotal
-    habitos.value = JSON.parse(JSON.stringify(snapshotData.snapshot.habitos))
-  }
-
   const completHabit = async (habitId, socket) => {
     if (!socket) throw new Error('Socket no disponible')
 
     const habit = habitos.value.find(h => h.id === habitId)
     if (!habit) return false
-
-    // Snapshot antes de cambios
-    const snapshotId = createSnapshot({
-      racha: racha.value,
-      xpTotal: xpTotal.value,
-      habitos: habitos.value.map(h => ({ ...h }))
-    })
-
-    // Mutación inmediata (solo UI, la lógica de XP/racha es del backend)
-    habit.completado = true
 
     return new Promise((resolve) => {
       const handleResponse = (response) => {
@@ -54,7 +31,7 @@ export const useGameStore = defineStore('game', () => {
           // Actualizar con datos reales del backend
           xpTotal.value = response.xp_total
           racha.value = response.ratxa_actual
-          commitSnapshot(snapshotId)
+          habit.completado = true
 
           // Refrescar estado desde backend (fuente de verdad)
           fetchGameState()
@@ -65,18 +42,12 @@ export const useGameStore = defineStore('game', () => {
               resolve(true)
             })
         } else {
-          // Error en respuesta, hacer rollback
-          _restoreState(snapshotId)
-          commitSnapshot(snapshotId)
           resolve(false)
         }
       }
 
       const timeoutId = setTimeout(() => {
         socket.off('update_xp', handleResponse)
-        // Timeout, hacer rollback
-        _restoreState(snapshotId)
-        commitSnapshot(snapshotId)
         resolve(false)
       }, TIMEOUT_MS)
 

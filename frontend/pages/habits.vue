@@ -274,7 +274,12 @@
                     <span v-if="habit.reminder">• {{ habit.reminder }}</span>
                   </p>
                 </div>
-                <div class="w-2 h-2 rounded-full bg-green-500"></div>
+                <button
+                  class="text-xs text-red-600 hover:text-red-700 font-semibold px-2 py-1 rounded border border-red-200 hover:border-red-300 transition-colors"
+                  @click="deleteHabit(habit.id)"
+                >
+                  Borrar
+                </button>
               </div>
             </div>
 
@@ -293,6 +298,7 @@
 </template>
 
 <script>
+import { io } from "socket.io-client";
 import { useHabitStore } from "../stores/useHabitStore";
 
 export default {
@@ -302,6 +308,9 @@ export default {
   },
   data: function () {
     return {
+      socket: null,
+      isLoading: false,
+      errorMessage: "",
       form: {
         name: "",
         motivation: "",
@@ -324,7 +333,52 @@ export default {
       colors: ["#65A30D", "#3B82F6", "#A855F7", "#F97316", "#EC4899"],
     };
   },
+  mounted: function () {
+    this.initSocket();
+    this.loadHabits();
+  },
+  beforeUnmount: function () {
+    if (this.socket) {
+      this.socket.disconnect();
+    }
+  },
   methods: {
+    initSocket: function () {
+      if (this.socket) {
+        return;
+      }
+      this.socket = io("http://localhost:3001", {
+        reconnection: true,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 5000,
+        reconnectionAttempts: 5,
+      });
+
+      var self = this;
+
+      this.socket.on("connect", function () {
+        console.log("✅ Socket connectat:", self.socket.id);
+      });
+
+      this.socket.on("habit_action_confirmed", function (payload) {
+        self.handleHabitFeedback(payload);
+      });
+
+      this.socket.on("disconnect", function () {
+        console.log("❌ Socket desconnectat");
+      });
+
+      this.socket.on("error", function (error) {
+        console.error("⚠️ Error en socket:", error);
+      });
+    },
+    loadHabits: async function () {
+      try {
+        await this.habitStore.fetchHabitsFromApi();
+      } catch (e) {
+        this.errorMessage = e.message || "Error al cargar los hábitos";
+      }
+    },
     selectIcon: function (icon) {
       this.form.icon = icon;
     },
@@ -342,6 +396,27 @@ export default {
         this.form.selectedDays.splice(pos, 1);
       }
     },
+    buildHabitData: function () {
+      var frequencia = "diaria";
+      if (this.form.frequency === "Semanal") {
+        frequencia = "semanal";
+      } else if (this.form.frequency === "Mensual") {
+        frequencia = "mensual";
+      }
+
+      var dies = [];
+      for (var i = 0; i < this.form.selectedDays.length; i++) {
+        dies.push(this.form.selectedDays[i] + 1);
+      }
+
+      return {
+        titol: this.form.name,
+        dificultat: "facil",
+        frequencia_tipus: frequencia,
+        dies_setmana: dies.join(","),
+        objectiu_vegades: 1,
+      };
+    },
     createHabit: function () {
       // Basic validation
       if (!this.form.name) {
@@ -353,24 +428,52 @@ export default {
         return;
       }
 
-      // Create object to send to store
-      var newHabit = {
-        name: this.form.name,
-        motivation: this.form.motivation,
-        icon: this.form.icon,
-        category: this.form.category,
-        frequency: this.form.frequency,
-        reminder: this.form.reminder,
-        days: JSON.parse(JSON.stringify(this.form.selectedDays)), // Deep copy of array
-        color: this.form.color,
-        createdAt: new Date(),
-      };
+      if (!this.socket) {
+        alert("Socket no disponible");
+        return;
+      }
 
-      // Call store action
-      this.habitStore.addHabit(newHabit);
+      var habitData = this.buildHabitData();
+      this.isLoading = true;
+      this.errorMessage = "";
 
-      // Reset form
-      this.resetForm();
+      this.socket.emit("habit_action", {
+        action: "CREATE",
+        habit_data: habitData,
+      });
+    },
+    deleteHabit: function (habitId) {
+      if (!this.socket) {
+        alert("Socket no disponible");
+        return;
+      }
+      this.isLoading = true;
+      this.errorMessage = "";
+
+      this.socket.emit("habit_action", {
+        action: "DELETE",
+        habit_id: habitId,
+      });
+    },
+    handleHabitFeedback: function (payload) {
+      this.isLoading = false;
+
+      if (!payload || payload.success !== true) {
+        this.errorMessage = "Error al procesar la acción del hábito";
+        return;
+      }
+
+      if (payload.action === "CREATE" || payload.action === "UPDATE") {
+        if (payload.habit) {
+          var mapped = this.habitStore.mapHabitFromApi(payload.habit);
+          this.habitStore.upsertHabit(mapped);
+          this.resetForm();
+        }
+      } else if (payload.action === "DELETE") {
+        if (payload.habit && payload.habit.id) {
+          this.habitStore.removeHabit(payload.habit.id);
+        }
+      }
     },
     resetForm: function () {
       this.form.name = "";

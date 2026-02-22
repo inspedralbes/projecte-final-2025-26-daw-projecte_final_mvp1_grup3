@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Redis;
 /**
  * Comandament RedisWorker.
  * Executa un bucle infinit que escolta la cua 'habits_queue' amb brpop bloquejant
- * i processa les accions d'hàbits completats mitjançant HabitService.
+ * i processa les accions d'hàbits (CRUD i TOGGLE) mitjançant HabitService.
  */
 class RedisWorker extends Command
 {
@@ -107,7 +107,7 @@ class RedisWorker extends Command
 
             // E. Processament mitjançant el servei d'hàbits
             try {
-                $this->habitService->processarHabitCompletat($dades);
+                $this->habitService->processarAccioHabit($dades);
             } catch (\Throwable $e) {
                 Log::error('RedisWorker: error processant hàbit', [
                     'dades' => $dades,

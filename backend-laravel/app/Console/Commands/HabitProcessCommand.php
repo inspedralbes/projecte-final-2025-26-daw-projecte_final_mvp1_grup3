@@ -29,7 +29,7 @@ class HabitProcessCommand extends Command
     public function handle()
     {
         $queueName = 'habits_queue';
-        $feedbackChannel = 'habits_feedback_channel';
+        $feedbackChannel = 'feedback_channel';
 
         $this->info("Escoltant la cua '$queueName'...");
 

@@ -27,7 +27,11 @@ function init(io) {
             try {
                 console.log('Hàbit rebut:', data);
                 // NOTA: Ajustem a la nova firma de pushToLaravel
-                var userId = data.user_id; // O socket.decoded_token.user_id si ja tens el middleware real
+                var userId = data.user_id;
+                if (!userId && socket.decoded_token && socket.decoded_token.user_id) {
+                    userId = socket.decoded_token.user_id;
+                }
+                socket.join('user_' + userId);
                 await habitQueue.pushToLaravel('TOGGLE', userId, data);
             } catch (error) {
                 console.error('Error gestionant habit_completed:', error);

@@ -4,7 +4,7 @@ import { io } from "socket.io-client";
 import { useGameStore } from "~/stores/gameStore.js";
 import bosqueImg from "~/assets/img/Bosque.png";
 
-// Store de Pinia con sistema de rollback
+// Store de Pinia
 const gameStore = useGameStore();
 
 const backgroundStyle = {
@@ -15,7 +15,7 @@ const backgroundStyle = {
 
 // Socket
 let socket = null;
-const isLoading = ref(false);
+const processingHabits = ref([]);
 const isLoadingHabitos = ref(false);
 const errorMessage = ref("");
 
@@ -42,23 +42,41 @@ const xpPerHabit = (habito) => {
   return 0;
 };
 
+const isHabitProcessing = (habitId) => {
+  return processingHabits.value.indexOf(habitId) !== -1;
+};
+
+const addProcessingHabit = (habitId) => {
+  if (processingHabits.value.indexOf(habitId) === -1) {
+    processingHabits.value.push(habitId);
+  }
+};
+
+const removeProcessingHabit = (habitId) => {
+  var index = processingHabits.value.indexOf(habitId);
+  if (index !== -1) {
+    processingHabits.value.splice(index, 1);
+  }
+};
+
 // Inicializar socket
-onMounted(async () => {
+onMounted(() => {
   // TODO: Obtener userId de autenticación
   gameStore.setUserId(1);
 
-  // Cargar hábitos desde la API
+  // Cargar hábitos y estado en paralelo
   isLoadingHabitos.value = true;
-  try {
-    await gameStore.fetchHabitos();
-    await gameStore.fetchGameState();
-    console.log("✅ Hábitos cargados:", gameStore.habitos);
-  } catch (error) {
-    console.error("❌ Error cargando hábitos:", error);
-    errorMessage.value = "Error al cargar los hábitos";
-  } finally {
-    isLoadingHabitos.value = false;
-  }
+  Promise.all([gameStore.fetchHabitos(), gameStore.fetchGameState()])
+    .then(() => {
+      console.log("✅ Hábitos cargados:", gameStore.habitos);
+    })
+    .catch((error) => {
+      console.error("❌ Error cargando hábitos:", error);
+      errorMessage.value = "Error al cargar los hábitos";
+    })
+    .finally(() => {
+      isLoadingHabitos.value = false;
+    });
 
   // Conectar al servidor de sockets
   socket = io("http://localhost:3001", {
@@ -100,25 +118,23 @@ onUnmounted(() => {
 });
 
 /**
- * Completa un hábito con snapshot y rollback automático
- * - Cambio visual inmediato (0ms latencia)
+ * Completa un hábito
  * - Emite al backend
- * - Si falla: restaura automáticamente
+ * - Si falla: mostrar error
  */
 const completarHabito = async (habitoId) => {
   try {
-    isLoading.value = true;
+    addProcessingHabit(habitoId);
     errorMessage.value = "";
 
     console.log("🎯 Iniciando completar hábito:", habitoId);
 
-    // Llamar a la acción del store que maneja snapshot + rollback
+    // Llamar a la acción del store
     const success = await gameStore.completHabit(habitoId, socket);
 
     if (!success) {
-      errorMessage.value =
-        "No se pudo completar el hábito. Los cambios han sido revertidos.";
-      console.error("❌ Fallida la operación - cambios revertidos");
+      errorMessage.value = "No se pudo completar el hábito.";
+      console.error("❌ Fallida la operación");
     } else {
       console.log("✅ Hábito completado exitosamente");
     }
@@ -126,7 +142,7 @@ const completarHabito = async (habitoId) => {
     console.error("Error completando hábito:", error);
     errorMessage.value = "Error al completar el hábito";
   } finally {
-    isLoading.value = false;
+    removeProcessingHabit(habitoId);
   }
 };
 </script>
@@ -265,7 +281,7 @@ const completarHabito = async (habitoId) => {
 
           <!-- Llista d'Hàbits -->
           <div class="space-y-3">
-            <!-- Mensaje de error con rollback -->
+            <!-- Mensaje de error -->
             <div
               v-if="errorMessage"
               class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
@@ -317,10 +333,14 @@ const completarHabito = async (habitoId) => {
                 <button
                   v-if="!habito.completado"
                   @click="completarHabito(habito.id)"
-                  :disabled="isLoading"
+                  :disabled="isHabitProcessing(habito.id)"
                   class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {{ isLoading ? "Procesando..." : "Completar" }}
+                  {{
+                    isHabitProcessing(habito.id)
+                      ? "Procesando..."
+                      : "Completar"
+                  }}
                 </button>
                 <div v-else class="text-green-500 font-bold">✓</div>
               </div>

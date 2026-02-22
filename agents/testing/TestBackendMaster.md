@@ -50,3 +50,7 @@ Un cop hagis creat el fitxer, pots obrir el xat de Cursor i llançar aquesta ord
 - **Auditoria de noms**: Comprovarà si el LPUSH de Node usa exactament la mateixa clau de Redis que el BRPOP de Laravel.
 - **Sintaxi ES5**: Si l'agent de Node ha posat un `const` per error, el TestMaster el detectarà i li farà canviar per un `var`.
 - **Seguretat de Dades**: S'assegurarà que el JSON que surt de Laravel no es perdi pel camí abans d'arribar al `feedbackSubscriber.js` de Node.
+
+## ✅ Regla GET/CUD
+- **GET**: sempre via `fetch` contra l'API de Laravel (rutes a `backend-laravel/routes/api.php`).
+- **CUD**: crear/actualitzar/eliminar via Node.js → Redis → Laravel; sockets només per feedback/confirmació.

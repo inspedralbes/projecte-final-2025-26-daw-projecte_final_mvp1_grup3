@@ -324,9 +324,13 @@ export default {
         idCategoria = self.mapaCategories[categoria];
 
         try {
+          var base = self.$config.public.apiUrl;
+          if (base.endsWith("/")) {
+            base = base.slice(0, -1);
+          }
           // C. Cridar a l'API per obtenir les preguntes
           resultat = await useFetch(
-            "http://localhost:8000/api/preguntes-registre/" + idCategoria,
+            base + "/api/preguntes-registre/" + idCategoria,
           );
           dades = resultat.data.value;
 

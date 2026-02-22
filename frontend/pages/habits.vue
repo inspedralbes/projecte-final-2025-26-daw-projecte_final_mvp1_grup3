@@ -347,7 +347,9 @@ export default {
       if (this.socket) {
         return;
       }
-      this.socket = io("http://localhost:3001", {
+      var socketConfig = useSocketConfig();
+      var socketUrl = socketConfig.socketUrl;
+      this.socket = io(socketUrl, {
         reconnection: true,
         reconnectionDelay: 1000,
         reconnectionDelayMax: 5000,

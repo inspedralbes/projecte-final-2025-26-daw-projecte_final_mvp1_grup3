@@ -33,3 +33,7 @@ Aquest fitxer conté la definició de les habilitats tècniques que els agents p
 - **Regles**:
     - Extrau la lògica documentada pas a pas (`// A.`, `// B.`, `// C.`) de les funcions.
     - Genera informes estructurats en Markdown per a la documentació oficial del sistema.
+
+## ✅ Regla GET/CUD
+- **GET**: sempre via `fetch` contra l'API de Laravel (rutes a `backend-laravel/routes/api.php`).
+- **CUD**: crear/actualitzar/eliminar via Node.js → Redis → Laravel; sockets només per feedback/confirmació.

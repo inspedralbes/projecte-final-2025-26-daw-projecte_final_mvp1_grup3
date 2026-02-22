@@ -83,3 +83,7 @@ async function enviarTascaHabit(dadesHabit) {
 - **auditorEstilES5Estricte** (Principal)
 - **generadorDocumentacioTecnica** (Secundària)
 ```
+
+## ✅ Regla GET/CUD
+- **GET**: sempre via `fetch` contra l'API de Laravel (rutes a `backend-laravel/routes/api.php`).
+- **CUD**: crear/actualitzar/eliminar via Node.js → Redis → Laravel; sockets només per feedback/confirmació.

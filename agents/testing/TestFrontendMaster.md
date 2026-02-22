@@ -52,3 +52,7 @@ Un cop hagis creat el fitxer, pots obrir el xat de Cursor i llançar aquesta ord
 - **Validació de rutes**: Comprovarà que `pages/` genera rutes accessibles i sense errors de renderitzat.
 - **Consistència d'estat**: Detectarà si Pinia no aplica l'Optimistic UI o si el rollback falla.
 - **Temps real fiable**: Verificarà que els events de socket actualitzen la UI sense desincronitzacions.
+
+## ✅ Regla GET/CUD
+- **GET**: sempre via `fetch` contra l'API de Laravel (rutes a `backend-laravel/routes/api.php`).
+- **CUD**: crear/actualitzar/eliminar via Node.js → Redis → Laravel; sockets només per feedback/confirmació.

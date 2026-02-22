@@ -9,11 +9,18 @@ const XP_PER_DIFICULTAT = {
 }
 
 export const useGameStore = defineStore('game', () => {
+  const config = useRuntimeConfig()
+  const apiUrl = config.public.apiUrl
   const userId = ref(null)
   const racha = ref(0)
   const xpTotal = ref(0)
   const nivel = ref(1)
   const habitos = ref([])
+
+  const buildApiUrl = (path) => {
+    const base = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl
+    return `${base}${path}`
+  }
 
   const completHabit = async (habitId, socket) => {
     if (!socket) throw new Error('Socket no disponible')
@@ -26,11 +33,8 @@ export const useGameStore = defineStore('game', () => {
         socket.off('update_xp', handleResponse)
         clearTimeout(timeoutId)
 
-        // Validar respuesta del backend
+        // Validar respuesta del backend como confirmación de CUD
         if (response && response.xp_total !== undefined && response.ratxa_actual !== undefined) {
-          // Actualizar con datos reales del backend
-          xpTotal.value = response.xp_total
-          racha.value = response.ratxa_actual
           habit.completado = true
 
           // Refrescar estado desde backend (fuente de verdad)
@@ -81,7 +85,7 @@ export const useGameStore = defineStore('game', () => {
 
   const fetchHabitos = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/habits')
+      const response = await fetch(buildApiUrl('/api/habits'))
       if (!response.ok) {
         throw new Error(`Error al obtener hábitos: ${response.status}`)
       }
@@ -119,7 +123,7 @@ export const useGameStore = defineStore('game', () => {
 
   const fetchGameState = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/game-state')
+      const response = await fetch(buildApiUrl('/api/game-state'))
       if (!response.ok) {
         throw new Error(`Error al obtener game-state: ${response.status}`)
       }

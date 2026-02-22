@@ -35,7 +35,10 @@ export const useHabitStore = defineStore("habit", {
       this.loading = true;
       this.error = null;
       try {
-        var response = await fetch("http://localhost:8000/api/habits");
+        var config = useRuntimeConfig();
+        var apiUrl = config.public.apiUrl;
+        var base = apiUrl.endsWith("/") ? apiUrl.slice(0, -1) : apiUrl;
+        var response = await fetch(base + "/api/habits");
         if (!response.ok) {
           throw new Error("Error al obtener hábitos: " + response.status);
         }

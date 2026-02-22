@@ -6,6 +6,8 @@ import bosqueImg from "~/assets/img/Bosque.png";
 
 // Store de Pinia
 const gameStore = useGameStore();
+var socketConfig = useSocketConfig();
+var socketUrl = socketConfig.socketUrl;
 
 const backgroundStyle = {
   backgroundImage: `url(${bosqueImg})`,
@@ -79,7 +81,7 @@ onMounted(() => {
     });
 
   // Conectar al servidor de sockets
-  socket = io("http://localhost:3001", {
+  socket = io(socketUrl, {
     reconnection: true,
     reconnectionDelay: 1000,
     reconnectionDelayMax: 5000,
@@ -91,13 +93,12 @@ onMounted(() => {
   });
 
   // Escuchar feedback unificado desde el backend (Redis -> Node)
-  socket.on("update_xp", (data) => {
+  socket.on("update_xp", async (data) => {
     console.log("⭐ Feedback gamificación:", data);
-    if (data && data.ratxa_actual !== undefined) {
-      gameStore.updateRacha(data.ratxa_actual);
-    }
-    if (data && data.xp_total !== undefined) {
-      gameStore.updateXP(data.xp_total);
+    try {
+      await gameStore.fetchGameState();
+    } catch (error) {
+      console.error("❌ Error actualizando game-state:", error);
     }
   });
 

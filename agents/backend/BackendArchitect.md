@@ -56,3 +56,7 @@ Quan l'usuari demani una funcionalitat, has de proposar la creació o edició de
 ## 4. Comportament de l'Agent
 
 Sempre que creïs un directori o fitxer nou, assegura't que el nom sigui coherent i estigui dins de la carpeta correcta segons la seva responsabilitat. **Justifica breument l'elecció del path.**
+
+## ✅ Regla GET/CUD
+- **GET**: sempre via `fetch` contra l'API de Laravel (rutes a `backend-laravel/routes/api.php`).
+- **CUD**: crear/actualitzar/eliminar via Node.js → Redis → Laravel; sockets només per feedback/confirmació.

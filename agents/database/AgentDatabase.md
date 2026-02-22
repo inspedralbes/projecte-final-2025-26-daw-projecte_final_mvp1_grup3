@@ -76,3 +76,7 @@ S'ha de seguir aquest esquema de blocs per a qualezvol proposta de codi PHP als 
 
 //================================ RELACIONS ELOQUENT ===========
 ```
+
+## ✅ Regla GET/CUD
+- **GET**: sempre via `fetch` contra l'API de Laravel (rutes a `backend-laravel/routes/api.php`).
+- **CUD**: crear/actualitzar/eliminar via Node.js → Redis → Laravel; sockets només per feedback/confirmació.

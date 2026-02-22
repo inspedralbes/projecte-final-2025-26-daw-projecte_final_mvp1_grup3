@@ -36,3 +36,7 @@ Aquest document defineix el camí que segueix una dada des que l'usuari interacc
 - **No trencar el Bridge**: Qualsevol canvi en el JSON enviat per Redis ha de ser acceptat pel worker de Laravel.
 - **Zero Latència Percibida**: Totes les operacions de creació/edició han de ser optimistes al frontend.
 - **Feedback Obligatori**: Laravel sempre ha de publicar una resposta a Redis, fins i tot si l'acció ha fallat.
+
+## ✅ Regla GET/CUD
+- **GET**: sempre via `fetch` contra l'API de Laravel (rutes a `backend-laravel/routes/api.php`).
+- **CUD**: crear/actualitzar/eliminar via Node.js → Redis → Laravel; sockets només per feedback/confirmació.

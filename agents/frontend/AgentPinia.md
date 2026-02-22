@@ -80,3 +80,7 @@ async function marcarHabit(idHabit) {
 ## 5. Integració amb Socket.io
 - Les stores s'han de subscriure als canvis que arriben per Socket (ex: `update_xp`).
 - Quan arriba un event extern, l'store actualitza l'estat local per reflectir la realitat del servidor (font de veritat final).
+
+## ✅ Regla GET/CUD
+- **GET**: sempre via `fetch` contra l'API de Laravel (rutes a `backend-laravel/routes/api.php`).
+- **CUD**: crear/actualitzar/eliminar via Node.js → Redis → Laravel; sockets només per feedback/confirmació.

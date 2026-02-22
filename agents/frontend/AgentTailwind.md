@@ -55,3 +55,7 @@ Per donar sensació de fluïdesa (especialment en l'Optimistic UI):
   </div>
 </template>
 ```
+
+## ✅ Regla GET/CUD
+- **GET**: sempre via `fetch` contra l'API de Laravel (rutes a `backend-laravel/routes/api.php`).
+- **CUD**: crear/actualitzar/eliminar via Node.js → Redis → Laravel; sockets només per feedback/confirmació.

@@ -1,6 +1,10 @@
 import { defineStore } from "pinia";
 
-export const useHabitStore = defineStore("habit", {
+/**
+ * Store per a la gestió dels hàbits de l'usuari.
+ * Segueix les normes de l'Agent Javascript (ES5 Estricte).
+ */
+export var useHabitStore = defineStore("habit", {
   state: function () {
     return {
       habits: [],
@@ -9,42 +13,81 @@ export const useHabitStore = defineStore("habit", {
     };
   },
   actions: {
-    mapHabitFromApi: function (habit) {
+    /**
+     * Transforma les dades de l'API al format del frontend.
+     */
+    mapejarHabitDesDeApi: function (hàbit) {
       return {
-        id: habit.id,
-        name: habit.titol || "Sin nombre",
-        frequency: habit.frequencia_tipus || "",
-        reminder: habit.reminder || "",
-        icon: habit.icon || "📝",
-        color: habit.color || "#10B981",
-        dificultat: habit.dificultat || null,
-        dies_setmana: habit.dies_setmana || "",
-        objectiu_vegades: habit.objectiu_vegades || 1,
-        usuari_id: habit.usuari_id || 1,
-        plantilla_id: habit.plantilla_id || null,
+        id: hàbit.id,
+        nom: hàbit.titol || "Sense nom",
+        frequencia: hàbit.frequencia_tipus || "",
+        recordatori: hàbit.recordatori || "",
+        icona: hàbit.icona || "📝",
+        color: hàbit.color || "#10B981",
+        dificultat: hàbit.dificultat || null,
+        diesSetmana: hàbit.dies_setmana || "",
+        objectiuVegades: hàbit.objectiu_vegades || 1,
+        usuariId: hàbit.usuari_id || 1,
+        plantillaId: hàbit.plantilla_id || null,
       };
     },
-    setHabitsFromApi: function (habits) {
-      var mapped = [];
-      for (var i = 0; i < habits.length; i++) {
-        mapped.push(this.mapHabitFromApi(habits[i]));
+
+    /**
+     * Estableix la llista d'hàbits a partir de dades de l'API.
+     */
+    establirHabitsDesDeApi: function (llistaHabits) {
+      var mapejats = [];
+      var i;
+
+      // A. Iterar usant bucle clàssic
+      for (i = 0; i < llistaHabits.length; i++) {
+        mapejats.push(this.mapejarHabitDesDeApi(llistaHabits[i]));
       }
-      this.habits = mapped;
+      this.habits = mapejats;
     },
-    fetchHabitsFromApi: async function () {
+
+    /**
+     * Obté els hàbits des de l'API de Laravel via fetch.
+     */
+    obtenirHabitsDesDeApi: async function () {
+      var configuracio;
+      var urlApi;
+      var base;
+      var resposta;
+      var dadesBrutes;
+      var llista;
+
       this.loading = true;
       this.error = null;
+
       try {
-        var config = useRuntimeConfig();
-        var apiUrl = config.public.apiUrl;
-        var base = apiUrl.endsWith("/") ? apiUrl.slice(0, -1) : apiUrl;
-        var response = await fetch(base + "/api/habits");
-        if (!response.ok) {
-          throw new Error("Error al obtener hábitos: " + response.status);
+        configuracio = useRuntimeConfig();
+        urlApi = configuracio.public.apiUrl;
+
+        // A. Normalitzar la URL base
+        if (urlApi.endsWith("/")) {
+          base = urlApi.slice(0, -1);
+        } else {
+          base = urlApi;
         }
-        var rawData = await response.json();
-        var habits = Array.isArray(rawData) ? rawData : rawData.data || [];
-        this.setHabitsFromApi(habits);
+
+        // B. Realitzar la petició
+        resposta = await fetch(base + "/api/habits");
+
+        if (!resposta.ok) {
+          throw new Error("Error en obtenir hàbits: " + resposta.status);
+        }
+
+        dadesBrutes = await resposta.json();
+
+        // C. Processar les dades
+        if (Array.isArray(dadesBrutes)) {
+          llista = dadesBrutes;
+        } else {
+          llista = dadesBrutes.data || [];
+        }
+
+        this.establirHabitsDesDeApi(llista);
         return this.habits;
       } catch (e) {
         this.error = e.message;
@@ -54,75 +97,87 @@ export const useHabitStore = defineStore("habit", {
         this.loading = false;
       }
     },
-    addHabit: function (habit) {
-      // Snapshot logic for rollback (simulated here as we push to local state first)
+
+    /**
+     * Afegeix un nou hàbit (Simulació amb rollback).
+     */
+    afegirHabit: function (nouHabit) {
       var snapshot = JSON.parse(JSON.stringify(this.habits));
 
       try {
-        // Assign a temporary ID if one doesn't exist
-        if (!habit.id) {
-          habit.id = Date.now();
+        if (!nouHabit.id) {
+          nouHabit.id = Date.now();
         }
-        this.habits.push(habit);
-
-        // Here we would typically make an API call
-        // If it fails, we revert:
-        // this.habits = snapshot;
+        this.habits.push(nouHabit);
       } catch (e) {
         this.error = e.message;
         this.habits = snapshot;
       }
     },
-    updateHabit: function (updatedHabit) {
+
+    /**
+     * Actualitza un hàbit existent a la llista local.
+     */
+    actualitzarHabit: function (habitActualitzat) {
       var snapshot = JSON.parse(JSON.stringify(this.habits));
-      var self = this; // Capture 'this' for use in inner scopes if needed
+      var i;
 
       try {
-        for (var i = 0; i < self.habits.length; i++) {
-          if (self.habits[i].id === updatedHabit.id) {
-            self.habits[i] = updatedHabit;
+        for (i = 0; i < this.habits.length; i++) {
+          if (this.habits[i].id === habitActualitzat.id) {
+            this.habits[i] = habitActualitzat;
             break;
           }
-        }
-      } catch (e) {
-        self.error = e.message;
-        self.habits = snapshot;
-      }
-    },
-    upsertHabit: function (habit) {
-      var snapshot = JSON.parse(JSON.stringify(this.habits));
-      var found = false;
-      try {
-        for (var i = 0; i < this.habits.length; i++) {
-          if (this.habits[i].id === habit.id) {
-            this.habits[i] = habit;
-            found = true;
-            break;
-          }
-        }
-        if (!found) {
-          this.habits.push(habit);
         }
       } catch (e) {
         this.error = e.message;
         this.habits = snapshot;
       }
     },
-    removeHabit: function (habitId) {
+
+    /**
+     * Afegeix o actualitza un hàbit segons si ja existeix.
+     */
+    guardarOActualitzarHabit: function (hàbit) {
       var snapshot = JSON.parse(JSON.stringify(this.habits));
-      var self = this;
+      var trobat = false;
+      var i;
 
       try {
-        var newHabits = [];
-        for (var i = 0; i < self.habits.length; i++) {
-          if (self.habits[i].id !== habitId) {
-            newHabits.push(self.habits[i]);
+        for (i = 0; i < this.habits.length; i++) {
+          if (this.habits[i].id === hàbit.id) {
+            this.habits[i] = hàbit;
+            trobat = true;
+            break;
           }
         }
-        self.habits = newHabits;
+        if (!trobat) {
+          this.habits.push(hàbit);
+        }
       } catch (e) {
-        self.error = e.message;
-        self.habits = snapshot;
+        this.error = e.message;
+        this.habits = snapshot;
+      }
+    },
+
+    /**
+     * Elimina un hàbit de la llista local.
+     */
+    eliminarHabit: function (idHabit) {
+      var snapshot = JSON.parse(JSON.stringify(this.habits));
+      var novaLlista = [];
+      var i;
+
+      try {
+        for (i = 0; i < this.habits.length; i++) {
+          if (this.habits[i].id !== idHabit) {
+            novaLlista.push(this.habits[i]);
+          }
+        }
+        this.habits = novaLlista;
+      } catch (e) {
+        this.error = e.message;
+        this.habits = snapshot;
       }
     },
   },

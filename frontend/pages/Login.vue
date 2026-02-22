@@ -2,21 +2,21 @@
   <div class="min-h-screen bg-gray-50 py-12 px-8 lg:px-20 flex items-center">
     <div class="w-full">
       <div class="grid grid-cols-2 gap-12 items-center">
-        <!-- Left: Login card -->
+        <!-- Esquerra: Targeta de login -->
         <div class="bg-white rounded-xl p-8 shadow-md" style="max-width: 420px">
           <div class="flex flex-col items-center gap-4">
             <div
               class="w-20 h-20 rounded-full bg-green-500/10 flex items-center justify-center"
             >
               <div
-                class="w-12 h-12 roundeSd-full bg-green-600 text-white flex items-center justify-center font-semibold"
+                class="w-12 h-12 rounded-full bg-green-600 text-white flex items-center justify-center font-semibold"
               >
                 ∞
               </div>
             </div>
             <h2 class="text-2xl font-semibold text-gray-800">Loopy Master</h2>
             <p class="text-sm text-gray-500 text-center">
-              Domina tus hábitos, sube de nivel.
+              Domina els teus hàbits, puja de nivell.
             </p>
           </div>
 
@@ -26,16 +26,18 @@
                 >EMAIL</label
               >
               <input
+                v-model="formulari.email"
                 type="email"
-                placeholder="alex.martinez@ejemplo.com"
+                placeholder="alex.martinez@exemple.com"
                 class="w-full px-4 py-3 rounded-lg border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-200"
               />
             </div>
             <div>
               <label class="block text-xs font-medium text-gray-600 mb-2"
-                >CONTRASEÑA</label
+                >CONTRASSENYA</label
               >
               <input
+                v-model="formulari.contrasenya"
                 type="password"
                 placeholder="••••••••"
                 class="w-full px-4 py-3 rounded-lg border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-200"
@@ -45,6 +47,7 @@
             <div class="pt-2 grid grid-cols-2 gap-3">
               <button
                 type="button"
+                @click="loginAdmin"
                 class="bg-green-600 hover:bg-green-700 text-white font-medium py-3 rounded-lg"
               >
                 ADMIN
@@ -54,7 +57,7 @@
                   type="button"
                   class="w-full bg-green-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg"
                 >
-                  USER
+                  USUARI
                 </button>
               </NuxtLink>
             </div>
@@ -70,64 +73,66 @@
               </NuxtLink>
             </div>
 
-            <div class="text-center text-xs text-green-600 mt-3">
-              ¿Has olvidado tu contraseña?
+            <div class="text-center text-xs text-green-600 mt-3 cursor-pointer">
+              Has oblidat la teva contrasenya?
             </div>
           </form>
         </div>
 
-        <!-- Right: dashboard preview -->
+        <!-- Dreta: vista prèvia del dashboard -->
         <div class="grid grid-rows-3 gap-6 h-full">
-          <!-- Top row: small avatar card + progress + spacer -->
+          <!-- Fila superior: targeta avatar + progrés -->
           <div class="grid grid-cols-3 gap-6 items-start">
             <div class="col-span-1"></div>
             <div
               class="col-span-1 bg-white rounded-xl p-4 shadow-sm flex flex-col items-center"
             >
-              <div class="text-sm font-medium mt-3">Tu Compañero</div>
-              <div class="text-xs text-gray-400">Nivel 5 · Guardián</div>
+              <div class="text-sm font-medium mt-3">El teu Company</div>
+              <div class="text-xs text-gray-400">Nivell 5 · Guardià</div>
             </div>
             <div
               class="col-span-1 bg-white rounded-xl p-3 shadow-sm flex flex-col justify-between"
             >
-              <div class="text-xs text-gray-400">Progreso Diario</div>
+              <div class="text-xs text-gray-400">Progrés Diari</div>
               <div
                 class="w-full bg-gray-100 rounded-full h-3 mt-3 overflow-hidden"
               >
                 <div
                   class="bg-green-500 h-3 rounded-full"
-                  style="width: 60%"
+                  :style="{ width: percentatgeProgres + '%' }"
                 ></div>
               </div>
             </div>
           </div>
 
-          <!-- Middle row: big central pet card -->
+          <!-- Fila central: targeta central mascota -->
           <div class="flex items-center justify-center">
             <div
               class="bg-white rounded-xl p-8 shadow-md w-full max-w-xl flex items-center gap-6"
             >
               <div
                 class="w-24 h-24 rounded-xl bg-amber-50 flex items-center justify-center"
-              ></div>
+              >
+                <!-- Imatge o icona de la mascota -->
+              </div>
               <div>
-                <div class="text-lg font-semibold">TUMONSTRUO</div>
+                <div class="text-lg font-semibold uppercase">ElTeuMonstre</div>
                 <div class="text-sm text-gray-400">
-                  Nivel 5 · Guardián de los Bosques
+                  Nivell 5 · Guardià dels Boscos
                 </div>
               </div>
               <div class="ml-auto text-sm text-gray-500">⭐ 42</div>
             </div>
           </div>
 
-          <!-- Bottom row: two colored cards -->
+          <!-- Fila inferior: dues targetes de colors -->
           <div class="grid grid-cols-3 gap-6 items-end">
             <div
               class="col-span-1 bg-blue-50 rounded-xl p-6 shadow-sm flex items-center justify-center"
             >
               <div class="text-center">
-                <div class="text-sm text-gray-500">Beber Agua</div>
-                <div class="text-xs text-gray-400">2 / 4 · Salud</div>
+                <div class="text-sm text-gray-500">Beure Aigua</div>
+                <div class="text-xs text-gray-400">2 / 4 · Salut</div>
               </div>
             </div>
             <div class="col-span-1"></div>
@@ -135,9 +140,9 @@
               class="col-span-1 bg-yellow-50 rounded-xl p-6 shadow-sm flex items-center justify-center"
             >
               <div class="text-center">
-                <div class="text-sm text-gray-700">Diario</div>
+                <div class="text-sm text-gray-700">Diari</div>
                 <div class="text-xs text-gray-400">
-                  Completado · Creatividad
+                  Completat · Creativitat
                 </div>
               </div>
             </div>
@@ -151,7 +156,7 @@
 <script>
 /**
  * Configuració de la pàgina de Login.
- * Es desactiva el layout per defecte.
+ * Segueix les normes de l'Agent Javascript (ES5 Estricte).
  */
 definePageMeta({ layout: false });
 
@@ -161,19 +166,36 @@ export default {
    */
   data: function () {
     return {
-      // De moment no hi ha dades dinàmiques
+      formulari: {
+        email: "",
+        contrasenya: ""
+      },
+      percentatgeProgres: 60
     };
   },
 
   methods: {
-    // Les funcions es definiran aquí seguint l'estil Agent
+    /**
+     * Acció per iniciar sessió com a administrador.
+     */
+    loginAdmin: function () {
+        console.log("Intentant login admin...");
+        // A. Validar camps
+        if (!this.formulari.email || !this.formulari.contrasenya) {
+            alert("Si us plau, omple tots els camps.");
+            return;
+        }
+        
+        // B. Processar (simulació)
+        alert("Login admin en desenvolupament");
+    }
   },
 };
 </script>
 
 <style scoped>
-/* Pequeños ajustes para simular las sombras y el espaciado del diseño */
-.shadow-inner {
-  box-shadow: 0 8px 30px rgba(16, 24, 40, 0.06);
+/* Ajustos per simular les ombres i l'espaiat */
+.shadow-md {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 </style>

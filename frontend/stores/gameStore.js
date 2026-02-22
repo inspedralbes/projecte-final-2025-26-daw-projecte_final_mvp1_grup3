@@ -1,159 +1,229 @@
-import { defineStore } from 'pinia'
-import { ref } from 'vue'
-const TIMEOUT_MS = 5000
-const XP_BASE = 10
-const XP_PER_DIFICULTAT = {
+import { defineStore } from 'pinia';
+
+// Constants de configuració
+var TEMPS_ESPERA_MS = 5000;
+var XP_BASE = 10;
+var XP_PER_DIFICULTAT = {
   facil: 100,
   media: 250,
   dificil: 400
-}
+};
 
-export const useGameStore = defineStore('game', () => {
-  const config = useRuntimeConfig()
-  const apiUrl = config.public.apiUrl
-  const userId = ref(null)
-  const racha = ref(0)
-  const xpTotal = ref(0)
-  const nivel = ref(1)
-  const habitos = ref([])
+/**
+ * Store principal del joc per gestionar el progrés de l'usuari.
+ * Segueix les normes de l'Agent Javascript (ES5 Estricte).
+ */
+export var useGameStore = defineStore('game', {
+  state: function () {
+    return {
+      usuariId: null,
+      ratxa: 0,
+      xpTotal: 0,
+      nivell: 1,
+      habits: []
+    };
+  },
 
-  const buildApiUrl = (path) => {
-    const base = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl
-    return `${base}${path}`
-  }
+  actions: {
+    /**
+     * Construeix una URL de l'API a partir d'un camí.
+     */
+    construirUrlApi: function (cami) {
+      var configuracio = useRuntimeConfig();
+      var urlApi = configuracio.public.apiUrl;
+      var base;
 
-  const completHabit = async (habitId, socket) => {
-    if (!socket) throw new Error('Socket no disponible')
+      if (urlApi.endsWith('/')) {
+        base = urlApi.slice(0, -1);
+      } else {
+        base = urlApi;
+      }
 
-    const habit = habitos.value.find(h => h.id === habitId)
-    if (!habit) return false
+      return base + cami;
+    },
 
-    return new Promise((resolve) => {
-      const handleResponse = (response) => {
-        socket.off('update_xp', handleResponse)
-        clearTimeout(timeoutId)
+    /**
+     * Completa un hàbit i gestiona la comunicació via Socket i fetch.
+     */
+    completarHabit: async function (idHabit, socket) {
+      var self = this;
+      var hàbit;
+      var i;
 
-        // Validar respuesta del backend como confirmación de CUD
-        if (response && response.xp_total !== undefined && response.ratxa_actual !== undefined) {
-          habit.completado = true
+      // A. Validar socket
+      if (!socket) {
+        throw new Error('Socket no disponible');
+      }
 
-          // Refrescar estado desde backend (fuente de verdad)
-          fetchGameState()
-            .then(function () {
-              resolve(true)
-            })
-            .catch(function () {
-              resolve(true)
-            })
-        } else {
-          resolve(false)
+      // B. Cercar l'hàbit localment
+      for (i = 0; i < self.habits.length; i++) {
+        if (self.habits[i].id === idHabit) {
+          hàbit = self.habits[i];
+          break;
         }
       }
 
-      const timeoutId = setTimeout(() => {
-        socket.off('update_xp', handleResponse)
-        resolve(false)
-      }, TIMEOUT_MS)
-
-      // Escuchar respuesta del backend
-      socket.on('update_xp', handleResponse)
-
-      // Emitir evento al backend
-      socket.emit('habit_completed', {
-        user_id: userId.value,
-        habit_id: habitId,
-        data: new Date().toISOString()
-      })
-    })
-  }
-
-  const updateRacha = (newRacha) => {
-    racha.value = newRacha
-  }
-
-  const updateXP = (xp) => {
-    xpTotal.value = xp
-  }
-
-  const setUserId = (id) => {
-    userId.value = id
-  }
-
-  const setNivel = (newNivel) => {
-    nivel.value = newNivel
-  }
-
-  const fetchHabitos = async () => {
-    try {
-      const response = await fetch(buildApiUrl('/api/habits'))
-      if (!response.ok) {
-        throw new Error(`Error al obtener hábitos: ${response.status}`)
+      if (!hàbit) {
+        return false;
       }
-      const rawData = await response.json()
-      
-      console.log('📥 Datos crudos de la API:', rawData)
-      
-      // Laravel Resources devuelve { data: [...] }
-      const habitosDelApi = Array.isArray(rawData) ? rawData : (rawData.data || [])
-      
-      console.log('📋 Hábitos extraídos:', habitosDelApi)
-      
-      habitos.value = habitosDelApi.map(habit => ({
-        id: habit.id,
-        nombre: habit.titol || 'Sin nombre',
-        descripcion: `${habit.frequencia_tipus} - Dificultad: ${habit.dificultat}` || '',
-        completado: false,
-        xpReward: XP_PER_DIFICULTAT[habit.dificultat] || XP_BASE,
-        usuari_id: habit.usuari_id,
-        plantilla_id: habit.plantilla_id,
-        dificultat: habit.dificultat,
-        frequencia_tipus: habit.frequencia_tipus,
-        dies_setmana: habit.dies_setmana,
-        objectiu_vegades: habit.objectiu_vegades
-      }))
-      
-      console.log('✅ Hábitos transformados:', habitos.value)
-      return habitos.value
-    } catch (error) {
-      console.error('❌ Error fetching habitos:', error)
-      habitos.value = []
-      return []
+
+      // C. Processar via Promise clàssica per al socket
+      return new Promise(function (resolve) {
+        var idTemps;
+
+        // Funció de gestió de la resposta del socket
+        var gestionarResposta = function (resposta) {
+          socket.off('update_xp', gestionarResposta);
+          clearTimeout(idTemps);
+
+          // Validar resposta del backend com confirmació de CUD
+          if (resposta && resposta.xp_total !== undefined && resposta.ratxa_actual !== undefined) {
+            hàbit.completat = true;
+
+            // Refrescar estat des del backend (font de veritat)
+            self.obtenirEstatJoc()
+              .then(function () {
+                resolve(true);
+              })
+              .catch(function () {
+                resolve(true); // Encara que falli el refresh, el socket ha confirmat
+              });
+          } else {
+            resolve(false);
+          }
+        };
+
+        // Timeout de seguretat
+        idTemps = setTimeout(function () {
+          socket.off('update_xp', gestionarResposta);
+          resolve(false);
+        }, TEMPS_ESPERA_MS);
+
+        // Escoltar resposta i emetre esdeveniment
+        socket.on('update_xp', gestionarResposta);
+
+        socket.emit('habit_completed', {
+          user_id: self.usuariId,
+          habit_id: idHabit,
+          data: new Date().toISOString()
+        });
+      });
+    },
+
+    /**
+     * Actualitza la ratxa localment.
+     */
+    actualitzarRatxa: function (novaRatxa) {
+      this.ratxa = novaRatxa;
+    },
+
+    /**
+     * Actualitza l'XP localment.
+     */
+    actualitzarXP: function (xp) {
+      this.xpTotal = xp;
+    },
+
+    /**
+     * Estableix l'ID de l'usuari.
+     */
+    assignarUsuariId: function (id) {
+      this.usuariId = id;
+    },
+
+    /**
+     * Estableix el nivell actual.
+     */
+    assignarNivell: function (nouNivell) {
+      this.nivell = nouNivell;
+    },
+
+    /**
+     * Obté els hàbits des de l'API de Laravel.
+     */
+    obtenirHabitos: async function () {
+      var self = this;
+      var url;
+      var resposta;
+      var dadesBrutes;
+      var llistaHabits;
+      var h;
+      var mapejats = [];
+
+      try {
+        url = self.construirUrlApi('/api/habits');
+        resposta = await fetch(url);
+
+        if (!resposta.ok) {
+          throw new Error("Error en obtenir hàbits: " + resposta.status);
+        }
+
+        dadesBrutes = await resposta.json();
+
+        if (Array.isArray(dadesBrutes)) {
+          llistaHabits = dadesBrutes;
+        } else {
+          llistaHabits = dadesBrutes.data || [];
+        }
+
+        for (var i = 0; i < llistaHabits.length; i++) {
+          h = llistaHabits[i];
+          mapejats.push({
+            id: h.id,
+            nom: h.titol || 'Sense nom',
+            descripcio: (h.frequencia_tipus || '') + " - Dificultat: " + (h.dificultat || ''),
+            completat: false,
+            recompensaXP: XP_PER_DIFICULTAT[h.dificultat] || XP_BASE,
+            usuariId: h.usuari_id,
+            plantillaId: h.plantilla_id,
+            dificultat: h.dificultat,
+            frequenciaTipus: h.frequencia_tipus,
+            diesSetmana: h.dies_setmana,
+            objectiuVegades: h.objectiu_vegades
+          });
+        }
+
+        self.habits = mapejats;
+        return self.habits;
+      } catch (error) {
+        console.error('Error fetching habits:', error);
+        self.habits = [];
+        return [];
+      }
+    },
+
+    /**
+     * Obté l'estat del joc (XP, Ratxa) des de l'API de Laravel.
+     */
+    obtenirEstatJoc: async function () {
+      var self = this;
+      var url;
+      var resposta;
+      var dades;
+
+      try {
+        url = self.construirUrlApi('/api/game-state');
+        resposta = await fetch(url);
+
+        if (!resposta.ok) {
+          throw new Error("Error en obtenir estat: " + resposta.status);
+        }
+
+        dades = await resposta.json();
+
+        if (dades) {
+          if (dades.xp_total !== undefined) {
+            self.xpTotal = dades.xp_total;
+          }
+          if (dades.ratxa_actual !== undefined) {
+            self.ratxa = dades.ratxa_actual;
+          }
+        }
+        return dades;
+      } catch (error) {
+        console.error('Error fetching game-state:', error);
+        return null;
+      }
     }
   }
-
-  const fetchGameState = async () => {
-    try {
-      const response = await fetch(buildApiUrl('/api/game-state'))
-      if (!response.ok) {
-        throw new Error(`Error al obtener game-state: ${response.status}`)
-      }
-      const data = await response.json()
-
-      if (data && data.xp_total !== undefined) {
-        xpTotal.value = data.xp_total
-      }
-      if (data && data.ratxa_actual !== undefined) {
-        racha.value = data.ratxa_actual
-      }
-      return data
-    } catch (error) {
-      console.error('❌ Error fetching game-state:', error)
-      return null
-    }
-  }
-
-  return {
-    userId,
-    racha,
-    xpTotal,
-    nivel,
-    habitos,
-    completHabit,
-    updateRacha,
-    updateXP,
-    setUserId,
-    setNivel,
-    fetchHabitos,
-    fetchGameState
-  }
-})
+});

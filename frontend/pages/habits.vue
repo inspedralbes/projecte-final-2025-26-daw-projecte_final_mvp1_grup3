@@ -1,12 +1,12 @@
 <template>
   <div class="min-h-screen bg-gray-50 p-6">
     <div class="max-w-7xl mx-auto">
-      <h1 class="text-3xl font-bold text-gray-800 mb-8">Crear Hábito</h1>
+      <h1 class="text-3xl font-bold text-gray-800 mb-8">Crear Hàbit</h1>
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Column 1 & 2: Form Sections -->
+        <!-- Esquerra: Seccions del formulari -->
         <div class="lg:col-span-2 space-y-6">
-          <!-- 1. Detalles del Hábito -->
+          <!-- 1. Detalls de l'Hàbit -->
           <div
             class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100"
           >
@@ -15,7 +15,7 @@
                 <span class="text-xl">✏️</span>
               </div>
               <h2 class="text-lg font-bold text-gray-800">
-                Detalles del Hábito
+                Detalls de l'Hàbit
               </h2>
             </div>
 
@@ -23,12 +23,12 @@
               <div>
                 <label
                   class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
-                  >Nombre del hábito</label
+                  >Nom de l'hàbit</label
                 >
                 <input
-                  v-model="form.name"
+                  v-model="formulari.nom"
                   type="text"
-                  placeholder="Ej: Beber 2L de agua, Leer 30 min..."
+                  placeholder="Ex: Beure 2L d'aigua, Llegir 30 min..."
                   class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white transition-all"
                 />
               </div>
@@ -36,11 +36,11 @@
               <div>
                 <label
                   class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
-                  >Motivación (Opcional)</label
+                  >Motivació (Opcional)</label
                 >
                 <textarea
-                  v-model="form.motivation"
-                  placeholder="¿Por qué quieres empezar este hábito?"
+                  v-model="formulari.motivacio"
+                  placeholder="Per què vols començar aquest hàbit?"
                   class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white transition-all resize-none h-24"
                 ></textarea>
               </div>
@@ -48,60 +48,56 @@
               <div>
                 <label
                   class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
-                  >Icono Rápido</label
+                  >Icona Ràpida</label
                 >
                 <div class="flex gap-3">
                   <button
-                    v-for="icon in icons"
-                    :key="icon"
-                    @click="selectIcon(icon)"
-                    :class="{
-                      'bg-green-500 text-white': form.icon === icon,
-                      'bg-gray-100 text-gray-600 hover:bg-gray-200':
-                        form.icon !== icon,
-                    }"
-                    class="w-10 h-10 rounded-full flex items-center justify-center transition-colors"
+                    v-for="icona in icones"
+                    :key="icona"
+                    type="button"
+                    @click="seleccionarIcona(icona)"
+                    :class="[
+                      'w-10 h-10 rounded-full flex items-center justify-center transition-colors',
+                      formulari.icona === icona ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    ]"
                   >
-                    {{ icon }}
+                    {{ icona }}
                   </button>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- 2. Categoría -->
+          <!-- 2. Categoria -->
           <div
             class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100"
           >
             <div class="flex items-center gap-3 mb-4">
               <div class="bg-orange-100 p-2 rounded-lg">
-                <span class="text-xl">Shapes</span>
+                <span class="text-xl">⭐</span>
               </div>
-              <h2 class="text-lg font-bold text-gray-800">Categoría</h2>
+              <h2 class="text-lg font-bold text-gray-800">Categoria</h2>
             </div>
 
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <button
                 v-for="cat in categories"
                 :key="cat.id"
-                @click="selectCategory(cat.id)"
-                :class="{
-                  'ring-2 ring-green-500 bg-green-50': form.category === cat.id,
-                  'bg-white border border-gray-200 hover:border-green-300':
-                    form.category !== cat.id,
-                }"
-                class="p-4 rounded-xl flex flex-col items-center justify-center gap-2 transition-all"
+                type="button"
+                @click="seleccionarCategoria(cat.id)"
+                :class="[
+                   'p-4 rounded-xl flex flex-col items-center justify-center gap-2 transition-all',
+                   formulari.categoria === cat.id ? 'ring-2 ring-green-500 bg-green-50' : 'bg-white border border-gray-200 hover:border-green-300'
+                ]"
               >
-                <span class="text-2xl">{{ cat.icon }}</span>
-                <span class="text-sm font-medium text-gray-700">{{
-                  cat.name
-                }}</span>
+                <span class="text-2xl">{{ cat.icona }}</span>
+                <span class="text-sm font-medium text-gray-700">{{ cat.nom }}</span>
               </button>
             </div>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- 3. Planificación -->
+            <!-- 3. Planificació -->
             <div
               class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100"
             >
@@ -109,28 +105,25 @@
                 <div class="bg-blue-100 p-2 rounded-lg">
                   <span class="text-xl">📅</span>
                 </div>
-                <!-- Fixed typo from User Request: PEsonalizar -> Personalizar for correct spelling if desired, but user said 'Planificación' here -->
-                <h2 class="text-lg font-bold text-gray-800">Planificación</h2>
+                <h2 class="text-lg font-bold text-gray-800">Planificació</h2>
               </div>
 
               <div class="space-y-4">
                 <div>
                   <label
                     class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
-                    >Frecuencia</label
+                    >Freqüència</label
                   >
                   <div class="flex bg-gray-100 rounded-lg p-1">
                     <button
                       v-for="freq in frequencies"
                       :key="freq"
-                      @click="form.frequency = freq"
-                      :class="{
-                        'bg-white shadow-sm text-gray-800':
-                          form.frequency === freq,
-                        'text-gray-500 hover:text-gray-700':
-                          form.frequency !== freq,
-                      }"
-                      class="flex-1 py-1.5 text-sm font-medium rounded-md transition-all"
+                      type="button"
+                      @click="formulari.frequencia = freq"
+                      :class="[
+                        'flex-1 py-1.5 text-sm font-medium rounded-md transition-all',
+                        formulari.frequencia === freq ? 'bg-white shadow-sm text-gray-800' : 'text-gray-500 hover:text-gray-700'
+                      ]"
                     >
                       {{ freq }}
                     </button>
@@ -140,22 +133,20 @@
                 <div>
                   <label
                     class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
-                    >Días Objetivo</label
+                    >Dies Objectiu</label
                   >
                   <div class="flex justify-between">
                     <button
-                      v-for="(day, index) in days"
-                      :key="day"
-                      @click="toggleDay(index)"
-                      :class="{
-                        'bg-green-600 text-white':
-                          form.selectedDays.indexOf(index) !== -1,
-                        'bg-gray-200 text-gray-600 hover:bg-gray-300':
-                          form.selectedDays.indexOf(index) === -1,
-                      }"
-                      class="w-8 h-8 rounded-full text-xs font-bold flex items-center justify-center transition-colors"
+                      v-for="(dia, index) in diesSetmana"
+                      :key="dia"
+                      type="button"
+                      @click="alternarDia(index)"
+                      :class="[
+                        'w-8 h-8 rounded-full text-xs font-bold flex items-center justify-center transition-colors',
+                        comprovarSiDiaSeleccionat(index) ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                      ]"
                     >
-                      {{ day }}
+                      {{ dia }}
                     </button>
                   </div>
                 </div>
@@ -163,10 +154,10 @@
                 <div>
                   <label
                     class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
-                    >Recordatorio</label
+                    >Recordatori</label
                   >
                   <input
-                    v-model="form.reminder"
+                    v-model="formulari.recordatori"
                     type="time"
                     class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm w-full focus:outline-none focus:ring-2 focus:ring-green-500"
                   />
@@ -174,7 +165,7 @@
               </div>
             </div>
 
-            <!-- 4. Personalizar -->
+            <!-- 4. Personalitzar -->
             <div
               class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100"
             >
@@ -182,101 +173,100 @@
                 <div class="bg-purple-100 p-2 rounded-lg">
                   <span class="text-xl">🖌️</span>
                 </div>
-                <h2 class="text-lg font-bold text-gray-800">Personalizar</h2>
+                <h2 class="text-lg font-bold text-gray-800">Personalitzar</h2>
               </div>
 
               <p class="text-sm text-gray-500 mb-4">
-                Elige el estilo visual de tu tarjeta de hábito.
+                Tria l'estil visual del teu hàbit.
               </p>
 
               <div class="flex gap-3 mb-6">
                 <button
                   v-for="color in colors"
                   :key="color"
-                  @click="form.color = color"
+                  type="button"
+                  @click="formulari.color = color"
                   :style="{ backgroundColor: color }"
-                  class="w-10 h-10 rounded-full transition-transform hover:scale-110 focus:outline-none ring-2 ring-offset-2"
-                  :class="{
-                    'ring-gray-400': form.color === color,
-                    'ring-transparent': form.color !== color,
-                  }"
+                  :class="[
+                    'w-10 h-10 rounded-full transition-transform hover:scale-110 focus:outline-none ring-2 ring-offset-2',
+                    formulari.color === color ? 'ring-gray-400' : 'ring-transparent'
+                  ]"
                 ></button>
               </div>
 
-              <!-- Preview Card -->
+              <!-- Vista prèvia -->
               <div
                 class="bg-gray-50 rounded-xl p-4 flex items-center gap-4 opacity-75"
               >
                 <div
                   :style="{
-                    backgroundColor: form.color || '#10B981',
+                    backgroundColor: formulari.color || '#10B981',
                     color: 'white',
                   }"
                   class="w-10 h-10 rounded-lg flex items-center justify-center text-lg"
                 >
-                  {{ form.icon || "📝" }}
+                  {{ formulari.icona || "📝" }}
                 </div>
                 <div class="h-2 bg-gray-200 rounded w-2/3"></div>
               </div>
             </div>
           </div>
 
-          <!-- Submit Button -->
+          <!-- Botó Enviar -->
           <button
-            @click="createHabit"
+            @click="crearHabit"
             class="w-full bg-green-700 hover:bg-green-800 text-white font-bold py-4 rounded-xl shadow-lg shadow-green-700/20 transition-all transform active:scale-95 flex items-center justify-center gap-2"
           >
             <span
               class="bg-white text-green-700 rounded-full w-5 h-5 flex items-center justify-center text-xs"
               >✓</span
             >
-            Crear Hábito
+            Crear Hàbit
           </button>
         </div>
 
-        <!-- Column 3: My Habits List -->
-        <!-- 5. Mis hábitos -->
+        <!-- Dreta: Llista dels meus hàbits -->
         <div class="lg:col-span-1">
           <div
             class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 h-full"
           >
             <div class="flex items-center gap-3 mb-6">
               <span class="text-xl text-gray-400">📋</span>
-              <h2 class="text-lg font-bold text-gray-800">Mis Hábitos</h2>
+              <h2 class="text-lg font-bold text-gray-800">Els Meus Hàbits</h2>
             </div>
 
             <div
               v-if="habitStore.habits.length === 0"
               class="text-center py-10 text-gray-400"
             >
-              <p>No tienes hábitos aún.</p>
-              <p class="text-sm">¡Añade uno nuevo!</p>
+              <p>Encara no tens hàbits.</p>
+              <p class="text-sm">Afegeix-ne un de nou!</p>
             </div>
 
             <div v-else class="space-y-4">
               <div
-                v-for="habit in habitStore.habits"
-                :key="habit.id"
+                v-for="hàbit in habitStore.habits"
+                :key="hàbit.id"
                 class="flex items-center gap-4 p-4 rounded-xl bg-gray-50 hover:bg-white hover:shadow-md transition-all border border-transparent hover:border-gray-100 group"
               >
                 <div
-                  :style="{ backgroundColor: habit.color || '#10B981' }"
+                  :style="{ backgroundColor: hàbit.color || '#10B981' }"
                   class="w-12 h-12 rounded-full flex items-center justify-center text-xl text-white shadow-sm"
                 >
-                  {{ habit.icon }}
+                  {{ hàbit.icona }}
                 </div>
                 <div class="flex-1 min-w-0">
                   <h3 class="font-bold text-gray-800 truncate">
-                    {{ habit.name }}
+                    {{ hàbit.nom }}
                   </h3>
                   <p class="text-xs text-gray-500">
-                    {{ habit.frequency }}
-                    <span v-if="habit.reminder">• {{ habit.reminder }}</span>
+                    {{ hàbit.frequencia }}
+                    <span v-if="hàbit.recordatori">• {{ hàbit.recordatori }}</span>
                   </p>
                 </div>
                 <button
                   class="text-xs text-red-600 hover:text-red-700 font-semibold px-2 py-1 rounded border border-red-200 hover:border-red-300 transition-colors"
-                  @click="deleteHabit(habit.id)"
+                  @click="eliminarHabit(hàbit.id)"
                 >
                   Borrar
                 </button>
@@ -287,7 +277,7 @@
               <button
                 class="text-sm text-gray-400 hover:text-green-600 transition-colors border-dashed border border-gray-300 rounded-full px-4 py-2 w-full"
               >
-                + Hábito rápido
+                + Hàbit ràpid
               </button>
             </div>
           </div>
@@ -301,190 +291,262 @@
 import { io } from "socket.io-client";
 import { useHabitStore } from "../stores/useHabitStore";
 
+/**
+ * Pàgina de gestió d'hàbits. Permet crear, visualitzar i eliminar hàbits.
+ * Segueix les normes de l'Agent Javascript (ES5 Estricte).
+ */
 export default {
-  setup: function () {
-    var habitStore = useHabitStore();
-    return { habitStore: habitStore };
-  },
+  /**
+   * Estat local del component.
+   */
   data: function () {
     return {
       socket: null,
-      isLoading: false,
-      errorMessage: "",
-      form: {
-        name: "",
-        motivation: "",
-        icon: "💧",
-        category: "",
-        frequency: "Diario",
-        reminder: "08:00",
-        selectedDays: [0, 1, 2, 3, 4], // Default Mon-Fri
+      estaCarregant: false,
+      errorMissatge: "",
+      formulari: {
+        nom: "",
+        motivacio: "",
+        icona: "💧",
+        categoria: "",
+        frequencia: "Diari",
+        recordatori: "08:00",
+        diesSeleccionats: [0, 1, 2, 3, 4], // Dilluns a Divendres per defecte
         color: "#10B981",
       },
-      icons: ["💧", "📖", "🏃", "🧘", "🚭", "🥗", "💊", "💤"],
+      icones: ["💧", "📖", "RUN", "🧘", "🚭", "🥗", "💊", "💤"],
       categories: [
-        { id: "salud", name: "Salud", icon: "❤️" },
-        { id: "estudio", name: "Estudio", icon: "📚" },
-        { id: "trabajo", name: "Trabajo", icon: "💼" },
-        { id: "arte", name: "Arte", icon: "🎨" },
+        { id: "salud", nom: "Salut", icona: "❤️" },
+        { id: "estudio", nom: "Estudi", icona: "📚" },
+        { id: "trabajo", nom: "Treball", icona: "💼" },
+        { id: "arte", nom: "Art", icona: "🎨" },
       ],
-      frequencies: ["Diario", "Semanal", "Mensual"],
-      days: ["L", "M", "X", "J", "V", "S", "D"],
+      frequencies: ["Diari", "Setmanal", "Mensual"],
+      diesSetmana: ["L", "M", "X", "J", "V", "S", "D"],
       colors: ["#65A30D", "#3B82F6", "#A855F7", "#F97316", "#EC4899"],
     };
   },
-  mounted: function () {
-    this.initSocket();
-    this.loadHabits();
+
+  /**
+   * Computat: Store d'hàbits.
+   */
+  computed: {
+    habitStore: function () {
+        return useHabitStore();
+    }
   },
+
+  /**
+   * Inicialització.
+   */
+  mounted: function () {
+    this.inicialitzarSocket();
+    this.carregarHabits();
+  },
+
+  /**
+   * Neteja.
+   */
   beforeUnmount: function () {
     if (this.socket) {
       this.socket.disconnect();
     }
   },
+
   methods: {
-    initSocket: function () {
-      if (this.socket) {
-        return;
-      }
+    /**
+     * Inicialitza la conexió amb el servidor de sockets.
+     */
+    inicialitzarSocket: function () {
+      var self = this;
       var socketConfig = useSocketConfig();
       var socketUrl = socketConfig.socketUrl;
-      this.socket = io(socketUrl, {
+
+      if (self.socket) {
+        return;
+      }
+
+      self.socket = io(socketUrl, {
         reconnection: true,
         reconnectionDelay: 1000,
         reconnectionDelayMax: 5000,
         reconnectionAttempts: 5,
       });
 
+      self.socket.on("connect", function () {
+        console.log("✅ Socket conectat:", self.socket.id);
+      });
+
+      self.socket.on("habit_action_confirmed", function (pàrrega) {
+        self.gestionarFeedbackHabit(pàrrega);
+      });
+
+      self.socket.on("disconnect", function () {
+        console.log("❌ Socket desconectat");
+      });
+    },
+
+    /**
+     * Carrega els hàbits de l'usuari des del servidor.
+     */
+    carregarHabits: async function () {
       var self = this;
-
-      this.socket.on("connect", function () {
-        console.log("✅ Socket connectat:", self.socket.id);
-      });
-
-      this.socket.on("habit_action_confirmed", function (payload) {
-        self.handleHabitFeedback(payload);
-      });
-
-      this.socket.on("disconnect", function () {
-        console.log("❌ Socket desconnectat");
-      });
-
-      this.socket.on("error", function (error) {
-        console.error("⚠️ Error en socket:", error);
-      });
-    },
-    loadHabits: async function () {
       try {
-        await this.habitStore.fetchHabitsFromApi();
+        await self.habitStore.obtenirHabitsDesDeApi();
       } catch (e) {
-        this.errorMessage = e.message || "Error al cargar los hábitos";
+        self.errorMissatge = e.message || "Error al carregar els hàbits";
       }
     },
-    selectIcon: function (icon) {
-      this.form.icon = icon;
+
+    /**
+     * Selecciona una icona per l'hàbit.
+     */
+    seleccionarIcona: function (icona) {
+      this.formulari.icona = icona;
     },
-    selectCategory: function (id) {
-      this.form.category = id;
+
+    /**
+     * Selecciona una categoria per l'hàbit.
+     */
+    seleccionarCategoria: function (id) {
+      this.formulari.categoria = id;
     },
-    toggleDay: function (index) {
-      var pos = this.form.selectedDays.indexOf(index);
+
+    /**
+     * Selecciona o deselecciona un dia de la setmana.
+     */
+    alternarDia: function (index) {
+      var pos = this.formulari.diesSeleccionats.indexOf(index);
       if (pos === -1) {
-        this.form.selectedDays.push(index);
+        this.formulari.diesSeleccionats.push(index);
       } else {
-        // Manually implement splice/filter to avoid prohibited high-order functions if strict is extreme,
-        // but prompt said "Prohibides funcions d'ordre superior: Prohibits map, filter o reduce". 'indexOf' and 'splice' are standard array methods not typically considered functional HOFs like map/reduce, but I will be safe.
-        // Actually splice is fine. Filter is HOF.
-        this.form.selectedDays.splice(pos, 1);
+        this.formulari.diesSeleccionats.splice(pos, 1);
       }
     },
-    buildHabitData: function () {
+
+    /**
+     * Comprova si un dia està seleccionat.
+     */
+    comprovarSiDiaSeleccionat: function (index) {
+        return this.formulari.diesSeleccionats.indexOf(index) !== -1;
+    },
+
+    /**
+     * Construeix les dades de l'hàbit per enviar al servidor.
+     */
+    construirDadesHabit: function () {
+      var self = this;
       var frequencia = "diaria";
-      if (this.form.frequency === "Semanal") {
+      var dies = [];
+      var i;
+
+      if (self.formulari.frequencia === "Setmanal") {
         frequencia = "semanal";
-      } else if (this.form.frequency === "Mensual") {
+      } else if (self.formulari.frequencia === "Mensual") {
         frequencia = "mensual";
       }
 
-      var dies = [];
-      for (var i = 0; i < this.form.selectedDays.length; i++) {
-        dies.push(this.form.selectedDays[i] + 1);
+      for (i = 0; i < self.formulari.diesSeleccionats.length; i++) {
+        dies.push(self.formulari.diesSeleccionats[i] + 1);
       }
 
       return {
-        titol: this.form.name,
+        titol: self.formulari.nom,
         dificultat: "facil",
         frequencia_tipus: frequencia,
         dies_setmana: dies.join(","),
         objectiu_vegades: 1,
       };
     },
-    createHabit: function () {
-      // Basic validation
-      if (!this.form.name) {
-        alert("Por favor, introduce un nombre para el hábito.");
+
+    /**
+     * Crea un nou hàbit emetent un esdeveniment al socket.
+     */
+    crearHabit: function () {
+      var self = this;
+      var dadesHabit;
+
+      // A. Validació bàsica
+      if (!self.formulari.nom) {
+        alert("Si us plau, introdueix un nom per l'hàbit.");
         return;
       }
-      if (!this.form.category) {
-        alert("Por favor, selecciona una categoría.");
+      if (!self.formulari.categoria) {
+        alert("Si us plau, selecciona una categoria.");
         return;
       }
 
-      if (!this.socket) {
-        alert("Socket no disponible");
+      if (!self.socket) {
+        alert("Conexió de socket no disponible.");
         return;
       }
 
-      var habitData = this.buildHabitData();
-      this.isLoading = true;
-      this.errorMessage = "";
+      // B. Preparar dades i enviar
+      dadesHabit = self.construirDadesHabit();
+      self.estaCarregant = true;
+      self.errorMissatge = "";
 
-      this.socket.emit("habit_action", {
+      self.socket.emit("habit_action", {
         action: "CREATE",
-        habit_data: habitData,
+        habit_data: dadesHabit,
       });
     },
-    deleteHabit: function (habitId) {
-      if (!this.socket) {
+
+    /**
+     * Elimina un hàbit existent.
+     */
+    eliminarHabit: function (idHabit) {
+      var self = this;
+      if (!self.socket) {
         alert("Socket no disponible");
         return;
       }
-      this.isLoading = true;
-      this.errorMessage = "";
+      self.estaCarregant = true;
+      self.errorMissatge = "";
 
-      this.socket.emit("habit_action", {
+      self.socket.emit("habit_action", {
         action: "DELETE",
-        habit_id: habitId,
+        habit_id: idHabit,
       });
     },
-    handleHabitFeedback: function (payload) {
-      this.isLoading = false;
 
-      if (!payload || payload.success !== true) {
-        this.errorMessage = "Error al procesar la acción del hábito";
+    /**
+     * Gestiona el feedback rebut pel socket després d'una acció CUD.
+     */
+    gestionarFeedbackHabit: function (pàrrega) {
+      var self = this;
+      var mapejat;
+
+      self.estaCarregant = false;
+
+      if (!pàrrega || pàrrega.success !== true) {
+        self.errorMissatge = "Error al processar l'acció de l'hàbit";
         return;
       }
 
-      if (payload.action === "CREATE" || payload.action === "UPDATE") {
-        if (payload.habit) {
-          var mapped = this.habitStore.mapHabitFromApi(payload.habit);
-          this.habitStore.upsertHabit(mapped);
-          this.resetForm();
+      if (pàrrega.action === "CREATE" || pàrrega.action === "UPDATE") {
+        if (pàrrega.habit) {
+          mapejat = self.habitStore.mapejarHabitDesDeApi(pàrrega.habit);
+          self.habitStore.guardarOActualitzarHabit(mapejat);
+          self.netejarFormulari();
         }
-      } else if (payload.action === "DELETE") {
-        if (payload.habit && payload.habit.id) {
-          this.habitStore.removeHabit(payload.habit.id);
+      } else if (pàrrega.action === "DELETE") {
+        if (pàrrega.habit && pàrrega.habit.id) {
+          self.habitStore.eliminarHabit(pàrrega.habit.id);
         }
       }
     },
-    resetForm: function () {
-      this.form.name = "";
-      this.form.motivation = "";
-      this.form.icon = "💧";
-      this.form.category = "";
-      // Keep some defaults like frequency or days if UX prefers, or reset all
-      this.form.frequency = "Diario";
-      this.form.reminder = "08:00";
+
+    /**
+     * Neteja el formulari després d'una creació d'èxit.
+     */
+    netejarFormulari: function () {
+      this.formulari.nom = "";
+      this.formulari.motivacio = "";
+      this.formulari.icona = "💧";
+      this.formulari.categoria = "";
+      this.formulari.frequencia = "Diari";
+      this.formulari.recordatori = "08:00";
     },
   },
 };

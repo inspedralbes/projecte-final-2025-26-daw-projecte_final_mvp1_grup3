@@ -15,7 +15,8 @@ services:
       - "${POSTGRES_PORT:-5433}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ../database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - ../database/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+      - ../database/insert.sql:/docker-entrypoint-initdb.d/02-insert.sql:ro
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-loopy} -d ${POSTGRES_DB:-loopy_db}" ]
       interval: 5s
@@ -72,18 +73,60 @@ services:
       DB_PASSWORD: ${POSTGRES_PASSWORD:-loopy_secret}
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      REDIS_CLIENT: phpredis
+      REDIS_READ_TIMEOUT: 60
+      REDIS_READ_WRITE_TIMEOUT: 60
+      REDIS_PREFIX: ""
       JWT_SECRET: ${JWT_SECRET:-shared-secret-change-in-production}
       CACHE_DRIVER: redis
       SESSION_DRIVER: redis
       QUEUE_CONNECTION: redis
     volumes:
       - ../backend-laravel:/var/www
+      - ../database:/var/database:ro
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
     command: php artisan serve --host=0.0.0.0 --port=8000
+
+  backend-laravel-worker:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.laravel
+    container_name: loopy-laravel-worker
+    restart: unless-stopped
+    working_dir: /var/www
+    entrypoint: []
+    environment:
+      APP_NAME: Loopy
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_KEY: ${APP_KEY:-base64:AAAAAAAAAAAAAAAAAAAAAA==}
+      APP_URL: http://localhost:8000
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${POSTGRES_DB:-loopy_db}
+      DB_USERNAME: ${POSTGRES_USER:-loopy}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-loopy_secret}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_CLIENT: phpredis
+      REDIS_READ_TIMEOUT: 60
+      REDIS_READ_WRITE_TIMEOUT: 60
+      REDIS_PREFIX: ""
+      JWT_SECRET: ${JWT_SECRET:-shared-secret-change-in-production}
+    volumes:
+      - ../backend-laravel:/var/www
+      - ../database:/var/database:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: ["php", "artisan", "habits:redis-worker"]
 
   backend-node:
     build:

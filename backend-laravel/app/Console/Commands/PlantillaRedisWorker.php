@@ -2,57 +2,48 @@
 
 namespace App\Console\Commands;
 
-//================================ NAMESPACES / IMPORTS ============
-
 use App\Services\PlantillaService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 
-//================================ PROPIETATS / ATRIBUTS ==========
-
-/**
- * Comandament PlantillaRedisWorker.
- * Executa un bucle infinit que escolta la cua 'plantilles_queue' amb brpop bloquejant
- * i processa les accions de plantilles (CRUD) mitjançant PlantillaService.
- */
 class PlantillaRedisWorker extends Command
 {
     /**
-     * Signatura del comandament.
+     * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'plantilles:redis-worker';
+    protected $signature = 'plantilla:redis-worker';
 
     /**
-     * Descripció del comandament.
+     * The console command description.
      *
      * @var string
      */
     protected $description = 'Worker que processa la cua plantilles_queue de Redis (bucle infinit)';
 
     /**
-     * Servei de processament de plantilles.
+     * The Plantilla service instance.
      *
      * @var PlantillaService
      */
     protected PlantillaService $plantillaService;
 
     /**
-     * Nom de la cua Redis a escoltar.
+     * The Redis queue name to listen to.
      */
     private const COLA_PLANTILLES = 'plantilles_queue';
 
     /**
-     * Timeout per brpop (segons).
+     * Timeout for brpop (seconds).
      */
     private const TIMEOUT_BRPOP = 30;
 
-    //================================ MÈTODES / FUNCIONS ===========
-
     /**
-     * Constructor. Injecció del servei de plantilles.
+     * Create a new command instance.
+     *
+     * @return void
      */
     public function __construct(PlantillaService $plantillaService)
     {
@@ -61,11 +52,13 @@ class PlantillaRedisWorker extends Command
     }
 
     /**
-     * Executa el comandament: bucle infinit amb brpop i processament.
+     * Execute the console command.
+     *
+     * @return int
      */
     public function handle(): int
     {
-        $this->info('Worker Redis iniciat. Escoltant la cua «' . self::COLA_PLANTILLES . '»...');
+        $this->info('Worker Redis de Plantilles iniciat. Escoltant la cua «'.self::COLA_PLANTILLES.'»...');
 
         while (true) {
             try {
@@ -83,7 +76,11 @@ class PlantillaRedisWorker extends Command
                 continue;
             }
 
-            $missatge = $resultat[1] ?? null;
+            if (isset($resultat[1])) {
+                $missatge = $resultat[1];
+            } else {
+                $missatge = null;
+            }
 
             if ($missatge === null) {
                 continue;
@@ -97,11 +94,13 @@ class PlantillaRedisWorker extends Command
             }
 
             try {
+                Log::info('PlantillaRedisWorker: Processant acció de plantilla', ['dades' => $dades]);
                 $this->plantillaService->processarAccioPlantilla($dades);
             } catch (\Throwable $e) {
                 Log::error('PlantillaRedisWorker: error processant plantilla', [
                     'dades' => $dades,
                     'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
                 ]);
             }
         }
@@ -109,3 +108,4 @@ class PlantillaRedisWorker extends Command
         return self::SUCCESS;
     }
 }
+

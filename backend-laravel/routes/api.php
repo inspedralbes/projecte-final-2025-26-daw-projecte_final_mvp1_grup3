@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\GameStateController;
 use App\Http\Controllers\Api\HabitController;
+use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -23,3 +24,4 @@ use Illuminate\Support\Facades\Route;
 Route::get('/habits', [HabitController::class, 'index']);
 Route::get('/habits/{id}', [HabitController::class, 'show']);
 Route::get('/game-state', [GameStateController::class, 'show']);
+Route::get('/user/profile', [UserController::class, 'profile']);

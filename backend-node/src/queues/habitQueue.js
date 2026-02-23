@@ -43,12 +43,16 @@ async function pushToLaravel(action, userId, data) {
   var c = await getClient();
 
   // Creem el JSON que Laravel "entendrà"
-  var payload = JSON.stringify({
+  var payloadObj = {
     action: action,
     user_id: userId,
-    habit_id: data.habit_id || null, // ID del hàbit (per a UPDATE/DELETE/TOGGLE)
-    habit_data: data.habit_data || null // Tota la info del SQL (titol, dificultat, etc.)
-  });
+    habit_id: data.habit_id || null,
+    habit_data: data.habit_data || null
+  };
+  if (action === 'TOGGLE' && data.data) {
+    payloadObj.data = data.data;
+  }
+  var payload = JSON.stringify(payloadObj);
 
   console.log('Pushing to Redis (' + action + ') for user ' + userId);
   return await c.lPush(habitsQueueKey, payload);

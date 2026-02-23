@@ -18,9 +18,13 @@ export var useGameStore = defineStore('game', {
     return {
       usuariId: null,
       ratxa: 0,
+      ratxaMaxima: 0,
       xpTotal: 0,
+      monedes: 0,
       nivell: 1,
-      habits: []
+      habits: [],
+      missioDiaria: null,
+      missioCompletada: false
     };
   },
 
@@ -139,6 +143,72 @@ export var useGameStore = defineStore('game', {
     },
 
     /**
+     * Marca la missió diària com a completada.
+     * Cridat quan arriba mission_completed via socket.
+     */
+    marcarMissioCompletada: function () {
+      this.missioCompletada = true;
+    },
+
+    /**
+     * Obté la missió diària des de l'API del backend.
+     * Fetch a GET /api/game-state (el backend retorna missio_diaria i missio_completada).
+     */
+    obtenirMissioDiaria: async function () {
+      var self = this;
+      var url;
+      var resposta;
+      var dades;
+
+      try {
+        url = self.construirUrlApi('/api/game-state');
+        resposta = await fetch(url);
+
+        if (!resposta.ok) {
+          throw new Error("Error en obtenir missió: " + resposta.status);
+        }
+
+        dades = await resposta.json();
+
+        if (dades) {
+          if (dades.missio_diaria !== undefined) {
+            self.missioDiaria = dades.missio_diaria;
+          }
+          if (dades.missio_completada !== undefined) {
+            self.missioCompletada = dades.missio_completada;
+          }
+        }
+        return dades;
+      } catch (error) {
+        console.error("Error fetching missió diària:", error);
+        return null;
+      }
+    },
+
+    /**
+     * Registra el listener per rebre mission_completed del backend.
+     * Quan arriba l'emit amb success, actualitza missioCompletada.
+     * Opcionalment crida callback (ex. per mostrar SweetAlert).
+     */
+    registrarListenerMissionCompletada: function (socket, callback) {
+      var self = this;
+
+      if (!socket) {
+        return;
+      }
+
+      socket.on("mission_completed", function (data) {
+        if (data && data.success === true) {
+          self.marcarMissioCompletada();
+          self.obtenirEstatJoc();
+          if (typeof callback === "function") {
+            callback();
+          }
+        }
+      });
+    },
+
+    /**
      * Obté els hàbits des de l'API de Laravel.
      */
     obtenirHabitos: async function () {
@@ -217,6 +287,18 @@ export var useGameStore = defineStore('game', {
           }
           if (dades.ratxa_actual !== undefined) {
             self.ratxa = dades.ratxa_actual;
+          }
+          if (dades.ratxa_maxima !== undefined) {
+            self.ratxaMaxima = dades.ratxa_maxima;
+          }
+          if (dades.monedes !== undefined) {
+            self.monedes = dades.monedes;
+          }
+          if (dades.missio_diaria !== undefined) {
+            self.missioDiaria = dades.missio_diaria;
+          }
+          if (dades.missio_completada !== undefined) {
+            self.missioCompletada = dades.missio_completada;
           }
         }
         return dades;

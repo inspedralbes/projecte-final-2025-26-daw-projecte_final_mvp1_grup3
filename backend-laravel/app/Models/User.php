@@ -34,6 +34,7 @@ class User extends Model
         'monedes',
         'missio_diaria_id',
         'missio_completada',
+        'ultim_reset_missio',
     ];
 
     //================================ MÈTODES / FUNCIONS ===========

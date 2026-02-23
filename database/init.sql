@@ -24,7 +24,8 @@ CREATE TABLE USUARIS (
     xp_total INT DEFAULT 0,
     monedes INT DEFAULT 0,
     missio_diaria_id INT, -- FK se añade después de crear la tabla de misiones
-    missio_completada BOOLEAN DEFAULT FALSE
+    missio_completada BOOLEAN DEFAULT FALSE,
+    ultim_reset_missio DATE
 );
 
 -- 2. LOGROS Y MEDALLAS
@@ -41,6 +42,10 @@ CREATE TABLE MISSIOS_DIARIES (
     id SERIAL PRIMARY KEY,
     titol VARCHAR(100) NOT NULL
 );
+
+-- Missions diàries: camps per la lògica de comprovació (sense migracions)
+ALTER TABLE MISSIOS_DIARIES ADD COLUMN tipus_comprovacio VARCHAR(50);
+ALTER TABLE MISSIOS_DIARIES ADD COLUMN parametres JSONB;
 
 -- Añadimos la FK a USUARIS ahora que existe la tabla de misiones
 ALTER TABLE USUARIS ADD CONSTRAINT fk_usuari_missio FOREIGN KEY (missio_diaria_id) REFERENCES MISSIOS_DIARIES(id) ON DELETE SET NULL;

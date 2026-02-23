@@ -24,8 +24,18 @@
 
             <div class="space-y-3">
               <div class="bg-gray-50 rounded-lg p-3">
-                <p class="text-gray-700 font-semibold text-sm">Missió Diària</p>
-                <p class="text-2xl font-bold text-orange-500">0/1</p>
+                <p class="text-gray-700 font-semibold text-sm">
+                  <template v-if="missioDiaria && missioDiaria.titol">
+                    {{ missioDiaria.titol }}
+                  </template>
+                  <template v-else>
+                    Carregant...
+                  </template>
+                </p>
+                <p class="text-2xl font-bold text-orange-500">
+                  <template v-if="missioCompletada">1/1</template>
+                  <template v-else>0/1</template>
+                </p>
               </div>
             </div>
 
@@ -89,6 +99,7 @@
                 <div class="text-right">
                   <p class="text-2xl font-bold">Ratxa: {{ ratxa }}</p>
                   <p class="text-sm text-green-600">XP Total: {{ xpTotal }}</p>
+                  <p class="text-sm text-amber-600">Monedes: {{ monedes }}</p>
                 </div>
               </div>
 
@@ -231,8 +242,8 @@ export default {
    * Propietats computades.
    */
   computed: {
-    gameStore: function() {
-        return useGameStore();
+    gameStore: function () {
+      return useGameStore();
     },
     ratxa: function () {
       return this.gameStore.ratxa;
@@ -242,6 +253,15 @@ export default {
     },
     habits: function () {
       return this.gameStore.habits;
+    },
+    missioDiaria: function () {
+      return this.gameStore.missioDiaria;
+    },
+    missioCompletada: function () {
+      return this.gameStore.missioCompletada;
+    },
+    monedes: function () {
+      return this.gameStore.monedes;
     }
   },
 
@@ -257,7 +277,7 @@ export default {
     // B. Carregar dades inicials de l'hàbit i estat
     self.estaCarregantHabits = true;
     Promise.all([
-      self.gameStore.obtenirHabitos(), 
+      self.gameStore.obtenirHabitos(),
       self.gameStore.obtenirEstatJoc()
     ])
     .then(function() {
@@ -313,9 +333,38 @@ export default {
         }
       });
 
+      self.gameStore.registrarListenerMissionCompletada(self.socket, function () {
+        self.mostrarAlertaMissioCompletada();
+      });
+
       self.socket.on("disconnect", function () {
         console.log("❌ Desconectat del servidor de sockets");
       });
+    },
+
+    /**
+     * Mostra SweetAlert quan la missió diària s'ha completat.
+     * Carrega SweetAlert2 des del CDN si encara no és disponible.
+     */
+    mostrarAlertaMissioCompletada: function () {
+      var mostrarAlerta = function () {
+        if (typeof window !== "undefined" && window.Swal) {
+          window.Swal.fire({
+            title: "Missió completada!",
+            text: "Has completat la teva missió diària! +10 monedes i +20 XP",
+            icon: "success"
+          });
+        }
+      };
+
+      if (typeof window !== "undefined" && window.Swal) {
+        mostrarAlerta();
+      } else if (typeof document !== "undefined") {
+        var script = document.createElement("script");
+        script.src = "https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js";
+        script.onload = mostrarAlerta;
+        document.head.appendChild(script);
+      }
     },
 
     /**

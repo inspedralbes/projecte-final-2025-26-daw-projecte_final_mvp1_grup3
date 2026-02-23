@@ -41,12 +41,17 @@ async function init(io) {
       var action = payload.action; // CREATE, UPDATE, DELETE, TOGGLE
       var habitData = payload.habit; // L'objecte que ve de la DB
 
-      // 1. Enviem l'actualització d'XP si Laravel la inclou (com tenies abans)
+      // 1. Enviem l'actualització d'XP si Laravel la inclou
       if (payload.xp_update) {
         io.to('user_' + userId).emit('update_xp', payload.xp_update);
       }
 
-      // 2. IMPORTANT: Confirmem l'acció del CRUD al front per tancar el cicle
+      // 1b. Si s'ha completat una missió diària, emetre mission_completed
+      if (payload.mission_completed) {
+        io.to('user_' + userId).emit('mission_completed', payload.mission_completed);
+      }
+
+      // 2. Confirmem l'acció del CRUD al front per tancar el cicle
       // Fem servir "to('user_' + userId)" per a que només li arribi a qui toca
       io.to('user_' + userId).emit('habit_action_confirmed', {
         action: action,

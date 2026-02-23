@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Models\Habit;
 use App\Models\Ratxa;
 use App\Models\User;
+use App\Services\MissionService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -38,14 +39,20 @@ class HabitService
      */
     private RedisFeedbackService $feedbackService;
 
+    /**
+     * Servei de missions diàries.
+     */
+    private MissionService $missionService;
+
     //================================ MÈTODES / FUNCIONS ===========
 
     /**
-     * Constructor. Injecció del servei de feedback.
+     * Constructor. Injecció del servei de feedback i missions.
      */
-    public function __construct(RedisFeedbackService $feedbackService)
+    public function __construct(RedisFeedbackService $feedbackService, MissionService $missionService)
     {
         $this->feedbackService = $feedbackService;
+        $this->missionService = $missionService;
     }
 
     /**
@@ -88,6 +95,7 @@ class HabitService
         $success = false;
         $habitModel = null;
         $xpUpdate = null;
+        $missionCompleted = null;
 
         // B. Executar l'acció
         // B1. Acció CREATE
@@ -110,6 +118,19 @@ class HabitService
             ]);
             $habitModel = Habit::find($habitId);
             $success = true;
+
+            // B4.1. Comprovar missió diària (després del registre)
+            $resultatMissio = $this->missionService->comprovarMissioCompletada(
+                $usuariId,
+                $habitId,
+                isset($dades['data']) ? Carbon::parse($dades['data']) : Carbon::now()
+            );
+            if ($resultatMissio !== null && $resultatMissio['completada'] === true) {
+                $missionCompleted = ['success' => true];
+                if (isset($resultatMissio['xp_update'])) {
+                    $xpUpdate = $resultatMissio['xp_update'];
+                }
+            }
         // B5. Acció no reconeguda
         } else {
             throw new \InvalidArgumentException('Acció d\'hàbits no reconeguda.');
@@ -133,6 +154,11 @@ class HabitService
         // C2. Afegir XP si hi ha actualització
         if ($xpUpdate !== null) {
             $payload['xp_update'] = $xpUpdate;
+        }
+
+        // C3. Afegir mission_completed si s'ha completat la missió
+        if ($missionCompleted !== null) {
+            $payload['mission_completed'] = $missionCompleted;
         }
 
         // D. Publicar feedback a Redis
@@ -170,19 +196,22 @@ class HabitService
 
         $usuariId = (int) ($habit->usuari_id);
 
-        // B. Determinar la data de l'activitat (avui per defecte)
-        // B1. Si arriba data, parsejar; si no, usar avui
-        if (isset($dades['data'])) {
-            $dataActivitat = Carbon::parse($dades['data'])->startOfDay();
+        // B. Determinar la data/hora de l'activitat (avui ara per defecte)
+        // B1. Si arriba data, parsejar (conservar hora); si no, usar ara
+        if (isset($dades['data']) && $dades['data'] !== null) {
+            $timestampComplet = Carbon::parse($dades['data']);
         } else {
-            $dataActivitat = Carbon::today();
+            $timestampComplet = Carbon::now();
         }
+
+        // B2. Data només per a la lògica de ratxa (startOfDay)
+        $dataActivitat = $timestampComplet->copy()->startOfDay();
 
         // C. Calcular XP segons la dificultat de l'hàbit
         $xpGuanyada = $this->calcularXPSegonsDificultat($habit->dificultat);
 
         // D. Executar tot dins d'una transacció
-        DB::transaction(function () use ($habit, $usuariId, $dataActivitat, $xpGuanyada) {
+        DB::transaction(function () use ($habit, $usuariId, $dataActivitat, $timestampComplet, $xpGuanyada) {
             // D1. Actualitzar xp_total de l'usuari a la taula USUARIS
             User::where('id', $usuariId)->increment('xp_total', $xpGuanyada);
 
@@ -198,9 +227,9 @@ class HabitService
 
             $this->actualitzarRatxa($ratxa, $dataActivitat);
 
-            // D3. Inserir fila a REGISTRE_ACTIVITAT via la relació de l'hàbit
+            // D3. Inserir fila a REGISTRE_ACTIVITAT amb timestamp complet (hora real)
             $habit->registresActivitat()->create([
-                'data' => $dataActivitat,
+                'data' => $timestampComplet,
                 'acabado' => true,
                 'xp_guanyada' => $xpGuanyada,
             ]);
@@ -230,10 +259,13 @@ class HabitService
             }
         }
 
+        $monedes = isset($usuari->monedes) ? (int) $usuari->monedes : 0;
+
         return [
             'xp_total' => (int) $usuari->xp_total,
             'ratxa_actual' => $ratxaActual,
             'ratxa_maxima' => $ratxaMaxima,
+            'monedes' => $monedes,
         ];
     }
 

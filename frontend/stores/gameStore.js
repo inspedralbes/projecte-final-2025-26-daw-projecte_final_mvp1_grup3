@@ -16,8 +16,8 @@ var XP_PER_DIFICULTAT = {
 export var useGameStore = defineStore('game', {
   state: function () {
     return {
-      usuariId: null,
-      ratxa: 0,
+      userId: null,
+      racha: 0,
       ratxaMaxima: 0,
       xpTotal: 0,
       monedes: 0,
@@ -163,7 +163,7 @@ export var useGameStore = defineStore('game', {
     /**
      * Obté els hàbits des de l'API de Laravel.
      */
-    obtenirHabitos: async function () {
+    fetchHabitos: async function () {
       var self = this;
       var url;
       var resposta;
@@ -171,13 +171,14 @@ export var useGameStore = defineStore('game', {
       var llistaHabits;
       var h;
       var mapejats = [];
+      var i;
 
       try {
         url = self.construirUrlApi('/api/habits');
         resposta = await fetch(url);
 
         if (!resposta.ok) {
-          throw new Error("Error en obtenir hàbits: " + resposta.status);
+          throw new Error("Error en obtenir hàbits");
         }
 
         dadesBrutes = await resposta.json();
@@ -188,28 +189,23 @@ export var useGameStore = defineStore('game', {
           llistaHabits = dadesBrutes.data || [];
         }
 
-        for (var i = 0; i < llistaHabits.length; i++) {
+        for (i = 0; i < llistaHabits.length; i++) {
           h = llistaHabits[i];
           mapejats.push({
             id: h.id,
-            nom: h.titol || 'Sense nom',
-            descripcio: (h.frequencia_tipus || '') + " - Dificultat: " + (h.dificultat || ''),
-            completat: false,
-            recompensaXP: XP_PER_DIFICULTAT[h.dificultat] || XP_BASE,
-            usuariId: h.usuari_id,
-            plantillaId: h.plantilla_id,
-            dificultat: h.dificultat,
-            frequenciaTipus: h.frequencia_tipus,
-            diesSetmana: h.dies_setmana,
-            objectiuVegades: h.objectiu_vegades
+            nombre: h.titol || 'Sense nom',
+            descripcion: (h.frequencia_tipus || '') + " - Dificultat: " + (h.dificultat || ''),
+            completado: false,
+            xpReward: XP_PER_DIFICULTAT[h.dificultat] || XP_BASE,
+            dificultat: h.dificultat
           });
         }
 
-        self.habits = mapejats;
-        return self.habits;
+        self.habitos = mapejats;
+        return self.habitos;
       } catch (error) {
         console.error('Error fetching habits:', error);
-        self.habits = [];
+        self.habitos = [];
         return [];
       }
     },
@@ -217,7 +213,7 @@ export var useGameStore = defineStore('game', {
     /**
      * Obté l'estat del joc (XP, Ratxa) des de l'API de Laravel.
      */
-    obtenirEstatJoc: async function () {
+    fetchGameState: async function () {
       var self = this;
       var url;
       var resposta;
@@ -228,7 +224,7 @@ export var useGameStore = defineStore('game', {
         resposta = await fetch(url);
 
         if (!resposta.ok) {
-          throw new Error("Error en obtenir estat: " + resposta.status);
+          throw new Error("Error en obtenir estat");
         }
 
         dades = await resposta.json();
@@ -238,7 +234,7 @@ export var useGameStore = defineStore('game', {
             self.xpTotal = dades.xp_total;
           }
           if (dades.ratxa_actual !== undefined) {
-            self.ratxa = dades.ratxa_actual;
+            self.racha = dades.ratxa_actual;
           }
         }
         return dades;
@@ -246,6 +242,61 @@ export var useGameStore = defineStore('game', {
         console.error('Error fetching game-state:', error);
         return null;
       }
+    },
+
+    /**
+     * Completa un hàbit i gestiona la comunicació via Socket.
+     */
+    completHabit: async function (idHabit, socket) {
+      var self = this;
+      var habitCercat;
+      var i;
+
+      if (!socket) {
+        throw new Error('Socket no disponible');
+      }
+
+      for (i = 0; i < self.habitos.length; i++) {
+        if (self.habitos[i].id === idHabit) {
+          habitCercat = self.habitos[i];
+          break;
+        }
+      }
+
+      if (!habitCercat) {
+        return false;
+      }
+
+      return new Promise(function (resolve) {
+        var idTemps;
+
+        var gestionarResposta = function (resposta) {
+          socket.off('update_xp', gestionarResposta);
+          clearTimeout(idTemps);
+
+          if (resposta && resposta.xp_total !== undefined) {
+            habitCercat.completado = true;
+            self.fetchGameState().then(function () {
+              resolve(true);
+            });
+          } else {
+            resolve(false);
+          }
+        };
+
+        idTemps = setTimeout(function () {
+          socket.off('update_xp', gestionarResposta);
+          resolve(false);
+        }, TEMPS_ESPERA_MS);
+
+        socket.on('update_xp', gestionarResposta);
+
+        socket.emit('habit_completed', {
+          user_id: self.userId,
+          habit_id: idHabit,
+          data: new Date().toISOString()
+        });
+      });
     }
   }
 });

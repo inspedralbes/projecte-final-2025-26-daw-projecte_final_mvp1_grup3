@@ -45,26 +45,7 @@
                 ></textarea>
               </div>
 
-              <div>
-                <label
-                  class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
-                  >Icona Ràpida</label
-                >
-                <div class="flex gap-3">
-                  <button
-                    v-for="icona in icones"
-                    :key="icona"
-                    type="button"
-                    @click="seleccionarIcona(icona)"
-                    :class="[
-                      'w-10 h-10 rounded-full flex items-center justify-center transition-colors',
-                      formulari.icona === icona ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                    ]"
-                  >
-                    {{ icona }}
-                  </button>
-                </div>
-              </div>
+              <!-- Sección de Icona Ràpida eliminada para automatización -->
             </div>
           </div>
 
@@ -310,23 +291,13 @@
             <input v-model="formulariEdicio.nom" type="text" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500" />
           </div>
 
-          <!-- Icon Selection -->
-          <div>
-            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Canviar Icona</label>
-            <div class="flex gap-2 flex-wrap">
-              <button v-for="icona in icones" :key="icona" @click="formulariEdicio.icona = icona"
-                :class="formulariEdicio.icona === icona ? 'bg-green-500 text-white' : 'bg-gray-100'"
-                class="w-10 h-10 rounded-full flex items-center justify-center transition-colors">
-                {{ icona }}
-              </button>
-            </div>
-          </div>
+          <!-- Icon Selection eliminado para automatización -->
 
           <!-- Category -->
           <div>
              <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Categoria</label>
              <div class="grid grid-cols-2 gap-3">
-               <button v-for="cat in categories" :key="cat.id" @click="formulariEdicio.categoria = cat.id"
+               <button v-for="cat in categories" :key="cat.id" @click="seleccionarCategoriaEdicio(cat.id)"
                  :class="formulariEdicio.categoria === cat.id ? 'ring-2 ring-green-500 bg-green-50' : 'bg-white border border-gray-200'"
                  class="p-3 rounded-xl flex items-center gap-3 transition-all">
                  <span>{{ cat.icona }}</span>
@@ -424,16 +395,15 @@ export default {
         diesSeleccionats: [],
         color: "#10B981",
       },
-      icones: ["Aigua", "Llibre", "Esport", "Meditacio", "Salut", "Menjar", "Medicina", "Descans"],
       categories: [
-        { id: 1, nom: "Activitat física", icona: "Esport" },
-        { id: 2, nom: "Alimentació", icona: "Nutricio" },
-        { id: 3, nom: "Estudi", icona: "Formacio" },
-        { id: 4, nom: "Lectura", icona: "Cultura" },
-        { id: 5, nom: "Benestar", icona: "Mental" },
-        { id: 6, nom: "Millora d'hàbits", icona: "Social" },
-        { id: 7, nom: "Llar", icona: "Casa" },
-        { id: 8, nom: "Hobby", icona: "Oci" },
+        { id: 1, nom: "Activitat física", icona: "🏃" },
+        { id: 2, nom: "Alimentació", icona: "🥗" },
+        { id: 3, nom: "Estudi", icona: "📚" },
+        { id: 4, nom: "Lectura", icona: "📖" },
+        { id: 5, nom: "Benestar", icona: "🧘" },
+        { id: 6, nom: "Millora d'hàbits", icona: "✨" },
+        { id: 7, nom: "Llar", icona: "🏠" },
+        { id: 8, nom: "Hobby", icona: "🎨" },
       ],
       frequencies: ["Diari", "Setmanal", "Mensual"],
       diesSetmana: ["L", "M", "X", "J", "V", "S", "D"],
@@ -525,17 +495,32 @@ export default {
     },
 
     /**
-     * Selecciona una icona per l'hàbit.
-     */
-    seleccionarIcona: function (icona) {
-      this.formulari.icona = icona;
-    },
-
-    /**
-     * Selecciona una categoria per l'hàbit.
+     * Selecciona una categoria per l'hàbit i assigna la seva icona automàticament.
      */
     seleccionarCategoria: function (id) {
       this.formulari.categoria = id;
+      // Assignem l'icona segons la categoria
+      var i;
+      for (i = 0; i < this.categories.length; i++) {
+        if (this.categories[i].id === id) {
+          this.formulari.icona = this.categories[i].icona;
+          break;
+        }
+      }
+    },
+
+    /**
+     * Selecciona una categoria en el modal d'edició i assigna la seva icona.
+     */
+    seleccionarCategoriaEdicio: function (id) {
+      this.formulariEdicio.categoria = id;
+      var i;
+      for (i = 0; i < this.categories.length; i++) {
+        if (this.categories[i].id === id) {
+          this.formulariEdicio.icona = this.categories[i].icona;
+          break;
+        }
+      }
     },
 
     /**

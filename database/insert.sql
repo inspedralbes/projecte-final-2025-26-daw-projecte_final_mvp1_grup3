@@ -7,6 +7,27 @@ VALUES ('admin', 'admin@admin.com', 'admin123');
 INSERT INTO USUARIS (nom, email, contrasenya_hash) 
 VALUES ('llorenç carnicer', 'llorcar@user.com', 'user123');
 
+-- 2.1 MISSIOS_DIARIES (15 missions)
+INSERT INTO MISSIOS_DIARIES (id, titol, tipus_comprovacio, parametres) VALUES
+(1, 'Completa 1 hàbit avui', 'hab_1_qualsevol', '{}'),
+(2, 'Completa 1 hàbit abans de les 6:00', 'hab_fins_hora', '{"hora": 6}'),
+(3, 'Completa 1 hàbit abans de les 9:00', 'hab_fins_hora', '{"hora": 9}'),
+(4, 'Completa 2 hàbits avui', 'hab_n_qualsevol', '{"n": 2}'),
+(5, 'Completa 3 hàbits avui', 'hab_n_qualsevol', '{"n": 3}'),
+(6, 'Completa 1 hàbit fàcil', 'hab_dificultat', '{"dificultat": "facil"}'),
+(7, 'Completa 1 hàbit mitjà', 'hab_dificultat', '{"dificultat": "media"}'),
+(8, 'Completa 1 hàbit difícil', 'hab_dificultat', '{"dificultat": "dificil"}'),
+(9, 'Completa 1 hàbit d''activitat física', 'hab_categoria', '{"categoria_id": 1}'),
+(10, 'Completa 1 hàbit d''alimentació', 'hab_categoria', '{"categoria_id": 2}'),
+(11, 'Completa 1 hàbit d''estudi', 'hab_categoria', '{"categoria_id": 3}'),
+(12, 'Completa 1 hàbit de lectura', 'hab_categoria', '{"categoria_id": 4}'),
+(13, 'Completa 1 hàbit de benestar', 'hab_categoria', '{"categoria_id": 5}'),
+(14, 'Completa el primer hàbit del dia', 'hab_primer_del_dia', '{}'),
+(15, 'Completa 1 hàbit de dificultat mitjana o alta', 'hab_dificultat_multi', '{"dificultats": ["media","dificil"]}');
+
+-- La missió diària s'assigna pel backend (GamificationService) a la primera petició game-state
+SELECT setval('missios_diaries_id_seq', (SELECT COALESCE(MAX(id), 1) FROM MISSIOS_DIARIES));
+
 -- 3. LOGROS_MEDALLES
 INSERT INTO LOGROS_MEDALLES (nom, descripcio, tipus) VALUES
 -- TIEMPO

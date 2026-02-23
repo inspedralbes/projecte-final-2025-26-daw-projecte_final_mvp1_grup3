@@ -1,7 +1,9 @@
 <?php
 
-use Illuminate\Support\Str;
-
+/**
+ * Configuració de connexions a base de dades.
+ * Laravel 11 + PostgreSQL 16.2. Usuari per defecte: id 1.
+ */
 return [
     'default' => env('DB_CONNECTION', 'pgsql'),
     'connections' => [

@@ -25,7 +25,16 @@ class MissioDiaria extends Model
 
     protected $fillable = [
         'titol',
+        'tipus_comprovacio',
+        'parametres',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'parametres' => 'array',
+        ];
+    }
 
     //================================ MÈTODES / FUNCIONS ===========
 

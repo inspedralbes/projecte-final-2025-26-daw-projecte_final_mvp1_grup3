@@ -18,9 +18,13 @@ export var useGameStore = defineStore('game', {
     return {
       usuariId: null,
       ratxa: 0,
+      ratxaMaxima: 0,
       xpTotal: 0,
+      monedes: 0,
       nivell: 1,
-      habits: []
+      habits: [],
+      missioDiaria: null,
+      missioCompletada: false
     };
   },
 
@@ -139,7 +143,48 @@ export var useGameStore = defineStore('game', {
     },
 
     /**
+     * Marca la missió diària com a completada.
+     * Cridat quan arriba mission_completed via socket.
+     */
+    marcarMissioCompletada: function () {
+      this.missioCompletada = true;
+    },
+
+    /**
+     * Obté la missió diària des de l'API del backend.
+     * Reutilitza game-state (mateix endpoint que obtenirEstatJoc).
+     */
+    obtenirMissioDiaria: async function () {
+      var dades = await this.obtenirEstatJoc();
+      return dades;
+    },
+
+    /**
+     * Registra el listener per rebre mission_completed del backend.
+     * Quan arriba l'emit amb success, actualitza missioCompletada.
+     * Opcionalment crida callback (ex. per mostrar SweetAlert).
+     */
+    registrarListenerMissionCompletada: function (socket, callback) {
+      var self = this;
+
+      if (!socket) {
+        return;
+      }
+
+      socket.on("mission_completed", function (data) {
+        if (data && data.success === true) {
+          self.marcarMissioCompletada();
+          self.obtenirEstatJoc();
+          if (typeof callback === "function") {
+            callback();
+          }
+        }
+      });
+    },
+
+    /**
      * Obté els hàbits des de l'API de Laravel.
+     * GET /api/habits. Retorna llista mapejada al format del frontend.
      */
     obtenirHabitos: async function () {
       var self = this;
@@ -152,7 +197,10 @@ export var useGameStore = defineStore('game', {
 
       try {
         url = self.construirUrlApi('/api/habits');
-        resposta = await fetch(url);
+        resposta = await fetch(url, {
+          headers: { Accept: 'application/json' },
+          mode: 'cors'
+        });
 
         if (!resposta.ok) {
           throw new Error("Error en obtenir hàbits: " + resposta.status);
@@ -163,7 +211,11 @@ export var useGameStore = defineStore('game', {
         if (Array.isArray(dadesBrutes)) {
           llistaHabits = dadesBrutes;
         } else {
-          llistaHabits = dadesBrutes.data || [];
+          if (dadesBrutes.data !== undefined) {
+            llistaHabits = dadesBrutes.data;
+          } else {
+            llistaHabits = [];
+          }
         }
 
         for (var i = 0; i < llistaHabits.length; i++) {
@@ -193,33 +245,59 @@ export var useGameStore = defineStore('game', {
     },
 
     /**
-     * Obté l'estat del joc (XP, Ratxa) des de l'API de Laravel.
+     * Obté l'estat del joc (XP, Ratxa, Monedes, Missió) des de l'API de Laravel.
+     * GET /api/game-state. Retorna: xp_total, ratxa_actual, ratxa_maxima, monedes, missio_diaria, missio_completada.
      */
     obtenirEstatJoc: async function () {
       var self = this;
       var url;
       var resposta;
       var dades;
+      var d;
 
       try {
         url = self.construirUrlApi('/api/game-state');
-        resposta = await fetch(url);
+        resposta = await fetch(url, {
+          headers: { Accept: 'application/json' },
+          mode: 'cors'
+        });
 
         if (!resposta.ok) {
-          throw new Error("Error en obtenir estat: " + resposta.status);
+          throw new Error('Error en obtenir estat: ' + resposta.status);
         }
 
         dades = await resposta.json();
 
-        if (dades) {
-          if (dades.xp_total !== undefined) {
-            self.xpTotal = dades.xp_total;
-          }
-          if (dades.ratxa_actual !== undefined) {
-            self.ratxa = dades.ratxa_actual;
-          }
+        if (!dades) {
+          return null;
         }
-        return dades;
+
+        if (dades.data !== undefined) {
+          d = dades.data;
+        } else {
+          d = dades;
+        }
+
+        if (d.xp_total !== undefined) {
+          self.xpTotal = Number(d.xp_total);
+        }
+        if (d.ratxa_actual !== undefined) {
+          self.ratxa = Number(d.ratxa_actual);
+        }
+        if (d.ratxa_maxima !== undefined) {
+          self.ratxaMaxima = Number(d.ratxa_maxima);
+        }
+        if (d.monedes !== undefined) {
+          self.monedes = Number(d.monedes);
+        }
+        if (d.missio_diaria !== undefined) {
+          self.missioDiaria = d.missio_diaria;
+        }
+        if (d.missio_completada !== undefined) {
+          self.missioCompletada = Boolean(d.missio_completada);
+        }
+
+        return d;
       } catch (error) {
         console.error('Error fetching game-state:', error);
         return null;

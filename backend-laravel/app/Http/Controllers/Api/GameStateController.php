@@ -37,17 +37,35 @@ class GameStateController extends Controller
      *
      * A. Definir usuari per defecte.
      * B. Obtenir estat de gamificació des del servei.
-     * C. Retornar resposta JSON.
+     * C. Retornar resposta JSON (xp_total, ratxa_actual, ratxa_maxima, monedes, missio_diaria, missio_completada).
      */
     public function show(): JsonResponse
     {
-        // A. Usuari per defecte sense autenticació (id 1)
         $usuariId = 1;
 
-        // B. Obtenir estat de gamificació
-        $estat = $this->gamificationService->obtenirEstatGamificacio($usuariId);
+        try {
+            // A. Obtenir estat de gamificació des del servei
+            $estat = $this->gamificationService->obtenirEstatGamificacio($usuariId);
 
-        // C. Retornar resposta
-        return response()->json($estat);
+            // B. Retornar resposta JSON amb headers
+            return response()->json($estat, 200, [
+                'Content-Type' => 'application/json',
+                'Cache-Control' => 'no-cache',
+            ]);
+        } catch (\Throwable $e) {
+            report($e);
+
+            // C. En cas d'excepció, retornar valors per defecte per no trencar el frontend
+            return response()->json([
+                'error' => 'Error carregant estat del joc',
+                'usuari_id' => $usuariId,
+                'xp_total' => 0,
+                'ratxa_actual' => 0,
+                'ratxa_maxima' => 0,
+                'monedes' => 0,
+                'missio_diaria' => null,
+                'missio_completada' => false,
+            ], 200);
+        }
     }
 }

@@ -43,10 +43,10 @@
               <div class="space-y-2">
                 <div class="flex justify-between text-xs font-bold text-gray-600">
                   <span>EXPERIÈNCIA DEL NIVELL</span>
-                  <span>{{ user.xp_total }} XP</span>
+                  <span>{{ user.xp_total % 1000 }} / 1000 XP</span>
                 </div>
                 <div class="w-full h-3 bg-gray-100 rounded-full overflow-hidden border border-gray-200">
-                  <div class="h-full bg-blue-500 rounded-full transition-all duration-1000" :style="{ width: (user.xp_total % 100) + '%' }"></div>
+                  <div class="h-full bg-blue-500 rounded-full transition-all duration-1000" :style="{ width: xpPercent + '%' }"></div>
                 </div>
               </div>
             </div>
@@ -132,6 +132,19 @@ var estilFons = {
   backgroundSize: "cover",
   backgroundPosition: "center",
 };
+
+/**
+ * Propietat computada per calcular el percentatge de la barra d'experiència.
+ * Suposem 1000 XP per pujar de nivell per a la visualització.
+ */
+var xpPercent = computed(function() {
+  if (!user.value || !user.value.xp_total) {
+    return 0;
+  }
+  // Calculem el progrés respecte a un llindar de 1000 XP
+  var progre = (user.value.xp_total % 1000) / 10;
+  return progre;
+});
 
 /**
  * Funció clàssica per carregar el perfil des de l'API.

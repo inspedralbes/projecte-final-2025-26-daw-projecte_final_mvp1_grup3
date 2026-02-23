@@ -114,7 +114,8 @@ CREATE TABLE RATXES (
     id SERIAL PRIMARY KEY,
     usuari_id INT REFERENCES USUARIS(id) ON DELETE CASCADE,
     ratxa_actual INT DEFAULT 0,
-    ratxa_maxima INT DEFAULT 0,
+    ratxa_maxima INT DEFAULT 0
+);
     ultima_data TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

@@ -35,7 +35,12 @@ function init(io) {
 
         socket.on('plantilla_action', async function (payload) {
             try {
-                var userId = socket.decoded_token.user_id; // O socket.user.id segons el teu JWT
+                var userId;
+                if (socket.decoded_token && socket.decoded_token.user_id) {
+                    userId = socket.decoded_token.user_id;
+                } else {
+                    userId = 1; // Default to user 1 in dev mode
+                }
                 socket.join('user_' + userId);
                 await plantillaQueue.pushToLaravel(payload.action, userId, payload);
             } catch (error) {
@@ -47,9 +52,15 @@ function init(io) {
         socket.on('habit_completed', async function (data) {
             try {
                 console.log('Hàbit rebut:', data);
-                var userId = data.user_id;
-                if (!userId && socket.decoded_token && socket.decoded_token.user_id) {
+                // NOTA: Ajustem a la nova firma de pushToLaravel
+                var userId;
+                if (socket.decoded_token && socket.decoded_token.user_id) {
                     userId = socket.decoded_token.user_id;
+                } else {
+                    userId = 1; // Default to user 1 in dev mode
+                }
+                if (!userId) {
+                    userId = 1;
                 }
                 if (!userId) {
                     userId = 1;

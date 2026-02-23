@@ -5,6 +5,7 @@ namespace App\Services;
 //================================ NAMESPACES / IMPORTS ============
 
 use App\Models\Plantilla;
+use App\Models\Habit; // Add this import
 
 //================================ PROPIETATS / ATRIBUTS ==========
 
@@ -87,6 +88,7 @@ class PlantillaService
     {
         // A. Normalitzar dades d'entrada
         $dades = $this->filtrarDadesPlantilla($plantillaData);
+        $habitsIds = $plantillaData['habits_ids'] ?? []; // Extract habits_ids
 
         // B. Validar títol
         if (empty($dades['titol'])) {
@@ -96,8 +98,30 @@ class PlantillaService
         // C. Assignar usuari creador
         $dades['creador_id'] = $usuariId;
 
-        // D. Crear model
-        return Plantilla::create($dades);
+        // D. Crear model de plantilla
+        $plantilla = Plantilla::create($dades);
+
+        if ($plantilla && !empty($habitsIds)) {
+            // E. Trobar els hàbits originals i crear-ne còpies associades a la nova plantilla
+            $habitsOriginals = Habit::whereIn('id', $habitsIds)->get();
+
+            foreach ($habitsOriginals as $habitOriginal) {
+                $nouHabit = new Habit();
+                // Copy relevant attributes from the original habit
+                // Assuming Habit model has these fillable attributes
+                $nouHabit->titol = $habitOriginal->titol;
+                $nouHabit->dificultat = $habitOriginal->dificultat;
+                $nouHabit->frequencia_tipus = $habitOriginal->frequencia_tipus;
+                $nouHabit->dies_setmana = $habitOriginal->dies_setmana;
+                $nouHabit->objectiu_vegades = $habitOriginal->objectiu_vegades;
+                $nouHabit->usuari_id = $usuariId; // Associate with the current user
+                $nouHabit->plantilla_id = $plantilla->id; // Associate with the new plantilla
+                // Add other habit-specific fields as needed based on Habit model fillable
+                $nouHabit->save();
+            }
+        }
+
+        return $plantilla;
     }
 
     /**

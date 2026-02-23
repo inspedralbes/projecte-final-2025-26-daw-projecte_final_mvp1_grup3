@@ -15,7 +15,7 @@
           <NuxtLink to="/habits" class="nav-link">Crear</NuxtLink>
         </li>
         <li>
-          <NuxtLink to="/catalogo" class="nav-link">Catálogo</NuxtLink>
+          <NuxtLink to="/Plantilles" class="nav-link">Catálogo</NuxtLink>
         </li>
         <li>
           <NuxtLink to="/foro" class="nav-link">Foro</NuxtLink>

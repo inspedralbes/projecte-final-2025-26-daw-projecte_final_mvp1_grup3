@@ -17,12 +17,45 @@ export var usePlantillaStore = defineStore("plantilla", {
      * Transforma les dades de l'API al format del frontend.
      */
     mapejarPlantillaDesDeApi: function (plantilla) {
+      var titolPlantilla;
+      var categoriaPlantilla;
+      var esPublicaPlantilla;
+      var creadorIdPlantilla;
+
+      // A. Assignar títol o valor per defecte
+      if (plantilla.titol) {
+        titolPlantilla = plantilla.titol;
+      } else {
+        titolPlantilla = "Sense títol";
+      }
+
+      // B. Assignar categoria o valor per defecte
+      if (plantilla.categoria) {
+        categoriaPlantilla = plantilla.categoria;
+      } else {
+        categoriaPlantilla = "Altres";
+      }
+
+      // C. Assignar estat de publicació o valor per defecte
+      if (plantilla.es_publica) {
+        esPublicaPlantilla = plantilla.es_publica;
+      } else {
+        esPublicaPlantilla = false;
+      }
+
+      // D. Assignar creadorId o valor per defecte (1)
+      if (plantilla.creador_id) {
+        creadorIdPlantilla = plantilla.creador_id;
+      } else {
+        creadorIdPlantilla = 1;
+      }
+
       return {
         id: plantilla.id,
-        titol: plantilla.titol || "Sense títol",
-        categoria: plantilla.categoria || "Altres",
-        esPublica: plantilla.es_publica || false,
-        creadorId: plantilla.creador_id || 1
+        titol: titolPlantilla,
+        categoria: categoriaPlantilla,
+        esPublica: esPublicaPlantilla,
+        creadorId: creadorIdPlantilla
       };
     },
 
@@ -42,14 +75,17 @@ export var usePlantillaStore = defineStore("plantilla", {
 
     /**
      * Obté les plantilles des de l'API de Laravel via fetch.
+     * @param {string} filter - 'all' per a totes les plantilles (públiques + de l'usuari), 'my' per a només les de l'usuari.
+     * @param {number|null} userId - L'ID de l'usuari actual, necessari si el filtre és 'my'.
      */
-    obtenirPlantillesDesDeApi: async function () {
+    obtenirPlantillesDesDeApi: async function (filter, userId) {
       var configuracio;
       var urlApi;
       var base;
       var resposta;
       var dadesBrutes;
       var llista;
+      var queryParams = [];
 
       this.loading = true;
       this.error = null;
@@ -65,8 +101,21 @@ export var usePlantillaStore = defineStore("plantilla", {
           base = urlApi;
         }
 
-        // B. Realitzar la petició
-        resposta = await fetch(base + "/api/plantilles");
+        // B. Construir query parameters
+        if (filter) {
+          queryParams.push("filter=" + filter);
+        }
+        if (userId) {
+          queryParams.push("user_id=" + userId);
+        }
+
+        var fullUrl = base + "/api/plantilles";
+        if (queryParams.length > 0) {
+          fullUrl += "?" + queryParams.join("&");
+        }
+
+        // C. Realitzar la petició
+        resposta = await fetch(fullUrl);
 
         if (!resposta.ok) {
           throw new Error("Error en obtenir plantilles: " + resposta.status);
@@ -74,7 +123,7 @@ export var usePlantillaStore = defineStore("plantilla", {
 
         dadesBrutes = await resposta.json();
 
-        // C. Processar les dades
+        // D. Processar les dades
         if (Array.isArray(dadesBrutes)) {
           llista = dadesBrutes;
         } else {

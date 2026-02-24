@@ -30,7 +30,10 @@ class AdminConfiguracioController extends Controller
             $resultat[$config->clau] = $config->valor;
         }
 
-        return response()->json(['data' => $resultat]);
+        return response()->json([
+            'success' => true,
+            'data' => $resultat
+        ]);
     }
 
     /**

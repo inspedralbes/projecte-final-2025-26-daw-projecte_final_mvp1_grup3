@@ -83,13 +83,13 @@ class AdminActionService
             } elseif ($entity === 'missio') {
                 $this->processarMissio($adminId, $action, $data);
             } else {
-                $this->enviarFeedback($adminId, $entity, $action, false, ['error' => 'entity desconeguda: '.$entity]);
+                $this->enviarFeedback($adminId, $entity, $action, false, ['error' => 'entity desconeguda: ' . $entity]);
             }
 
             DB::commit();
         } catch (\Throwable $e) {
             DB::rollBack();
-            $this->adminLogService->registrar($adminId, 'Error: '.$e->getMessage(), (string) $e->getMessage(), null, null, null);
+            $this->adminLogService->registrar($adminId, 'Error: ' . $e->getMessage(), (string) $e->getMessage(), null, null, null);
             $this->enviarFeedback($adminId, $entity, $action, false, ['error' => $e->getMessage()]);
         }
     }
@@ -107,7 +107,7 @@ class AdminActionService
                 'es_publica' => $data['es_publica'] ?? false,
             ]);
             $despres = $plantilla->toArray();
-            $this->adminLogService->registrar($adminId, 'Crear plantilla', 'Plantilla ID '.$plantilla->id.': '.$plantilla->titol, null, $despres, null);
+            $this->adminLogService->registrar($adminId, 'Crear plantilla', 'Plantilla ID ' . $plantilla->id . ': ' . $plantilla->titol, null, $despres, null);
             $this->enviarFeedback($adminId, 'plantilla', 'CREATE', true, $plantilla->toArray());
         } elseif ($action === 'UPDATE') {
             $id = $data['id'] ?? 0;
@@ -121,7 +121,7 @@ class AdminActionService
             $plantilla->es_publica = $data['es_publica'] ?? $plantilla->es_publica;
             $plantilla->save();
             $despres = $plantilla->toArray();
-            $this->adminLogService->registrar($adminId, 'Editar plantilla', 'Plantilla ID '.$id.': '.$plantilla->titol, $abans, $despres, null);
+            $this->adminLogService->registrar($adminId, 'Editar plantilla', 'Plantilla ID ' . $id . ': ' . $plantilla->titol, $abans, $despres, null);
             $this->enviarFeedback($adminId, 'plantilla', 'UPDATE', true, $plantilla->toArray());
         } elseif ($action === 'DELETE') {
             $id = $data['id'] ?? 0;
@@ -131,7 +131,7 @@ class AdminActionService
             }
             $abans = $plantilla->toArray();
             $plantilla->delete();
-            $this->adminLogService->registrar($adminId, 'Eliminar plantilla', 'Plantilla ID '.$id.': '.$plantilla->titol, $abans, null, null);
+            $this->adminLogService->registrar($adminId, 'Eliminar plantilla', 'Plantilla ID ' . $id . ': ' . $plantilla->titol, $abans, null, null);
             $this->enviarFeedback($adminId, 'plantilla', 'DELETE', true, ['id' => $id]);
         }
     }
@@ -146,7 +146,7 @@ class AdminActionService
             ]);
             $despres = $usuari->toArray();
             unset($despres['contrasenya_hash']);
-            $this->adminLogService->registrar($adminId, 'Crear usuari', 'Usuari ID '.$usuari->id.': '.$usuari->nom, null, $despres, null);
+            $this->adminLogService->registrar($adminId, 'Crear usuari', 'Usuari ID ' . $usuari->id . ': ' . $usuari->nom, null, $despres, null);
             $this->enviarFeedback($adminId, 'usuari', 'CREATE', true, $usuari->toArray());
         } elseif ($action === 'UPDATE') {
             $id = $data['id'] ?? 0;
@@ -158,13 +158,23 @@ class AdminActionService
             unset($abans['contrasenya_hash']);
             $usuari->nom = $data['nom'] ?? $usuari->nom;
             $usuari->email = $data['email'] ?? $usuari->email;
-            if (! empty($data['contrasenya'])) {
+            if (!empty($data['contrasenya'])) {
                 $usuari->contrasenya_hash = bcrypt($data['contrasenya']);
+            }
+            if (isset($data['prohibit'])) {
+                $usuari->prohibit = (bool) $data['prohibit'];
+                if ($usuari->prohibit) {
+                    $usuari->data_prohibicio = now();
+                    $usuari->motiu_prohibicio = $data['motiu'] ?? null;
+                } else {
+                    $usuari->data_prohibicio = null;
+                    $usuari->motiu_prohibicio = null;
+                }
             }
             $usuari->save();
             $despres = $usuari->toArray();
             unset($despres['contrasenya_hash']);
-            $this->adminLogService->registrar($adminId, 'Editar usuari', 'Usuari ID '.$id.': '.$usuari->nom, $abans, $despres, null);
+            $this->adminLogService->registrar($adminId, 'Editar usuari', 'Usuari ID ' . $id . ': ' . $usuari->nom, $abans, $despres, null);
             $this->enviarFeedback($adminId, 'usuari', 'UPDATE', true, $usuari->toArray());
         } elseif ($action === 'DELETE') {
             $id = $data['id'] ?? 0;
@@ -175,7 +185,7 @@ class AdminActionService
             $abans = $usuari->toArray();
             unset($abans['contrasenya_hash']);
             $usuari->delete();
-            $this->adminLogService->registrar($adminId, 'Eliminar usuari', 'Usuari ID '.$id, $abans, null, null);
+            $this->adminLogService->registrar($adminId, 'Eliminar usuari', 'Usuari ID ' . $id, $abans, null, null);
             $this->enviarFeedback($adminId, 'usuari', 'DELETE', true, ['id' => $id]);
         }
     }
@@ -190,7 +200,7 @@ class AdminActionService
             ]);
             $despres = $admin->toArray();
             unset($despres['contrasenya_hash']);
-            $this->adminLogService->registrar($adminId, 'Crear administrador', 'Admin ID '.$admin->id.': '.$admin->nom, null, $despres, null);
+            $this->adminLogService->registrar($adminId, 'Crear administrador', 'Admin ID ' . $admin->id . ': ' . $admin->nom, null, $despres, null);
             $this->enviarFeedback($adminId, 'admin', 'CREATE', true, $admin->toArray());
         } elseif ($action === 'UPDATE') {
             $id = $data['id'] ?? 0;
@@ -202,13 +212,13 @@ class AdminActionService
             unset($abans['contrasenya_hash']);
             $admin->nom = $data['nom'] ?? $admin->nom;
             $admin->email = $data['email'] ?? $admin->email;
-            if (! empty($data['contrasenya'])) {
+            if (!empty($data['contrasenya'])) {
                 $admin->contrasenya_hash = bcrypt($data['contrasenya']);
             }
             $admin->save();
             $despres = $admin->toArray();
             unset($despres['contrasenya_hash']);
-            $this->adminLogService->registrar($adminId, 'Editar administrador', 'Admin ID '.$id.': '.$admin->nom, $abans, $despres, null);
+            $this->adminLogService->registrar($adminId, 'Editar administrador', 'Admin ID ' . $id . ': ' . $admin->nom, $abans, $despres, null);
             $this->enviarFeedback($adminId, 'admin', 'UPDATE', true, $admin->toArray());
         } elseif ($action === 'DELETE') {
             $id = $data['id'] ?? 0;
@@ -222,7 +232,7 @@ class AdminActionService
             $abans = $admin->toArray();
             unset($abans['contrasenya_hash']);
             $admin->delete();
-            $this->adminLogService->registrar($adminId, 'Eliminar administrador', 'Admin ID '.$id, $abans, null, null);
+            $this->adminLogService->registrar($adminId, 'Eliminar administrador', 'Admin ID ' . $id, $abans, null, null);
             $this->enviarFeedback($adminId, 'admin', 'DELETE', true, ['id' => $id]);
         }
     }
@@ -235,13 +245,13 @@ class AdminActionService
                 'plantilla_id' => $data['plantilla_id'] ?? null,
                 'categoria_id' => $data['categoria_id'] ?? null,
                 'titol' => $data['titol'] ?? '',
-                'dificultat' => $data['dificultat'] ?? null,
-                'frequencia_tipus' => $data['frequencia_tipus'] ?? null,
-                'dies_setmana' => $data['dies_setmana'] ?? null,
+                'dificultat' => $data['dificultat'] ?? 'media',
+                'frequencia_tipus' => $data['frequencia_tipus'] ?? 'diaria',
+                'dies_setmana' => $data['dies_setmana'] ?? '1,2,3,4,5,6,7',
                 'objectiu_vegades' => $data['objectiu_vegades'] ?? 1,
             ]);
             $despres = $habit->toArray();
-            $this->adminLogService->registrar($adminId, 'Crear habit', 'Habit ID '.$habit->id.': '.$habit->titol, null, $despres, null);
+            $this->adminLogService->registrar($adminId, 'Crear habit', 'Habit ID ' . $habit->id . ': ' . $habit->titol, null, $despres, null);
             $this->enviarFeedback($adminId, 'habit', 'CREATE', true, $habit->toArray());
         } elseif ($action === 'UPDATE') {
             $id = $data['id'] ?? 0;
@@ -257,7 +267,7 @@ class AdminActionService
             $habit->objectiu_vegades = $data['objectiu_vegades'] ?? $habit->objectiu_vegades;
             $habit->save();
             $despres = $habit->toArray();
-            $this->adminLogService->registrar($adminId, 'Editar habit', 'Habit ID '.$id.': '.$habit->titol, $abans, $despres, null);
+            $this->adminLogService->registrar($adminId, 'Editar habit', 'Habit ID ' . $id . ': ' . $habit->titol, $abans, $despres, null);
             $this->enviarFeedback($adminId, 'habit', 'UPDATE', true, $habit->toArray());
         } elseif ($action === 'DELETE') {
             $id = $data['id'] ?? 0;
@@ -267,7 +277,7 @@ class AdminActionService
             }
             $abans = $habit->toArray();
             $habit->delete();
-            $this->adminLogService->registrar($adminId, 'Eliminar habit', 'Habit ID '.$id, $abans, null, null);
+            $this->adminLogService->registrar($adminId, 'Eliminar habit', 'Habit ID ' . $id, $abans, null, null);
             $this->enviarFeedback($adminId, 'habit', 'DELETE', true, ['id' => $id]);
         }
     }
@@ -281,7 +291,7 @@ class AdminActionService
                 'tipus' => $data['tipus'] ?? null,
             ]);
             $despres = $logro->toArray();
-            $this->adminLogService->registrar($adminId, 'Crear logro', 'Logro ID '.$logro->id.': '.$logro->nom, null, $despres, null);
+            $this->adminLogService->registrar($adminId, 'Crear logro', 'Logro ID ' . $logro->id . ': ' . $logro->nom, null, $despres, null);
             $this->enviarFeedback($adminId, 'logro', 'CREATE', true, $logro->toArray());
         } elseif ($action === 'UPDATE') {
             $id = $data['id'] ?? 0;
@@ -295,7 +305,7 @@ class AdminActionService
             $logro->tipus = $data['tipus'] ?? $logro->tipus;
             $logro->save();
             $despres = $logro->toArray();
-            $this->adminLogService->registrar($adminId, 'Editar logro', 'Logro ID '.$id.': '.$logro->nom, $abans, $despres, null);
+            $this->adminLogService->registrar($adminId, 'Editar logro', 'Logro ID ' . $id . ': ' . $logro->nom, $abans, $despres, null);
             $this->enviarFeedback($adminId, 'logro', 'UPDATE', true, $logro->toArray());
         } elseif ($action === 'DELETE') {
             $id = $data['id'] ?? 0;
@@ -305,7 +315,7 @@ class AdminActionService
             }
             $abans = $logro->toArray();
             $logro->delete();
-            $this->adminLogService->registrar($adminId, 'Eliminar logro', 'Logro ID '.$id, $abans, null, null);
+            $this->adminLogService->registrar($adminId, 'Eliminar logro', 'Logro ID ' . $id, $abans, null, null);
             $this->enviarFeedback($adminId, 'logro', 'DELETE', true, ['id' => $id]);
         }
     }
@@ -317,7 +327,7 @@ class AdminActionService
                 'titol' => $data['titol'] ?? '',
             ]);
             $despres = $missio->toArray();
-            $this->adminLogService->registrar($adminId, 'Crear missio', 'Missio ID '.$missio->id.': '.$missio->titol, null, $despres, null);
+            $this->adminLogService->registrar($adminId, 'Crear missio', 'Missio ID ' . $missio->id . ': ' . $missio->titol, null, $despres, null);
             $this->enviarFeedback($adminId, 'missio', 'CREATE', true, $missio->toArray());
         } elseif ($action === 'UPDATE') {
             $id = $data['id'] ?? 0;
@@ -329,7 +339,7 @@ class AdminActionService
             $missio->titol = $data['titol'] ?? $missio->titol;
             $missio->save();
             $despres = $missio->toArray();
-            $this->adminLogService->registrar($adminId, 'Editar missio', 'Missio ID '.$id.': '.$missio->titol, $abans, $despres, null);
+            $this->adminLogService->registrar($adminId, 'Editar missio', 'Missio ID ' . $id . ': ' . $missio->titol, $abans, $despres, null);
             $this->enviarFeedback($adminId, 'missio', 'UPDATE', true, $missio->toArray());
         } elseif ($action === 'DELETE') {
             $id = $data['id'] ?? 0;
@@ -339,7 +349,7 @@ class AdminActionService
             }
             $abans = $missio->toArray();
             $missio->delete();
-            $this->adminLogService->registrar($adminId, 'Eliminar missio', 'Missio ID '.$id, $abans, null, null);
+            $this->adminLogService->registrar($adminId, 'Eliminar missio', 'Missio ID ' . $id, $abans, null, null);
             $this->enviarFeedback($adminId, 'missio', 'DELETE', true, ['id' => $id]);
         }
     }

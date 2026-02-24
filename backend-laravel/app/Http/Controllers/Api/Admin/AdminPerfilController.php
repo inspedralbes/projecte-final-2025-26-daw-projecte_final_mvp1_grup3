@@ -31,10 +31,13 @@ class AdminPerfilController extends Controller
         }
 
         return response()->json([
-            'id' => $admin->id,
-            'nom' => $admin->nom,
-            'email' => $admin->email,
-            'data_creacio' => $admin->data_creacio?->toIso8601String(),
+            'success' => true,
+            'data' => [
+                'id' => $admin->id,
+                'nom' => $admin->nom,
+                'email' => $admin->email,
+                'created_at' => $admin->data_creacio?->toIso8601String(),
+            ]
         ]);
     }
 
@@ -61,11 +64,14 @@ class AdminPerfilController extends Controller
         }
         $admin->save();
 
-        return response()->json(['success' => true, 'data' => [
-            'id' => $admin->id,
-            'nom' => $admin->nom,
-            'email' => $admin->email,
-        ]]);
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $admin->id,
+                'nom' => $admin->nom,
+                'email' => $admin->email,
+            ]
+        ]);
     }
 
     /**
@@ -83,7 +89,7 @@ class AdminPerfilController extends Controller
             return response()->json(['error' => 'Administrador no trobat'], 404);
         }
 
-        if (! Hash::check($request->input('contrasenya_actual'), $admin->contrasenya_hash)) {
+        if (!Hash::check($request->input('contrasenya_actual'), $admin->contrasenya_hash)) {
             return response()->json(['error' => 'Contrasenya actual incorrecta'], 422);
         }
 

@@ -35,12 +35,15 @@ class AdminHabitController extends Controller
             ->paginate($perPage, ['*'], 'page', $page);
 
         return response()->json([
-            'data' => $paginator->items(),
-            'meta' => [
-                'current_page' => $paginator->currentPage(),
-                'total' => $paginator->total(),
-                'per_page' => $paginator->perPage(),
-            ],
+            'success' => true,
+            'data' => [
+                'data' => $paginator->items(),
+                'meta' => [
+                    'current_page' => $paginator->currentPage(),
+                    'total' => $paginator->total(),
+                    'per_page' => $paginator->perPage(),
+                ],
+            ]
         ]);
     }
 }

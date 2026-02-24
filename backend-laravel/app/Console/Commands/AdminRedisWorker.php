@@ -41,7 +41,7 @@ class AdminRedisWorker extends Command
      */
     public function handle(): int
     {
-        $this->info('Admin Redis Worker iniciat. Escoltant la cua «'.self::COLA_ADMIN.'»...');
+        $this->info('Admin Redis Worker iniciat. Escoltant la cua «' . self::COLA_ADMIN . '»...');
 
         while (true) {
             try {
@@ -54,7 +54,7 @@ class AdminRedisWorker extends Command
                 continue;
             }
 
-            if (empty($resultat) || ! is_array($resultat)) {
+            if (empty($resultat) || !is_array($resultat)) {
                 continue;
             }
 
@@ -63,8 +63,10 @@ class AdminRedisWorker extends Command
                 continue;
             }
 
+            $this->info('Missatge rebut de Redis: ' . $missatge);
+
             $dades = json_decode($missatge, true);
-            if (json_last_error() !== JSON_ERROR_NONE || ! is_array($dades)) {
+            if (json_last_error() !== JSON_ERROR_NONE || !is_array($dades)) {
                 Log::warning('AdminRedisWorker: missatge JSON invàlid rebut', ['raw' => $missatge]);
                 continue;
             }

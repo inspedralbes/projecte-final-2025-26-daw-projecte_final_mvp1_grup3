@@ -51,8 +51,8 @@ class AdminUsuariController extends Controller
             }
             if ($cerca !== '-' && $cerca !== '0' && $cerca !== '') {
                 $query->where(function ($q) use ($cerca) {
-                    $q->where('nom', 'ilike', '%'.$cerca.'%')
-                        ->orWhere('email', 'ilike', '%'.$cerca.'%');
+                    $q->where('nom', 'ilike', '%' . $cerca . '%')
+                        ->orWhere('email', 'ilike', '%' . $cerca . '%');
                 });
             }
         }
@@ -60,12 +60,15 @@ class AdminUsuariController extends Controller
         $paginator = $query->orderBy('id')->paginate($perPage, ['*'], 'page', $page);
 
         return response()->json([
-            'data' => $paginator->items(),
-            'meta' => [
-                'current_page' => $paginator->currentPage(),
-                'total' => $paginator->total(),
-                'per_page' => $paginator->perPage(),
-            ],
+            'success' => true,
+            'data' => [
+                'data' => $paginator->items(),
+                'meta' => [
+                    'current_page' => $paginator->currentPage(),
+                    'total' => $paginator->total(),
+                    'per_page' => $paginator->perPage(),
+                ],
+            ]
         ]);
     }
 
@@ -112,7 +115,7 @@ class AdminUsuariController extends Controller
         $adminLogService->registrar(
             1,
             $accioLog,
-            'Usuari ID '.$id.': '.$usuari->nom,
+            'Usuari ID ' . $id . ': ' . $usuari->nom,
             $abans,
             $despres,
             $request->ip()

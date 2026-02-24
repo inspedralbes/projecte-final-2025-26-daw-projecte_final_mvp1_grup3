@@ -45,14 +45,15 @@
             </div>
 
             <div class="pt-2 grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                @click="loginAdmin"
-                class="bg-green-600 hover:bg-green-700 text-white font-medium py-3 rounded-lg"
-              >
-                ADMIN
-              </button>
-              <NuxtLink to="/">
+              <NuxtLink to="/admin">
+                <button
+                  type="button"
+                  class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 rounded-lg"
+                >
+                  ADMIN
+                </button>
+              </NuxtLink>
+              <NuxtLink to="/HomePage">
                 <button
                   type="button"
                   class="w-full bg-green-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg"
@@ -175,20 +176,7 @@ export default {
   },
 
   methods: {
-    /**
-     * Acció per iniciar sessió com a administrador.
-     */
-    loginAdmin: function () {
-        console.log("Intentant login admin...");
-        // A. Validar camps
-        if (!this.formulari.email || !this.formulari.contrasenya) {
-            alert("Si us plau, omple tots els camps.");
-            return;
-        }
-        
-        // B. Processar (simulació)
-        alert("Login admin en desenvolupament");
-    }
+    // Les accions de navegació s'han mogut directament al template amb NuxtLink
   },
 };
 </script>

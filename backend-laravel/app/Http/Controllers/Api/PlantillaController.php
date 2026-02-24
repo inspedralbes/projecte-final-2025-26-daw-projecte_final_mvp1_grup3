@@ -42,7 +42,7 @@ class PlantillaController extends Controller
 
         // B. Obtenir plantilles usant el servei amb els filtres i l'usuari per defecte
         // No es necessita validar usuari_id ja que sempre és 1.
-        $plantilles = $this->plantillaService->getPlantilles( $filter, $usuariId);
+        $plantilles = $this->plantillaService->getPlantilles( $filter, $usuariId)->load('habits');
 
         // C. Retornar resposta amb el recurs
         return PlantillaResource::collection($plantilles)->toResponse($request);
@@ -62,6 +62,7 @@ class PlantillaController extends Controller
                 $query->where('creador_id', $usuariId)
                     ->orWhere('es_publica', true);
             })
+            ->with('habits') // Eager load habits
             ->first();
 
         if ($plantilla === null) {

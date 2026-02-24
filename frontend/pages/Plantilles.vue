@@ -296,7 +296,7 @@ export default {
     /**
      * Obre el modal en mode de creació de plantilla i reinicia el formulari.
      */
-    obrirModalCrearPlantilla: function () {
+    obrirModalCrearPlantilla: async function () {
       var self = this;
       self.modoEdicio = false;
       self.plantillaAEditar = null;
@@ -305,6 +305,7 @@ export default {
       self.form.categoria = "";
       self.form.esPublica = false;
       self.form.habitsSeleccionats = [];
+      await self.carregarHabits(); // Refresh habits before opening the modal
       self.modalVisible = true;
     },
 
@@ -312,7 +313,7 @@ export default {
      * Obre el modal en mode d'edició per a una plantilla específica.
      * @param {number} id - L'ID de la plantilla a editar.
      */
-    editarPlantilla: function (id) {
+    editarPlantilla: async function (id) {
       var self = this;
       var plantillaTrobada = null;
       var i;
@@ -327,15 +328,26 @@ export default {
 
       self.plantillaAEditar = plantillaTrobada;
       self.modoEdicio = true;
+      await self.carregarHabits(); // Add this line
       self.modalVisible = true;
 
       // A. Omplir el formulari amb les dades de la plantilla per editar.
       if (self.plantillaAEditar) {
+        console.log('Editing plantilla:', self.plantillaAEditar); // DEBUG: Inspect plantilla being edited
         self.form.titol = self.plantillaAEditar.titol;
         self.form.categoria = self.plantillaAEditar.categoria;
         self.form.esPublica = self.plantillaAEditar.esPublica;
-        // S'assumeix que 'plantillaAEditar.habits_ids' existeix i és un array.
-        self.form.habitsSeleccionats = self.plantillaAEditar.habits_ids ? self.plantillaAEditar.habits_ids : [];
+        // B. Extraure els IDs dels hàbits associats a la plantilla
+        self.form.habitsSeleccionats = [];
+        console.log('Habits before populating form:', self.plantillaAEditar.habits); // DEBUG: Inspect habits property
+        // C. Comprovar si hi ha hàbits carregats
+        if (self.plantillaAEditar.habits) {
+          var i;
+          // D. Recórrer els hàbits i afegir els seus IDs
+          for (i = 0; i < self.plantillaAEditar.habits.length; i++) {
+            self.form.habitsSeleccionats.push(self.plantillaAEditar.habits[i].id);
+          }
+        }
       }
     },
 
@@ -514,17 +526,36 @@ export default {
         return;
       }
 
+      console.log('Received feedback payload:', payload); // DEBUG: Inspect entire payload
+
       // B. Executar la funció corresponent segons l'acció realitzada.
       if (payload.action === "CREATE") {
-        self.plantillaCreada();
+        if (payload.plantilla) {
+            console.log('Plantilla created in feedback:', payload.plantilla); // DEBUG: Inspect created plantilla
+            // Mapejar la plantilla rebuda i afegir-la directament a l'store.
+            var mappedPlantilla = self.plantillaStore.mapejarPlantillaDesDeApi(payload.plantilla);
+            self.plantillaStore.plantilles.push(mappedPlantilla);
+        }
+        alert("Plantilla creada amb èxit!");
+        self.tancar();
       } else if (payload.action === "UPDATE") {
-        self.plantillaActualitzada();
-      } else if (payload.action === "DELETE") { // Add this block
+        if (payload.plantilla) {
+            console.log('Plantilla updated in feedback:', payload.plantilla); // DEBUG: Inspect updated plantilla
+            // Mapejar la plantilla rebuda i actualitzar-la a l'store.
+            var mappedPlantilla = self.plantillaStore.mapejarPlantillaDesDeApi(payload.plantilla);
+            var index = self.plantillaStore.plantilles.findIndex(p => p.id === mappedPlantilla.id);
+            if (index !== -1) {
+                self.plantillaStore.plantilles[index] = mappedPlantilla;
+            }
+        }
+        alert("Plantilla actualitzada amb èxit!");
+        self.tancar();
+      } else if (payload.action === "DELETE") {
         alert("Plantilla eliminada amb èxit!");
-        self.carregarPlantilles(); // Recarregar les plantilles per veure els canvis.
+        // Eliminar directament de l'store.
+        self.plantillaStore.plantilles = self.plantillaStore.plantilles.filter(p => p.id !== payload.plantilla_id);
+        self.tancar();
       }
-      // C. Tancar el modal un cop finalitzada l'acció amb èxit.
-      self.tancar();
     },
   },
 };

@@ -1,0 +1,17 @@
+---
+description: Normes Socket.io i WebRTC - comunicació temps real
+globs: backend-node/**/socketHandler*.js,backend-node/**/*socket*
+alwaysApply: false
+---
+
+# Socket.io i WebRTC
+
+## Sintaxi ES5
+- Només `var` i `function()`; sense arrow functions, destructuring, ternaris.
+
+## WebRTC (senyalització)
+- `video_offer`, `video_answer`, `new_ice_candidate`
+- Validar JWT (`JWT_SECRET`) abans del handshake.
+
+## Redis → Socket
+- Quan arriba missatge per `feedback_channel`, emetre al client corresponent per `user_id`.

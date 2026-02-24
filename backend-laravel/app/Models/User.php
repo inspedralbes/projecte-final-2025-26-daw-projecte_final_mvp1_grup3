@@ -34,6 +34,9 @@ class User extends Model
         'monedes',
         'missio_diaria_id',
         'missio_completada',
+        'prohibit',
+        'data_prohibicio',
+        'motiu_prohibicio',
     ];
 
     //================================ MÈTODES / FUNCIONS ===========

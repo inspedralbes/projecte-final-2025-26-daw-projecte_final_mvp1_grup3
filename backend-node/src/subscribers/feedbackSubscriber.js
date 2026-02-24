@@ -37,25 +37,33 @@ async function init(io) {
     try {
       payload = JSON.parse(message);
 
-      var userId = payload.user_id;
-      var action = payload.action; // CREATE, UPDATE, DELETE, TOGGLE
-      var habitData = payload.habit; // L'objecte que ve de la DB
+      if (payload.admin_id !== undefined) {
+        var adminId = payload.admin_id;
+        io.to('admin_' + adminId).emit('admin_action_confirmed', {
+          admin_id: adminId,
+          entity: payload.entity,
+          action: payload.action,
+          success: payload.success,
+          data: payload.data
+        });
+        console.log('Admin feedback enviat a admin_' + adminId);
+      } else {
+        var userId = payload.user_id;
+        var action = payload.action;
+        var habitData = payload.habit;
 
-      // 1. Enviem l'actualització d'XP si Laravel la inclou (com tenies abans)
-      if (payload.xp_update) {
-        io.to('user_' + userId).emit('update_xp', payload.xp_update);
+        if (payload.xp_update) {
+          io.to('user_' + userId).emit('update_xp', payload.xp_update);
+        }
+
+        io.to('user_' + userId).emit('habit_action_confirmed', {
+          action: action,
+          habit: habitData,
+          success: true
+        });
+
+        console.log('Feedback enviat a la sala user_' + userId + ' per l acció ' + action);
       }
-
-      // 2. IMPORTANT: Confirmem l'acció del CRUD al front per tancar el cicle
-      // Fem servir "to('user_' + userId)" per a que només li arribi a qui toca
-      io.to('user_' + userId).emit('habit_action_confirmed', {
-        action: action,
-        habit: habitData,
-        success: true
-      });
-
-      console.log('Feedback enviat a la sala user_' + userId + ' per l acció ' + action);
-
     } catch (e) {
       console.error('Error parsejant feedback de Redis:', e);
     }

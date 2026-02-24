@@ -1,0 +1,31 @@
+---
+description: Normes Node.js - ES5 estricte, Express, comunicació temps real
+globs: backend-node/**/*.js
+alwaysApply: false
+---
+
+# Backend Node.js
+
+## Versions
+- Node.js 20.11.1 LTS, Express
+
+## Sintaxi ES5 estricta (obligatori)
+- **Variables**: només `var` (prohibit `const`, `let`).
+- **Funcions**: `function()` (prohibit arrow functions `=>`).
+- **Prohibit**: destructuring, ternaris, map/filter/reduce.
+- **Permès**: `async function` i `await`.
+
+## Estructura de fitxer
+```javascript
+//================================ IMPORTS =====================================
+//================================ VARIABLES ===================================
+//================================ FUNCIONS ====================================
+//================================ EXPORTS =====================================
+```
+
+## Idioma i nomenclatura
+- Codi i comentaris en **català**; **camelCase** obligatori.
+
+## Redis Bridge
+- **Sortida**: LPUSH a `habits_queue`.
+- **Entrada**: SUBSCRIBE a `feedback_channel`.

@@ -1,0 +1,18 @@
+---
+description: Arquitectura backend - GET/CUD, estructura modular, gamificació
+alwaysApply: true
+---
+
+# Arquitectura Backend (Loopy)
+
+## Regla GET/CUD
+- **GET**: sempre via `fetch` → API Laravel (`backend-laravel/routes/api.php`).
+- **CUD**: Node → Redis → Laravel; sockets només per feedback/confirmació.
+
+## Estructura modular
+- **Node**: `index.js`, `socketHandler.js`, `queues/`, `subscribers/`
+- **Laravel**: `Commands/` (Workers), `Services/` (lògica), `Models/` (taules majúscules)
+
+## Gamificació
+- XP: fàcil 100, mitjà 250, difícil 400.
+- Ratxes: actualitzar `ratxa_actual` i `ratxa_maxima` a `RATXES`.

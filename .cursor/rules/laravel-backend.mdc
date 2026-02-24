@@ -1,0 +1,30 @@
+---
+description: Normes Laravel - capa de negoci, PostgreSQL, Redis Worker
+globs: backend-laravel/**/*.php
+alwaysApply: false
+---
+
+# Backend Laravel
+
+## Versions
+- Laravel 11.0.0, PHP 8.3.3, PostgreSQL 16.2
+
+## Usuari per defecte
+- Sense autenticació; usuari i admin id 1 per defecte.
+
+## Convencions obligatòries
+- **Paràmetres al path**: `GET /api/preguntes-registre/{categoria_id}` (mai query params).
+- **camelCase** per variables i funcions; codi i comentaris en **català**.
+- **No ternaris**; utilitzar `if/else`, `for`, `foreach`, `while`.
+
+## Estructura de codi
+```php
+//================================ NAMESPACES / IMPORTS ============
+//================================ PROPIETATS / ATRIBUTS ==========
+//================================ MÈTODES / FUNCIONS ===========
+//================================ RUTES / LOGICA PRIVADA ========
+```
+
+## Regles
+- Lògica sempre a **Services**, mai als Controllers.
+- Redis: `RedisWorker.php` fa BRPOP a `habits_queue`; publica a `feedback_channel`.

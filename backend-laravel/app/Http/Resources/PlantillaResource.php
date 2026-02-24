@@ -7,6 +7,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use App\Http\Resources\HabitResource; // Import HabitResource
 
 //================================ PROPIETATS / ATRIBUTS ==========
 
@@ -31,7 +32,9 @@ class PlantillaResource extends JsonResource
             'creador_id' => $this->creador_id,
             'titol' => $this->titol,
             'categoria' => $this->categoria,
-            'es_publica' => $this->es_publica,
+                        'es_publica' => $this->es_publica,
+            // B. Incloure els hàbits associats, transformats amb HabitResource
+            'habits' => HabitResource::collection($this->whenLoaded('habits')),
         ];
     }
 }

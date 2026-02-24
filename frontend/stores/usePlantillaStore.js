@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import { useHabitStore } from "./useHabitStore";
 
 /**
  * Store per a la gestió de les plantilles d'hàbits.
@@ -21,6 +22,9 @@ export var usePlantillaStore = defineStore("plantilla", {
       var categoriaPlantilla;
       var esPublicaPlantilla;
       var creadorIdPlantilla;
+      var mappedHabits = [];
+      var habitStore = useHabitStore();
+      var i;
 
       // A. Assignar títol o valor per defecte
       if (plantilla.titol) {
@@ -50,12 +54,20 @@ export var usePlantillaStore = defineStore("plantilla", {
         creadorIdPlantilla = 1;
       }
 
+      // E. Mapejar hàbits si existeixen
+      if (plantilla.habits && Array.isArray(plantilla.habits)) {
+        for (i = 0; i < plantilla.habits.length; i++) {
+          mappedHabits.push(habitStore.mapejarHabitDesDeApi(plantilla.habits[i]));
+        }
+      }
+
       return {
         id: plantilla.id,
         titol: titolPlantilla,
         categoria: categoriaPlantilla,
         esPublica: esPublicaPlantilla,
-        creadorId: creadorIdPlantilla
+        creadorId: creadorIdPlantilla,
+        habits: mappedHabits
       };
     },
 

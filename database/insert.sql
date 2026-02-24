@@ -52,15 +52,15 @@ INSERT INTO LOGROS_MEDALLES (nom, descripcio, tipus) VALUES
 
 
 -- 3. PLANTILLES (8 Categorías)
-INSERT INTO PLANTILLES (creador_id, titol, categoria, es_publica) VALUES
-(1, 'Gym Pro', 'Actividad fisica', true),
-(1, 'Dieta Mediterránea', 'alimentación', true),
-(1, 'Concentración Máxima', 'estudio', true),
-(1, 'Club de Lectura', 'lectura', true),
-(1, 'Mindfulness', 'bienestar', true),
-(1, 'Vida sin Humo', 'mejora habitos', true),
-(1, 'Limpieza Express', 'hogar', true),
-(1, 'Modelismo', 'hobby', true);
+INSERT INTO PLANTILLES (creador_id, titol, categoria, es_publica, HABITS_IDS) VALUES
+(1, 'Gym Pro', 'Actividad fisica', true, '{1,2,3}'),
+(1, 'Dieta Mediterránea', 'alimentación', true, '{4,5,6}'),
+(1, 'Concentración Máxima', 'estudio', true, '{7,8,9}'),
+(1, 'Club de Lectura', 'lectura', true, '{10,11,12}'),
+(1, 'Mindfulness', 'bienestar', true, '{13,14,15}'),
+(1, 'Vida sin Humo', 'mejora habitos', true, '{16,17,18}'),
+(1, 'Limpieza Express', 'hogar', true, '{19,20,21}'),
+(1, 'Modelismo', 'hobby', true, '{22,23,24}');
 
 -- 4. HABITS (3 por cada plantilla = 24 hábitos)
 -- Se asume que las plantillas tienen IDs del 1 al 8 correlativamente

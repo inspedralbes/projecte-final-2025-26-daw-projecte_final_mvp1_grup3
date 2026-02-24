@@ -216,4 +216,40 @@ INSERT INTO PREGUNTES_REGISTRE (categoria_id, pregunta) VALUES
 (8, 'Et motiva realitzar treballs minuciosos que requereixen molta paciència?'),
 (8, 'Sols dedicar temps a investigar tècniques de pintat o muntatge a internet?'),
 (8, 'Et agradaria compartir fotos dels teus avenços amb altres aficionats?');
+-- 2. USUARIS (Més usuaris per a proves)
+INSERT INTO USUARIS (nom, email, contrasenya_hash, nivell, xp_total, monedes) VALUES 
+('Marta Sánchez', 'marta@user.com', 'user123', 5, 1200, 50),
+('Jordi Valls', 'jordi@user.com', 'user123', 3, 450, 20),
+('Carme Ruscalleda', 'carme@user.com', 'user123', 10, 5000, 1000),
+('Pep Guardiola', 'pep@user.com', 'user123', 8, 3200, 400),
+('Rosalia Vila', 'rosalia@user.com', 'user123', 2, 100, 10),
+('Pau Gasol', 'pau@user.com', 'user123', 12, 8000, 2000),
+('Andreu Buenafuente', 'andreu@user.com', 'user123', 4, 800, 80),
+('Berto Romero', 'berto@user.com', 'user123', 4, 750, 75),
+('Ada Colau', 'ada@user.com', 'user123', 6, 1800, 150),
+('Xavi Hernández', 'xavi@user.com', 'user123', 7, 2500, 250);
 
+-- Vinculació d'hàbits per als nous usuaris (id 2 a 11)
+INSERT INTO USUARIS_HABITS (usuari_id, habit_id, objetiu_vegades_personalitzat)
+SELECT u.id, h.id, 1 
+FROM USUARIS u, HABITS h 
+WHERE u.id > 1 AND h.id <= 5; -- Els donem els 5 primers hàbits a cadascú
+
+-- Registre d'activitat per simular rànquings
+INSERT INTO REGISTRE_ACTIVITAT (habit_id, acabado, xp_guanyada)
+SELECT h.id, true, 20 
+FROM HABITS h 
+JOIN USUARIS_HABITS uh ON h.id = uh.habit_id
+WHERE uh.usuari_id > 1;
+
+-- 5. ADMIN_LOGS (Simulació d'historial)
+INSERT INTO ADMIN_LOGS (administrador_id, accio, detall, ip) VALUES
+(1, 'Login', 'Inici de sessió correcte', '127.0.0.1'),
+(1, 'Actualització de sistema', 'Canvi en rutes d''API', '127.0.0.1'),
+(1, 'Gestió d''usuaris', 'Usuari 2 prohibit temporalment', '127.0.0.1'),
+(1, 'Netetja de cau', 'Cache buidada rectament', '127.0.0.1');
+
+-- 6. ADMIN_NOTIFICACIONS
+INSERT INTO ADMIN_NOTIFICACIONS (administrador_id, tipus, titol, descripcio) VALUES
+(1, 'sistema', 'Benvingut al panell', 'Benvingut al nou sistema d''administració de Loopy.'),
+(1, 'alerta', 'Nou usuari registrat', 'L''usuari Rosalia Vila s''ha unit a la plataforma.');

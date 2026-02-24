@@ -35,6 +35,9 @@ class User extends Model
         'missio_diaria_id',
         'missio_completada',
         'ultim_reset_missio',
+        'prohibit',
+        'data_prohibicio',
+        'motiu_prohibicio',
     ];
 
     //================================ MÈTODES / FUNCIONS ===========

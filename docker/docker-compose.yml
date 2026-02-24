@@ -73,7 +73,7 @@ services:
       DB_PASSWORD: ${POSTGRES_PASSWORD:-loopy_secret}
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      REDIS_CLIENT: phpredis
+      REDIS_CLIENT: predis
       REDIS_READ_TIMEOUT: 60
       REDIS_READ_WRITE_TIMEOUT: 60
       REDIS_PREFIX: ""
@@ -113,7 +113,7 @@ services:
       DB_PASSWORD: ${POSTGRES_PASSWORD:-loopy_secret}
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      REDIS_CLIENT: phpredis
+      REDIS_CLIENT: predis
       REDIS_READ_TIMEOUT: 60
       REDIS_READ_WRITE_TIMEOUT: 60
       REDIS_PREFIX: ""
@@ -126,7 +126,41 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    command: ["php", "artisan", "habits:redis-worker"]
+    command: [ "php", "artisan", "habits:redis-worker" ]
+
+  backend-laravel-admin-worker:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.laravel
+    container_name: loopy-laravel-admin-worker
+    restart: unless-stopped
+    working_dir: /var/www
+    entrypoint: []
+    environment:
+      APP_NAME: Loopy
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_KEY: ${APP_KEY:-base64:AAAAAAAAAAAAAAAAAAAAAA==}
+      APP_URL: http://localhost:8000
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${POSTGRES_DB:-loopy_db}
+      DB_USERNAME: ${POSTGRES_USER:-loopy}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-loopy_secret}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_CLIENT: predis
+      REDIS_PREFIX: ""
+    volumes:
+      - ../backend-laravel:/var/www
+      - ../database:/var/database:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: [ "php", "artisan", "admin:redis-worker" ]
 
   backend-node:
     build:

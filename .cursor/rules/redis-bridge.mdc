@@ -1,0 +1,18 @@
+---
+description: Normes Redis Bridge - cues LPUSH/BRPOP, Pub/Sub feedback_channel
+globs: backend-node/src/queues/**,backend-node/src/subscribers/**,backend-laravel/app/Console/Commands/Redis*.php,backend-laravel/app/Services/*Redis*.php
+alwaysApply: false
+---
+
+# Redis Bridge (Node ↔ Laravel)
+
+## Flux de dades
+- **Anada (Node → Laravel)**: LPUSH a `habits_queue`; Laravel fa BRPOP.
+- **Tornada (Laravel → Node)**: Laravel publica a `feedback_channel`; Node SUBSCRIBE.
+
+## Fitxers clau
+- Node: `habitQueue.js`, `feedbackSubscriber.js`
+- Laravel: `RedisWorker.php`, `RedisFeedbackService.php`
+
+## Documentació
+Cada operació Redis: comentaris pas a pas (A, B, C...) dins la funció.

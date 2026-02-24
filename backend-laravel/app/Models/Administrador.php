@@ -5,6 +5,7 @@ namespace App\Models;
 //================================ NAMESPACES / IMPORTS ============
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 //================================ PROPIETATS / ATRIBUTS ==========
 
@@ -35,5 +36,25 @@ class Administrador extends Model
         return [
             'data_creacio' => 'datetime',
         ];
+    }
+
+    //================================ MÈTODES / FUNCIONS ===========
+
+    //================================ RELACIONS ELOQUENT ===========
+
+    /**
+     * Logs d'accions realitzades per l'administrador.
+     */
+    public function logs(): HasMany
+    {
+        return $this->hasMany(AdminLog::class, 'administrador_id');
+    }
+
+    /**
+     * Notificacions rebudes per l'administrador.
+     */
+    public function notificacions(): HasMany
+    {
+        return $this->hasMany(AdminNotificacio::class, 'administrador_id');
     }
 }

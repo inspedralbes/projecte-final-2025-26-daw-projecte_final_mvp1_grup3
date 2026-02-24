@@ -1,0 +1,25 @@
+---
+description: Normes base de dades - PostgreSQL, init.sql, insert.sql, Eloquent
+globs: database/**/*.sql,backend-laravel/app/Models/**/*.php
+alwaysApply: false
+---
+
+# Base de dades i Models
+
+## Prohibit migracions
+- Mai crear o modificar `backend-laravel/database/migrations/`.
+
+## Fitxers SQL
+- **Estructura**: actualitzar `database/init.sql`.
+- **Dades inicials**: afegir INSERT a `database/insert.sql`.
+
+## Noms
+- Taules i columnes en majúscules a SQL (ex: `RATXES`, `USUARIS`).
+- Evitar accents en dades SQL.
+
+## Models Laravel
+- Un model per taula a `app/Models/`.
+- Definir `$table` si no segueix convencions; `$timestamps = false` si no existeixen.
+
+## PostgreSQL accents
+- "À" != "A"; usar `unaccent()` o `ILIKE` per cerques.

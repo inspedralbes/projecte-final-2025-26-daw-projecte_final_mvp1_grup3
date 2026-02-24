@@ -24,8 +24,7 @@ CREATE TABLE USUARIS (
     xp_total INT DEFAULT 0,
     monedes INT DEFAULT 0,
     missio_diaria_id INT, -- FK se añade después de crear la tabla de misiones
-    missio_completada BOOLEAN DEFAULT FALSE,
-    ultim_reset_missio DATE
+    missio_completada BOOLEAN DEFAULT FALSE
 );
 
 -- 2. LOGROS Y MEDALLAS
@@ -125,5 +124,38 @@ CREATE TABLE PREGUNTES_REGISTRE (
     categoria_id INT REFERENCES CATEGORIES(id) ON DELETE CASCADE,
     pregunta TEXT NOT NULL,
     respostes_type VARCHAR(20) NOT NULL DEFAULT 'si_no'
+);
+
+-- 5. PANELL ADMIN
+-- ----------------------------------------------------------
+
+CREATE TABLE ADMIN_LOGS (
+    id SERIAL PRIMARY KEY,
+    administrador_id INT REFERENCES ADMINISTRADORS(id),
+    accio VARCHAR(100) NOT NULL,
+    detall TEXT,
+    abans JSONB,
+    despres JSONB,
+    ip VARCHAR(45),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE ADMIN_NOTIFICACIONS (
+    id SERIAL PRIMARY KEY,
+    administrador_id INT REFERENCES ADMINISTRADORS(id),
+    tipus VARCHAR(50),
+    titol VARCHAR(200) NOT NULL,
+    descripcio TEXT,
+    data TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    llegida BOOLEAN DEFAULT FALSE,
+    metadata JSONB
+);
+
+CREATE TABLE ADMIN_CONFIGURACIO (
+    id SERIAL PRIMARY KEY,
+    clau VARCHAR(100) UNIQUE NOT NULL,
+    valor TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

@@ -3,15 +3,30 @@
     <div class="max-w-7xl mx-auto">
       <h1 class="text-3xl font-bold text-gray-800 mb-8">Gestió de Plantilles</h1>
 
-      <button
-        @click="obrirModalCrearPlantilla"
-        class="mb-6 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition-all transform active:scale-95 flex items-center justify-center gap-2"
-      >
-        <span
-          class="bg-white text-green-600 rounded-full w-5 h-5 flex items-center justify-center text-xs"
-          >+</span>
-        Crear Nova Plantilla
-      </button>
+      <div class="flex flex-col md:flex-row justify-between items-center mb-6">
+        <!-- Dropdown per filtrar plantilles -->
+        <div class="mb-4 md:mb-0">
+          <label for="filterTemplates" class="sr-only">Filtrar Plantilles</label>
+          <select
+            id="filterTemplates"
+            v-model="selectedFilter"
+            class="block w-full md:w-auto p-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
+          >
+            <option value="all">Totes les Plantilles</option>
+            <option value="my">Les Meves Plantilles</option>
+          </select>
+        </div>
+
+        <button
+          @click="obrirModalCrearPlantilla"
+          class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition-all transform active:scale-95 flex items-center justify-center gap-2"
+        >
+          <span
+            class="bg-white text-green-600 rounded-full w-5 h-5 flex items-center justify-center text-xs"
+            >+</span>
+          Crear Nova Plantilla
+        </button>
+      </div>
 
       <div v-if="plantillaStore.loading" class="text-center py-10">
         <p class="text-gray-500">Carregant plantilles...</p>
@@ -195,15 +210,19 @@
 <script>
 import { usePlantillaStore } from "../stores/usePlantillaStore";
 import { useHabitStore } from "../stores/useHabitStore";
+import { useGameStore } from "../stores/gameStore"; // Import useGameStore
 import { useSocketConfig } from "../composables/useSocketConfig";
 import { io } from "socket.io-client";
+import { watch } from 'vue'; // Import watch from vue
 
 export default {
   // Configuració inicial dels 'stores' de Pinia per a la gestió de l'estat.
   setup: function () {
     var plantillaStore = usePlantillaStore();
     var habitStore = useHabitStore();
-    return { plantillaStore: plantillaStore, habitStore: habitStore };
+    var gameStore = useGameStore(); // Initialize useGameStore
+
+    return { plantillaStore: plantillaStore, habitStore: habitStore, gameStore: gameStore };
   },
   // Dades reactives del component.
   data: function () {
@@ -212,6 +231,7 @@ export default {
       modoEdicio: false, // Indica si el modal està en mode edició o creació.
       plantillaAEditar: null, // Objecte de plantilla a editar, si n'hi ha.
       socket: null, // Instància del socket per a comunicació en temps real.
+      selectedFilter: 'all', // New reactive property for the filter dropdown
       form: {
         titol: "",
         categoria: "",
@@ -225,13 +245,30 @@ export default {
     var self = this;
     // A. Carregar les plantilles existents des de l'API.
     self.carregarPlantilles();
+    // Set default userId for now as there's no authentication yet
+    self.gameStore.setUserId(1); // Set userId to 1
     // B. Inicialitzar la connexió del socket.
     self.initSocket();
     // C. Carregar els hàbits disponibles per a la selecció.
     self.carregarHabits();
 
-    // La lògica d'inicialització del formulari per a l'edició
-    // es gestionarà a les funcions `obrirModalCrearPlantilla` i `editarPlantilla`.
+    // Watch for changes in selectedFilter and re-carregarPlantilles
+    this.$watch('selectedFilter', function (newFilter, oldFilter) {
+      if (newFilter !== oldFilter) {
+        self.carregarPlantilles();
+      }
+    });
+
+    // Watch for changes in gameStore.userId and re-carregarPlantilles
+    this.$watch(function () {
+      return this.gameStore.userId;
+    }, function (newUserId, oldUserId) {
+      // A. Comprovar si l'ID d'usuari ha canviat
+      if (newUserId !== oldUserId) {
+        console.log("gameStore.userId ha canviat, recarregant plantilles. Nou userId:", newUserId);
+        self.carregarPlantilles();
+      }
+    });
   },
   // Hook de cicle de vida: s'executa abans que el component sigui desmuntat.
   beforeUnmount: function () {
@@ -249,7 +286,10 @@ export default {
      * @returns {Promise<void>}
      */
     carregarPlantilles: async function () {
-      await this.plantillaStore.obtenirPlantillesDesDeApi();
+      var filter = this.selectedFilter;
+      var userId = this.gameStore.userId; // Get userId from gameStore
+      console.log("Fetching plantilles with filter:", filter, "and userId:", userId); // Debug log
+      await this.plantillaStore.obtenirPlantillesDesDeApi(filter, userId);
     },
 
     /**
@@ -358,7 +398,7 @@ export default {
 
       // Gestió d'esdeveniments del socket.
       self.socket.on("connect", function () {
-        console.log("✅ Socket de Plantilles connectat:", self.socket.id);
+        console.log("Socket de Plantilles connectat:", self.socket.id);
       });
 
       self.socket.on("plantilla_action_confirmed", function (payload) {
@@ -366,11 +406,11 @@ export default {
       });
 
       self.socket.on("disconnect", function () {
-        console.log("❌ Socket de Plantilles desconnectat");
+        console.log("Socket de Plantilles desconnectat");
       });
 
       self.socket.on("error", function (error) {
-        console.error("⚠️ Error en socket de Plantilles:", error);
+        console.error("Error en socket de Plantilles:", error);
       });
     },
 

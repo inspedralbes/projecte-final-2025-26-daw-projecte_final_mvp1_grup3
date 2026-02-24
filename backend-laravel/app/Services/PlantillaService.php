@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Models\Plantilla;
 use App\Models\Habit; // Add this import
+use Illuminate\Database\Eloquent\Collection; // Import Collection
 
 //================================ PROPIETATS / ATRIBUTS ==========
 
@@ -31,6 +32,31 @@ class PlantillaService
     }
 
     /**
+     * Obté una col·lecció de plantilles basant-se en filtres.
+     *
+     * @param string $filter 'all' per a totes (públiques + de l'usuari), 'my' per a només les de l'usuari.
+     * @param int|null $userId L'ID de l'usuari actual.
+     * @return Collection<int, Plantilla>
+     */
+    public function getPlantilles(string $filter, ?int $userId): Collection
+    {
+        $query = Plantilla::query();
+
+        if ($filter === 'my' && $userId !== null) {
+            // Només plantilles creades per l'usuari especificat
+            $query->where('creador_id', $userId);
+        } else {
+            // Totes les plantilles: públiques O creades per l'usuari (si userId no és null)
+            $query->where('es_publica', true);
+            if ($userId !== null) {
+                $query->orWhere('creador_id', $userId);
+            }
+        }
+
+        return $query->get();
+    }
+
+    /**
      * Processa una acció de plantilles (CRUD) rebuda per Redis.
      * Publica el feedback corresponent.
      *
@@ -38,43 +64,86 @@ class PlantillaService
      */
     public function processarAccioPlantilla(array $dades): void
     {
-        // A. Normalitzar entrada
-        $accio = isset($dades['action']) ? strtoupper((string) $dades['action']) : '';
-        $usuariId = isset($dades['user_id']) ? (int) $dades['user_id'] : 1;
-        $plantillaId = isset($dades['plantilla_id']) ? (int) $dades['plantilla_id'] : 0;
+        // A. Normalitzar entrada i assegurar el compliment de les regles de l'agent
+        // Inicialització de l'acció amb un valor per defecte.
+        $accio = '';
+        // B. Comprovar si l'acció ha estat definida en les dades
+        if (isset($dades['action'])) {
+            // C. Convertir l'acció a majúscules per estandardització
+            $accio = strtoupper((string) $dades['action']);
+        }
+
+        // D. L'ID d'usuari per defecte és 1, segons les normes de l'agent (sense autenticació).
+        $usuariId = 1;
+
+        // E. Inicialització de l'ID de plantilla amb un valor per defecte.
+        $plantillaId = 0;
+        // F. Comprovar si l'ID de plantilla ha estat definida en les dades
+        if (isset($dades['plantilla_id'])) {
+            // G. Assignar l'ID de plantilla
+            $plantillaId = (int) $dades['plantilla_id'];
+        }
+
+        // H. Inicialització de les dades de plantilla com un array buit per defecte.
+        $plantillaData = [];
+        // I. Comprovar si les dades de plantilla han estat definides i són un array
         if (isset($dades['plantilla_data']) && is_array($dades['plantilla_data'])) {
+            // J. Assignar les dades de plantilla
             $plantillaData = $dades['plantilla_data'];
-        } else {
-            $plantillaData = [];
         }
 
         $success = false;
         $plantillaModel = null;
 
-        // B. Executar l'acció
+        // K. Executar l'acció basada en el tipus d'acció normalitzada
+        // L. Comprovar si l'acció és 'CREATE'
         if ($accio === 'CREATE') {
             $plantillaModel = $this->crearPlantilla($usuariId, $plantillaData);
-            $success = $plantillaModel !== null;
+            // M. Establir l'èxit si la plantilla ha estat creada correctament
+            if ($plantillaModel !== null) {
+                $success = true;
+            } else {
+                $success = false;
+            }
+        // N. Comprovar si l'acció és 'UPDATE'
         } elseif ($accio === 'UPDATE') {
             $plantillaModel = $this->actualitzarPlantilla($usuariId, $plantillaId, $plantillaData);
-            $success = $plantillaModel !== null;
+            // O. Establir l'èxit si la plantilla ha estat actualitzada correctament
+            if ($plantillaModel !== null) {
+                $success = true;
+            } else {
+                $success = false;
+            }
+        // P. Comprovar si l'acció és 'DELETE'
         } elseif ($accio === 'DELETE') {
             $plantillaModel = $this->eliminarPlantilla($usuariId, $plantillaId);
-            $success = $plantillaModel !== null;
+            // Q. Establir l'èxit si la plantilla ha estat eliminada correctament
+            if ($plantillaModel !== null) {
+                $success = true;
+            } else {
+                $success = false;
+            }
+        // R. Si l'acció no és reconeguda, llançar una excepció
         } else {
             throw new \InvalidArgumentException('Acció de plantilles no reconeguda.');
         }
 
-        // C. Construir payload de feedback
+        // S. Construir payload de feedback
         $payload = [
             'type' => 'PLANTILLA',
             'action' => $accio,
             'user_id' => $usuariId,
             'success' => $success,
-            'plantilla' => $plantillaModel ? $plantillaModel->toArray() : null,
         ];
+        // T. Afegir la plantilla al payload si existeix
+        if ($plantillaModel !== null) {
+            $payload['plantilla'] = $plantillaModel->toArray();
+        } else {
+            $payload['plantilla'] = null;
+        }
 
-        // D. Publicar feedback a Redis
+
+        // U. Publicar feedback a Redis
         $this->feedbackService->publicarPayload($payload);
     }
 
@@ -88,23 +157,30 @@ class PlantillaService
     {
         // A. Normalitzar dades d'entrada
         $dades = $this->filtrarDadesPlantilla($plantillaData);
-        $habitsIds = $plantillaData['habits_ids'] ?? []; // Extract habits_ids
+        
+        $habitsIds = [];
+        // B. Verificar si existeixen hàbits per associar
+        if (isset($plantillaData['habits_ids'])) {
+            $habitsIds = $plantillaData['habits_ids'];
+        }
 
-        // B. Validar títol
+        // C. Validar títol
         if (empty($dades['titol'])) {
             return null;
         }
 
-        // C. Assignar usuari creador
+        // D. Assignar usuari creador
         $dades['creador_id'] = $usuariId;
 
-        // D. Crear model de plantilla
+        // E. Crear model de plantilla
         $plantilla = Plantilla::create($dades);
 
+        // F. Si la plantilla es crea correctament i hi ha IDs d'hàbits per associar
         if ($plantilla && !empty($habitsIds)) {
-            // E. Trobar els hàbits originals i crear-ne còpies associades a la nova plantilla
+            // G. Trobar els hàbits originals i crear-ne còpies associades a la nova plantilla
             $habitsOriginals = Habit::whereIn('id', $habitsIds)->get();
 
+            // H. Iterar sobre cada hàbit original per crear una còpia associada a la plantilla
             foreach ($habitsOriginals as $habitOriginal) {
                 $nouHabit = new Habit();
                 // Copy relevant attributes from the original habit

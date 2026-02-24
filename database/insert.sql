@@ -5,7 +5,8 @@ VALUES ('admin', 'admin@admin.com', 'admin123');
 
 -- 2. USUARIS
 INSERT INTO USUARIS (nom, email, contrasenya_hash) 
-VALUES ('llorenç carnicer', 'llorcar@user.com', 'user123');
+VALUES ('llorenç carnicer', 'llorcar@user.com', 'user123'),
+       ('marta rodríguez', 'marrod@user.com', 'user123');
 
 -- 2.1 MISSIOS_DIARIES (15 missions)
 INSERT INTO MISSIOS_DIARIES (id, titol, tipus_comprovacio, parametres) VALUES
@@ -75,7 +76,7 @@ INSERT INTO LOGROS_MEDALLES (nom, descripcio, tipus) VALUES
 -- 3. PLANTILLES (8 Categorías)
 INSERT INTO PLANTILLES (creador_id, titol, categoria, es_publica) VALUES
 (1, 'Gym Pro', 'Actividad fisica', true),
-(1, 'Dieta Mediterránea', 'alimentación', true),
+(2, 'Dieta Mediterránea', 'alimentación', true),
 (1, 'Concentración Máxima', 'estudio', true),
 (1, 'Club de Lectura', 'lectura', true),
 (1, 'Mindfulness', 'bienestar', true),

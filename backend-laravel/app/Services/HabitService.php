@@ -38,14 +38,20 @@ class HabitService
      */
     private RedisFeedbackService $feedbackService;
 
+    /**
+     * Servei de gestió de logros.
+     */
+    private LogroService $logroService;
+
     //================================ MÈTODES / FUNCIONS ===========
 
     /**
-     * Constructor. Injecció del servei de feedback.
+     * Constructor. Injecció del servei de feedback i logros.
      */
-    public function __construct(RedisFeedbackService $feedbackService)
+    public function __construct(RedisFeedbackService $feedbackService, LogroService $logroService)
     {
         $this->feedbackService = $feedbackService;
+        $this->logroService = $logroService;
     }
 
     /**
@@ -206,8 +212,12 @@ class HabitService
             ]);
         });
 
+        // D4. Comprovar i atorgar logros un cop guardada l'activitat de l'hàbit
+        $this->logroService->comprovarLogros($usuariId, $habit);
+
         // E. Recuperar valors finals per retornar el resultat
         $usuari = User::find($usuariId);
+
         $ratxa = Ratxa::where('usuari_id', $usuariId)->first();
 
         // E1. Si no hi ha ratxa, inicialitzar valors

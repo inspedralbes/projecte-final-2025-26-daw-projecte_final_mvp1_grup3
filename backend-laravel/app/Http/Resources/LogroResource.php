@@ -24,11 +24,18 @@ class LogroResource extends JsonResource
     public function toArray(Request $request): array
     {
         // A. Definició del format de sortida per al frontend
+        // S'afegeix el camp obtingut, que indica si l'usuari actual l'ha aconseguit.
+        $obtingut = false;
+        if (isset($this->desbloquejat)) {
+            $obtingut = (bool) $this->desbloquejat;
+        }
+
         return [
             'id' => $this->id,
             'nom' => $this->nom,
             'descripcio' => $this->descripcio,
             'tipus' => $this->tipus,
+            'obtingut' => $obtingut,
         ];
     }
 }

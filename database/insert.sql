@@ -13,7 +13,7 @@ INSERT INTO LOGROS_MEDALLES (nom, descripcio, tipus) VALUES
 ('Primer Encuentro', 'Inicia sesión por primera vez', 'tiempo'),
 ('Fidelidad de Hierro', 'Mantén tu cuenta activa por más de 6 meses', 'tiempo'),
 ('Aniversario', 'Cumple un año utilizando la aplicación', 'tiempo'),
-('Reloj de Arena', 'Registra un total de 100 horas de enfoque en tus tareas', 'tiempo'),
+('Reloj de Arena', 'Registra un total de 100 horas de enfoque en tus tareas', 'tiempo'),-- No es pot fer el logro perque no registra el temps a dins de la app
 
 -- CANTIDAD
 ('Paso a Paso', 'Completa tu primer hábito', 'cantidad'),
@@ -25,7 +25,7 @@ INSERT INTO LOGROS_MEDALLES (nom, descripcio, tipus) VALUES
 ('Buen Comienzo', 'Consigue una racha de 3 días', 'racha'),
 ('Constancia de Acero', 'Mantén una racha de 30 días', 'racha'),
 ('Inquebrantable', 'Alcanza una racha de 100 días seguidos', 'racha'),
-('Fénix', 'Recupera una racha perdida', 'racha'),
+('Fénix', 'Recupera una racha perdida', 'racha'),--NO está fet el logro encara perque no es pot recuperar la ratxa encara
 
 -- DIFICULTAD
 ('Sin Esfuerzo', 'Completa 50 hábitos fáciles', 'dificultad'),
@@ -36,15 +36,15 @@ INSERT INTO LOGROS_MEDALLES (nom, descripcio, tipus) VALUES
 -- OCULTAS
 ('Ave Nocturna', 'Completa un hábito entre las 2:00 AM y las 5:00 AM', 'Ocultas'),
 ('Rayo Veloz', 'Completa todos tus hábitos diarios antes de las 9:00 AM', 'Ocultas'),
-('Indeciso', 'Cambia el nombre de un hábito más de 3 veces', 'Ocultas'),
+('Indeciso', 'Cambia el nombre de un hábito más de 3 veces', 'Ocultas'),--NO es pot fer el logro perque no hi ha registre dels noms anteriors o quantes vegade s'ha canviat
 ('Silencioso', 'Completa un hábito después de un mes de inactividad', 'Ocultas'),
 
 -- GENERALES
-('Voz de la Comunidad', 'Escribe tu primer mensaje en el foro', 'Generales'),
-('Nuevo Look', 'Cambia la apariencia de tu mascota', 'Generales'),
-('Manitas', 'Personaliza los colores de la interfaz', 'Generales'),
-('Guía Espiritual', 'Recibe 5 agradecimientos de otros usuarios en el foro', 'Generales'),
-('Mascota Mimada', 'Interactúa con tu mascota 10 veces en un día', 'Generales');
+('Voz de la Comunidad', 'Escribe tu primer mensaje en el foro', 'Generales'),--encara no es pot fer el logro
+('Nuevo Look', 'Cambia la apariencia de tu mascota', 'Generales'),--encara no es pot fer el logro
+('Manitas', 'Personaliza los colores de la interfaz', 'Generales'),--encara no es pot fer el logro
+('Guía Espiritual', 'Recibe 5 agradecimientos de otros usuarios en el foro', 'Generales'),--encara no es pot fer el logro
+('Mascota Mimada', 'Interactúa con tu mascota 10 veces en un día', 'Generales');--encara no es pot fer el logro
 
 
 

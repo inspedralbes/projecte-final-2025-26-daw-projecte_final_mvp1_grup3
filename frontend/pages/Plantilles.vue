@@ -68,6 +68,7 @@
               Editar
             </button>
             <button
+              v-if="plantilla.creadorId === gameStore.userId"
               @click="eliminarPlantilla(plantilla.id)"
               class="text-sm text-red-600 hover:text-red-700 font-semibold px-3 py-1 rounded border border-red-200 hover:border-red-300 transition-colors"
             >
@@ -93,7 +94,7 @@
             &times;
           </button>
 
-          <h2 class="text-2xl font-bold text-gray-800 mb-6">
+          <h2 class="2xl font-bold text-gray-800 mb-6">
             {{ modoEdicio ? "Editar Plantilla" : "Crear Nova Plantilla" }}
           </h2>
 
@@ -339,13 +340,25 @@ export default {
     },
 
     /**
-     * Gestiona l'eliminació d'una plantilla. (Lògica pendent d'implementació via socket)
+     * Gestiona l'eliminació d'una plantilla.
      * @param {number} id - L'ID de la plantilla a eliminar.
      */
     eliminarPlantilla: function (id) {
-      // TODO: Implementar la lògica d'eliminació via socket.
-      alert("Eliminar plantilla amb ID: " + id);
-      // Després d'eliminar, recarregar les plantilles o actualitzar l'store.
+      var self = this;
+      // A. Comprovar que el socket estigui disponible.
+      if (!self.socket) {
+        alert("Socket no disponible per eliminar la plantilla.");
+        return;
+      }
+      // B. Confirmar l'eliminació amb l'usuari.
+      if (confirm("Estàs segur que vols eliminar aquesta plantilla?")) {
+        // C. Emitir l'acció de DELETE via socket.
+        self.socket.emit("plantilla_action", {
+          action: "DELETE",
+          plantilla_id: id,
+          user_id: self.gameStore.userId // Enviar l'ID de l'usuari per a la validació al backend.
+        });
+      }
     },
 
     /**
@@ -506,6 +519,9 @@ export default {
         self.plantillaCreada();
       } else if (payload.action === "UPDATE") {
         self.plantillaActualitzada();
+      } else if (payload.action === "DELETE") { // Add this block
+        alert("Plantilla eliminada amb èxit!");
+        self.carregarPlantilles(); // Recarregar les plantilles per veure els canvis.
       }
       // C. Tancar el modal un cop finalitzada l'acció amb èxit.
       self.tancar();

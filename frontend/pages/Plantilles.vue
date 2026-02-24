@@ -62,7 +62,7 @@
         </div>
       </div>
 
-      <!-- Modal para crear/editar plantilla -->
+      <!-- Modal per crear/editar plantilla -->
       <div
         v-if="modalVisible"
         class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center z-50"
@@ -199,61 +199,84 @@ import { useSocketConfig } from "../composables/useSocketConfig";
 import { io } from "socket.io-client";
 
 export default {
+  // Configuració inicial dels 'stores' de Pinia per a la gestió de l'estat.
   setup: function () {
     var plantillaStore = usePlantillaStore();
     var habitStore = useHabitStore();
     return { plantillaStore: plantillaStore, habitStore: habitStore };
   },
+  // Dades reactives del component.
   data: function () {
     return {
-      modalVisible: false,
-      modoEdicio: false,
-      plantillaAEditar: null, // Used for editing, replaces plantillaSeleccionada
-      socket: null,
+      modalVisible: false, // Controla la visibilitat del modal de creació/edició.
+      modoEdicio: false, // Indica si el modal està en mode edició o creació.
+      plantillaAEditar: null, // Objecte de plantilla a editar, si n'hi ha.
+      socket: null, // Instància del socket per a comunicació en temps real.
       form: {
         titol: "",
         categoria: "",
         esPublica: false,
-        habitsSeleccionats: [], // Array de IDs d'hàbits seleccionats
+        habitsSeleccionats: [], // Array d'IDs d'hàbits seleccionats per a la plantilla.
       },
     };
   },
+  // Hook de cicle de vida: s'executa quan el component és muntat.
   mounted: function () {
     var self = this;
+    // A. Carregar les plantilles existents des de l'API.
     self.carregarPlantilles();
+    // B. Inicialitzar la connexió del socket.
     self.initSocket();
+    // C. Carregar els hàbits disponibles per a la selecció.
     self.carregarHabits();
 
-    // The logic below is adapted from the original PlantillaCreateModal's mounted hook
-    // It will be triggered when the modal becomes visible, not directly on page load
-    // The actual initialization of the form will happen in obrirModalCrearPlantilla or editarPlantilla
+    // La lògica d'inicialització del formulari per a l'edició
+    // es gestionarà a les funcions `obrirModalCrearPlantilla` i `editarPlantilla`.
   },
+  // Hook de cicle de vida: s'executa abans que el component sigui desmuntat.
   beforeUnmount: function () {
+    // Desconnectar el socket si està actiu per evitar pèrdues de memòria.
     if (this.socket) {
       this.socket.disconnect();
     }
   },
+  // Mètodes del component.
   methods: {
-    // --- Methods from Plantilles.vue ---
+    // --- Mètodes de la vista principal de Plantilles ---
+
+    /**
+     * Carrega les plantilles des de l'API a través del 'plantillaStore'.
+     * @returns {Promise<void>}
+     */
     carregarPlantilles: async function () {
       await this.plantillaStore.obtenirPlantillesDesDeApi();
     },
+
+    /**
+     * Obre el modal en mode de creació de plantilla i reinicia el formulari.
+     */
     obrirModalCrearPlantilla: function () {
       var self = this;
       self.modoEdicio = false;
       self.plantillaAEditar = null;
-      // Reset form when opening for creation
+      // Reiniciar el formulari per a una nova creació.
       self.form.titol = "";
       self.form.categoria = "";
       self.form.esPublica = false;
       self.form.habitsSeleccionats = [];
       self.modalVisible = true;
     },
+
+    /**
+     * Obre el modal en mode d'edició per a una plantilla específica.
+     * @param {number} id - L'ID de la plantilla a editar.
+     */
     editarPlantilla: function (id) {
       var self = this;
       var plantillaTrobada = null;
       var i;
 
+      // Cercar la plantilla per ID a l'emmagatzematge.
       for (i = 0; i < self.plantillaStore.plantilles.length; i++) {
         if (self.plantillaStore.plantilles[i].id === id) {
           plantillaTrobada = self.plantillaStore.plantilles[i];
@@ -265,35 +288,60 @@ export default {
       self.modoEdicio = true;
       self.modalVisible = true;
 
-      // Populate form for editing
+      // A. Omplir el formulari amb les dades de la plantilla per editar.
       if (self.plantillaAEditar) {
         self.form.titol = self.plantillaAEditar.titol;
         self.form.categoria = self.plantillaAEditar.categoria;
         self.form.esPublica = self.plantillaAEditar.esPublica;
-        // Assuming plantillaAEditar.habits_ids exists and is an array
+        // S'assumeix que 'plantillaAEditar.habits_ids' existeix i és un array.
         self.form.habitsSeleccionats = self.plantillaAEditar.habits_ids ? self.plantillaAEditar.habits_ids : [];
       }
     },
+
+    /**
+     * Gestiona l'eliminació d'una plantilla. (Lògica pendent d'implementació via socket)
+     * @param {number} id - L'ID de la plantilla a eliminar.
+     */
     eliminarPlantilla: function (id) {
-      // Implementar lògica d'eliminació via socket
+      // TODO: Implementar la lògica d'eliminació via socket.
       alert("Eliminar plantilla amb ID: " + id);
-      // Després d'eliminar, recarregar plantilles o actualitzar l'store
-    },
-    tancar: function () { // Renamed from tancarModal to match modal's original name
-      this.modalVisible = false;
-    },
-    plantillaCreada: function () {
-      this.tancar();
-      this.carregarPlantilles(); // Recarregar les plantilles per veure la nova
-    },
-    plantillaActualitzada: function () {
-      this.tancar();
-      this.carregarPlantilles(); // Recarregar les plantilles per veure els canvis
+      // Després d'eliminar, recarregar les plantilles o actualitzar l'store.
     },
 
-    // --- Methods from PlantillaCreateModal.vue (adapted) ---
+    /**
+     * Tanca el modal de creació/edició de plantilles.
+     */
+    tancar: function () {
+      this.modalVisible = false;
+    },
+
+    /**
+     * S'executa després que una plantilla s'hagi creat amb èxit.
+     * Tanca el modal i recarrega la llista de plantilles.
+     */
+    plantillaCreada: function () {
+      this.tancar();
+      this.carregarPlantilles(); // Recarregar les plantilles per veure la nova.
+    },
+
+    /**
+     * S'executa després que una plantilla s'hagi actualitzat amb èxit.
+     * Tanca el modal i recarrega la llista de plantilles.
+     */
+    plantillaActualitzada: function () {
+      this.tancar();
+      this.carregarPlantilles(); // Recarregar les plantilles per veure els canvis.
+    },
+
+    // --- Mètodes del modal de creació/edició (adaptats) ---
+
+    /**
+     * Inicialitza la connexió amb el servidor de sockets.
+     * Si ja hi ha una connexió, no fa res.
+     */
     initSocket: function () {
       var self = this;
+      // No fer res si el socket ja està inicialitzat.
       if (self.socket) {
         return;
       }
@@ -306,8 +354,9 @@ export default {
         reconnectionAttempts: 5,
       });
 
-      console.log('Socket URL:', socketUrl); // Added for debugging
+      // console.log('Socket URL:', socketUrl); // Comentari de depuració, es pot eliminar o comentar.
 
+      // Gestió d'esdeveniments del socket.
       self.socket.on("connect", function () {
         console.log("✅ Socket de Plantilles connectat:", self.socket.id);
       });
@@ -324,21 +373,39 @@ export default {
         console.error("⚠️ Error en socket de Plantilles:", error);
       });
     },
+
+    /**
+     * Carrega els hàbits disponibles des de l'API a través del 'habitStore'.
+     * @returns {Promise<void>}
+     */
     carregarHabits: async function () {
       await this.habitStore.obtenirHabitsDesDeApi();
     },
+
+    /**
+     * Afegeix o treu un hàbit de la llista de seleccionats per a la plantilla.
+     * @param {number} habitId - L'ID de l'hàbit a alternar.
+     */
     toggleHabitSeleccionat: function (habitId) {
       var self = this;
       var pos = self.form.habitsSeleccionats.indexOf(habitId);
+      // A. Si l'hàbit no està seleccionat, afegir-lo.
       if (pos === -1) {
         self.form.habitsSeleccionats.push(habitId);
       } else {
+        // B. Si l'hàbit ja està seleccionat, treure'l.
         self.form.habitsSeleccionats.splice(pos, 1);
       }
     },
+
+    /**
+     * Guarda la plantilla (creació o actualització) enviant les dades via socket.
+     */
     guardarPlantilla: function () {
       var self = this;
-      console.log('guardarPlantilla called'); // Added for debugging
+      // console.log('guardarPlantilla called'); // Comentari de depuració, es pot eliminar o comentar.
+
+      // A. Validacions del formulari.
       if (!self.form.titol) {
         alert("El nom de la plantilla és obligatori.");
         return;
@@ -348,49 +415,60 @@ export default {
         return;
       }
 
+      // B. Comprovar que el socket estigui disponible.
       if (!self.socket) {
         alert("Socket no disponible per crear la plantilla.");
         return;
       }
 
+      // C. Preparar les dades de la plantilla per enviar.
       var plantillaData = {
         titol: self.form.titol,
         categoria: self.form.categoria,
-        es_publica: self.form.esPublica, // Backend espera 'es_publica'
-        habits_ids: self.form.habitsSeleccionats, // Backend espera 'habits_ids'
+        es_publica: self.form.esPublica, // El backend espera 'es_publica'.
+        habits_ids: self.form.habitsSeleccionats, // El backend espera 'habits_ids'.
       };
 
+      // D. Determinar si és una creació o una actualització.
       if (self.modoEdicio && self.plantillaAEditar) {
-        // Lògica per actualitzar una plantilla existent
-        // Cal un ID per actualitzar
+        // Lògica per actualitzar una plantilla existent.
+        // Afegir l'ID per a l'actualització.
         plantillaData.id = self.plantillaAEditar.id;
         self.socket.emit("plantilla_action", {
           action: "UPDATE",
           plantilla_data: plantillaData,
         });
       } else {
-        // Lògica per crear una nova plantilla
+        // Lògica per crear una nova plantilla.
         self.socket.emit("plantilla_action", {
           action: "CREATE",
           plantilla_data: plantillaData,
         });
       }
     },
+
+    /**
+     * Gestiona el feedback rebut del servidor de sockets després d'una acció de plantilla.
+     * @param {object} payload - Les dades de resposta del servidor.
+     */
     handlePlantillaFeedback: function (payload) {
       var self = this;
+      // A. Comprovar si l'acció ha estat exitosa.
       if (!payload || payload.success !== true) {
         alert(
-          payload.message || "Error al procesar la acción de la plantilla"
+          payload.message || "Error al processar la acción de la plantilla"
         );
         return;
       }
 
+      // B. Executar la funció corresponent segons l'acció realitzada.
       if (payload.action === "CREATE") {
         self.plantillaCreada();
       } else if (payload.action === "UPDATE") {
         self.plantillaActualitzada();
       }
-      self.tancar(); // Tanca el modal després de l'acció
+      // C. Tancar el modal un cop finalitzada l'acció amb èxit.
+      self.tancar();
     },
   },
 };

@@ -197,7 +197,7 @@ class PlantillaService
             }
         }
 
-        return $plantilla;
+        return $plantilla->load('habits');
     }
 
     /**

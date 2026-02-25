@@ -28,7 +28,6 @@ export var useHabitStore = defineStore("habit", {
         diesSetmana: hàbit.dies_setmana || "",
         objectiuVegades: hàbit.objectiu_vegades || 1,
         usuariId: hàbit.usuari_id || 1,
-        plantillaId: hàbit.plantilla_id || null,
       };
     },
 

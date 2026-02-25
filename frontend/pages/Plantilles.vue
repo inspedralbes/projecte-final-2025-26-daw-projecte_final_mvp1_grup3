@@ -62,6 +62,7 @@
           </div>
           <div class="mt-4 flex justify-end gap-3">
             <button
+              v-if="plantilla.creadorId === gameStore.userId"
               @click="editarPlantilla(plantilla.id)"
               class="text-sm text-blue-600 hover:text-blue-700 font-semibold px-3 py-1 rounded border border-blue-200 hover:border-blue-300 transition-colors"
             >
@@ -166,7 +167,11 @@
                 <div
                   v-for="habit in habitStore.habits"
                   :key="habit.id"
-                  class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer"
+                  class="flex items-center p-3 rounded-lg border transition-all cursor-pointer"
+                  :class="{
+                    'bg-green-50 border-green-500 shadow-sm': form.habitsSeleccionats.indexOf(habit.id) !== -1,
+                    'border-gray-200 hover:bg-gray-50': form.habitsSeleccionats.indexOf(habit.id) === -1
+                  }"
                   @click="toggleHabitSeleccionat(habit.id)"
                 >
                   <input
@@ -180,7 +185,7 @@
                   >
                     {{ habit.icona }}
                   </div>
-                  <span class="text-sm font-medium text-gray-700">{{ habit.nom }}</span>
+                  <span class="text-sm font-medium" :class="form.habitsSeleccionats.indexOf(habit.id) !== -1 ? 'text-green-800 font-bold' : 'text-gray-700'">{{ habit.nom || habit.titol }}</span>
                 </div>
               </div>
             </div>
@@ -326,29 +331,26 @@ export default {
         }
       }
 
+      if (!plantillaTrobada) return;
+
       self.plantillaAEditar = plantillaTrobada;
       self.modoEdicio = true;
-      await self.carregarHabits(); // Add this line
-      self.modalVisible = true;
+      
+      // Reiniciar formulari abans d'omplir-lo
+      self.form.titol = self.plantillaAEditar.titol;
+      self.form.categoria = self.plantillaAEditar.categoria;
+      self.form.esPublica = self.plantillaAEditar.esPublica;
+      self.form.habitsSeleccionats = [];
 
-      // A. Omplir el formulari amb les dades de la plantilla per editar.
-      if (self.plantillaAEditar) {
-        console.log('Editing plantilla:', self.plantillaAEditar); // DEBUG: Inspect plantilla being edited
-        self.form.titol = self.plantillaAEditar.titol;
-        self.form.categoria = self.plantillaAEditar.categoria;
-        self.form.esPublica = self.plantillaAEditar.esPublica;
-        // B. Extraure els IDs dels hàbits associats a la plantilla
-        self.form.habitsSeleccionats = [];
-        console.log('Habits before populating form:', self.plantillaAEditar.habits); // DEBUG: Inspect habits property
-        // C. Comprovar si hi ha hàbits carregats
-        if (self.plantillaAEditar.habits) {
-          var i;
-          // D. Recórrer els hàbits i afegir els seus IDs
-          for (i = 0; i < self.plantillaAEditar.habits.length; i++) {
-            self.form.habitsSeleccionats.push(self.plantillaAEditar.habits[i].id);
-          }
+      // Carregar els IDs dels hàbits que ja té la plantilla
+      if (self.plantillaAEditar.habits && Array.isArray(self.plantillaAEditar.habits)) {
+        for (i = 0; i < self.plantillaAEditar.habits.length; i++) {
+          self.form.habitsSeleccionats.push(self.plantillaAEditar.habits[i].id);
         }
       }
+
+      await self.carregarHabits();
+      self.modalVisible = true;
     },
 
     /**

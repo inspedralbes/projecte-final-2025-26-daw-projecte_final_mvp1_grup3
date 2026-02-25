@@ -41,15 +41,15 @@ export var usePlantillaStore = defineStore("plantilla", {
       }
 
       // C. Assignar estat de publicació o valor per defecte
-      if (plantilla.es_publica) {
-        esPublicaPlantilla = plantilla.es_publica;
+      if (plantilla.hasOwnProperty('es_publica')) {
+        esPublicaPlantilla = !!plantilla.es_publica;
       } else {
         esPublicaPlantilla = false;
       }
 
-      // D. Assignar creadorId o valor per defecte (1)
+      // D. Assignar creadorId o valor per defecte (1), forçant a enter
       if (plantilla.creador_id) {
-        creadorIdPlantilla = plantilla.creador_id;
+        creadorIdPlantilla = parseInt(plantilla.creador_id, 10);
       } else {
         creadorIdPlantilla = 1;
       }

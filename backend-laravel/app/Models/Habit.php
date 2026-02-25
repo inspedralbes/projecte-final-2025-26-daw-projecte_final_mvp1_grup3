@@ -18,13 +18,24 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Habit extends Model
 {
+    /**
+     * Taula associada al model.
+     * @var string
+     */
     protected $table = 'habits';
 
+    /**
+     * Indica si el model ha de tenir timestamps automàtics.
+     * @var bool
+     */
     public $timestamps = false;
 
+    /**
+     * Atributs assignables de forma massiva.
+     * @var array
+     */
     protected $fillable = [
         'usuari_id',
-        'plantilla_id',
         'titol',
         'dificultat',
         'frequencia_tipus',
@@ -35,7 +46,9 @@ class Habit extends Model
     //================================ MÈTODES / FUNCIONS ===========
 
     /**
-     * Usuari propietari de l'hàbit.
+     * Defineix la relació amb l'usuari propietari de l'hàbit.
+     *
+     * @return BelongsTo
      */
     public function usuari(): BelongsTo
     {
@@ -43,15 +56,24 @@ class Habit extends Model
     }
 
     /**
-     * Plantilla d'origen de l'hàbit (si n'hi ha).
+     * Defineix la relació amb les plantilles a les que pertany l'hàbit.
+     *
+     * @return BelongsToMany
      */
-    public function plantilla(): BelongsTo
+    public function plantilles(): BelongsToMany
     {
-        return $this->belongsTo(Plantilla::class, 'plantilla_id');
+        return $this->belongsToMany(
+            Plantilla::class,
+            'plantilla_habit',
+            'habit_id',
+            'plantilla_id'
+        );
     }
 
     /**
-     * Usuaris que tenen aquest hàbit assignat (via usuaris_habits).
+     * Defineix la relació amb els usuaris que tenen aquest hàbit assignat.
+     *
+     * @return BelongsToMany
      */
     public function usuaris(): BelongsToMany
     {
@@ -64,7 +86,9 @@ class Habit extends Model
     }
 
     /**
-     * Registres d'activitat d'aquest hàbit.
+     * Defineix la relació amb els registres d'activitat de l'hàbit.
+     *
+     * @return HasMany
      */
     public function registresActivitat(): HasMany
     {

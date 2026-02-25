@@ -38,41 +38,20 @@ async function init(io) {
       payload = JSON.parse(message);
 
       var userId = payload.user_id;
-      var action = payload.action; // CREATE, UPDATE, DELETE, TOGGLE
       var type = payload.type || 'HABIT';
-      var habitData = payload.habit; // L'objecte que ve de la DB
-      var plantillaData = payload.plantilla;
 
-      // 1. Enviem l'actualització d'XP si Laravel la inclou (com tenies abans)
+      // Enviem l'actualització d'XP si Laravel la inclou
       if (payload.xp_update) {
         io.to('user_' + userId).emit('update_xp', payload.xp_update);
       }
 
-      // 2. IMPORTANT: Confirmem l'acció del CRUD al front per tancar el cicle
+      // Confirmem l'acció del CRUD al front per tancar el cicle
       // Fem servir "to('user_' + userId)" per a que només li arribi a qui toca
-      var success;
-      if (payload.success === false) {
-        success = false;
-      } else {
-        success = true;
-      }
+      var eventName = type === 'PLANTILLA' ? 'plantilla_action_confirmed' : 'habit_action_confirmed';
+      
+      io.to('user_' + userId).emit(eventName, payload);
 
-      if (type === 'PLANTILLA') {
-        io.to('user_' + userId).emit('plantilla_action_confirmed', {
-          type: type,
-          action: action,
-          plantilla: plantillaData,
-          success: success
-        });
-      } else {
-        io.to('user_' + userId).emit('habit_action_confirmed', {
-          action: action,
-          habit: habitData,
-          success: success
-        });
-      }
-
-      console.log('Feedback enviat a la sala user_' + userId + ' per l acció ' + action);
+      console.log('Feedback enviat a la sala user_' + userId + ' per l acció ' + (payload.action || 'unknown'));
 
     } catch (e) {
       console.error('Error parsejant feedback de Redis:', e);

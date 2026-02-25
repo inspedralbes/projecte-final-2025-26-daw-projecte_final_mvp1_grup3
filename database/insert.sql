@@ -65,39 +65,59 @@ INSERT INTO PLANTILLES (creador_id, titol, categoria, es_publica) VALUES
 
 -- 4. HABITS (3 por cada plantilla = 24 hábitos)
 -- Se asume que las plantillas tienen IDs del 1 al 8 correlativamente
-INSERT INTO HABITS (usuari_id, plantilla_id, titol, dificultat, frequencia_tipus, dies_setmana, objectiu_vegades) VALUES
+INSERT INTO HABITS (usuari_id, titol, dificultat, frequencia_tipus, dies_setmana, objectiu_vegades) VALUES
 -- Actividad física
-(1, 1, 'Levantamiento de pesas', 'dificil', 'semanal', '1,3,5', 3),
-(1, 1, 'Caminar 30 min', 'facil', 'diaria', '1,2,3,4,5,6,7', 1),
-(1, 1, 'Estiramientos', 'facil', 'diaria', '1,2,3,4,5,6,7', 1),
+(1, 'Levantamiento de pesas', 'dificil', 'semanal', '1,3,5', 3), -- habit_id 1
+(1, 'Caminar 30 min', 'facil', 'diaria', '1,2,3,4,5,6,7', 1), -- habit_id 2
+(1, 'Estiramientos', 'facil', 'diaria', '1,2,3,4,5,6,7', 1), -- habit_id 3
 -- Alimentación
-(1, 2, 'Beber 2L agua', 'facil', 'diaria', '1,2,3,4,5,6,7', 1),
-(1, 2, 'Cocinar en casa', 'media', 'diaria', '1,2,3,4,5,6,7', 1),
-(1, 2, 'Evitar ultraprocesados', 'dificil', 'diaria', '1,2,3,4,5,6,7', 1),
+(1, 'Beber 2L agua', 'facil', 'diaria', '1,2,3,4,5,6,7', 1), -- habit_id 4
+(1, 'Cocinar en casa', 'media', 'diaria', '1,2,3,4,5,6,7', 1), -- habit_id 5
+(1, 'Evitar ultraprocesados', 'dificil', 'diaria', '1,2,3,4,5,6,7', 1), -- habit_id 6
 -- Estudio
-(1, 3, 'Repasar apuntes', 'media', 'diaria', '1,2,3,4,5', 1),
-(1, 3, 'Resolver dudas', 'facil', 'semanal', '5', 1),
-(1, 3, 'Simulacro examen', 'dificil', 'semanal', '6', 1),
+(1, 'Repasar apuntes', 'media', 'diaria', '1,2,3,4,5', 1), -- habit_id 7
+(1, 'Resolver dudas', 'facil', 'semanal', '5', 1), -- habit_id 8
+(1, 'Simulacro examen', 'dificil', 'semanal', '6', 1), -- habit_id 9
 -- Lectura
-(1, 4, 'Leer 10 páginas', 'facil', 'diaria', '1,2,3,4,5,6,7', 1),
-(1, 4, 'Anotar reflexiones', 'media', 'semanal', '7', 1),
-(1, 4, 'Terminar capítulo', 'media', 'diaria', '1,2,3,4,5,6,7', 1),
+(1, 'Leer 10 páginas', 'facil', 'diaria', '1,2,3,4,5,6,7', 1), -- habit_id 10
+(1, 'Anotar reflexiones', 'media', 'semanal', '7', 1), -- habit_id 11
+(1, 'Terminar capítulo', 'media', 'diaria', '1,2,3,4,5,6,7', 1), -- habit_id 12
 -- Bienestar
-(1, 5, 'Meditación mañana', 'facil', 'diaria', '1,2,3,4,5,6,7', 1),
-(1, 5, 'Yoga 20 min', 'media', 'semanal', '2,4', 2),
-(1, 5, 'Dormir 8 horas', 'dificil', 'diaria', '1,2,3,4,5,6,7', 1),
+(1, 'Meditación mañana', 'facil', 'diaria', '1,2,3,4,5,6,7', 1), -- habit_id 13
+(1, 'Yoga 20 min', 'media', 'semanal', '2,4', 2), -- habit_id 14
+(1, 'Dormir 8 horas', 'dificil', 'diaria', '1,2,3,4,5,6,7', 1), -- habit_id 15
 -- Mejora hábitos (Fumar)
-(1, 6, 'No fumar hoy', 'dificil', 'diaria', '1,2,3,4,5,6,7', 1),
-(1, 6, 'Ahorrar dinero tabaco', 'facil', 'diaria', '1,2,3,4,5,6,7', 1),
-(1, 6, 'Uso de chicle nicotina', 'media', 'diaria', '1,2,3,4,5,6,7', 1),
+(1, 'No fumar hoy', 'dificil', 'diaria', '1,2,3,4,5,6,7', 1), -- habit_id 16
+(1, 'Ahorrar dinero tabaco', 'facil', 'diaria', '1,2,3,4,5,6,7', 1), -- habit_id 17
+(1, 'Uso de chicle nicotina', 'media', 'diaria', '1,2,3,4,5,6,7', 1), -- habit_id 18
 -- Hogar
-(1, 7, 'Fregar platos', 'facil', 'diaria', '1,2,3,4,5,6,7', 1),
-(1, 7, 'Poner lavadora', 'facil', 'semanal', '6', 1),
-(1, 7, 'Organizar escritorio', 'media', 'semanal', '1', 1),
+(1, 'Fregar platos', 'facil', 'diaria', '1,2,3,4,5,6,7', 1), -- habit_id 19
+(1, 'Poner lavadora', 'facil', 'semanal', '6', 1), -- habit_id 20
+(1, 'Organizar escritorio', 'media', 'semanal', '1', 1), -- habit_id 21
 -- Hobby
-(1, 8, 'Pintar miniatura', 'media', 'semanal', '6,7', 2),
-(1, 8, 'Investigar técnicas', 'facil', 'semanal', '3', 1),
-(1, 8, 'Limpiar pinceles', 'facil', 'semanal', '7', 1);
+(1, 'Pintar miniatura', 'media', 'semanal', '6,7', 2), -- habit_id 22
+(1, 'Investigar técnicas', 'facil', 'semanal', '3', 1), -- habit_id 23
+(1, 'Limpiar pinceles', 'facil', 'semanal', '7', 1); -- habit_id 24
+
+-- Insert into PLANTILLA_HABIT to establish many-to-many relationships
+-- Assuming plantilla_id corresponds to the habit_id grouping as in the original structure
+INSERT INTO PLANTILLA_HABIT (plantilla_id, habit_id) VALUES
+-- Actividad física (plantilla_id 1)
+(1, 1), (1, 2), (1, 3),
+-- Alimentación (plantilla_id 2)
+(2, 4), (2, 5), (2, 6),
+-- Estudio (plantilla_id 3)
+(3, 7), (3, 8), (3, 9),
+-- Lectura (plantilla_id 4)
+(4, 10), (4, 11), (4, 12),
+-- Bienestar (plantilla_id 5)
+(5, 13), (5, 14), (5, 15),
+-- Mejora hábitos (Fumar) (plantilla_id 6)
+(6, 16), (6, 17), (6, 18),
+-- Hogar (plantilla_id 7)
+(7, 19), (7, 20), (7, 21),
+-- Hobby (plantilla_id 8)
+(8, 22), (8, 23), (8, 24);
 
 -- ==========================================================
 -- 6. USUARIS_HABITS (Relación N:M)
@@ -112,7 +132,9 @@ INSERT INTO REGISTRE_ACTIVITAT (habit_id, acabado, xp_guanyada)
 SELECT id, true, 10 FROM HABITS;
 
 -- 6. RATXES
-INSERT INTO RATXES (usuari_id, ratxa_actual, ratxa_maxima, ultima_data)
+INSERT INTO RATXES (usuari_id, ratxa_actual, ratxa_maxima, ultima_data) VALUES
+(1, 0, 0, CURRENT_DATE),
+(2, 0, 0, CURRENT_DATE);
 
 -- 7. CATEGORIES (PAS 1)
 -- ----------------------------------------------------------

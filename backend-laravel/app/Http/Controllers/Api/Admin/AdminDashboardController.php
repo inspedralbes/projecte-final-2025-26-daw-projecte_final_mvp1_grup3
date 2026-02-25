@@ -32,7 +32,15 @@ class AdminDashboardController extends Controller
     {
         // A. Mètriques ràpides
         $usuarisTotals = User::count();
-        $prohibits = User::where('prohibit', true)->count();
+
+        // Mètrica de prohibits (resilient si la columna encara no existeix en la DB actual)
+        $prohibits = 0;
+        try {
+            $prohibits = User::where('prohibit', true)->count();
+        } catch (\Exception $e) {
+            // Si la columna no existeix, simplement retornem 0 per no trencar el dashboard
+            $prohibits = 0;
+        }
         $plantillesPubliques = Plantilla::where('es_publica', true)->count();
 
         // Connectats ara: MVP1 sense Node integrat, retornem 0

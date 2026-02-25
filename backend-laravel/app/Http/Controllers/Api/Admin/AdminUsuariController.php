@@ -9,6 +9,7 @@ use App\Models\Administrador;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 //================================ PROPIETATS / ATRIBUTS ==========
 
@@ -43,13 +44,20 @@ class AdminUsuariController extends Controller
         } else {
             $query = User::query();
 
-            if ($prohibit === '1') {
+            // Filtre de prohibició (1=prohibits, 2=actius, altres=tots)
+            if ($prohibit === '1' || $prohibit === 'true') {
                 $query->where('prohibit', true);
             }
-            if ($prohibit === '2') {
-                $query->where('prohibit', false);
+            if ($prohibit === '2' || $prohibit === 'false') {
+                // A l'admin/usuaris.vue el frontend envia 'false' per defecte per a Tots/Actius
+                // Si realment volem filtrar només els actius quan envia 'false':
+                if ($prohibit === '2') {
+                    $query->where('prohibit', false);
+                }
             }
-            if ($cerca !== '-' && $cerca !== '0' && $cerca !== '') {
+
+            // Cerca per nom o email
+            if ($cerca !== '-' && $cerca !== '0' && $cerca !== '' && $cerca !== 'none') {
                 $query->where(function ($q) use ($cerca) {
                     $q->where('nom', 'ilike', '%' . $cerca . '%')
                         ->orWhere('email', 'ilike', '%' . $cerca . '%');

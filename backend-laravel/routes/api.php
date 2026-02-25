@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\Admin\AdminNotificacioController;
 use App\Http\Controllers\Api\Admin\AdminPerfilController;
 use App\Http\Controllers\Api\Admin\AdminPlantillaController;
 use App\Http\Controllers\Api\Admin\AdminRankingController;
+use App\Http\Controllers\Api\Admin\AdminReportController;
 use App\Http\Controllers\Api\Admin\AdminUsuariController;
 use App\Http\Controllers\Api\GameStateController;
 use App\Http\Controllers\Api\HabitController;
@@ -55,7 +56,9 @@ Route::prefix('admin')->group(function () {
     Route::get('/habits/{page}/{per_page}', [AdminHabitController::class, 'index']);
     Route::get('/logros/{page}/{per_page}', [AdminLogroController::class, 'index']);
     Route::get('/missions/{page}/{per_page}', [AdminMissioController::class, 'index']);
+    Route::get('/reports/{page}/{per_page}', [AdminReportController::class, 'index']);
     Route::get('/perfil', [AdminPerfilController::class, 'show']);
+    Route::get('/profile', [AdminPerfilController::class, 'show']); // Àlies per al frontend
     Route::put('/perfil', [AdminPerfilController::class, 'update']);
     Route::patch('/perfil/password', [AdminPerfilController::class, 'canviarPassword']);
     Route::get('/configuracio', [AdminConfiguracioController::class, 'show']);

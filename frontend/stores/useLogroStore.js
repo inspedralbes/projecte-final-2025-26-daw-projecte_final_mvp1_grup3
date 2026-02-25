@@ -31,9 +31,17 @@ export var useLogroStore = defineStore('logro', {
                 runtimeConfig = useRuntimeConfig();
                 apiUrl = runtimeConfig.public.apiUrl;
 
-                // A. Petició fetch clàssica
-                resposta = await fetch(apiUrl + '/api/logros');
+                // A. Petició fetch amb Authorization
+                var authStore = useAuthStore();
+                resposta = await fetch((apiUrl || '').replace(/\/$/, '') + '/api/logros', {
+                    headers: authStore.getAuthHeaders()
+                });
 
+                if (resposta.status === 401) {
+                    authStore.logout();
+                    await navigateTo('/Login');
+                    return [];
+                }
                 if (!resposta.ok) {
                     throw new Error('Error al carregar els logros');
                 }

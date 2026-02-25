@@ -107,7 +107,6 @@ export var useGameStore = defineStore('game', {
         socket.on('update_xp', gestionarResposta);
 
         socket.emit('habit_completed', {
-          user_id: self.usuariId,
           habit_id: idHabit,
           data: new Date().toISOString()
         });
@@ -129,10 +128,20 @@ export var useGameStore = defineStore('game', {
     },
 
     /**
-     * Estableix l'ID de l'usuari.
+     * Estableix l'ID de l'usuari (des del authStore).
      */
     assignarUsuariId: function (id) {
       this.usuariId = id;
+    },
+
+    /**
+     * Sincronitza usuariId des de l'authStore.
+     */
+    sincronitzarUsuariId: function () {
+      var authStore = useAuthStore();
+      if (authStore.user && authStore.user.id) {
+        this.usuariId = authStore.user.id;
+      }
     },
 
     /**
@@ -197,10 +206,17 @@ export var useGameStore = defineStore('game', {
 
       try {
         url = self.construirUrlApi('/api/habits');
+        var authStore = useAuthStore();
         resposta = await fetch(url, {
-          headers: { Accept: 'application/json' },
+          headers: authStore.getAuthHeaders(),
           mode: 'cors'
         });
+
+        if (resposta.status === 401) {
+          authStore.logout();
+          await navigateTo('/Login');
+          return [];
+        }
 
         if (!resposta.ok) {
           throw new Error("Error en obtenir hàbits: " + resposta.status);
@@ -257,11 +273,17 @@ export var useGameStore = defineStore('game', {
 
       try {
         url = self.construirUrlApi('/api/game-state');
+        var authStore = useAuthStore();
         resposta = await fetch(url, {
-          headers: { Accept: 'application/json' },
+          headers: authStore.getAuthHeaders(),
           mode: 'cors'
         });
 
+        if (resposta.status === 401) {
+          authStore.logout();
+          await navigateTo('/Login');
+          return null;
+        }
         if (!resposta.ok) {
           throw new Error('Error en obtenir estat: ' + resposta.status);
         }

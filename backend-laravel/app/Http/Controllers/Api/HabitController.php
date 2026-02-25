@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\HabitResource;
 use App\Models\Habit;
+use App\Models\UsuariHabit;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -21,44 +22,46 @@ class HabitController extends Controller
     //================================ MÈTODES / FUNCIONS ===========
 
     /**
-     * Llista els hàbits de l'usuari per defecte (id 1).
-     *
-     * A. Utilitza l'usuari per defecte amb id 1 (administrador).
-     * B. Filtra els hàbits per usuari_id.
-     * C. Retorna la col·lecció transformada amb HabitResource.
+     * Llista els hàbits de l'usuari autenticat.
+     * Inclou hàbits propis i assignats via USUARIS_HABITS.
      */
     public function index(Request $request): JsonResponse
     {
-        // A. Usuari per defecte sense autenticació (id 1)
-        $usuariId = 1;
+        $usuariId = $request->user_id;
+        if (!$usuariId) {
+            return response()->json(['message' => 'No autoritzat'], 401);
+        }
 
-        // B. Filtrar hàbits per usuari i obtenir resultats
-        $habits = Habit::where('usuari_id', $usuariId)->get();
+        $habitIdsAssignats = UsuariHabit::where('usuari_id', $usuariId)->pluck('habit_id');
+        $habits = Habit::where('usuari_id', $usuariId)
+            ->orWhereIn('id', $habitIdsAssignats)
+            ->get();
 
-        // C. Retornar resposta amb el recurs
         return HabitResource::collection($habits)->toResponse($request);
     }
 
     /**
      * Retorna un únic hàbit per ID.
-     *
-     * A. Utilitza l'usuari per defecte amb id 1 (administrador).
-     * B. Cerca l'hàbit i verifica que pertany a l'usuari.
-     * C. Retorna l'hàbit transformat o 404.
+     * Verifica que l'hàbit pertanyi a l'usuari (propietari o assignat).
      */
     public function show(Request $request, int $id): JsonResponse
     {
-        // A. Usuari per defecte sense autenticació (id 1)
-        $usuariId = 1;
+        $usuariId = $request->user_id;
+        if (!$usuariId) {
+            return response()->json(['message' => 'No autoritzat'], 401);
+        }
 
-        // B. Cercar hàbit i comprovar propietat
-        $habit = Habit::where('id', $id)->where('usuari_id', $usuariId)->first();
+        $habit = Habit::where('id', $id)
+            ->where(function ($q) use ($usuariId) {
+                $q->where('usuari_id', $usuariId)
+                    ->orWhereIn('id', UsuariHabit::where('usuari_id', $usuariId)->pluck('habit_id'));
+            })
+            ->first();
 
         if ($habit === null) {
             return response()->json(['error' => 'Hàbit no trobat'], 404);
         }
 
-        // C. Retornar resposta amb el recurs
         return (new HabitResource($habit))->toResponse($request);
     }
 }

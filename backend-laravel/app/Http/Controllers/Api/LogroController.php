@@ -39,11 +39,11 @@ class LogroController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        // A. Obtenir dades del servei
-        $logros = $this->logroService->llistarTotsElsLogros();
-
-        // B. Transformar dades amb el Recurs
-        // C. Retornar la resposta
+        $usuariId = $request->user_id;
+        if (!$usuariId) {
+            return response()->json(['message' => 'No autoritzat'], 401);
+        }
+        $logros = $this->logroService->llistarTotsElsLogros($usuariId);
         return LogroResource::collection($logros)->toResponse($request);
     }
 }

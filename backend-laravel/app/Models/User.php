@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 
 //================================ PROPIETATS / ATRIBUTS ==========
 
@@ -15,15 +16,19 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * Model User (Usuari).
  * Correspon a la taula USUARIS definida a database/init.sql.
  * Usuaris de l'aplicació amb gamificació (XP, monedes, nivell).
- * Sense auth per ara: accés via botó a la UI.
+ * Implementa JWTSubject per autenticació JWT.
  */
-class User extends Model
+class User extends Model implements JWTSubject
 {
     use HasFactory;
 
     protected $table = 'usuaris';
 
     public $timestamps = false;
+
+    protected $hidden = [
+        'contrasenya_hash',
+    ];
 
     protected $fillable = [
         'nom',
@@ -41,6 +46,22 @@ class User extends Model
     ];
 
     //================================ MÈTODES / FUNCIONS ===========
+
+    /**
+     * Identificador per al JWT (subject claim).
+     */
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+
+    /**
+     * Claims personalitzats per al JWT.
+     */
+    public function getJWTCustomClaims(): array
+    {
+        return ['role' => 'user', 'user_id' => $this->getKey()];
+    }
 
     /**
      * Missió diària assignada a l'usuari.

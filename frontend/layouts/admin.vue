@@ -44,10 +44,10 @@
 
       <!-- Footer SideBar -->
       <div class="p-6 border-t border-gray-100 bg-gray-50/50">
-        <NuxtLink to="/Login" class="flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-black text-red-500 hover:bg-red-50 transition-all uppercase tracking-widest">
+        <button @click="sortir" type="button" class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-black text-red-500 hover:bg-red-50 transition-all uppercase tracking-widest text-left">
           <div class="w-2 h-2 rounded-full bg-red-400"></div>
           Sortir
-        </NuxtLink>
+        </button>
       </div>
     </aside>
 
@@ -63,11 +63,15 @@
 <script setup>
 /**
  * Layout d'Administració (Desktop).
- * Segueix les regles ES5 de l'AgentNuxt.md.
  */
 import { computed } from 'vue';
 
 var route = useRoute();
+
+function sortir() {
+  useAuthStore().logout();
+  navigateTo('/Login');
+}
 
 var menuPrincipal = [
   { nom: 'Dashboard', ruta: '/admin' },

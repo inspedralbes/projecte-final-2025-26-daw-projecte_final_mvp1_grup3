@@ -24,7 +24,11 @@ CREATE TABLE USUARIS (
     xp_total INT DEFAULT 0,
     monedes INT DEFAULT 0,
     missio_diaria_id INT, -- FK se añade después de crear la tabla de misiones
-    missio_completada BOOLEAN DEFAULT FALSE
+    missio_completada BOOLEAN DEFAULT FALSE,
+    prohibit BOOLEAN DEFAULT FALSE,
+    data_prohibicio TIMESTAMP,
+    motiu_prohibicio TEXT,
+    ultim_reset_missio DATE
 );
 
 -- 2. LOGROS Y MEDALLAS

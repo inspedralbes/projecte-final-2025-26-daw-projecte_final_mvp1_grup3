@@ -24,7 +24,10 @@
             </p>
           </div>
 
-          <form class="mt-6 space-y-4">
+          <form class="mt-6 space-y-4" @submit.prevent>
+            <div v-if="errorMissatge" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded text-sm">
+              {{ errorMissatge }}
+            </div>
             <div>
               <label class="block text-xs font-medium text-gray-600 mb-2"
                 >NOM</label
@@ -73,8 +76,9 @@
             <div class="pt-2">
               <button
                 type="button"
+                :disabled="estaCarregant"
                 @click="registrarUsuari"
-                class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 rounded-lg"
+                class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 rounded-lg disabled:opacity-50"
               >
                 REGISTRAR-SE
               </button>
@@ -306,6 +310,8 @@ export default {
       categoriaSeleccionada: null,
       llistaPreguntes: [],
       respostes: {},
+      errorMissatge: "",
+      estaCarregant: false,
       formulari: {
         nom: "",
         email: "",
@@ -401,25 +407,72 @@ export default {
     },
 
     /**
-     * Acció per registrar un usuari.
+     * Acció per registrar un usuari. POST /api/auth/register
      */
-    registrarUsuari: function () {
+    registrarUsuari: async function () {
         var self = this;
-        console.log("Intentant registre...");
         
-        // A. Validar camps
         if (!self.formulari.nom || !self.formulari.email || !self.formulari.contrasenya) {
-            alert("Si us plau, omple tots els camps.");
+            self.errorMissatge = "Si us plau, omple tots els camps.";
             return;
         }
         
         if (self.formulari.contrasenya !== self.formulari.confirmacio) {
-            alert("Les contrasenyes no coincideixen.");
+            self.errorMissatge = "Les contrasenyes no coincideixen.";
             return;
         }
 
-        // B. Processar registre (simulació)
-        alert("Registre en desenvolupament");
+        if (self.formulari.contrasenya.length < 6) {
+            self.errorMissatge = "La contrasenya ha de tenir almenys 6 caràcters.";
+            return;
+        }
+
+        self.errorMissatge = "";
+        self.estaCarregant = true;
+
+        try {
+            var config = useRuntimeConfig();
+            var base = (config.public.apiUrl || '').replace(/\/$/, '');
+            var resposta = await fetch(base + '/api/auth/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json'
+                },
+                body: JSON.stringify({
+                    nom: self.formulari.nom,
+                    email: self.formulari.email,
+                    contrasenya: self.formulari.contrasenya,
+                    contrasenya_confirmation: self.formulari.confirmacio
+                })
+            });
+            var dades = await resposta.json();
+
+            if (!resposta.ok) {
+                self.errorMissatge = (dades.message || dades.errors) ? 
+                    (typeof dades.errors === 'object' ? Object.values(dades.errors).flat().join(' ') : dades.message) 
+                    : 'Error en el registre';
+                return;
+            }
+
+            var authStore = useAuthStore();
+            authStore.token = dades.token;
+            authStore.user = dades.user;
+            authStore.admin = null;
+            authStore.role = 'user';
+            authStore.isAuthenticated = true;
+            if (typeof localStorage !== 'undefined') {
+                localStorage.setItem('loopy_token', dades.token);
+                localStorage.setItem('loopy_user', JSON.stringify(dades.user));
+                localStorage.removeItem('loopy_admin');
+                localStorage.setItem('loopy_role', 'user');
+            }
+            await navigateTo('/HomePage');
+        } catch (err) {
+            self.errorMissatge = err.message || 'Error de connexió';
+        } finally {
+            self.estaCarregant = false;
+        }
     }
   },
 };

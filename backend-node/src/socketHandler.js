@@ -21,9 +21,10 @@ function init(io) {
 
         socket.on('habit_action', async function (payload) {
             try {
-                var userId = 1;
-                if (socket.decoded_token && socket.decoded_token.user_id) {
-                    userId = socket.decoded_token.user_id;
+                var userId = socket.decoded_token && socket.decoded_token.user_id;
+                if (!userId) {
+                    console.warn('habit_action: usuari no autenticat');
+                    return;
                 }
                 socket.join('user_' + userId);
                 await habitQueue.pushToLaravel(payload.action, userId, payload);
@@ -34,25 +35,25 @@ function init(io) {
 
         socket.on('habit_completed', async function (data) {
             try {
-                console.log('Hàbit rebut:', data);
-                var userId = data.user_id;
-                if (!userId && socket.decoded_token && socket.decoded_token.user_id) {
-                    userId = socket.decoded_token.user_id;
-                }
+                var userId = socket.decoded_token && socket.decoded_token.user_id;
                 if (!userId) {
-                    userId = 1;
+                    console.warn('habit_completed: usuari no autenticat');
+                    return;
                 }
                 socket.join('user_' + userId);
-                await habitQueue.pushToLaravel('TOGGLE', userId, data);
+                var payload = { habit_id: data.habit_id, data: data.data };
+                await habitQueue.pushToLaravel('TOGGLE', userId, payload);
             } catch (error) {
                 console.error('Error gestionant habit_completed:', error);
             }
         });
 
         socket.on('admin_join', function (payload) {
-            var adminId = 1;
-            if (payload && payload.admin_id) {
-                adminId = payload.admin_id;
+            var adminId = socket.decoded_token && socket.decoded_token.admin_id;
+            var role = socket.decoded_token && socket.decoded_token.role;
+            if (role !== 'admin' || !adminId) {
+                console.warn('admin_join: token no vàlid per admin');
+                return;
             }
             socket.adminId = adminId;
             socket.join('admin_' + adminId);
@@ -61,12 +62,11 @@ function init(io) {
 
         socket.on('admin_action', async function (payload) {
             try {
-                var adminId = 1;
-                if (payload && payload.admin_id) {
-                    adminId = payload.admin_id;
-                }
-                if (socket.adminId) {
-                    adminId = socket.adminId;
+                var adminId = socket.decoded_token && socket.decoded_token.admin_id;
+                var role = socket.decoded_token && socket.decoded_token.role;
+                if (role !== 'admin' || !adminId) {
+                    console.warn('admin_action: token no vàlid per admin');
+                    return;
                 }
                 socket.join('admin_' + adminId);
                 await adminQueue.pushToLaravel(
@@ -97,18 +97,11 @@ function init(io) {
         });
 
         socket.on('user_register', function (data) {
-            var userId = String(socket.id);
-            if (data && data.user_id) {
-                userId = String(data.user_id);
-            }
-            var nom = 'Usuari';
-            if (data && data.nom) {
-                nom = data.nom;
-            }
-            var email = '';
-            if (data && data.email) {
-                email = data.email;
-            }
+            var userId = socket.decoded_token && socket.decoded_token.user_id
+                ? String(socket.decoded_token.user_id)
+                : String(socket.id);
+            var nom = (data && data.nom) ? data.nom : 'Usuari';
+            var email = (data && data.email) ? data.email : '';
             usuarisConnectats[userId] = {
                 nom: nom,
                 email: email,

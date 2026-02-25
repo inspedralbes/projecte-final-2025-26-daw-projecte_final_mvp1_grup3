@@ -27,7 +27,7 @@ export var useHabitStore = defineStore("habit", {
         dificultat: hàbit.dificultat || null,
         diesSetmana: hàbit.dies_setmana || "",
         objectiuVegades: hàbit.objectiu_vegades || 1,
-        usuariId: hàbit.usuari_id || 1,
+        usuariId: hàbit.usuari_id || null,
         plantillaId: hàbit.plantilla_id || null,
         categoriaId: hàbit.categoria_id || null,
       };
@@ -72,9 +72,18 @@ export var useHabitStore = defineStore("habit", {
           base = urlApi;
         }
 
-        // B. Realitzar la petició
-        resposta = await fetch(base + "/api/habits");
+        // B. Realitzar la petició amb Authorization
+        var authStore = useAuthStore();
+        resposta = await fetch(base + "/api/habits", {
+          headers: authStore.getAuthHeaders()
+        });
 
+        if (resposta.status === 401) {
+          authStore.logout();
+          await navigateTo("/Login");
+          this.habits = [];
+          return [];
+        }
         if (!resposta.ok) {
           throw new Error("Error en obtenir hàbits: " + resposta.status);
         }

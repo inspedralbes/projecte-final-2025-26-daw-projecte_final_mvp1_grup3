@@ -40,13 +40,12 @@ class AdminActionService
      */
     public function processarAccio(array $dades): void
     {
-        $adminId = 1;
-        if (isset($dades['admin_id'])) {
-            $adminId = (int) $dades['admin_id'];
+        if (!isset($dades['admin_id']) || (int) $dades['admin_id'] < 1) {
+            $this->enviarFeedback(0, 'unknown', 'unknown', false, ['error' => 'admin_id obligatori']);
+
+            return;
         }
-        if ($adminId < 1) {
-            $adminId = 1;
-        }
+        $adminId = (int) $dades['admin_id'];
 
         $entity = '';
         if (isset($dades['entity'])) {

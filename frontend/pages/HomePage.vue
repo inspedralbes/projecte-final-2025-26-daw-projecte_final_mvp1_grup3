@@ -366,8 +366,8 @@ export default {
   mounted: function () {
     var self = this;
     
-    // A. Assignar usuari (exemple amb ID 1)
-    self.gameStore.assignarUsuariId(1);
+    // A. Assignar usuari des de l'authStore
+    self.gameStore.sincronitzarUsuariId();
 
     // B. Carregar dades inicials de l'hàbit i estat
     self.estaCarregantHabits = true;
@@ -408,7 +408,9 @@ export default {
       var socketConfig = useSocketConfig();
       var socketUrl = socketConfig.socketUrl;
 
+      var authStore = useAuthStore();
       self.socket = io(socketUrl, {
+        auth: { token: authStore.token },
         reconnection: true,
         reconnectionDelay: 1000,
         reconnectionDelayMax: 5000,

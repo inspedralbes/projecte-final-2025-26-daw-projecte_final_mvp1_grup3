@@ -12,8 +12,7 @@ var { $socket } = useNuxtApp();
 var config = useRuntimeConfig();
 
 // Missions via API
-var { data: missionsData, refresh: refreshMissions } = useFetch('/api/admin/missions/1/50', {
-  baseURL: config.public.apiUrl,
+var { data: missionsData, refresh: refreshMissions } = useAuthFetch('/api/admin/missions/1/50', {
   key: 'admin_missions_list'
 });
 

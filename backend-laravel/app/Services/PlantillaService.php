@@ -98,7 +98,10 @@ class PlantillaService
         if (isset($dades['plantilla_data'])) {
             if (is_array($dades['plantilla_data'])) {
                 $plantillaData = $dades['plantilla_data'];
-                
+
+                // Log the incoming plantillaData for debugging
+                file_put_contents('/tmp/plantilla_service_debug.log', "PlantillaService - Incoming plantilla_data: " . json_encode($plantillaData) . "\n", FILE_APPEND);
+
                 // Si l'ID no estava al nivell superior, mirem dins de plantilla_data
                 if ($plantillaId === 0) {
                     if (isset($plantillaData['id'])) {
@@ -118,6 +121,8 @@ class PlantillaService
                 $plantillaModel = $this->crearPlantilla($usuariId, $plantillaData);
                 if ($plantillaModel !== null) {
                     $success = true;
+                } else {
+                    $errorMessage = "Error: El títol de la plantilla no pot estar buit.";
                 }
             } elseif ($accio === 'UPDATE') {
                 $plantillaModel = $this->actualitzarPlantilla($usuariId, $plantillaId, $plantillaData);
@@ -139,6 +144,7 @@ class PlantillaService
         } catch (Throwable $e) {
             $success = false;
             $errorMessage = $e->getMessage();
+            file_put_contents('/tmp/plantilla_service_debug.log', "PlantillaService - Exception caught: " . $e->getMessage() . "\n", FILE_APPEND);
         }
 
         // F. Construcció del payload de feedback per a Node.js
@@ -156,6 +162,8 @@ class PlantillaService
             $payload['plantilla'] = $plantillaModel->toArray();
         }
 
+        file_put_contents('/tmp/plantilla_service_debug.log', "PlantillaService - Feedback payload: " . json_encode($payload) . "\n", FILE_APPEND);
+
         // H. Publicació del feedback a Redis
         $this->feedbackService->publicarPayload($payload);
     }
@@ -169,6 +177,8 @@ class PlantillaService
      */
     private function crearPlantilla(int $usuariId, array $plantillaData): ?Plantilla
     {
+        file_put_contents('/tmp/plantilla_service_debug.log', "PlantillaService - crearPlantilla called with userId: $usuariId, data: " . json_encode($plantillaData) . "\n", FILE_APPEND);
+
         // A. Filtratge i normalització de les dades d'entrada
         $dades = $this->filtrarDadesPlantilla($plantillaData);
         
@@ -179,6 +189,7 @@ class PlantillaService
 
         // B. Validació de camps obligatoris
         if (empty($dades['titol'])) {
+            file_put_contents('/tmp/plantilla_service_debug.log', "PlantillaService - crearPlantilla failed: Title is empty.\n", FILE_APPEND);
             return null;
         }
 
@@ -194,6 +205,8 @@ class PlantillaService
                 $plantilla->habits()->attach($habitsIds);
             }
         }
+
+        file_put_contents('/tmp/plantilla_service_debug.log', "PlantillaService - crearPlantilla result: " . ($plantilla ? json_encode($plantilla->toArray()) : "null") . "\n", FILE_APPEND);
 
         // F. Retorn de la plantilla amb els hàbits carregats
         return $plantilla->load('habits');

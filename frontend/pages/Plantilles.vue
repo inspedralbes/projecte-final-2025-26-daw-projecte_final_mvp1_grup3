@@ -252,7 +252,7 @@ export default {
     // A. Carregar les plantilles existents des de l'API.
     self.carregarPlantilles();
     // Set default userId for now as there's no authentication yet
-    self.gameStore.setUserId(1); // Set userId to 1
+    self.gameStore.assignarUsuariId(1); // Set userId to 1
     // B. Inicialitzar la connexió del socket.
     self.initSocket();
     // C. Carregar els hàbits disponibles per a la selecció.
@@ -470,24 +470,28 @@ export default {
      */
     guardarPlantilla: function () {
       var self = this;
-      // console.log('guardarPlantilla called'); // Comentari de depuració, es pot eliminar o comentar.
+      console.log('guardarPlantilla called');
 
       // A. Validacions del formulari.
       if (!self.form.titol) {
+        console.log('Validation failed: Title is empty.');
         alert("El nom de la plantilla és obligatori.");
         return;
       }
       if (self.form.habitsSeleccionats.length === 0) {
+        console.log('Validation failed: No habits selected.');
         alert("Has de seleccionar al menys un hàbit per crear la plantilla.");
         return;
       }
 
       // B. Comprovar que el socket estigui disponible.
       if (!self.socket) {
+        console.log('Validation failed: Socket not available.');
         alert("Socket no disponible per crear la plantilla.");
         return;
       }
 
+      console.log('All validations passed. Preparing plantillaData...');
       // C. Preparar les dades de la plantilla per enviar.
       var plantillaData = {
         titol: self.form.titol,
@@ -498,6 +502,7 @@ export default {
 
       // D. Determinar si és una creació o una actualització.
       if (self.modoEdicio && self.plantillaAEditar) {
+        console.log('Emitting UPDATE action...');
         // Lògica per actualitzar una plantilla existent.
         // Afegir l'ID per a l'actualització.
         plantillaData.id = self.plantillaAEditar.id;
@@ -506,12 +511,14 @@ export default {
           plantilla_data: plantillaData,
         });
       } else {
+        console.log('Emitting CREATE action...');
         // Lògica per crear una nova plantilla.
         self.socket.emit("plantilla_action", {
           action: "CREATE",
           plantilla_data: plantillaData,
         });
       }
+      console.log('Socket emitted.');
     },
 
     /**
@@ -520,6 +527,10 @@ export default {
      */
     handlePlantillaFeedback: function (payload) {
       var self = this;
+      console.log('handlePlantillaFeedback called. Payload:', payload); // Log the entire payload
+      console.log('Payload success:', payload ? payload.success : 'N/A');
+      console.log('Payload action:', payload ? payload.action : 'N/A');
+
       // A. Comprovar si l'acció ha estat exitosa.
       if (!payload || payload.success !== true) {
         alert(
@@ -532,31 +543,16 @@ export default {
 
       // B. Executar la funció corresponent segons l'acció realitzada.
       if (payload.action === "CREATE") {
-        if (payload.plantilla) {
-            console.log('Plantilla created in feedback:', payload.plantilla); // DEBUG: Inspect created plantilla
-            // Mapejar la plantilla rebuda i afegir-la directament a l'store.
-            var mappedPlantilla = self.plantillaStore.mapejarPlantillaDesDeApi(payload.plantilla);
-            self.plantillaStore.plantilles.push(mappedPlantilla);
-        }
         alert("Plantilla creada amb èxit!");
         self.tancar();
+        self.carregarPlantilles();
       } else if (payload.action === "UPDATE") {
-        if (payload.plantilla) {
-            console.log('Plantilla updated in feedback:', payload.plantilla); // DEBUG: Inspect updated plantilla
-            // Mapejar la plantilla rebuda i actualitzar-la a l'store.
-            var mappedPlantilla = self.plantillaStore.mapejarPlantillaDesDeApi(payload.plantilla);
-            var index = self.plantillaStore.plantilles.findIndex(p => p.id === mappedPlantilla.id);
-            if (index !== -1) {
-                self.plantillaStore.plantilles[index] = mappedPlantilla;
-            }
-        }
         alert("Plantilla actualitzada amb èxit!");
         self.tancar();
+        self.carregarPlantilles();
       } else if (payload.action === "DELETE") {
         alert("Plantilla eliminada amb èxit!");
-        // Eliminar directament de l'store.
-        self.plantillaStore.plantilles = self.plantillaStore.plantilles.filter(p => p.id !== payload.plantilla_id);
-        self.tancar();
+        self.carregarPlantilles();
       }
     },
   },

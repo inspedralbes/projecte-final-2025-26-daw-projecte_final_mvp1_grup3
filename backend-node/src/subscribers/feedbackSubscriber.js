@@ -19,6 +19,8 @@ async function init(io) {
   var host = process.env.REDIS_HOST || '127.0.0.1';
   var port = parseInt(process.env.REDIS_PORT || '6379', 10);
 
+  console.log('feedbackSubscriber: Attempting to connect to Redis at host:', host, 'port:', port); // Debug log
+
   subscriber = redis.createClient({
     socket: {
       host: host,
@@ -49,22 +51,27 @@ async function init(io) {
         console.log('Admin feedback enviat a admin_' + adminId);
       } else {
         var userId = payload.user_id;
+        var type = payload.type; // Get type from payload
         var action = payload.action;
-        var habitData = payload.habit;
 
         // 1. Enviem l'actualització d'XP si Laravel la inclou
         if (payload.xp_update) {
           io.to('user_' + userId).emit('update_xp', payload.xp_update);
         }
 
-      // Confirmem l'acció del CRUD al front per tancar el cicle
-      // Fem servir "to('user_' + userId)" per a que només li arribi a qui toca
-      var eventName = type === 'PLANTILLA' ? 'plantilla_action_confirmed' : 'habit_action_confirmed';
-      
-      io.to('user_' + userId).emit(eventName, payload);
+        // 1b. Si s'ha completat una missió diària, emetre mission_completed
+        if (payload.mission_completed) {
+          io.to('user_' + userId).emit('mission_completed', payload.mission_completed);
+        }
 
-      console.log('Feedback enviat a la sala user_' + userId + ' per l acció ' + action);
+        // 2. Confirmem l'acció del CRUD al front per tancar el cicle
+        // Fem servir "to('user_' + userId)" per a que només li arribi a qui toca
+        var eventName = type === 'PLANTILLA' ? 'plantilla_action_confirmed' : 'habit_action_confirmed';
+        
+        io.to('user_' + userId).emit(eventName, payload);
 
+        console.log('Feedback enviat a la sala user_' + userId + ' per l acció ' + action);
+      }
     } catch (e) {
       console.error('Error parsejant feedback de Redis:', e);
     }

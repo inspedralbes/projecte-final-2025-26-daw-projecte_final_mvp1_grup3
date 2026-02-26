@@ -5,7 +5,7 @@ var TEMPS_ESPERA_MS = 5000;
 var XP_BASE = 10;
 var XP_PER_DIFICULTAT = {
   facil: 100,
-  media: 250,
+  mitja: 250,
   dificil: 400,
 };
 
@@ -16,8 +16,8 @@ var XP_PER_DIFICULTAT = {
 export var useGameStore = defineStore("game", {
   state: function () {
     return {
-      userId: 1,
-      racha: 0,
+      userId: null,
+      ratxa: 0,
       ratxaMaxima: 0,
       xpTotal: 0,
       monedes: 0,
@@ -107,7 +107,7 @@ export var useGameStore = defineStore("game", {
      * Actualitza la ratxa localment.
      */
     actualitzarRatxa: function (novaRatxa) {
-      this.racha = novaRatxa;
+      this.ratxa = novaRatxa;
     },
 
     /**
@@ -147,7 +147,7 @@ export var useGameStore = defineStore("game", {
     registrarListenerMissionCompletada: function (socket, callback) {
       if (socket) {
         socket.on("mission_completed", function (data) {
-          console.log("🎯 Missió completada detectada per socket");
+          console.log("Missio completada detectada per socket");
           if (typeof callback === "function") {
             callback(data);
           }
@@ -251,7 +251,7 @@ export var useGameStore = defineStore("game", {
             self.xpTotal = dades.xp_total;
           }
           if (dades.ratxa_actual !== undefined) {
-            self.racha = dades.ratxa_actual;
+            this.ratxa = dades.ratxa_actual;
           }
           if (dades.monedes !== undefined) {
             self.monedes = dades.monedes;

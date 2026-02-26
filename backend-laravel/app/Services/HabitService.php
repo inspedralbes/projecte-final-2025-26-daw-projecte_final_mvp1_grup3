@@ -245,12 +245,6 @@ class HabitService
                 'acabado' => true,
                 'xp_guanyada' => $xpGuanyada,
             ]);
-
-            // D4. Actualitzar usuaris_habits.actiu = true (completat) per l'usuari
-            UsuariHabit::updateOrCreate(
-                ['usuari_id' => $usuariId, 'habit_id' => $habit->id],
-                ['actiu' => true]
-            );
         });
 
         // D5. Comprovar i atorgar logros un cop guardada l'activitat de l'hàbit

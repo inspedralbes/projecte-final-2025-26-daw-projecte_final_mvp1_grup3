@@ -15,10 +15,10 @@
           <NuxtLink to="/habits" class="nav-link">Crear</NuxtLink>
         </li>
         <li>
-          <NuxtLink to="/plantilles" class="nav-link">Catálogo</NuxtLink>
+          <NuxtLink to="/plantilles" class="nav-link">Catàleg</NuxtLink>
         </li>
         <li>
-          <NuxtLink to="/foro" class="nav-link">Foro</NuxtLink>
+          <a href="javascript:void(0)" class="nav-link opacity-50 cursor-not-allowed" title="Pròximament">Fòrum</a>
         </li>
         <li>
           <NuxtLink to="/perfil" class="nav-link">Perfil</NuxtLink>

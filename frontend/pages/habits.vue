@@ -446,7 +446,6 @@
 </template>
 
 <script>
-import { io } from "socket.io-client";
 import { useHabitStore } from "../stores/useHabitStore";
 
 /**
@@ -521,9 +520,7 @@ export default {
    * Neteja.
    */
   beforeUnmount: function () {
-    if (this.socket) {
-      this.socket.disconnect();
-    }
+    // El socket global es gestionat pel plugin, no el tanquem aquí
   },
 
   methods: {
@@ -532,21 +529,19 @@ export default {
      */
     inicialitzarSocket: function () {
       var self = this;
-      var socketConfig = useSocketConfig();
-      var socketUrl = socketConfig.socketUrl;
+      var nuxtApp = useNuxtApp();
 
       if (self.socket) {
         return;
       }
 
-      var authStore = useAuthStore();
-      self.socket = io(socketUrl, {
-        auth: { token: authStore.token },
-        reconnection: true,
-        reconnectionDelay: 1000,
-        reconnectionDelayMax: 5000,
-        reconnectionAttempts: 5,
-      });
+      // Utilitzem la instància global injectada pel plugin
+      self.socket = nuxtApp.$socket;
+
+      if (!self.socket) {
+        console.error("❌ Socket global no disponible");
+        return;
+      }
 
       self.socket.on("connect", function () {
         console.log("✅ Socket conectat:", self.socket.id);

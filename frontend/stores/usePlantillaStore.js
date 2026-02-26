@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import { useHabitStore } from "./useHabitStore";
+import { useAuthStore } from "./useAuthStore";
 
 /**
  * Store per a la gestió de les plantilles d'hàbits.
@@ -117,17 +118,28 @@ export var usePlantillaStore = defineStore("plantilla", {
         if (filter) {
           queryParams.push("filter=" + filter);
         }
-        if (userId) {
-          queryParams.push("user_id=" + userId);
-        }
+
 
         var fullUrl = base + "/api/plantilles";
         if (queryParams.length > 0) {
           fullUrl += "?" + queryParams.join("&");
         }
 
-        // C. Realitzar la petició
-        resposta = await fetch(fullUrl);
+        // C. Realitzar la petició amb Authorization
+        var authStore = useAuthStore();
+        var headers = authStore.getAuthHeaders();
+        console.log("[PlantillaStore] Headers:", headers);
+
+        resposta = await fetch(fullUrl, {
+          headers: headers
+        });
+
+        if (resposta.status === 401) {
+          authStore.logout();
+          await navigateTo("/Login");
+          this.plantilles = [];
+          return [];
+        }
 
         if (!resposta.ok) {
           throw new Error("Error en obtenir plantilles: " + resposta.status);

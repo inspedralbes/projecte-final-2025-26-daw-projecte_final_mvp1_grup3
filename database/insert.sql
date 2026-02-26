@@ -6,8 +6,22 @@ VALUES ('admin', 'admin@admin.com', '$2y$10$V8t4bNRKScWo6pn.xz9pAOq5OuwqQzhnZ662
 
 -- 2. USUARIS
 -- contrasenya sense hashear: user123
-INSERT INTO USUARIS (nom, email, contrasenya_hash) 
-VALUES ('llorenç carnicer', 'llorcar@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG');
+INSERT INTO USUARIS (id, nom, email, contrasenya_hash) 
+VALUES (1, 'llorenç carnicer', 'llorcar@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG');
+
+INSERT INTO USUARIS (id, nom, email, contrasenya_hash, nivell, xp_total, monedes) VALUES 
+(2, 'Marta Sánchez', 'marta@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG', 5, 1200, 50),
+(3, 'Jordi Valls', 'jordi@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG', 3, 450, 20),
+(4, 'Carme Ruscalleda', 'carme@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG', 10, 5000, 1000),
+(5, 'Pep Guardiola', 'pep@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG', 8, 3200, 400),
+(6, 'Rosalia Vila', 'rosalia@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG', 2, 100, 10),
+(7, 'Pau Gasol', 'pau@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG', 12, 8000, 2000),
+(8, 'Andreu Buenafuente', 'andreu@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG', 4, 800, 80),
+(9, 'Berto Romero', 'berto@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG', 4, 750, 75),
+(10, 'Ada Colau', 'ada@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG', 6, 1800, 150),
+(11, 'Xavi Hernández', 'xavi@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG', 7, 2500, 250);
+
+SELECT setval('usuaris_id_seq', (SELECT MAX(id) FROM USUARIS));
 
 -- 2.1 MISSIOS_DIARIES (15 missions)
 INSERT INTO MISSIOS_DIARIES (id, titol, tipus_comprovacio, parametres) VALUES
@@ -234,19 +248,7 @@ INSERT INTO PREGUNTES_REGISTRE (categoria_id, pregunta) VALUES
 (8, 'Et motiva realitzar treballs minuciosos que requereixen molta paciència?'),
 (8, 'Sols dedicar temps a investigar tècniques de pintat o muntatge a internet?'),
 (8, 'Et agradaria compartir fotos dels teus avenços amb altres aficionats?');
--- 2. USUARIS (Més usuaris per a proves)
--- contrasenya sense hashear: user123
-INSERT INTO USUARIS (nom, email, contrasenya_hash, nivell, xp_total, monedes) VALUES 
-('Marta Sánchez', 'marta@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG', 5, 1200, 50),
-('Jordi Valls', 'jordi@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG', 3, 450, 20),
-('Carme Ruscalleda', 'carme@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG', 10, 5000, 1000),
-('Pep Guardiola', 'pep@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG', 8, 3200, 400),
-('Rosalia Vila', 'rosalia@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG', 2, 100, 10),
-('Pau Gasol', 'pau@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG', 12, 8000, 2000),
-('Andreu Buenafuente', 'andreu@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG', 4, 800, 80),
-('Berto Romero', 'berto@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG', 4, 750, 75),
-('Ada Colau', 'ada@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG', 6, 1800, 150),
-('Xavi Hernández', 'xavi@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG', 7, 2500, 250);
+-- Vinculació d'hàbits per als nous usuaris (id 2 a 11)
 
 -- Vinculació d'hàbits per als nous usuaris (id 2 a 11)
 INSERT INTO USUARIS_HABITS (usuari_id, habit_id, objetiu_vegades_personalitzat)

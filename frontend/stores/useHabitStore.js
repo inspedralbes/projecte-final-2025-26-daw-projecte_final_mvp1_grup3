@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import { useAuthStore } from "./useAuthStore";
 
 /**
  * Store per a la gestió dels hàbits de l'usuari.
@@ -74,8 +75,11 @@ export var useHabitStore = defineStore("habit", {
 
         // B. Realitzar la petició amb Authorization
         var authStore = useAuthStore();
+        var headers = authStore.getAuthHeaders();
+        console.log("[HabitStore] Headers:", headers);
+
         resposta = await fetch(base + "/api/habits", {
-          headers: authStore.getAuthHeaders()
+          headers: headers
         });
 
         if (resposta.status === 401) {

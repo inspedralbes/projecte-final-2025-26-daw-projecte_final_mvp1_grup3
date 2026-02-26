@@ -27,16 +27,17 @@ class HabitResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        // A. Obtenir 'completat' des de usuaris_habits.actiu per l'usuari autenticat
+        // A. Obtenir 'completat' mirant si hi ha registre d'avui a REGISTRE_ACTIVITAT
         $completat = false;
         $usuariId = $request->user_id ?? null;
         if ($usuariId) {
-            $pivot = UsuariHabit::where('habit_id', $this->id)
-                ->where('usuari_id', $usuariId)
-                ->first();
-            if ($pivot !== null && isset($pivot->actiu)) {
-                $completat = (bool) $pivot->actiu;
-            }
+            $completat = \App\Models\RegistreActivitat::where('habit_id', $this->id)
+                ->whereHas('habit', function($q) use ($usuariId) {
+                    $q->where('usuari_id', $usuariId);
+                })
+                ->whereDate('data', \Carbon\Carbon::today())
+                ->where('acabado', true)
+                ->exists();
         }
 
         // B. Mapatge dels camps del model

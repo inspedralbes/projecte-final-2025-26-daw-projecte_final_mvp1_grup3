@@ -218,7 +218,6 @@ import { usePlantillaStore } from "../stores/usePlantillaStore";
 import { useHabitStore } from "../stores/useHabitStore";
 import { useGameStore } from "../stores/gameStore"; // Import useGameStore
 import { useSocketConfig } from "../composables/useSocketConfig";
-import { io } from "socket.io-client";
 import { watch } from 'vue'; // Import watch from vue
 
 export default {
@@ -278,10 +277,7 @@ export default {
   },
   // Hook de cicle de vida: s'executa abans que el component sigui desmuntat.
   beforeUnmount: function () {
-    // Desconnectar el socket si està actiu per evitar pèrdues de memòria.
-    if (this.socket) {
-      this.socket.disconnect();
-    }
+    // El socket global es gestionat pel plugin, no el tanquem aquí
   },
   // Mètodes del component.
   methods: {
@@ -408,18 +404,20 @@ export default {
      */
     initSocket: function () {
       var self = this;
+      var nuxtApp = useNuxtApp();
+      
       // No fer res si el socket ja està inicialitzat.
       if (self.socket) {
         return;
       }
-      var socketConfig = useSocketConfig();
-      var socketUrl = socketConfig.socketUrl;
-      self.socket = io(socketUrl, {
-        reconnection: true,
-        reconnectionDelay: 1000,
-        reconnectionDelayMax: 5000,
-        reconnectionAttempts: 5,
-      });
+      
+      // Utilitzem la instància global injectada pel plugin
+      self.socket = nuxtApp.$socket;
+
+      if (!self.socket) {
+        console.error("❌ Socket global no disponible");
+        return;
+      }
 
       // console.log('Socket URL:', socketUrl); // Comentari de depuració, es pot eliminar o comentar.
 

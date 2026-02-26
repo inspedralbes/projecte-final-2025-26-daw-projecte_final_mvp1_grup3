@@ -303,7 +303,6 @@
 </template>
 
 <script>
-import { io } from "socket.io-client";
 import { useGameStore } from "~/stores/gameStore.js";
 import { useLogroStore } from "~/stores/useLogroStore.js";
 import bosqueImg from "~/assets/img/Bosque.png";
@@ -416,9 +415,7 @@ export default {
    * Neteja abans de destruir el component.
    */
   beforeUnmount: function () {
-    if (this.socket) {
-      this.socket.disconnect();
-    }
+    // El socket global es gestionat pel plugin, no el tanquem aquí
   },
 
   methods: {
@@ -427,17 +424,15 @@ export default {
      */
     inicialitzarSocket: function () {
       var self = this;
-      var socketConfig = useSocketConfig();
-      var socketUrl = socketConfig.socketUrl;
+      var nuxtApp = useNuxtApp();
+      
+      // Utilitzem la instància global injectada pel plugin
+      self.socket = nuxtApp.$socket;
 
-      var authStore = useAuthStore();
-      self.socket = io(socketUrl, {
-        auth: { token: authStore.token },
-        reconnection: true,
-        reconnectionDelay: 1000,
-        reconnectionDelayMax: 5000,
-        reconnectionAttempts: 5,
-      });
+      if (!self.socket) {
+        console.error("❌ Socket global no disponible");
+        return;
+      }
 
       self.socket.on("connect", function () {
         console.log("✅ Conectat al servidor de sockets:", self.socket.id);

@@ -322,8 +322,32 @@ const registrarUsuari = async () => {
     categoria_id: categoriaGuanyadoraId.value
   };
 
-  console.log("Enviant registre:", payload);
-  alert(`Registre simulat ambèxit! Categoria: ${nomCategoriaGuanyadora.value}`);
+  try {
+    let base = config.public.apiUrl;
+    if (base.endsWith("/")) {
+      base = base.slice(0, -1);
+    }
+
+    const resposta = await fetch(`${base}/api/register`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const dades = await resposta.json();
+
+    if (dades.success) {
+      alert("Registre completat amb èxit! Ja pots iniciar sessió.");
+      navigateTo('/login');
+    } else {
+      alert("Error en el registre: " + (dades.message || "Revisa les dades"));
+    }
+  } catch (error) {
+    console.error("Error al registrar:", error);
+    alert("Error de connexió al servidor.");
+  }
 };
 </script>
 

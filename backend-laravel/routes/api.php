@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\Admin\AdminConfiguracioController;
 use App\Http\Controllers\Api\Admin\AdminDashboardController;
 use App\Http\Controllers\Api\Admin\AdminHabitController;
@@ -34,6 +35,7 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
+Route::post('/register', [AuthController::class, 'register']);
 Route::get('/habits', [HabitController::class, 'index']);
 Route::get('/habits/{id}', [HabitController::class, 'show']);
 Route::get('/game-state', [GameStateController::class, 'show']);

@@ -18,6 +18,8 @@ async function getClient() {
   var host = process.env.REDIS_HOST || '127.0.0.1';
   var port = parseInt(process.env.REDIS_PORT || '6379', 10);
 
+  console.log('plantillaQueue: Attempting to connect to Redis at host:', host, 'port:', port); // Debug log
+
   client = redis.createClient({
     socket: {
       host: host,

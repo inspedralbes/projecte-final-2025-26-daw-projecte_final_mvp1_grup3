@@ -31,27 +31,34 @@ class AdminLogController extends Controller
         $accio = '-',
         $cerca = '-'
     ): JsonResponse {
+        // A. Normalitzar per_page
         if ($perPage < 1) {
             $perPage = 20;
         }
+        // B. Normalitzar page
         if ($page < 1) {
             $page = 1;
         }
 
         $query = AdminLog::with('administrador:id,nom');
 
+        // C. Filtrar per data_desde
         if ($dataDesde !== '0' && $dataDesde !== '-') {
             $query->where('created_at', '>=', $dataDesde);
         }
+        // D. Filtrar per data_fins
         if ($dataFins !== '0' && $dataFins !== '-') {
             $query->where('created_at', '<=', $dataFins);
         }
+        // E. Filtrar per administrador_id
         if ($administradorId !== '0' && $administradorId !== '-') {
             $query->where('administrador_id', (int) $administradorId);
         }
+        // F. Filtrar per accio
         if ($accio !== '-' && $accio !== '0') {
             $query->where('accio', 'ilike', '%'.$accio.'%');
         }
+        // G. Filtrar per cerca global
         if ($cerca !== '-' && $cerca !== '0' && $cerca !== '') {
             $query->where(function ($q) use ($cerca) {
                 $q->where('detall', 'ilike', '%'.$cerca.'%')
@@ -64,12 +71,15 @@ class AdminLogController extends Controller
         $paginator = $query->paginate($perPage, ['*'], 'page', $page);
 
         $data = [];
+        // H. Recórrer resultats i normalitzar format
         foreach ($paginator->getCollection() as $log) {
             $createdAtStr = null;
+            // H1. Si hi ha created_at, convertir-lo
             if ($log->created_at !== null) {
                 $createdAtStr = $log->created_at->toIso8601String();
             }
             $adminNom = 'Admin';
+            // H2. Si hi ha administrador i nom, usar-lo
             if ($log->administrador !== null && $log->administrador->nom !== null) {
                 $adminNom = $log->administrador->nom;
             }

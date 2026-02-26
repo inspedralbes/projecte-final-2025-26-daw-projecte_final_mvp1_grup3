@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\PlantillaResource;
 use App\Models\Plantilla;
-use App\Services\PlantillaService; // Import PlantillaService
+use App\Services\PlantillaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -19,13 +19,19 @@ use Illuminate\Http\Request;
  */
 class PlantillaController extends Controller
 {
-    protected $plantillaService;
+    /**
+     * Servei de plantilles.
+     *
+     * @var PlantillaService
+     */
+    protected PlantillaService $plantillaService;
+
+    //================================ MÈTODES / FUNCIONS ===========
 
     public function __construct(PlantillaService $plantillaService)
     {
         $this->plantillaService = $plantillaService;
     }
-    //================================ MÈTODES / FUNCIONS ===========
 
     /**
      * Llista les plantilles disponibles per a l'usuari.
@@ -34,17 +40,18 @@ class PlantillaController extends Controller
     public function index(Request $request): JsonResponse
     {
         // A. Obtindre paràmetres de filtre de la request
-        // El filtre 'my' o 'all' es manté com a query parameter per no modificar les rutes fora de l'abast.
-        $filter = $request->query('filter', 'all'); // 'all' o 'my'
+        // A1. El filtre 'my' o 'all' es manté com a query parameter per no modificar les rutes fora de l'abast.
+        $filtre = $request->query('filter', 'all');
 
         // B. Usuari autenticat (injectat pel middleware ensure.user)
         $usuariId = $request->user_id;
+        // B1. Si no hi ha usuari, denegar accés
         if (!$usuariId) {
             return response()->json(['message' => 'No autoritzat'], 401);
         }
 
         // C. Obtenir plantilles usant el servei amb els filtres i l'usuari autenticat
-        $plantilles = $this->plantillaService->getPlantilles( $filter, $usuariId)->load('habits');
+        $plantilles = $this->plantillaService->getPlantilles($filtre, $usuariId)->load('habits');
 
         // D. Retornar resposta amb el recurs
         return PlantillaResource::collection($plantilles)->toResponse($request);
@@ -57,6 +64,7 @@ class PlantillaController extends Controller
     {
         // A. Usuari autenticat (injectat pel middleware ensure.user)
         $usuariId = $request->user_id;
+        // A1. Si no hi ha usuari, denegar accés
         if (!$usuariId) {
             return response()->json(['message' => 'No autoritzat'], 401);
         }
@@ -67,9 +75,11 @@ class PlantillaController extends Controller
                 $query->where('creador_id', $usuariId)
                     ->orWhere('es_publica', true);
             })
-            ->with('habits') // Eager load habits
+            // B1. Carregar hàbits associats
+            ->with('habits')
             ->first();
 
+        // B2. Si no existeix la plantilla, retornar 404
         if ($plantilla === null) {
             return response()->json(['error' => 'Plantilla no trobada'], 404);
         }

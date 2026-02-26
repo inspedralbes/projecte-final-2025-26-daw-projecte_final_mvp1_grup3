@@ -8,17 +8,17 @@ definePageMeta({ layout: 'admin' });
 import { ref } from 'vue';
 
 // 1. DADES (VAR)
-var { $socket } = useNuxtApp();
-var config = useRuntimeConfig();
+var nuxtApp = useNuxtApp();
+var socketGlobal = nuxtApp.$socket;
 
 // Logros via API
-var { data: logrosData, refresh: refreshLogros } = useAuthFetch('/api/admin/logros/1/50', {
+var respostaLogros = useAuthFetch('/api/admin/logros/1/50', {
   key: 'admin_logros_list'
 });
 
-var logros = computed(function() {
-  if (logrosData.value && logrosData.value.success) {
-    return logrosData.value.data.data;
+var logros = computed(function () {
+  if (respostaLogros.data.value && respostaLogros.data.value.success) {
+    return respostaLogros.data.value.data.data;
   }
   return [];
 });
@@ -55,21 +55,28 @@ function tancaPopup() {
 }
 
 // Lifecycle i Sockets
-onMounted(function() {
-  if ($socket) {
-    $socket.on('admin_action_confirmed', function(payload) {
-      if (payload.entity === 'logro' && payload.success) {
-        refreshLogros();
+onMounted(function () {
+  if (socketGlobal) {
+    socketGlobal.on('admin_action_confirmed', function (carrega) {
+      if (carrega.entity === 'logro' && carrega.success) {
+        respostaLogros.refresh();
       }
     });
   }
 });
 
 function guardarLogro() {
-  if (!$socket) return;
-  
-  var payload = {
-    action: popupObert.value === 'crear' ? 'CREATE' : 'UPDATE',
+  if (!socketGlobal) {
+    return;
+  }
+
+  var accio = 'UPDATE';
+  if (popupObert.value === 'crear') {
+    accio = 'CREATE';
+  }
+
+  var carrega = {
+    action: accio,
     entity: 'logro',
     data: {
       nom: formulari.value.nom,
@@ -80,23 +87,35 @@ function guardarLogro() {
   };
   
   if (popupObert.value === 'editar') {
-    payload.data.id = logroSeleccionat.value.id;
+    carrega.data.id = logroSeleccionat.value.id;
   }
   
-  $socket.emit('admin_action', payload);
+  socketGlobal.emit('admin_action', carrega);
   tancaPopup();
 }
 
 function confirmarEliminacio() {
-  if (!$socket || !logroSeleccionat.value) return;
-  
-  $socket.emit('admin_action', {
+  if (!socketGlobal || !logroSeleccionat.value) {
+    return;
+  }
+
+  socketGlobal.emit('admin_action', {
     action: 'DELETE',
     entity: 'logro',
     data: { id: logroSeleccionat.value.id }
   });
   
   tancaPopup();
+}
+
+function obtenirTitolPopup() {
+  if (popupObert.value === 'crear') {
+    return 'Nou Logro';
+  }
+  if (popupObert.value === 'editar') {
+    return 'Editar Logro';
+  }
+  return 'Eliminar Logro';
 }
 </script>
 
@@ -154,7 +173,7 @@ function confirmarEliminacio() {
           <div class="p-10 border-b border-gray-100 flex justify-between items-center bg-gray-50/30">
             <div>
               <h3 class="text-2xl font-black text-gray-900 uppercase tracking-tighter">
-                {{ popupObert === 'crear' ? 'Nou Logro' : (popupObert === 'editar' ? 'Editar Logro' : 'Eliminar Logro') }}
+                {{ obtenirTitolPopup() }}
               </h3>
               <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Configuració de medalles</p>
             </div>

@@ -35,6 +35,7 @@ class AdminDashboardController extends Controller
 
         // Mètrica de prohibits (resilient si la columna encara no existeix en la DB actual)
         $prohibits = 0;
+        // A1. Intentar comptar prohibits (si la columna existeix)
         try {
             $prohibits = User::where('prohibit', true)->count();
         } catch (\Exception $e) {
@@ -56,7 +57,9 @@ class AdminDashboardController extends Controller
             ->get();
 
         $topPlantilles = [];
+        // B1. Recórrer plantilles top i normalitzar format
         foreach ($topPlantillesRaw as $item) {
+            // B1.1. Només afegir si la plantilla existeix
             if ($item->plantilla !== null) {
                 $topPlantilles[] = [
                     'id' => $item->plantilla_id,
@@ -80,9 +83,11 @@ class AdminDashboardController extends Controller
         $habits = Habit::whereIn('id', $habitsIds)->get()->keyBy('id');
 
         $top5Habits = [];
+        // B2. Recórrer hàbits top i normalitzar format
         foreach ($topHabits as $item) {
             $habit = $habits->get($item->habit_id);
             $nomHabit = 'Desconegut';
+            // B2.1. Si existeix el hàbit, usar el seu títol
             if ($habit !== null) {
                 $nomHabit = $habit->titol;
             }
@@ -100,12 +105,15 @@ class AdminDashboardController extends Controller
             ->get();
 
         $ultimsLogs = [];
+        // C1. Recórrer logs i normalitzar format
         foreach ($ultimsLogsRaw as $log) {
             $createdAtStr = null;
+            // C1.1. Si hi ha created_at, convertir-lo
             if ($log->created_at !== null) {
                 $createdAtStr = $log->created_at->toIso8601String();
             }
             $adminNom = 'Admin';
+            // C1.2. Si hi ha administrador i nom, usar-lo
             if ($log->administrador !== null && $log->administrador->nom !== null) {
                 $adminNom = $log->administrador->nom;
             }

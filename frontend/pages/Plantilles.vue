@@ -51,13 +51,10 @@
             <h2 class="text-xl font-bold text-gray-800 mb-2">{{ plantilla.titol }}</h2>
             <p class="text-sm text-gray-600 mb-4">Categoria: {{ plantilla.categoria }}</p>
             <span
-              :class="{
-                'bg-green-100 text-green-800': plantilla.esPublica,
-                'bg-blue-100 text-blue-800': !plantilla.esPublica
-              }"
+              :class="obtenirClassePublica(plantilla)"
               class="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-medium"
             >
-              {{ plantilla.esPublica ? 'Pública' : 'Privada' }}
+              {{ obtenirTextPublica(plantilla) }}
             </span>
           </div>
           <div class="mt-4 flex justify-end gap-3">
@@ -96,7 +93,7 @@
           </button>
 
           <h2 class="2xl font-bold text-gray-800 mb-6">
-            {{ modoEdicio ? "Editar Plantilla" : "Crear Nova Plantilla" }}
+            {{ obtenirTitolModal() }}
           </h2>
 
           <div class="space-y-6">
@@ -168,10 +165,7 @@
                   v-for="habit in habitStore.habits"
                   :key="habit.id"
                   class="flex items-center p-3 rounded-lg border transition-all cursor-pointer"
-                  :class="{
-                    'bg-green-50 border-green-500 shadow-sm': form.habitsSeleccionats.indexOf(habit.id) !== -1,
-                    'border-gray-200 hover:bg-gray-50': form.habitsSeleccionats.indexOf(habit.id) === -1
-                  }"
+                  :class="obtenirClasseHabitSeleccionat(habit.id)"
                   @click="toggleHabitSeleccionat(habit.id)"
                 >
                   <input
@@ -185,7 +179,7 @@
                   >
                     {{ habit.icona }}
                   </div>
-                  <span class="text-sm font-medium" :class="form.habitsSeleccionats.indexOf(habit.id) !== -1 ? 'text-green-800 font-bold' : 'text-gray-700'">{{ habit.nom || habit.titol }}</span>
+                  <span class="text-sm font-medium" :class="obtenirClasseTextHabit(habit.id)">{{ habit.nom || habit.titol }}</span>
                 </div>
               </div>
             </div>
@@ -216,9 +210,7 @@
 <script>
 import { usePlantillaStore } from "../stores/usePlantillaStore";
 import { useHabitStore } from "../stores/useHabitStore";
-import { useGameStore } from "../stores/gameStore"; // Import useGameStore
-import { useSocketConfig } from "../composables/useSocketConfig";
-import { watch } from 'vue'; // Import watch from vue
+import { useGameStore } from "../stores/gameStore";
 
 export default {
   // Configuració inicial dels 'stores' de Pinia per a la gestió de l'estat.
@@ -282,6 +274,58 @@ export default {
   // Mètodes del component.
   methods: {
     // --- Mètodes de la vista principal de Plantilles ---
+
+    /**
+     * Retorna el text per a l'estat de publicació.
+     */
+    obtenirTextPublica: function (plantilla) {
+      if (plantilla && plantilla.esPublica) {
+        return 'Pública';
+      }
+      return 'Privada';
+    },
+
+    /**
+     * Retorna la classe CSS per a l'estat de publicació.
+     */
+    obtenirClassePublica: function (plantilla) {
+      if (plantilla && plantilla.esPublica) {
+        return 'bg-green-100 text-green-800';
+      }
+      return 'bg-blue-100 text-blue-800';
+    },
+
+    /**
+     * Retorna el títol del modal segons el mode.
+     */
+    obtenirTitolModal: function () {
+      if (this.modoEdicio) {
+        return 'Editar Plantilla';
+      }
+      return 'Crear Nova Plantilla';
+    },
+
+    /**
+     * Retorna la classe de selecció d'hàbits.
+     */
+    obtenirClasseHabitSeleccionat: function (habitId) {
+      var index = this.form.habitsSeleccionats.indexOf(habitId);
+      if (index !== -1) {
+        return 'bg-green-50 border-green-500 shadow-sm';
+      }
+      return 'border-gray-200 hover:bg-gray-50';
+    },
+
+    /**
+     * Retorna la classe de text d'hàbits seleccionats.
+     */
+    obtenirClasseTextHabit: function (habitId) {
+      var index = this.form.habitsSeleccionats.indexOf(habitId);
+      if (index !== -1) {
+        return 'text-green-800 font-bold';
+      }
+      return 'text-gray-700';
+    },
 
     /**
      * Carrega les plantilles des de l'API a través del 'plantillaStore'.
@@ -415,7 +459,7 @@ export default {
       self.socket = nuxtApp.$socket;
 
       if (!self.socket) {
-        console.error("❌ Socket global no disponible");
+        console.error("Socket global no disponible");
         return;
       }
 
@@ -525,9 +569,14 @@ export default {
      */
     handlePlantillaFeedback: function (payload) {
       var self = this;
-      console.log('handlePlantillaFeedback called. Payload:', payload); // Log the entire payload
-      console.log('Payload success:', payload ? payload.success : 'N/A');
-      console.log('Payload action:', payload ? payload.action : 'N/A');
+      console.log('handlePlantillaFeedback called. Payload:', payload);
+      if (payload) {
+        console.log('Payload success:', payload.success);
+        console.log('Payload action:', payload.action);
+      } else {
+        console.log('Payload success:', 'N/A');
+        console.log('Payload action:', 'N/A');
+      }
 
       // A. Comprovar si l'acció ha estat exitosa.
       if (!payload || payload.success !== true) {

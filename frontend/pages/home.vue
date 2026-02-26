@@ -73,10 +73,10 @@
                   v-for="logro in ultimsLogros"
                   :key="logro.id"
                   class="w-12 h-12 rounded-full flex items-center justify-center text-lg hover:scale-110 transition shadow-inner"
-                  :class="logro.obtingut ? 'bg-orange-100' : 'bg-gray-100 opacity-40'"
+                  :class="obtenirClasseLogroPetit(logro)"
                   :title="logro.nom"
                 >
-                  {{ logro.obtingut ? '🏅' : '🔒' }}
+                  {{ obtenirIconaLogro(logro) }}
                 </div>
               </template>
               <template v-else>
@@ -231,8 +231,8 @@
         <!-- Capçalera Modal -->
         <div class="p-6 border-b border-gray-100 flex items-center justify-between bg-white sticky top-0 z-10">
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center text-xl">
-              🏆
+            <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center text-xs font-black text-blue-700">
+              LOGRO
             </div>
             <div>
               <h2 class="text-xl font-bold text-gray-800">Tots els Logros</h2>
@@ -252,7 +252,7 @@
           </div>
 
           <div v-else-if="logrosFiltrats.length === 0" class="text-center py-20 text-gray-400">
-            <p class="text-4xl mb-4">🏜️</p>
+            <p class="text-sm mb-4 font-bold uppercase tracking-widest">Sense dades</p>
             <p class="font-medium text-lg">Encara no hi ha logros disponibles.</p>
             <p class="text-sm">Torna més tard per veure noves missions!</p>
           </div>
@@ -267,10 +267,10 @@
               <!-- Icona/Medalla -->
               <div class="flex items-start justify-between mb-4">
                 <div 
-                  class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl shadow-inner transition-transform group-hover:scale-110"
-                  :class="logro.obtingut ? 'bg-gradient-to-br from-yellow-400 to-orange-500 text-white' : 'bg-gray-100 text-gray-400'"
+                  class="w-14 h-14 rounded-2xl flex items-center justify-center text-xs font-black shadow-inner transition-transform group-hover:scale-110"
+                  :class="obtenirClasseLogroGran(logro)"
                 >
-                  {{ logro.obtingut ? '🏅' : '🔒' }}
+                  {{ obtenirIconaLogro(logro) }}
                 </div>
                 <div v-if="logro.obtingut" class="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider">
                   Desbloquejat
@@ -396,14 +396,14 @@ export default {
       self.gameStore.obtenirEstatJoc(),
       self.logroStore.carregarLogros()
     ])
-    .then(function() {
-        console.log("✅ Dades carregades correctament (Incloent Logros)");
+    .then(function () {
+        console.log("Dades carregades correctament (Incloent Logros)");
     })
-    .catch(function(error) {
-        console.error("❌ Error carregant dades:", error);
+    .catch(function (error) {
+        console.error("Error carregant dades:", error);
         self.errorMissatge = "Error al carregar la informació del servidor.";
     })
-    .finally(function() {
+    .finally(function () {
         self.estaCarregantHabits = false;
     });
 
@@ -420,6 +420,36 @@ export default {
 
   methods: {
     /**
+     * Retorna la classe per als logros petits.
+     */
+    obtenirClasseLogroPetit: function (logro) {
+      if (logro && logro.obtingut) {
+        return 'bg-orange-100';
+      }
+      return 'bg-gray-100 opacity-40';
+    },
+
+    /**
+     * Retorna la classe per als logros grans.
+     */
+    obtenirClasseLogroGran: function (logro) {
+      if (logro && logro.obtingut) {
+        return 'bg-gradient-to-br from-yellow-400 to-orange-500 text-white';
+      }
+      return 'bg-gray-100 text-gray-400';
+    },
+
+    /**
+     * Retorna la icona textual del logro.
+     */
+    obtenirIconaLogro: function (logro) {
+      if (logro && logro.obtingut) {
+        return 'MED';
+      }
+      return 'BLOC';
+    },
+
+    /**
      * Inicialitza la conexió de sockets.
      */
     inicialitzarSocket: function () {
@@ -430,20 +460,20 @@ export default {
       self.socket = nuxtApp.$socket;
 
       if (!self.socket) {
-        console.error("❌ Socket global no disponible");
+        console.error("Socket global no disponible");
         return;
       }
 
       self.socket.on("connect", function () {
-        console.log("✅ Conectat al servidor de sockets:", self.socket.id);
+        console.log("Conectat al servidor de sockets:", self.socket.id);
       });
 
       self.socket.on("update_xp", async function (data) {
-        console.log("⭐ Recept feedback gamificació:", data);
+        console.log("Rebuda actualització de gamificació:", data);
         try {
           await self.gameStore.obtenirEstatJoc();
         } catch (error) {
-          console.error("❌ Error actualitzant estat:", error);
+          console.error("Error actualitzant estat:", error);
         }
       });
 
@@ -452,7 +482,7 @@ export default {
       });
 
       self.socket.on("disconnect", function () {
-        console.log("❌ Desconectat del servidor de sockets");
+        console.log("Desconnectat del servidor de sockets");
       });
     },
 
@@ -539,11 +569,11 @@ export default {
         
         // Carregar logros (gestionat pel company)
         self.logroStore.carregarLogros()
-            .then(function() {
-                console.log("🏆 Logros carregats al modal");
+            .then(function () {
+                console.log("Logros carregats al modal");
             })
-            .catch(function(err) {
-                console.error("❌ Error carregant logros al modal:", err);
+            .catch(function (err) {
+                console.error("Error carregant logros al modal:", err);
             });
     },
 

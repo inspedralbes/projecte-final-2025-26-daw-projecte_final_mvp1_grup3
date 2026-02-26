@@ -28,13 +28,16 @@ class AdminNotificacioController extends Controller
     public function index(Request $request, int $page = 1, int $perPage = 20, $llegida = '-'): JsonResponse
     {
         $administradorId = $request->admin_id;
+        // A1. Si no hi ha administrador, denegar accés
         if (!$administradorId) {
             return response()->json(['error' => 'No autoritzat'], 401);
         }
 
+        // A2. Normalitzar perPage
         if ($perPage < 1) {
             $perPage = 20;
         }
+        // A3. Normalitzar page
         if ($page < 1) {
             $page = 1;
         }
@@ -42,10 +45,13 @@ class AdminNotificacioController extends Controller
         // B. Query base per administrador
         $query = AdminNotificacio::where('administrador_id', $administradorId);
 
+        // B1. Si hi ha filtre de llegida, aplicar-lo
         if ($llegida !== '-' && $llegida !== '0') {
+            // B1.1. Filtre per no llegides
             if ($llegida === '1' || $llegida === 'false') {
                 $query->where('llegida', false);
             }
+            // B1.2. Filtre per llegides
             if ($llegida === '2' || $llegida === 'true') {
                 $query->where('llegida', true);
             }
@@ -71,6 +77,7 @@ class AdminNotificacioController extends Controller
     public function marcarLlegida(Request $request, int $id): JsonResponse
     {
         $administradorId = $request->admin_id;
+        // A1. Si no hi ha administrador, denegar accés
         if (!$administradorId) {
             return response()->json(['error' => 'No autoritzat'], 401);
         }
@@ -79,6 +86,7 @@ class AdminNotificacioController extends Controller
             ->where('administrador_id', $administradorId)
             ->first();
 
+        // B1. Si no existeix la notificació, retornar 404
         if ($notificacio === null) {
             return response()->json(['error' => 'Notificació no trobada'], 404);
         }

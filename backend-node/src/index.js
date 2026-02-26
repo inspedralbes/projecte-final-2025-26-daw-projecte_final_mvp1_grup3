@@ -1,49 +1,89 @@
 'use strict';
 
-/**
- * Servidor principal Node.js (Fase 2).
- */
+//==============================================================================
+//================================ IMPORTS =====================================
+//==============================================================================
+
 var http = require('http');
 var socketIo = require('socket.io');
 var socketHandler = require('./socketHandler');
 var feedbackSubscriber = require('./subscribers/feedbackSubscriber');
 var jwtAuth = require('./middleware/jwtAuth');
 
-var PORT = process.env.PORT || 3001;
+//==============================================================================
+//================================ VARIABLES ===================================
+//==============================================================================
 
-// Crear servidor HTTP
-var server = http.createServer(function (req, res) {
-  res.writeHead(200, { 'Content-Type': 'application/json' });
-  res.end(JSON.stringify({ status: 'Node Backend actiu' }));
-});
+var portServidor = process.env.PORT || 3001;
+var servidorHttp = null;
+var io = null;
 
-// Inicialitzar Socket.io
-var io = new socketIo.Server(server, {
-  cors: {
-    origin: '*',
-    methods: ['GET', 'POST']
-  }
-});
+//==============================================================================
+//================================ FUNCIONS ====================================
+//==============================================================================
 
-// Aplicar middleware d'autenticació
-io.use(jwtAuth);
+/**
+ * Crea el servidor HTTP bàsic de salut.
+ * A. Definir el handler de resposta.
+ * B. Retornar la instància del servidor.
+ */
+function crearServidorHttp() {
+  var servidor = http.createServer(function (req, res) {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ status: 'Node Backend actiu' }));
+  });
+
+  return servidor;
+}
+
+/**
+ * Inicialitza Socket.io amb la configuració CORS.
+ * A. Crear el servidor de sockets.
+ * B. Retornar la instància de Socket.io.
+ */
+function crearServidorSocket(servidor) {
+  var servidorSockets = new socketIo.Server(servidor, {
+    cors: {
+      origin: '*',
+      methods: ['GET', 'POST']
+    }
+  });
+
+  return servidorSockets;
+}
 
 /**
  * Funció d'arrencada orquestrada.
+ * A. Crear servidor HTTP i Socket.io.
+ * B. Aplicar middleware JWT.
+ * C. Iniciar subscripció de feedback.
+ * D. Iniciar handlers de socket.
+ * E. Arrencar servidor.
  */
-async function bootstrap() {
-  // 1. Escolta feedback de Laravel (Redis Subscribe)
+async function arrencarServidor() {
+  // A. Crear servidor HTTP i Socket.io
+  servidorHttp = crearServidorHttp();
+  io = crearServidorSocket(servidorHttp);
+
+  // B. Aplicar middleware d'autenticació
+  io.use(jwtAuth);
+
+  // C. Escolta feedback de Laravel (Redis Subscribe)
   await feedbackSubscriber.init(io);
 
-  // 2. Escolta esdeveniments dels clients (Sockets)
+  // D. Escolta esdeveniments dels clients (Sockets)
   socketHandler.init(io);
 
-  // 3. Arrencar servidor
-  server.listen(PORT, '0.0.0.0', function () {
-    console.log('Servidor Node actiu al port', PORT);
+  // E. Arrencar servidor
+  servidorHttp.listen(portServidor, '0.0.0.0', function () {
+    console.log('Servidor Node actiu al port', portServidor);
   });
 }
 
-bootstrap().catch(function (error) {
-  console.error('Error en bootstrap:', error);
+//==============================================================================
+//================================ EXPORTS =====================================
+//==============================================================================
+
+arrencarServidor().catch(function (error) {
+  console.error('Error en arrencarServidor:', error);
 });

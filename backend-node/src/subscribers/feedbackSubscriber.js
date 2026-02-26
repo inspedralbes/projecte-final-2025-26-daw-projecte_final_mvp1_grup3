@@ -1,82 +1,105 @@
 'use strict';
 
-/**
- * Subscriptor de Redis per rebre el feedback de Laravel.
- */
+//==============================================================================
+//================================ IMPORTS =====================================
+//==============================================================================
+
 var redis = require('redis');
 
-var subscriber = null;
-var feedbackChannel = 'feedback_channel';
+//==============================================================================
+//================================ VARIABLES ===================================
+//==============================================================================
+
+var subscriptor = null;
+var canalFeedback = 'feedback_channel';
+
+//==============================================================================
+//================================ FUNCIONS ====================================
+//==============================================================================
 
 /**
  * Inicialitza la subscripció i connecta amb Socket.io.
+ * A. Crear client Redis si no existeix.
+ * B. Connectar i subscriure's al canal.
+ * C. Processar missatges i retransmetre'ls.
  */
 async function init(io) {
-  if (subscriber) {
+  if (subscriptor) {
     return;
   }
 
+  // A. Crear client Redis
   var host = process.env.REDIS_HOST || '127.0.0.1';
   var port = parseInt(process.env.REDIS_PORT || '6379', 10);
 
-  console.log('feedbackSubscriber: Attempting to connect to Redis at host:', host, 'port:', port); // Debug log
+  console.log('feedbackSubscriber: connectant a Redis a host', host, 'port', port);
 
-  subscriber = redis.createClient({
+  subscriptor = redis.createClient({
     socket: {
       host: host,
       port: port
     }
   });
 
-  subscriber.on('error', function (err) {
+  subscriptor.on('error', function (err) {
     console.error('Error Redis Subscriber:', err);
   });
 
-  await subscriber.connect();
+  // B. Connectar
+  await subscriptor.connect();
 
-  await subscriber.subscribe(feedbackChannel, function (message) {
-    var payload;
+  // C. Subscriure's al canal i processar missatges
+  await subscriptor.subscribe(canalFeedback, function (missatge) {
+    var carrega = null;
     try {
-      payload = JSON.parse(message);
+      carrega = JSON.parse(missatge);
 
-      if (payload.admin_id !== undefined) {
-        var adminId = payload.admin_id;
-        io.to('admin_' + adminId).emit('admin_action_confirmed', {
-          admin_id: adminId,
-          entity: payload.entity,
-          action: payload.action,
-          success: payload.success,
-          data: payload.data
+      // C1. Si és feedback d'admin, enviar a la sala corresponent
+      if (carrega.admin_id !== undefined) {
+        var administradorId = carrega.admin_id;
+        io.to('admin_' + administradorId).emit('admin_action_confirmed', {
+          admin_id: administradorId,
+          entity: carrega.entity,
+          action: carrega.action,
+          success: carrega.success,
+          data: carrega.data
         });
-        console.log('Admin feedback enviat a admin_' + adminId);
-      } else {
-        var userId = payload.user_id;
-        var type = payload.type; // Get type from payload
-        var action = payload.action;
-
-        // 1. Enviem l'actualització d'XP si Laravel la inclou
-        if (payload.xp_update) {
-          io.to('user_' + userId).emit('update_xp', payload.xp_update);
-        }
-
-        // 1b. Si s'ha completat una missió diària, emetre mission_completed
-        if (payload.mission_completed) {
-          io.to('user_' + userId).emit('mission_completed', payload.mission_completed);
-        }
-
-        // 2. Confirmem l'acció del CRUD al front per tancar el cicle
-        // Fem servir "to('user_' + userId)" per a que només li arribi a qui toca
-        var eventName = type === 'PLANTILLA' ? 'plantilla_action_confirmed' : 'habit_action_confirmed';
-        
-        io.to('user_' + userId).emit(eventName, payload);
-
-        console.log('Feedback enviat a la sala user_' + userId + ' per l acció ' + action);
+        console.log('Feedback admin enviat a admin_' + administradorId);
+        return;
       }
+
+      // C2. Feedback d'usuari: preparar dades
+      var usuariId = carrega.user_id;
+      var tipus = carrega.type;
+      var accio = carrega.action;
+
+      // C3. Enviar actualització d'XP si Laravel la inclou
+      if (carrega.xp_update) {
+        io.to('user_' + usuariId).emit('update_xp', carrega.xp_update);
+      }
+
+      // C4. Si s'ha completat una missió diària, emetre mission_completed
+      if (carrega.mission_completed) {
+        io.to('user_' + usuariId).emit('mission_completed', carrega.mission_completed);
+      }
+
+      // C5. Confirmar acció CRUD al frontend
+      var nomEvent = 'habit_action_confirmed';
+      if (tipus === 'PLANTILLA') {
+        nomEvent = 'plantilla_action_confirmed';
+      }
+
+      io.to('user_' + usuariId).emit(nomEvent, carrega);
+      console.log('Feedback enviat a user_' + usuariId + ' per l acció ' + accio);
     } catch (e) {
       console.error('Error parsejant feedback de Redis:', e);
     }
   });
 }
+
+//==============================================================================
+//================================ EXPORTS =====================================
+//==============================================================================
 
 module.exports = {
   init: init

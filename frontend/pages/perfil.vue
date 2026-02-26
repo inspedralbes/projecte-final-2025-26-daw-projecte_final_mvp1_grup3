@@ -21,7 +21,7 @@
             <div v-else-if="user" class="space-y-6 w-full">
               <div class="flex items-center gap-4">
                 <div class="w-16 h-16 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-2xl font-bold flex-shrink-0">
-                  {{ user.nom ? user.nom.charAt(0) : 'U' }}
+                  {{ obtenirInicialUsuari() }}
                 </div>
                 <div class="min-w-0">
                   <h3 class="text-xl font-bold text-gray-800 truncate">{{ user.nom }}</h3>
@@ -89,7 +89,7 @@
               </div>
               <div class="text-right flex-shrink-0">
                 <div class="inline-flex items-center gap-2 bg-orange-100 px-4 py-2 rounded-full border border-orange-200 shadow-sm">
-                  <span class="text-orange-600 font-bold text-sm tracking-wide">RATXA: {{ user ? user.ratxa_actual : 0 }}</span>
+                  <span class="text-orange-600 font-bold text-sm tracking-wide">RATXA: {{ obtenirRatxaActual() }}</span>
                 </div>
               </div>
             </div>
@@ -137,7 +137,7 @@ var estilFons = {
  * Propietat computada per calcular el percentatge de la barra d'experiència.
  * Suposem 1000 XP per pujar de nivell per a la visualització.
  */
-var xpPercent = computed(function() {
+var xpPercent = computed(function () {
   if (!user.value || !user.value.xp_total) {
     return 0;
   }
@@ -154,7 +154,11 @@ function carregarPerfil() {
   loading.value = true;
   
   baseUrl = config.public.apiUrl;
-  fullUrl = baseUrl.endsWith('/') ? baseUrl + 'api/user/profile' : baseUrl + '/api/user/profile';
+  if (baseUrl.endsWith('/')) {
+    fullUrl = baseUrl + 'api/user/profile';
+  } else {
+    fullUrl = baseUrl + '/api/user/profile';
+  }
 
   $fetch(fullUrl)
     .then(function(dades) {
@@ -172,6 +176,26 @@ function carregarPerfil() {
 onMounted(function() {
   carregarPerfil();
 });
+
+/**
+ * Retorna la inicial del nom d'usuari.
+ */
+function obtenirInicialUsuari() {
+  if (user.value && user.value.nom) {
+    return user.value.nom.charAt(0);
+  }
+  return 'U';
+}
+
+/**
+ * Retorna la ratxa actual de l'usuari.
+ */
+function obtenirRatxaActual() {
+  if (user.value && user.value.ratxa_actual) {
+    return user.value.ratxa_actual;
+  }
+  return 0;
+}
 </script>
 
 <style scoped>

@@ -118,19 +118,32 @@ class HabitService
             $success = $habitModel !== null;
         // B4. Acció TOGGLE (completar hàbit)
         } elseif ($accio === 'TOGGLE') {
+            // B4.0. Preparar data de complet i payload per processar
+            if (isset($dades['data'])) {
+                $dataComplet = $dades['data'];
+            } else {
+                $dataComplet = null;
+            }
+
             $xpUpdate = $this->processarHabitCompletat([
                 'habit_id' => $habitId,
                 'user_id' => $usuariId,
-                'data' => isset($dades['data']) ? $dades['data'] : null,
+                'data' => $dataComplet,
             ]);
             $habitModel = Habit::find($habitId);
             $success = true;
 
             // B4.1. Comprovar missió diària (després del registre)
+            // B4.1.a. Si hi ha data explícita, usar-la; si no, utilitzar ara
+            if (isset($dades['data'])) {
+                $dataMissio = Carbon::parse($dades['data']);
+            } else {
+                $dataMissio = Carbon::now();
+            }
             $resultatMissio = $this->missionService->comprovarMissioCompletada(
                 $usuariId,
                 $habitId,
-                isset($dades['data']) ? Carbon::parse($dades['data']) : Carbon::now()
+                $dataMissio
             );
             if ($resultatMissio !== null && $resultatMissio['completada'] === true) {
                 $missionCompleted = ['success' => true];
@@ -275,7 +288,12 @@ class HabitService
             }
         }
 
-        $monedes = isset($usuari->monedes) ? (int) $usuari->monedes : 0;
+        // E4. Validar monedes
+        if (isset($usuari->monedes)) {
+            $monedes = (int) $usuari->monedes;
+        } else {
+            $monedes = 0;
+        }
 
         return [
             'xp_total' => (int) $usuari->xp_total,

@@ -26,6 +26,7 @@ class AdminConfiguracioController extends Controller
     {
         $configs = AdminConfiguracio::all();
         $resultat = [];
+        // A. Recórrer configuracions i construir mapa clau-valor
         foreach ($configs as $config) {
             $resultat[$config->clau] = $config->valor;
         }
@@ -42,9 +43,11 @@ class AdminConfiguracioController extends Controller
     public function update(Request $request): JsonResponse
     {
         $dades = $request->all();
+        // A. Si arriba embolicat sota "data", desempaquetar
         if (isset($dades['data']) && is_array($dades['data'])) {
             $dades = $dades['data'];
         }
+        // B. Recórrer totes les claus i actualitzar o crear
         foreach ($dades as $clau => $valor) {
             AdminConfiguracio::updateOrCreate(
                 ['clau' => $clau],

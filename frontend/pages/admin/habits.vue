@@ -8,17 +8,17 @@ definePageMeta({ layout: 'admin' });
 import { ref } from 'vue';
 
 // 1. DADES (VAR)
-var { $socket } = useNuxtApp();
-var config = useRuntimeConfig();
+var nuxtApp = useNuxtApp();
+var socketGlobal = nuxtApp.$socket;
 
 // Hàbits via API
-var { data: habitsData, refresh: refreshHabits } = useAuthFetch('/api/admin/habits/1/50', {
+var respostaHabits = useAuthFetch('/api/admin/habits/1/50', {
   key: 'admin_habits_list'
 });
 
-var habits = computed(function() {
-  if (habitsData.value && habitsData.value.success) {
-    return habitsData.value.data.data;
+var habits = computed(function () {
+  if (respostaHabits.data.value && respostaHabits.data.value.success) {
+    return respostaHabits.data.value.data.data;
   }
   return [];
 });
@@ -74,21 +74,28 @@ function tancaPopup() {
 }
 
 // Lifecycle i Sockets
-onMounted(function() {
-  if ($socket) {
-    $socket.on('admin_action_confirmed', function(payload) {
-      if (payload.entity === 'habit' && payload.success) {
-        refreshHabits();
+onMounted(function () {
+  if (socketGlobal) {
+    socketGlobal.on('admin_action_confirmed', function (carrega) {
+      if (carrega.entity === 'habit' && carrega.success) {
+        respostaHabits.refresh();
       }
     });
   }
 });
 
 function guardarHabit() {
-  if (!$socket) return;
-  
-  var payload = {
-    action: popupObert.value === 'crear' ? 'CREATE' : 'UPDATE',
+  if (!socketGlobal) {
+    return;
+  }
+
+  var accio = 'UPDATE';
+  if (popupObert.value === 'crear') {
+    accio = 'CREATE';
+  }
+
+  var carrega = {
+    action: accio,
     entity: 'habit',
     data: {
       titol: formulari.value.titol,
@@ -101,25 +108,54 @@ function guardarHabit() {
   };
   
   if (popupObert.value === 'crear') {
-    payload.data.usuari_id = parseInt(formulari.value.usuari_id) || null;
+    carrega.data.usuari_id = parseInt(formulari.value.usuari_id) || null;
   } else {
-    payload.data.id = habitSeleccionat.value.id;
+    carrega.data.id = habitSeleccionat.value.id;
   }
   
-  $socket.emit('admin_action', payload);
+  socketGlobal.emit('admin_action', carrega);
   tancaPopup();
 }
 
 function confirmarEliminacio() {
-  if (!$socket || !habitSeleccionat.value) return;
-  
-  $socket.emit('admin_action', {
+  if (!socketGlobal || !habitSeleccionat.value) {
+    return;
+  }
+
+  socketGlobal.emit('admin_action', {
     action: 'DELETE',
     entity: 'habit',
     data: { id: habitSeleccionat.value.id }
   });
   
   tancaPopup();
+}
+
+function obtenirTitolPopup() {
+  if (popupObert.value === 'crear') {
+    return 'Nou Hàbit';
+  }
+  if (popupObert.value === 'editar') {
+    return 'Editar Hàbit';
+  }
+  return 'Eliminar Hàbit';
+}
+
+function obtenirNomHabitSeleccionat() {
+  if (habitSeleccionat.value && habitSeleccionat.value.titol) {
+    return habitSeleccionat.value.titol;
+  }
+  return '';
+}
+
+function obtenirNomUsuari(habit) {
+  if (habit && habit.usuari && habit.usuari.nom) {
+    return habit.usuari.nom;
+  }
+  if (habit && habit.usuari_id) {
+    return 'Usuari #' + habit.usuari_id;
+  }
+  return 'Usuari';
 }
 </script>
 
@@ -152,7 +188,7 @@ function confirmarEliminacio() {
           <tbody class="divide-y divide-gray-50">
             <tr v-for="habit in habits" :key="habit.id" class="group hover:bg-gray-50/50 transition-all">
               <td class="py-6 font-black text-gray-800 text-base tracking-tight leading-none">{{ habit.titol }}</td>
-              <td class="py-6 text-xs font-bold text-gray-500">{{ habit.usuari ? habit.usuari.nom : 'Usuari #' + habit.usuari_id }}</td>
+              <td class="py-6 text-xs font-bold text-gray-500">{{ obtenirNomUsuari(habit) }}</td>
               <td class="py-6">
                 <span class="bg-green-50 text-green-600 px-3 py-1 rounded-lg font-black text-[9px] uppercase border border-green-100 italic">CAT #{{ habit.categoria_id }}</span>
               </td>
@@ -184,7 +220,7 @@ function confirmarEliminacio() {
           <div class="p-10 border-b border-gray-100 flex justify-between items-center bg-gray-50/30">
             <div>
               <h3 class="text-2xl font-black text-gray-900 uppercase tracking-tighter">
-                {{ popupObert === 'crear' ? 'Nou Hàbit' : (popupObert === 'editar' ? 'Editar Hàbit' : 'Eliminar Hàbit') }}
+                {{ obtenirTitolPopup() }}
               </h3>
               <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Configuració d'activitat</p>
             </div>
@@ -248,7 +284,7 @@ function confirmarEliminacio() {
             <template v-if="popupObert === 'eliminar'">
               <div class="bg-red-50 p-8 rounded-[2.5rem] border border-red-100 text-center">
                 <p class="text-base font-black text-red-600 uppercase tracking-tighter mb-2">Eliminar Definitivament?</p>
-                <p class="text-xs font-bold text-red-400 uppercase tracking-widest">Estàs a punt d'esborrar l'hàbit: <span class="text-red-700">{{ habitSeleccionat?.titol }}</span></p>
+                <p class="text-xs font-bold text-red-400 uppercase tracking-widest">Estàs a punt d'esborrar l'hàbit: <span class="text-red-700">{{ obtenirNomHabitSeleccionat() }}</span></p>
               </div>
             </template>
           </div>

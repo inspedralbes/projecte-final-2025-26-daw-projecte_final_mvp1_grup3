@@ -8,17 +8,17 @@ definePageMeta({ layout: 'admin' });
 import { ref } from 'vue';
 
 // 1. DADES (VAR)
-var { $socket } = useNuxtApp();
-var config = useRuntimeConfig();
+var nuxtApp = useNuxtApp();
+var socketGlobal = nuxtApp.$socket;
 
 // Historial via API
-var { data: notificacionsData, refresh: refreshNotificacions } = useAuthFetch('/api/admin/notificacions/1/20/-', {
+var respostaNotificacions = useAuthFetch('/api/admin/notificacions/1/20/-', {
   key: 'admin_notifications_list'
 });
 
-var notificacions = computed(function() {
-  if (notificacionsData.value && notificacionsData.value.success) {
-    return notificacionsData.value.data.data;
+var notificacions = computed(function () {
+  if (respostaNotificacions.data.value && respostaNotificacions.data.value.success) {
+    return respostaNotificacions.data.value.data.data;
   }
   return [];
 });
@@ -48,20 +48,22 @@ function tancaPopup() {
 }
 
 // Escoltarem confirmacions
-onMounted(function() {
-  if ($socket) {
-    $socket.on('admin_action_confirmed', function(payload) {
-      if (payload.entity === 'notificacio' && payload.success) {
-        refreshNotificacions();
+onMounted(function () {
+  if (socketGlobal) {
+    socketGlobal.on('admin_action_confirmed', function (carrega) {
+      if (carrega.entity === 'notificacio' && carrega.success) {
+        respostaNotificacions.refresh();
       }
     });
   }
 });
 
 function enviarNotificacio() {
-  if (!$socket) return;
-  
-  $socket.emit('admin_action', {
+  if (!socketGlobal) {
+    return;
+  }
+
+  socketGlobal.emit('admin_action', {
     action: 'CREATE',
     entity: 'notificacio',
     data: {
@@ -72,6 +74,20 @@ function enviarNotificacio() {
   });
   
   tancaPopup();
+}
+
+function obtenirTitolPopup() {
+  if (popupObert.value === 'enviar') {
+    return 'Enviar Nou Avís';
+  }
+  return 'Detall del Missatge';
+}
+
+function obtenirMissatgeNotificacio() {
+  if (notiSeleccionada.value && notiSeleccionada.value.missatge) {
+    return notiSeleccionada.value.missatge;
+  }
+  return '';
 }
 </script>
 
@@ -120,7 +136,7 @@ function enviarNotificacio() {
           <div class="p-10 border-b border-gray-100 flex justify-between items-center bg-gray-50/30">
             <div>
               <h3 class="text-2xl font-black text-gray-900 uppercase tracking-tighter">
-                {{ popupObert === 'enviar' ? 'Enviar Nou Avís' : 'Detall del Missatge' }}
+                {{ obtenirTitolPopup() }}
               </h3>
               <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Sistemes de comunicació</p>
             </div>
@@ -152,7 +168,7 @@ function enviarNotificacio() {
               <div class="space-y-6">
                 <div class="p-6 bg-gray-50 rounded-3xl border border-gray-100">
                   <p class="text-[10px] font-black text-gray-300 uppercase mb-2">Missatge enviat</p>
-                  <p class="text-sm font-bold text-gray-700 leading-relaxed">{{ notiSeleccionada?.missatge }}</p>
+                  <p class="text-sm font-bold text-gray-700 leading-relaxed">{{ obtenirMissatgeNotificacio() }}</p>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                   <div class="p-4 bg-blue-50/50 rounded-2xl border border-blue-100 text-center">

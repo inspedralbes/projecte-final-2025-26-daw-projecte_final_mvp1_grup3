@@ -28,6 +28,7 @@ class HabitController extends Controller
     public function index(Request $request): JsonResponse
     {
         $usuariId = $request->user_id;
+        // A1. Si no hi ha usuari, denegar accés
         if (!$usuariId) {
             return response()->json(['message' => 'No autoritzat'], 401);
         }
@@ -47,6 +48,7 @@ class HabitController extends Controller
     public function show(Request $request, int $id): JsonResponse
     {
         $usuariId = $request->user_id;
+        // A1. Si no hi ha usuari, denegar accés
         if (!$usuariId) {
             return response()->json(['message' => 'No autoritzat'], 401);
         }
@@ -58,6 +60,7 @@ class HabitController extends Controller
             })
             ->first();
 
+        // B2. Si no existeix l'hàbit, retornar 404
         if ($habit === null) {
             return response()->json(['error' => 'Hàbit no trobat'], 404);
         }

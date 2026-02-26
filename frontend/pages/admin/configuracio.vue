@@ -11,13 +11,13 @@ import { ref } from 'vue';
 var runtimeConfig = useRuntimeConfig();
 
 // Configuració via API
-var { data: configData, refresh: refreshConfig } = useAuthFetch('/api/admin/configuracio', {
+var respostaConfig = useAuthFetch('/api/admin/configuracio', {
   key: 'admin_config'
 });
 
-var config = computed(function() {
-  if (configData.value && configData.value.success) {
-    return configData.value.data;
+var config = computed(function () {
+  if (respostaConfig.data.value && respostaConfig.data.value.success) {
+    return respostaConfig.data.value.data;
   }
   return {
     nomApp: "Loopy",
@@ -43,7 +43,7 @@ async function guardarConfiguracio() {
     
     if (res.success) {
       missatgeExecucio.value = "Configuració guardada correctament!";
-      refreshConfig();
+      respostaConfig.refresh();
       setTimeout(function() { missatgeExecucio.value = null; }, 3000);
     }
   } catch (e) {

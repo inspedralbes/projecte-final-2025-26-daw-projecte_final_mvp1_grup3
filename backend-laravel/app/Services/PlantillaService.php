@@ -39,26 +39,28 @@ class PlantillaService
     /**
      * Obté una col·lecció de plantilles basant-se en filtres.
      *
-     * @param string $filter 'all' per a totes (públiques + pròpies), 'my' per a només les de l'usuari.
-     * @param int|null $userId L'ID de l'usuari actual.
+     * @param string $filtre 'all' per a totes (públiques + pròpies), 'my' per a només les de l'usuari.
+     * @param int|null $usuariId L'ID de l'usuari actual.
      * @return Collection
      */
-    public function getPlantilles(string $filter, ?int $userId): Collection
+    public function getPlantilles(string $filtre, ?int $usuariId): Collection
     {
         // A. Inicialització de la consulta bàsica
         $query = Plantilla::query();
 
         // B. Aplicació de filtres segons el tipus de petició
-        if ($filter === 'my') {
-            if ($userId !== null) {
-                // Filtre per plantilles pròpies de l'usuari
-                $query->where('creador_id', $userId);
+        // B1. Si el filtre és "my", limitar a les plantilles pròpies
+        if ($filtre === 'my') {
+            // B1.1. Si hi ha usuari, aplicar el filtre de propietat
+            if ($usuariId !== null) {
+                $query->where('creador_id', $usuariId);
             }
         } else {
             // Filtre general: públiques o pròpies de l'usuari (si s'ha proporcionat ID)
             $query->where('es_publica', true);
-            if ($userId !== null) {
-                $query->orWhere('creador_id', $userId);
+            // B2. Si hi ha usuari, afegir també les pròpies
+            if ($usuariId !== null) {
+                $query->orWhere('creador_id', $usuariId);
             }
         }
 
@@ -77,74 +79,84 @@ class PlantillaService
     {
         // A. Normalització de l'acció
         $accio = '';
+        // A1. Si arriba l'acció, normalitzar-la
         if (isset($dades['action'])) {
             $accio = strtoupper((string) $dades['action']);
         }
 
         // B. Identificació de l'usuari (valor 1 per defecte segons normes)
         $usuariId = 1;
+        // B1. Si arriba user_id, prioritzar-lo
         if (isset($dades['user_id'])) {
             $usuariId = (int) $dades['user_id'];
         }
 
         // C. Extracció de l'identificador de la plantilla
         $plantillaId = 0;
+        // C1. Si arriba plantilla_id, guardar-lo
         if (isset($dades['plantilla_id'])) {
             $plantillaId = (int) $dades['plantilla_id'];
         }
 
         // D. Extracció de les dades del formulari de la plantilla
-        $plantillaData = [];
+        $dadesPlantilla = [];
+        // D1. Si arriba plantilla_data, validar-la
         if (isset($dades['plantilla_data'])) {
+            // D1.1. Confirmar que és un array
             if (is_array($dades['plantilla_data'])) {
-                $plantillaData = $dades['plantilla_data'];
+                $dadesPlantilla = $dades['plantilla_data'];
 
-                // Log the incoming plantillaData for debugging
-                file_put_contents('/tmp/plantilla_service_debug.log', "PlantillaService - Incoming plantilla_data: " . json_encode($plantillaData) . "\n", FILE_APPEND);
+                // D1.2. Log de depuració amb les dades rebudes
+                file_put_contents('/tmp/plantilla_service_debug.log', "PlantillaService - Dades plantilla rebudes: " . json_encode($dadesPlantilla) . "\n", FILE_APPEND);
 
-                // Si l'ID no estava al nivell superior, mirem dins de plantilla_data
+                // D1.3. Si l'ID no estava al nivell superior, mirar dins de plantilla_data
                 if ($plantillaId === 0) {
-                    if (isset($plantillaData['id'])) {
-                        $plantillaId = (int) $plantillaData['id'];
+                    // D1.3.a. Si hi ha id intern, usar-lo
+                    if (isset($dadesPlantilla['id'])) {
+                        $plantillaId = (int) $dadesPlantilla['id'];
                     }
                 }
             }
         }
 
-        $success = false;
+        $operacioOk = false;
         $plantillaModel = null;
-        $errorMessage = null;
+        $missatgeError = null;
 
         // E. Execució de la lògica de negoci segons l'acció requerida
         try {
+            // E1. Acció CREATE
             if ($accio === 'CREATE') {
-                $plantillaModel = $this->crearPlantilla($usuariId, $plantillaData);
+                $plantillaModel = $this->crearPlantilla($usuariId, $dadesPlantilla);
                 if ($plantillaModel !== null) {
-                    $success = true;
+                    $operacioOk = true;
                 } else {
-                    $errorMessage = "Error: El títol de la plantilla no pot estar buit.";
+                    $missatgeError = "Error: El títol de la plantilla no pot estar buit.";
                 }
+            // E2. Acció UPDATE
             } elseif ($accio === 'UPDATE') {
-                $plantillaModel = $this->actualitzarPlantilla($usuariId, $plantillaId, $plantillaData);
+                $plantillaModel = $this->actualitzarPlantilla($usuariId, $plantillaId, $dadesPlantilla);
                 if ($plantillaModel !== null) {
-                    $success = true;
+                    $operacioOk = true;
                 } else {
-                    $errorMessage = "No tens permís o la plantilla no existeix.";
+                    $missatgeError = "No tens permís o la plantilla no existeix.";
                 }
+            // E3. Acció DELETE
             } elseif ($accio === 'DELETE') {
                 $plantillaModel = $this->eliminarPlantilla($usuariId, $plantillaId);
                 if ($plantillaModel !== null) {
-                    $success = true;
+                    $operacioOk = true;
                 } else {
-                    $errorMessage = "No tens permís o la plantilla no existeix.";
+                    $missatgeError = "No tens permís o la plantilla no existeix.";
                 }
+            // E4. Acció no reconeguda
             } else {
                 throw new InvalidArgumentException('Acció de plantilles no reconeguda.');
             }
         } catch (Throwable $e) {
-            $success = false;
-            $errorMessage = $e->getMessage();
-            file_put_contents('/tmp/plantilla_service_debug.log', "PlantillaService - Exception caught: " . $e->getMessage() . "\n", FILE_APPEND);
+            $operacioOk = false;
+            $missatgeError = $e->getMessage();
+            file_put_contents('/tmp/plantilla_service_debug.log', "PlantillaService - Excepció capturada: " . $e->getMessage() . "\n", FILE_APPEND);
         }
 
         // F. Construcció del payload de feedback per a Node.js
@@ -152,17 +164,18 @@ class PlantillaService
             'type' => 'PLANTILLA',
             'action' => $accio,
             'user_id' => $usuariId,
-            'success' => $success,
-            'message' => $errorMessage,
+            'success' => $operacioOk,
+            'message' => $missatgeError,
             'plantilla_id' => $plantillaId
         ];
         
         // G. Inclusió del model actualitzat si l'operació ha tingut èxit
+        // G1. Si hi ha model, afegir-lo al payload
         if ($plantillaModel !== null) {
             $payload['plantilla'] = $plantillaModel->toArray();
         }
 
-        file_put_contents('/tmp/plantilla_service_debug.log', "PlantillaService - Feedback payload: " . json_encode($payload) . "\n", FILE_APPEND);
+        file_put_contents('/tmp/plantilla_service_debug.log', "PlantillaService - Payload de feedback: " . json_encode($payload) . "\n", FILE_APPEND);
 
         // H. Publicació del feedback a Redis
         $this->feedbackService->publicarPayload($payload);
@@ -172,24 +185,25 @@ class PlantillaService
      * Crea una plantilla nova al sistema.
      *
      * @param int $usuariId
-     * @param array $plantillaData
+     * @param array $dadesPlantilla
      * @return Plantilla|null
      */
-    private function crearPlantilla(int $usuariId, array $plantillaData): ?Plantilla
+    private function crearPlantilla(int $usuariId, array $dadesPlantilla): ?Plantilla
     {
-        file_put_contents('/tmp/plantilla_service_debug.log', "PlantillaService - crearPlantilla called with userId: $usuariId, data: " . json_encode($plantillaData) . "\n", FILE_APPEND);
+        file_put_contents('/tmp/plantilla_service_debug.log', "PlantillaService - crearPlantilla amb usuariId: $usuariId, dades: " . json_encode($dadesPlantilla) . "\n", FILE_APPEND);
 
         // A. Filtratge i normalització de les dades d'entrada
-        $dades = $this->filtrarDadesPlantilla($plantillaData);
+        $dades = $this->filtrarDadesPlantilla($dadesPlantilla);
         
-        $habitsIds = [];
-        if (isset($plantillaData['habits_ids'])) {
-            $habitsIds = $plantillaData['habits_ids'];
+        // A1. Recuperar IDs d'hàbits si estan disponibles
+        $idsHabits = [];
+        if (isset($dadesPlantilla['habits_ids'])) {
+            $idsHabits = $dadesPlantilla['habits_ids'];
         }
 
         // B. Validació de camps obligatoris
         if (empty($dades['titol'])) {
-            file_put_contents('/tmp/plantilla_service_debug.log', "PlantillaService - crearPlantilla failed: Title is empty.\n", FILE_APPEND);
+            file_put_contents('/tmp/plantilla_service_debug.log', "PlantillaService - crearPlantilla fallida: títol buit.\n", FILE_APPEND);
             return null;
         }
 
@@ -200,13 +214,21 @@ class PlantillaService
         $plantilla = Plantilla::create($dades);
 
         // E. Vinculació dels hàbits (relació Many-to-Many)
+        // E1. Si el model existeix, vincular hàbits
         if ($plantilla) {
-            if (!empty($habitsIds)) {
-                $plantilla->habits()->attach($habitsIds);
+            // E1.1. Si hi ha hàbits, associar-los
+            if (!empty($idsHabits)) {
+                $plantilla->habits()->attach($idsHabits);
             }
         }
 
-        file_put_contents('/tmp/plantilla_service_debug.log', "PlantillaService - crearPlantilla result: " . ($plantilla ? json_encode($plantilla->toArray()) : "null") . "\n", FILE_APPEND);
+        // E2. Log de depuració del resultat
+        if ($plantilla) {
+            $resultatPlantilla = json_encode($plantilla->toArray());
+        } else {
+            $resultatPlantilla = "null";
+        }
+        file_put_contents('/tmp/plantilla_service_debug.log', "PlantillaService - crearPlantilla resultat: " . $resultatPlantilla . "\n", FILE_APPEND);
 
         // F. Retorn de la plantilla amb els hàbits carregats
         return $plantilla->load('habits');
@@ -217,33 +239,37 @@ class PlantillaService
      *
      * @param int $usuariId
      * @param int $plantillaId
-     * @param array $plantillaData
+     * @param array $dadesPlantilla
      * @return Plantilla|null
      */
-    private function actualitzarPlantilla(int $usuariId, int $plantillaId, array $plantillaData): ?Plantilla
+    private function actualitzarPlantilla(int $usuariId, int $plantillaId, array $dadesPlantilla): ?Plantilla
     {
         // A. Cerca de la plantilla
         $plantilla = Plantilla::find($plantillaId);
 
         // B. Validació de permisos (només el creador pot editar)
+        // B1. Si la plantilla no existeix, cancel·lar
         if (!$plantilla) {
             return null;
         }
         
-        if ((int)$plantilla->creador_id !== $usuariId) {
+        // B2. Si l'usuari no és el creador, cancel·lar
+        if ((int) $plantilla->creador_id !== $usuariId) {
             return null;
         }
 
         // C. Filtratge de dades i actualització del model
-        $dades = $this->filtrarDadesPlantilla($plantillaData);
+        $dades = $this->filtrarDadesPlantilla($dadesPlantilla);
 
+        // C1. Si hi ha dades, actualitzar
         if (!empty($dades)) {
             $plantilla->update($dades);
         }
 
         // D. Sincronització dels hàbits associats
-        if (isset($plantillaData['habits_ids'])) {
-            $plantilla->habits()->sync($plantillaData['habits_ids']);
+        // D1. Si hi ha hàbits, sincronitzar-los
+        if (isset($dadesPlantilla['habits_ids'])) {
+            $plantilla->habits()->sync($dadesPlantilla['habits_ids']);
         }
 
         // E. Retorn de la versió actualitzada
@@ -263,11 +289,13 @@ class PlantillaService
         $plantilla = Plantilla::find($plantillaId);
 
         // B. Validació de permisos (només el creador pot eliminar)
+        // B1. Si la plantilla no existeix, cancel·lar
         if (!$plantilla) {
             return null;
         }
         
-        if ((int)$plantilla->creador_id !== $usuariId) {
+        // B2. Si l'usuari no és el creador, cancel·lar
+        if ((int) $plantilla->creador_id !== $usuariId) {
             return null;
         }
 
@@ -280,24 +308,27 @@ class PlantillaService
     /**
      * Filtra les dades de la petició per extreure només els camps vàlids del model.
      *
-     * @param array $plantillaData
+     * @param array $dadesPlantilla
      * @return array
      */
-    private function filtrarDadesPlantilla(array $plantillaData): array
+    private function filtrarDadesPlantilla(array $dadesPlantilla): array
     {
         $dades = [];
 
-        // Filtre clàssic per evitar operadors ternaris o assignacions massives insegures
-        if (isset($plantillaData['titol'])) {
-            $dades['titol'] = $plantillaData['titol'];
+        // A. Filtre clàssic per evitar operadors ternaris o assignacions massives insegures
+        // A1. Si arriba titol, copiar-lo
+        if (isset($dadesPlantilla['titol'])) {
+            $dades['titol'] = $dadesPlantilla['titol'];
         }
 
-        if (isset($plantillaData['categoria'])) {
-            $dades['categoria'] = $plantillaData['categoria'];
+        // A2. Si arriba categoria, copiar-la
+        if (isset($dadesPlantilla['categoria'])) {
+            $dades['categoria'] = $dadesPlantilla['categoria'];
         }
 
-        if (isset($plantillaData['es_publica'])) {
-            $dades['es_publica'] = (bool)$plantillaData['es_publica'];
+        // A3. Si arriba es_publica, normalitzar-la
+        if (isset($dadesPlantilla['es_publica'])) {
+            $dades['es_publica'] = (bool) $dadesPlantilla['es_publica'];
         }
 
         return $dades;

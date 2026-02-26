@@ -32,31 +32,38 @@ class AdminUsuariController extends Controller
         $prohibit = '0',
         $cerca = '-'
     ): JsonResponse {
+        // A. Normalitzar per_page
         if ($perPage < 1) {
             $perPage = 20;
         }
+        // B. Normalitzar page
         if ($page < 1) {
             $page = 1;
         }
 
+        // C. Determinar tipus de consulta (admins o usuaris)
         if ($tipus === 'admins' || $tipus === 'admin') {
             $query = Administrador::query();
         } else {
             $query = User::query();
 
             // Filtre de prohibició (1=prohibits, 2=actius, altres=tots)
+            // C1. Si es demanen prohibits, aplicar filtre
             if ($prohibit === '1' || $prohibit === 'true') {
                 $query->where('prohibit', true);
             }
+            // C2. Si es demanen actius, aplicar filtre
             if ($prohibit === '2' || $prohibit === 'false') {
                 // A l'admin/usuaris.vue el frontend envia 'false' per defecte per a Tots/Actius
                 // Si realment volem filtrar només els actius quan envia 'false':
+                // C2.1. Si és l'opció explícita "2", filtrar actius
                 if ($prohibit === '2') {
                     $query->where('prohibit', false);
                 }
             }
 
             // Cerca per nom o email
+            // C3. Si hi ha cerca, aplicar-la
             if ($cerca !== '-' && $cerca !== '0' && $cerca !== '' && $cerca !== 'none') {
                 $query->where(function ($q) use ($cerca) {
                     $q->where('nom', 'ilike', '%' . $cerca . '%')
@@ -85,12 +92,14 @@ class AdminUsuariController extends Controller
      */
     public function prohibir(Request $request, int $id): JsonResponse
     {
+        // A. Validació de paràmetres d'entrada
         $request->validate([
             'prohibit' => 'required|boolean',
             'motiu' => 'required_if:prohibit,true|nullable|string',
         ]);
 
         $usuari = User::find($id);
+        // A1. Si l'usuari no existeix, retornar 404
         if ($usuari === null) {
             return response()->json(['error' => 'Usuari no trobat'], 404);
         }
@@ -101,6 +110,7 @@ class AdminUsuariController extends Controller
         ];
 
         $usuari->prohibit = $request->boolean('prohibit');
+        // B. Si és prohibició, assignar motiu i data
         if ($request->boolean('prohibit')) {
             $usuari->data_prohibicio = now();
             $usuari->motiu_prohibicio = $request->input('motiu');
@@ -116,6 +126,7 @@ class AdminUsuariController extends Controller
         ];
 
         $accioLog = 'Desprohibir usuari';
+        // C. Determinar acció per al log
         if ($usuari->prohibit) {
             $accioLog = 'Prohibir usuari';
         }

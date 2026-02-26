@@ -23,9 +23,11 @@ class AdminPlantillaController extends Controller
      */
     public function index(int $page = 1, int $perPage = 20): JsonResponse
     {
+        // A. Normalitzar per_page
         if ($perPage < 1) {
             $perPage = 20;
         }
+        // B. Normalitzar page
         if ($page < 1) {
             $page = 1;
         }

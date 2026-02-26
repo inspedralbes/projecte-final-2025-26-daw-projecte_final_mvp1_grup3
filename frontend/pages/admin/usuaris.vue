@@ -8,20 +8,20 @@ definePageMeta({ layout: 'admin' });
 import { ref } from 'vue';
 
 // 1. DADES (VAR)
-var { $socket } = useNuxtApp();
-var config = useRuntimeConfig();
+var nuxtApp = useNuxtApp();
+var socketGlobal = nuxtApp.$socket;
 
 // Usuaris via API (Paginació desactivada per ara o simple)
 var perPage = ref(50);
-var { data: usuarisData, refresh: refreshUsuaris } = useAuthFetch(function() {
+var respostaUsuaris = useAuthFetch(function () {
   return '/api/admin/usuaris/tots/1/' + perPage.value + '/false/none';
 }, {
   key: 'admin_users_list'
 });
 
-var usuaris = computed(function() {
-  if (usuarisData.value && usuarisData.value.success) {
-    return usuarisData.value.data.data;
+var usuaris = computed(function () {
+  if (respostaUsuaris.data.value && respostaUsuaris.data.value.success) {
+    return respostaUsuaris.data.value.data.data;
   }
   return [];
 });
@@ -59,21 +59,28 @@ function tancaPopup() {
 }
 
 // Escoltarem confirmacions per refrescar la llista
-onMounted(function() {
-  if ($socket) {
-    $socket.on('admin_action_confirmed', function(payload) {
-      if (payload.entity === 'usuari' && payload.success) {
-        refreshUsuaris();
+onMounted(function () {
+  if (socketGlobal) {
+    socketGlobal.on('admin_action_confirmed', function (carrega) {
+      if (carrega.entity === 'usuari' && carrega.success) {
+        respostaUsuaris.refresh();
       }
     });
   }
 });
 
 function guardarUsuari() {
-  if (!$socket) return;
-  
-  var payload = {
-    action: popupObert.value === 'crear' ? 'CREATE' : 'UPDATE',
+  if (!socketGlobal) {
+    return;
+  }
+
+  var accio = 'UPDATE';
+  if (popupObert.value === 'crear') {
+    accio = 'CREATE';
+  }
+
+  var carrega = {
+    action: accio,
     entity: 'usuari',
     data: {
       nom: formulari.value.nom,
@@ -82,19 +89,21 @@ function guardarUsuari() {
   };
   
   if (popupObert.value === 'crear') {
-    payload.data.contrasenya = formulari.value.password;
+    carrega.data.contrasenya = formulari.value.password;
   } else {
-    payload.data.id = usuariSeleccionat.value.id;
+    carrega.data.id = usuariSeleccionat.value.id;
   }
   
-  $socket.emit('admin_action', payload);
+  socketGlobal.emit('admin_action', carrega);
   tancaPopup();
 }
 
 function confirmarProhibicio() {
-  if (!$socket || !usuariSeleccionat.value) return;
-  
-  $socket.emit('admin_action', {
+  if (!socketGlobal || !usuariSeleccionat.value) {
+    return;
+  }
+
+  socketGlobal.emit('admin_action', {
     action: 'UPDATE',
     entity: 'usuari',
     data: {
@@ -105,6 +114,23 @@ function confirmarProhibicio() {
   });
   
   tancaPopup();
+}
+
+function obtenirTitolPopup() {
+  if (popupObert.value === 'crear') {
+    return 'Nou Usuari';
+  }
+  if (popupObert.value === 'editar') {
+    return 'Editar Usuari';
+  }
+  return 'Prohibir Usuari';
+}
+
+function obtenirNomUsuariSeleccionat() {
+  if (usuariSeleccionat.value && usuariSeleccionat.value.nom) {
+    return usuariSeleccionat.value.nom;
+  }
+  return '';
 }
 </script>
 
@@ -160,7 +186,7 @@ function confirmarProhibicio() {
               </td>
               <td class="py-6 text-right space-x-3">
                 <button @click="obreEditar(user)" class="text-[10px] font-black text-gray-400 uppercase hover:text-blue-600 transition-colors">Editar</button>
-                <button v-if="!user.prohibit" @click="obreProhibir(user)" class="text-[10px] font-black text-gray-400 uppercase hover:text-red-500 transition-colors">🚫 Prohibir</button>
+                <button v-if="!user.prohibit" @click="obreProhibir(user)" class="text-[10px] font-black text-gray-400 uppercase hover:text-red-500 transition-colors">Prohibir</button>
               </td>
             </tr>
           </tbody>
@@ -183,7 +209,7 @@ function confirmarProhibicio() {
           <div class="p-10 border-b border-gray-100 flex justify-between items-center bg-gray-50/30">
             <div>
               <h3 class="text-2xl font-black text-gray-900 uppercase tracking-tighter">
-                {{ popupObert === 'crear' ? 'Nou Usuari' : (popupObert === 'editar' ? 'Editar Usuari' : 'Prohibir Usuari') }}
+                {{ obtenirTitolPopup() }}
               </h3>
               <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Gestió de comptes</p>
             </div>
@@ -208,7 +234,7 @@ function confirmarProhibicio() {
 
             <template v-if="popupObert === 'prohibir'">
               <div class="bg-red-50 p-6 rounded-3xl border border-red-100 mb-6">
-                <p class="text-xs font-bold text-red-600 leading-relaxed uppercase">Compte: <span class="text-red-800">{{ usuariSeleccionat?.nom }}</span></p>
+                <p class="text-xs font-bold text-red-600 leading-relaxed uppercase">Compte: <span class="text-red-800">{{ obtenirNomUsuariSeleccionat() }}</span></p>
                 <p class="text-[10px] text-red-400 font-bold mt-1 uppercase">Aquesta acció impedirà que l'usuari entri al sistema.</p>
               </div>
               <div class="space-y-2">

@@ -18,14 +18,19 @@ use Illuminate\Http\Request;
  */
 class LogroController extends Controller
 {
-    protected $logroService;
+    /**
+     * Servei de logros.
+     *
+     * @var LogroService
+     */
+    protected LogroService $logroService;
+
+    //================================ MÈTODES / FUNCIONS ===========
 
     public function __construct(LogroService $logroService)
     {
         $this->logroService = $logroService;
     }
-
-    //================================ MÈTODES / FUNCIONS ===========
 
     /**
      * Llista tots els logros i medalles disponibles.
@@ -40,10 +45,13 @@ class LogroController extends Controller
     public function index(Request $request): JsonResponse
     {
         $usuariId = $request->user_id;
+        // A1. Si no hi ha usuari, denegar accés
         if (!$usuariId) {
             return response()->json(['message' => 'No autoritzat'], 401);
         }
+        // B. Recuperar logros des del servei
         $logros = $this->logroService->llistarTotsElsLogros($usuariId);
+        // C. Retornar resposta amb recursos
         return LogroResource::collection($logros)->toResponse($request);
     }
 }

@@ -69,10 +69,12 @@ class AdminLogService
      */
     public function obtenirIpDeRequest(?Request $request = null): ?string
     {
+        // A. Si no hi ha request, no podem obtenir la IP
         if ($request === null) {
             return null;
         }
 
+        // B. Recuperar IP i validar format
         $ip = $request->ip();
         if (is_string($ip)) {
             return $ip;

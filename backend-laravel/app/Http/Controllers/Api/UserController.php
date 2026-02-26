@@ -24,22 +24,31 @@ class UserController extends Controller
      */
     public function profile(Request $request): JsonResponse
     {
-        $usuariId = $request->user_id;
-        if (!$usuariId) {
+        // A. Recuperar usuari_id del request
+        $usuariId = (int) $request->user_id;
+        // A1. Si no hi ha usuari, retornar error
+        if ($usuariId <= 0) {
             return response()->json(['message' => 'No autoritzat'], 401);
         }
 
         // B. Cercar usuari i carregar relacions
         $usuari = User::with('logros')->find($usuariId);
 
+        // B1. Si l'usuari no existeix, retornar 404
         if (!$usuari) {
             return response()->json(['error' => 'Usuari no trobat'], 404);
         }
 
         // C. Obtenir ratxa actual
         $ratxa = Ratxa::where('usuari_id', $usuariId)->first();
-        $ratxaActual = $ratxa ? (int) $ratxa->ratxa_actual : 0;
-        $ratxaMaxima = $ratxa ? (int) $ratxa->ratxa_maxima : 0;
+        // C1. Si hi ha ratxa, normalitzar valors
+        if ($ratxa) {
+            $ratxaActual = (int) $ratxa->ratxa_actual;
+            $ratxaMaxima = (int) $ratxa->ratxa_maxima;
+        } else {
+            $ratxaActual = 0;
+            $ratxaMaxima = 0;
+        }
 
         // D. Retornar resposta JSON
         return response()->json([

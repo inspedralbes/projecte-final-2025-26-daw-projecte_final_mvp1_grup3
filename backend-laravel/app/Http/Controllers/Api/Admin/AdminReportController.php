@@ -33,14 +33,29 @@ class AdminReportController extends Controller
 
         // B. Transformació final
         $formattedData = [];
+        // B1. Recórrer cada report per adaptar el format
         foreach ($paginator->items() as $r) {
+            // B1.1. Normalitzar nom d'usuari
+            if ($r->usuari) {
+                $nomUsuari = $r->usuari->nom;
+            } else {
+                $nomUsuari = 'Sistema';
+            }
+
+            // B1.2. Normalitzar data per a mostrar
+            if ($r->created_at) {
+                $dataHumana = $r->created_at->diffForHumans();
+            } else {
+                $dataHumana = 'revent';
+            }
+
             $formattedData[] = [
                 'id' => $r->id,
-                'usuari' => $r->usuari ? $r->usuari->nom : 'Sistema',
+                'usuari' => $nomUsuari,
                 'tipus' => $r->tipus,
                 'contingut' => $r->contingut,
                 'post_id' => $r->post_id,
-                'data' => $r->created_at ? $r->created_at->diffForHumans() : 'revent'
+                'data' => $dataHumana
             ];
         }
 

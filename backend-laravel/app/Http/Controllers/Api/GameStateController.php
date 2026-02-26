@@ -39,10 +39,12 @@ class GameStateController extends Controller
     public function show(Request $request): JsonResponse
     {
         $usuariId = $request->user_id;
+        // A. Si no hi ha usuari, denegar accés
         if (!$usuariId) {
             return response()->json(['message' => 'No autoritzat'], 401);
         }
 
+        // B. Intentar obtenir l'estat de gamificació
         try {
             // A. Obtenir estat de gamificació des del servei
             $estat = $this->gamificationService->obtenirEstatGamificacio($usuariId);

@@ -26,10 +26,12 @@ class AdminPerfilController extends Controller
     public function show(Request $request): JsonResponse
     {
         $adminId = $request->admin_id;
+        // A1. Si no hi ha administrador, denegar accés
         if (!$adminId) {
             return response()->json(['error' => 'No autoritzat'], 401);
         }
         $admin = Administrador::find($adminId);
+        // A2. Si no existeix, retornar 404
         if ($admin === null) {
             return response()->json(['error' => 'Administrador no trobat'], 404);
         }
@@ -50,23 +52,28 @@ class AdminPerfilController extends Controller
      */
     public function update(Request $request): JsonResponse
     {
+        // A. Validació de paràmetres d'entrada
         $request->validate([
             'nom' => 'sometimes|string|max:100',
             'email' => 'sometimes|email|max:150',
         ]);
 
         $adminId = $request->admin_id;
+        // A1. Si no hi ha administrador, denegar accés
         if (!$adminId) {
             return response()->json(['error' => 'No autoritzat'], 401);
         }
         $admin = Administrador::find($adminId);
+        // A2. Si no existeix, retornar 404
         if ($admin === null) {
             return response()->json(['error' => 'Administrador no trobat'], 404);
         }
 
+        // B. Actualitzar camps si s'han enviat
         if ($request->has('nom')) {
             $admin->nom = $request->input('nom');
         }
+        // B1. Actualitzar email si s'ha enviat
         if ($request->has('email')) {
             $admin->email = $request->input('email');
         }
@@ -87,20 +94,24 @@ class AdminPerfilController extends Controller
      */
     public function canviarPassword(Request $request): JsonResponse
     {
+        // A. Validació de paràmetres d'entrada
         $request->validate([
             'contrasenya_actual' => 'required|string',
             'contrasenya_nova' => 'required|string|min:6|confirmed',
         ]);
 
         $adminId = $request->admin_id;
+        // A1. Si no hi ha administrador, denegar accés
         if (!$adminId) {
             return response()->json(['error' => 'No autoritzat'], 401);
         }
         $admin = Administrador::find($adminId);
+        // A2. Si no existeix, retornar 404
         if ($admin === null) {
             return response()->json(['error' => 'Administrador no trobat'], 404);
         }
 
+        // B. Comprovar contrasenya actual
         if (!Hash::check($request->input('contrasenya_actual'), $admin->contrasenya_hash)) {
             return response()->json(['error' => 'Contrasenya actual incorrecta'], 422);
         }

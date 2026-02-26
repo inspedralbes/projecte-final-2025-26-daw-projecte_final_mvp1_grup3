@@ -66,12 +66,8 @@
                 :key="cat.id"
                 type="button"
                 @click="seleccionarCategoria(cat.id)"
-                :class="[
-                  'p-4 rounded-xl flex flex-col items-center justify-center gap-2 transition-all',
-                  formulari.categoria === cat.id
-                    ? 'ring-2 ring-green-500 bg-green-50'
-                    : 'bg-white border border-gray-200 hover:border-green-300',
-                ]"
+                class="p-4 rounded-xl flex flex-col items-center justify-center gap-2 transition-all"
+                :class="obtenirClasseCategoria(cat.id)"
               >
                 <span class="text-2xl">{{ cat.icona }}</span>
                 <span class="text-sm font-medium text-gray-700">{{
@@ -105,12 +101,8 @@
                       :key="freq"
                       type="button"
                       @click="formulari.frequencia = freq"
-                      :class="[
-                        'flex-1 py-1.5 text-sm font-medium rounded-md transition-all',
-                        formulari.frequencia === freq
-                          ? 'bg-white shadow-sm text-gray-800'
-                          : 'text-gray-500 hover:text-gray-700',
-                      ]"
+                      class="flex-1 py-1.5 text-sm font-medium rounded-md transition-all"
+                      :class="obtenirClasseFrequencia(freq)"
                     >
                       {{ freq }}
                     </button>
@@ -128,12 +120,8 @@
                       :key="dia"
                       type="button"
                       @click="alternarDia(index)"
-                      :class="[
-                        'w-8 h-8 rounded-full text-xs font-bold flex items-center justify-center transition-colors',
-                        comprovarSiDiaSeleccionat(index)
-                          ? 'bg-green-600 text-white'
-                          : 'bg-gray-200 text-gray-600 hover:bg-gray-300',
-                      ]"
+                      class="w-8 h-8 rounded-full text-xs font-bold flex items-center justify-center transition-colors"
+                      :class="obtenirClasseDia(index)"
                     >
                       {{ dia }}
                     </button>
@@ -176,12 +164,8 @@
                   type="button"
                   @click="formulari.color = color"
                   :style="{ backgroundColor: color }"
-                  :class="[
-                    'w-10 h-10 rounded-full transition-transform hover:scale-110 focus:outline-none ring-2 ring-offset-2',
-                    formulari.color === color
-                      ? 'ring-gray-400'
-                      : 'ring-transparent',
-                  ]"
+                  class="w-10 h-10 rounded-full transition-transform hover:scale-110 focus:outline-none ring-2 ring-offset-2"
+                  :class="obtenirClasseColor(color)"
                 ></button>
               </div>
 
@@ -339,12 +323,8 @@
                 v-for="cat in categories"
                 :key="cat.id"
                 @click="seleccionarCategoriaEdicio(cat.id)"
-                :class="
-                  formulariEdicio.categoria === cat.id
-                    ? 'ring-2 ring-green-500 bg-green-50'
-                    : 'bg-white border border-gray-200'
-                "
                 class="p-3 rounded-xl flex items-center gap-3 transition-all"
+                :class="obtenirClasseCategoriaEdicio(cat.id)"
               >
                 <span>{{ cat.icona }}</span>
                 <span class="text-sm font-medium">{{ cat.nom }}</span>
@@ -391,12 +371,8 @@
                 v-for="(dia, index) in diesSetmana"
                 :key="dia"
                 @click="alternarDiaEdicio(index)"
-                :class="
-                  formulariEdicio.diesSeleccionats.indexOf(index) !== -1
-                    ? 'bg-green-600 text-white'
-                    : 'bg-gray-200'
-                "
                 class="w-8 h-8 rounded-full text-xs font-bold flex items-center justify-center transition-colors"
+                :class="obtenirClasseDiaEdicio(index)"
               >
                 {{ dia }}
               </button>
@@ -415,12 +391,8 @@
                 :key="color"
                 @click="formulariEdicio.color = color"
                 :style="{ backgroundColor: color }"
-                :class="
-                  formulariEdicio.color === color
-                    ? 'ring-2 ring-gray-400'
-                    : 'ring-transparent'
-                "
                 class="w-8 h-8 rounded-full transition-transform hover:scale-110 ring-offset-2"
+                :class="obtenirClasseColorEdicio(color)"
               ></button>
             </div>
           </div>
@@ -464,7 +436,7 @@ export default {
       formulari: {
         nom: "",
         motivacio: "",
-        icona: "💧",
+        icona: "HAB",
         categoria: "",
         frequencia: "Diari",
         recordatori: "08:00",
@@ -476,7 +448,7 @@ export default {
       formulariEdicio: {
         nom: "",
         motivacio: "",
-        icona: "💧",
+        icona: "HAB",
         categoria: "",
         frequencia: "Diari",
         recordatori: "08:00",
@@ -484,14 +456,14 @@ export default {
         color: "#10B981",
       },
       categories: [
-        { id: 1, nom: "Activitat física", icona: "🏃" },
-        { id: 2, nom: "Alimentació", icona: "🥗" },
-        { id: 3, nom: "Estudi", icona: "📚" },
-        { id: 4, nom: "Lectura", icona: "📖" },
-        { id: 5, nom: "Benestar", icona: "🧘" },
-        { id: 6, nom: "Millora d'hàbits", icona: "✨" },
-        { id: 7, nom: "Llar", icona: "🏠" },
-        { id: 8, nom: "Hobby", icona: "🎨" },
+        { id: 1, nom: "Activitat física", icona: "AF" },
+        { id: 2, nom: "Alimentació", icona: "AL" },
+        { id: 3, nom: "Estudi", icona: "ES" },
+        { id: 4, nom: "Lectura", icona: "LE" },
+        { id: 5, nom: "Benestar", icona: "BE" },
+        { id: 6, nom: "Millora d'hàbits", icona: "HB" },
+        { id: 7, nom: "Llar", icona: "LL" },
+        { id: 8, nom: "Hobby", icona: "HO" },
       ],
       frequencies: ["Diari", "Setmanal", "Mensual"],
       diesSetmana: ["L", "M", "X", "J", "V", "S", "D"],
@@ -525,6 +497,76 @@ export default {
 
   methods: {
     /**
+     * Retorna la classe per a la categoria seleccionada.
+     */
+    obtenirClasseCategoria: function (id) {
+      if (this.formulari.categoria === id) {
+        return 'ring-2 ring-green-500 bg-green-50';
+      }
+      return 'bg-white border border-gray-200 hover:border-green-300';
+    },
+
+    /**
+     * Retorna la classe per a la freqüència seleccionada.
+     */
+    obtenirClasseFrequencia: function (freq) {
+      if (this.formulari.frequencia === freq) {
+        return 'bg-white shadow-sm text-gray-800';
+      }
+      return 'text-gray-500 hover:text-gray-700';
+    },
+
+    /**
+     * Retorna la classe per a un dia seleccionat.
+     */
+    obtenirClasseDia: function (index) {
+      if (this.comprovarSiDiaSeleccionat(index)) {
+        return 'bg-green-600 text-white';
+      }
+      return 'bg-gray-200 text-gray-600 hover:bg-gray-300';
+    },
+
+    /**
+     * Retorna la classe per a un color seleccionat.
+     */
+    obtenirClasseColor: function (color) {
+      if (this.formulari.color === color) {
+        return 'ring-gray-400';
+      }
+      return 'ring-transparent';
+    },
+
+    /**
+     * Retorna la classe per a la categoria seleccionada (edició).
+     */
+    obtenirClasseCategoriaEdicio: function (id) {
+      if (this.formulariEdicio.categoria === id) {
+        return 'ring-2 ring-green-500 bg-green-50';
+      }
+      return 'bg-white border border-gray-200';
+    },
+
+    /**
+     * Retorna la classe per a un dia seleccionat (edició).
+     */
+    obtenirClasseDiaEdicio: function (index) {
+      if (this.formulariEdicio.diesSeleccionats.indexOf(index) !== -1) {
+        return 'bg-green-600 text-white';
+      }
+      return 'bg-gray-200';
+    },
+
+    /**
+     * Retorna la classe per a un color seleccionat (edició).
+     */
+    obtenirClasseColorEdicio: function (color) {
+      if (this.formulariEdicio.color === color) {
+        return 'ring-2 ring-gray-400';
+      }
+      return 'ring-transparent';
+    },
+
+    /**
      * Inicialitza la conexió amb el servidor de sockets.
      */
     inicialitzarSocket: function () {
@@ -539,12 +581,12 @@ export default {
       self.socket = nuxtApp.$socket;
 
       if (!self.socket) {
-        console.error("❌ Socket global no disponible");
+        console.error("Socket global no disponible");
         return;
       }
 
       self.socket.on("connect", function () {
-        console.log("✅ Socket conectat:", self.socket.id);
+        console.log("Socket conectat:", self.socket.id);
       });
 
       self.socket.on("habit_action_confirmed", function (pàrrega) {
@@ -552,7 +594,7 @@ export default {
       });
 
       self.socket.on("disconnect", function () {
-        console.log("❌ Socket desconectat");
+        console.log("Socket desconectat");
       });
     },
 
@@ -743,7 +785,7 @@ export default {
     netejarFormulari: function () {
       this.formulari.nom = "";
       this.formulari.motivacio = "";
-      this.formulari.icona = "💧";
+      this.formulari.icona = "HAB";
       this.formulari.categoria = "";
       this.formulari.frequencia = "Diari";
       this.formulari.recordatori = "08:00";
@@ -753,7 +795,7 @@ export default {
      * Obre el modal d'edició d'un hàbit.
      */
     obrirModalEdicio: function (hàbit) {
-      console.log("🛠️ Obrint modal per a l'hàbit:", hàbit.nom);
+      console.log("Obrint modal per a l'hàbit:", hàbit.nom);
       this.idHabitEdicio = hàbit.id;
       this.formulariEdicio.nom = hàbit.nom;
       this.formulariEdicio.icona = hàbit.icona;

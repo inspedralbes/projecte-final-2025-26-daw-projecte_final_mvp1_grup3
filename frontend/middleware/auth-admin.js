@@ -3,6 +3,7 @@
  * Si no s'aplica a cap pàgina, la protecció ve de require-auth.global.js.
  */
 export default defineNuxtRouteMiddleware(function (to, from) {
+  // A. Carregar estat d'autenticació
   var authStore = useAuthStore();
   authStore.loadFromStorage();
 

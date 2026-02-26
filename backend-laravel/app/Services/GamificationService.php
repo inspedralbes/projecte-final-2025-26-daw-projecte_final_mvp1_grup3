@@ -64,8 +64,19 @@ class GamificationService
             $ratxaActual = 0;
             $ratxaMaxima = 0;
         } else {
-            $ratxaActual = isset($ratxa->ratxa_actual) ? (int) $ratxa->ratxa_actual : 0;
-            $ratxaMaxima = isset($ratxa->ratxa_maxima) ? (int) $ratxa->ratxa_maxima : 0;
+            // C1. Validar ratxa_actual
+            if (isset($ratxa->ratxa_actual)) {
+                $ratxaActual = (int) $ratxa->ratxa_actual;
+            } else {
+                $ratxaActual = 0;
+            }
+
+            // C2. Validar ratxa_maxima
+            if (isset($ratxa->ratxa_maxima)) {
+                $ratxaMaxima = (int) $ratxa->ratxa_maxima;
+            } else {
+                $ratxaMaxima = 0;
+            }
         }
 
         // D. Missió diària
@@ -80,8 +91,13 @@ class GamificationService
             }
         }
 
+        // D1. Normalitzar estat de missió i monedes
         $missioCompletada = (bool) $usuari->missio_completada;
-        $monedes = isset($usuari->monedes) ? (int) $usuari->monedes : 0;
+        if (isset($usuari->monedes)) {
+            $monedes = (int) $usuari->monedes;
+        } else {
+            $monedes = 0;
+        }
 
         // E. Retornar valors normalitzats
         return [

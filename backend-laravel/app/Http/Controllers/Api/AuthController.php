@@ -27,23 +27,29 @@ class AuthController extends Controller
      */
     public function login(Request $request): JsonResponse
     {
+        // A. Validació de paràmetres d'entrada
         $request->validate([
             'email' => 'required|email',
             'contrasenya' => 'required|string',
         ]);
 
+        // B. Recuperar usuari pel seu email
         $usuari = User::where('email', $request->input('email'))->first();
 
+        // B1. Validar credencials
         if ($usuari === null || !Hash::check($request->input('contrasenya'), $usuari->contrasenya_hash)) {
             return response()->json(['message' => 'Credencials incorrectes'], 401);
         }
 
+        // B2. Si l'usuari està prohibit, denegar l'accés
         if (!empty($usuari->prohibit)) {
             return response()->json(['message' => 'El compte està prohibit'], 403);
         }
 
+        // C. Generar token JWT
         $token = JWTAuth::fromUser($usuari);
 
+        // D. Retornar resposta
         return response()->json([
             'token' => $token,
             'user' => [
@@ -59,6 +65,7 @@ class AuthController extends Controller
      */
     public function register(Request $request): JsonResponse
     {
+        // A. Validació de paràmetres d'entrada
         $request->validate([
             'nom' => 'required|string|max:100',
             'email' => 'required|email|unique:usuaris,email',
@@ -68,20 +75,24 @@ class AuthController extends Controller
             'email.unique' => 'Aquest email ja està registrat.',
         ]);
 
+        // B. Crear l'usuari
         $usuari = User::create([
             'nom' => $request->input('nom'),
             'email' => $request->input('email'),
             'contrasenya_hash' => Hash::make($request->input('contrasenya')),
         ]);
 
+        // C. Crear ratxa inicial
         Ratxa::create([
             'usuari_id' => $usuari->id,
             'ratxa_actual' => 0,
             'ratxa_maxima' => 0,
         ]);
 
+        // D. Generar token JWT
         $token = JWTAuth::fromUser($usuari);
 
+        // E. Retornar resposta
         return response()->json([
             'token' => $token,
             'user' => [

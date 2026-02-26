@@ -25,19 +25,24 @@ class AdminAuthController extends Controller
      */
     public function login(Request $request): JsonResponse
     {
+        // A. Validació de paràmetres d'entrada
         $request->validate([
             'email' => 'required|email',
             'contrasenya' => 'required|string',
         ]);
 
+        // B. Recuperar administrador pel seu email
         $admin = Administrador::where('email', $request->input('email'))->first();
 
+        // B1. Validar credencials
         if ($admin === null || !Hash::check($request->input('contrasenya'), $admin->contrasenya_hash)) {
             return response()->json(['message' => 'Credencials incorrectes'], 401);
         }
 
+        // C. Generar token JWT
         $token = JWTAuth::fromUser($admin);
 
+        // D. Retornar resposta
         return response()->json([
             'token' => $token,
             'admin' => [

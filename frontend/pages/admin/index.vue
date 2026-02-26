@@ -8,27 +8,28 @@ definePageMeta({ layout: 'admin' });
 import { ref, computed } from 'vue';
 
 // 1. DADES REACTIVES (VAR)
-var { $socket } = useNuxtApp();
+var nuxtApp = useNuxtApp();
+var socketGlobal = nuxtApp.$socket;
 var config = useRuntimeConfig();
 
 // Estadístiques reals via API
-var { data: statsData, refresh: refreshStats } = useAuthFetch('/api/admin/dashboard', {
+var respostaStats = useAuthFetch('/api/admin/dashboard', {
   key: 'admin_stats'
 });
 
-var stats = computed(function() {
-  if (statsData.value && statsData.value.success) {
-    return statsData.value.data;
+var stats = computed(function () {
+  if (respostaStats.data.value && respostaStats.data.value.success) {
+    return respostaStats.data.value.data;
   }
   return { totalUsuaris: 0, totalHabits: 0, connectats: 0, prohibits: 0, logrosActius: 0 };
 });
 
 // Rankings reals via API
-var { data: rankingsData } = useAuthFetch('/api/admin/rankings/mensual');
+var respostaRankings = useAuthFetch('/api/admin/rankings/mensual');
 
-var rankings = computed(function() {
-  if (rankingsData.value && rankingsData.value.success) {
-    return rankingsData.value.data;
+var rankings = computed(function () {
+  if (respostaRankings.data.value && respostaRankings.data.value.success) {
+    return respostaRankings.data.value.data;
   }
   return [];
 });
@@ -39,11 +40,11 @@ var usuarisLlista = ref([]);
 var carregantLlista = ref(false);
 
 // Usuaris recents via API
-var { data: usuarisData } = useAuthFetch('/api/admin/usuaris/tots/1/4/false/none');
+var respostaUsuaris = useAuthFetch('/api/admin/usuaris/tots/1/4/false/none');
 
-var usuaris = computed(function() {
-  if (usuarisData.value && usuarisData.value.success) {
-    return usuarisData.value.data.data; // Paginació de Laravel
+var usuaris = computed(function () {
+  if (respostaUsuaris.data.value && respostaUsuaris.data.value.success) {
+    return respostaUsuaris.data.value.data.data; // Paginació de Laravel
   }
   return [];
 });
@@ -78,11 +79,11 @@ var titolPopup = computed(function() {
 });
 
 // 3. LIFECYCLE
-onMounted(function() {
-  if ($socket) {
-    $socket.emit('admin_join', {});
+onMounted(function () {
+  if (socketGlobal) {
+    socketGlobal.emit('admin_join', {});
     
-    $socket.on('admin:connected_users', function(llista) {
+    socketGlobal.on('admin:connected_users', function (llista) {
       usuarisRealTime.value = llista;
     });
   }
@@ -91,8 +92,8 @@ onMounted(function() {
 // 4. METHODS (FUNCTION)
 function obrePopup(nom) {
   popupActiu.value = nom;
-  if (nom === 'connectats' && $socket) {
-    $socket.emit('admin:request_connected');
+  if (nom === 'connectats' && socketGlobal) {
+    socketGlobal.emit('admin:request_connected');
   }
   if (nom === 'usuaris_totals') {
     carregantLlista.value = true;
@@ -209,7 +210,7 @@ function tancaPopup() {
 
       <!-- Rankings Column -->
       <div @click="obrePopup('rankings')" class="lg:col-span-4 bg-gradient-to-br from-white to-gray-50 rounded-[2.5rem] p-8 shadow-xl border border-gray-100 cursor-pointer hover:shadow-2xl transition-all h-full">
-        <h2 class="text-[10px] font-black text-orange-500 uppercase tracking-[0.2em] mb-6">🔝 Rankings Globals</h2>
+        <h2 class="text-[10px] font-black text-orange-500 uppercase tracking-[0.2em] mb-6">Rankings Globals</h2>
         <div class="space-y-4">
           <div v-for="(r, i) in rankings" :key="i" class="flex items-center justify-between p-4 rounded-2xl bg-white shadow-sm border border-gray-50">
             <span class="text-xs font-black text-gray-700">{{ i+1 }}. {{ r.nom }}</span>

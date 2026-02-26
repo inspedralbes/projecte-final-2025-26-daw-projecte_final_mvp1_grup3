@@ -71,15 +71,6 @@
 /**
  * Layout d'Administració (Desktop).
  */
-import { computed } from 'vue';
-
-var route = useRoute();
-
-function sortir() {
-  useAuthStore().logout();
-  navigateTo('/Login');
-}
-
 var menuPrincipal = [
   { nom: 'Dashboard', ruta: '/admin' },
   { nom: 'Fòrum (Pròximament)', ruta: null },

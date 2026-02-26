@@ -108,13 +108,23 @@ class MissionService
 
         // B. hab_fins_hora: almenys 1 registre avui abans de l'hora
         if ($tipus === 'hab_fins_hora') {
-            $hora = isset($parametres['hora']) ? (int) $parametres['hora'] : 24;
+            // B1. Definir hora límit (per defecte 24)
+            if (isset($parametres['hora'])) {
+                $hora = (int) $parametres['hora'];
+            } else {
+                $hora = 24;
+            }
             return $this->comptarRegistresAvuiAbansHora($userId, $avui, $hora) >= 1;
         }
 
         // C. hab_n_qualsevol: n o més registres avui
         if ($tipus === 'hab_n_qualsevol') {
-            $n = isset($parametres['n']) ? (int) $parametres['n'] : 1;
+            // C1. Definir n mínim (per defecte 1)
+            if (isset($parametres['n'])) {
+                $n = (int) $parametres['n'];
+            } else {
+                $n = 1;
+            }
             return $this->comptarRegistresAvui($userId, $avui) >= $n;
         }
 
@@ -126,7 +136,12 @@ class MissionService
 
         // E. hab_categoria: existeix registre avui amb categoria_id X
         if ($tipus === 'hab_categoria') {
-            $categoriaId = isset($parametres['categoria_id']) ? (int) $parametres['categoria_id'] : 0;
+            // E1. Definir categoria_id (per defecte 0)
+            if (isset($parametres['categoria_id'])) {
+                $categoriaId = (int) $parametres['categoria_id'];
+            } else {
+                $categoriaId = 0;
+            }
             return $this->existeixRegistreAvuiAmbCategoria($userId, $avui, $categoriaId);
         }
 

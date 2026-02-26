@@ -1,5 +1,5 @@
 -- ==========================================================
--- ESTRUCTURA FINAL DE LA BASE DE DATOS (ESENCIAL)
+-- BASE DE DADES - ESTRUCTURA (INIT)
 -- ==========================================================
 
 DROP TABLE IF EXISTS ADMIN_NOTIFICACIONS CASCADE;
@@ -20,10 +20,10 @@ DROP TABLE IF EXISTS MISSIOS_DIARIES CASCADE;
 DROP TABLE IF EXISTS USUARIS CASCADE;
 DROP TABLE IF EXISTS ADMINISTRADORS CASCADE;
 
--- 1. ACCESO E IDENTIDAD
+-- 1. ACCES I IDENTITAT
 -- ----------------------------------------------------------
 
--- Tabla exclusiva para administración del sistema
+-- Taula exclusiva per a l'administracio del sistema
 CREATE TABLE ADMINISTRADORS (
     id SERIAL PRIMARY KEY,
     nom VARCHAR(100) NOT NULL,
@@ -32,7 +32,7 @@ CREATE TABLE ADMINISTRADORS (
     data_creacio TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Tabla para los usuarios (Basada en el esquema original)
+-- Taula per als usuaris (basada en l'esquema original)
 CREATE TABLE USUARIS (
     id SERIAL PRIMARY KEY,
     nom VARCHAR(100) NOT NULL,
@@ -41,7 +41,7 @@ CREATE TABLE USUARIS (
     nivell INT DEFAULT 1,
     xp_total INT DEFAULT 0,
     monedes INT DEFAULT 0,
-    missio_diaria_id INT, -- FK se añade después de crear la tabla de misiones
+    missio_diaria_id INT, -- FK s'afegeix despres de crear la taula de missions
     missio_completada BOOLEAN DEFAULT FALSE,
     prohibit BOOLEAN DEFAULT FALSE,
     data_prohibicio TIMESTAMP,
@@ -49,7 +49,7 @@ CREATE TABLE USUARIS (
     ultim_reset_missio DATE
 );
 
--- 2. LOGROS Y MEDALLAS
+-- 2. LOGROS I MISSIONS
 -- ----------------------------------------------------------
 
 CREATE TABLE LOGROS_MEDALLES (
@@ -64,12 +64,14 @@ CREATE TABLE MISSIOS_DIARIES (
     titol VARCHAR(100) NOT NULL
 );
 
--- Missions diàries: camps per la lògica de comprovació (sense migracions)
+-- Missions diaries: camps per a la logica de comprovacio
 ALTER TABLE MISSIOS_DIARIES ADD COLUMN tipus_comprovacio VARCHAR(50);
 ALTER TABLE MISSIOS_DIARIES ADD COLUMN parametres JSONB;
 
--- Añadimos la FK a USUARIS ahora que existe la tabla de misiones
-ALTER TABLE USUARIS ADD CONSTRAINT fk_usuari_missio FOREIGN KEY (missio_diaria_id) REFERENCES MISSIOS_DIARIES(id) ON DELETE SET NULL;
+-- FK a USUARIS ara que existeix la taula de missions
+ALTER TABLE USUARIS
+    ADD CONSTRAINT fk_usuari_missio
+    FOREIGN KEY (missio_diaria_id) REFERENCES MISSIOS_DIARIES(id) ON DELETE SET NULL;
 
 CREATE TABLE USUARIS_LOGROS (
     usuari_id INT REFERENCES USUARIS(id) ON DELETE CASCADE,
@@ -86,7 +88,7 @@ CREATE TABLE CATEGORIES (
     nom VARCHAR(100) NOT NULL
 );
 
--- 4. HÁBITOS Y PLANTILLAS
+-- 4. HABITS I PLANTILLES
 -- ----------------------------------------------------------
 
 CREATE TABLE PLANTILLES (
@@ -123,11 +125,11 @@ CREATE TABLE USUARIS_HABITS (
     habit_id INT REFERENCES HABITS(id) ON DELETE CASCADE,
     data_inici DATE DEFAULT CURRENT_DATE,
     actiu BOOLEAN DEFAULT TRUE,
-    objetiu_vegades_personalitzat INT DEFAULT 1, 
-    UNIQUE(usuari_id, habit_id) 
+    objetiu_vegades_personalitzat INT DEFAULT 1,
+    UNIQUE (usuari_id, habit_id)
 );
 
--- 4. REGISTRO Y SEGUIMIENTO
+-- 5. REGISTRE I SEGUIMENT
 -- ----------------------------------------------------------
 
 CREATE TABLE REGISTRE_ACTIVITAT (
@@ -146,7 +148,6 @@ CREATE TABLE RATXES (
     ultima_data DATE DEFAULT CURRENT_DATE
 );
 
-
 CREATE TABLE PREGUNTES_REGISTRE (
     id SERIAL PRIMARY KEY,
     categoria_id INT REFERENCES CATEGORIES(id) ON DELETE CASCADE,
@@ -154,7 +155,7 @@ CREATE TABLE PREGUNTES_REGISTRE (
     respostes_type VARCHAR(20) NOT NULL DEFAULT 'si_no'
 );
 
--- 5. PANELL ADMIN
+-- 6. PANELL ADMIN
 -- ----------------------------------------------------------
 
 CREATE TABLE ADMIN_LOGS (
@@ -196,4 +197,3 @@ CREATE TABLE REPORTS (
     estat VARCHAR(20) DEFAULT 'pendent',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-

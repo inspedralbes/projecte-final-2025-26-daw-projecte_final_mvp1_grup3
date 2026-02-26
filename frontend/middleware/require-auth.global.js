@@ -9,11 +9,11 @@ export default defineNuxtRouteMiddleware(function (to, from) {
   authStore.loadFromStorage();
 
   var path = to.path || "";
-  var rutasPubliques = ["/Login", "/login", "/registre", "/"];
+  var rutesPubliques = ["/Login", "/login", "/registre", "/"];
   var esPublica = false;
   // B. Comprovar si la ruta actual és pública
-  for (var i = 0; i < rutasPubliques.length; i++) {
-    var r = rutasPubliques[i];
+  for (var i = 0; i < rutesPubliques.length; i++) {
+    var r = rutesPubliques[i];
     if (path === r || path.startsWith(r + "?")) {
       esPublica = true;
       break;

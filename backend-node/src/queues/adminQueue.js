@@ -1,62 +1,89 @@
 'use strict';
 
-/**
- * Cua admin: Envia accions CUD d'admin a Redis per que Laravel les processi.
- */
+//==============================================================================
+//================================ IMPORTS =====================================
+//==============================================================================
+
 var redis = require('redis');
 
-var client = null;
-var adminQueueKey = 'admin_queue';
+//==============================================================================
+//================================ VARIABLES ===================================
+//==============================================================================
+
+var clientRedis = null;
+var clauCuaAdmin = 'admin_queue';
+
+//==============================================================================
+//================================ FUNCIONS ====================================
+//==============================================================================
 
 /**
  * Obté el client de Redis connectat.
+ * A. Si ja existeix, retornar-lo.
+ * B. Crear client i configurar errors.
+ * C. Connectar i retornar.
  */
-async function getClient() {
-  if (client) {
-    return client;
+async function obtenirClientRedis() {
+  if (clientRedis) {
+    return clientRedis;
   }
+
   var host = process.env.REDIS_HOST || '127.0.0.1';
   var port = parseInt(process.env.REDIS_PORT || '6379', 10);
 
-  client = redis.createClient({
+  clientRedis = redis.createClient({
     socket: {
       host: host,
       port: port
     }
   });
 
-  client.on('error', function (err) {
+  clientRedis.on('error', function (err) {
     console.error('Error Redis Client (adminQueue):', err);
   });
 
-  await client.connect();
-  return client;
+  await clientRedis.connect();
+  return clientRedis;
 }
 
 /**
  * Envia una acció d'admin a la cua de Redis.
  * Pas A: Obtenir connexió Redis.
- * Pas B: Preparar payload amb entity, action, admin_id, data.
+ * Pas B: Preparar carrega amb entity, action, admin_id, data.
  * Pas C: Executar LPUSH a admin_queue.
  *
- * @param {string} action - CREATE, UPDATE, DELETE
- * @param {number} adminId - ID de l'administrador (MVP1: 1)
- * @param {string} entityType - plantilla, usuari, admin, habit, logro, missio
- * @param {Object} data - Dades de l'entitat
+ * @param {string} accio - CREATE, UPDATE, DELETE
+ * @param {number} administradorId - ID de l'administrador (MVP1: 1)
+ * @param {string} tipusEntitat - plantilla, usuari, admin, habit, logro, missio
+ * @param {Object} dades - Dades de l'entitat
  */
-async function pushToLaravel(action, adminId, entityType, data) {
-  var c = await getClient();
+async function pushToLaravel(accio, administradorId, tipusEntitat, dades) {
+  // A. Obtenir connexió Redis
+  var clientRedis = await obtenirClientRedis();
 
-  var payload = JSON.stringify({
-    entity: entityType,
-    action: action,
-    admin_id: adminId,
-    data: data || {}
-  });
+  // B. Preparar carrega
+  var dadesEntitat = {};
+  if (dades) {
+    dadesEntitat = dades;
+  }
 
-  console.log('Admin: pushing to Redis (' + action + ' ' + entityType + ')');
-  return await c.lPush(adminQueueKey, payload);
+  var carregaObj = {
+    entity: tipusEntitat,
+    action: accio,
+    admin_id: administradorId,
+    data: dadesEntitat
+  };
+
+  var carregaJson = JSON.stringify(carregaObj);
+
+  // C. Executar LPUSH a la cua
+  console.log('Admin: pushing to Redis (' + accio + ' ' + tipusEntitat + ')');
+  return await clientRedis.lPush(clauCuaAdmin, carregaJson);
 }
+
+//==============================================================================
+//================================ EXPORTS =====================================
+//==============================================================================
 
 module.exports = {
   pushToLaravel: pushToLaravel

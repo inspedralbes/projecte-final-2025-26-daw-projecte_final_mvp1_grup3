@@ -24,9 +24,11 @@ class AdminRankingController extends Controller
     public function index(string $periodo = 'total'): JsonResponse
     {
         $desde = null;
+        // A. Si el període és setmana, calcular data d'inici
         if ($periodo === 'setmana') {
             $desde = now()->subWeek();
         }
+        // B. Si el període és mes, calcular data d'inici
         if ($periodo === 'mes') {
             $desde = now()->subMonth();
         }
@@ -36,6 +38,7 @@ class AdminRankingController extends Controller
             ->select('plantilla_id', DB::raw('COUNT(*) as vegades_usada'))
             ->whereNotNull('plantilla_id');
 
+        // C. Si hi ha filtre temporal, aplicar-lo (placeholder)
         if ($desde !== null) {
             $queryPlantilles->whereRaw('1=1');
         }
@@ -50,18 +53,23 @@ class AdminRankingController extends Controller
 
         $rankingPlantilles = [];
         $indexP = 0;
+        // D. Recórrer plantilles i construir ranking
         foreach ($plantillesRaw as $item) {
             $plantilla = $plantilles->get($item->plantilla_id);
             $percent = 0;
+            // D1. Si hi ha total, calcular percentatge
             if ($totalPlantilles > 0) {
                 $percent = round(($item->vegades_usada / $totalPlantilles) * 100, 1);
             }
             $nom = 'Desconegut';
             $categoria = '';
+            // D2. Si la plantilla existeix, recuperar nom i categoria
             if ($plantilla !== null) {
+                // D2.1. Si hi ha títol, usar-lo
                 if ($plantilla->titol !== null) {
                     $nom = $plantilla->titol;
                 }
+                // D2.2. Si hi ha categoria, usar-la
                 if ($plantilla->categoria !== null) {
                     $categoria = $plantilla->categoria;
                 }
@@ -81,6 +89,7 @@ class AdminRankingController extends Controller
             ->select('habit_id', DB::raw('COUNT(*) as completions'))
             ->where('acabado', true);
 
+        // E. Si hi ha filtre temporal, aplicar-lo a hàbits
         if ($desde !== null) {
             $queryHabits->where('data', '>=', $desde);
         }
@@ -95,13 +104,16 @@ class AdminRankingController extends Controller
 
         $rankingHabits = [];
         $indexH = 0;
+        // F. Recórrer hàbits i construir ranking
         foreach ($habitsRaw as $item) {
             $habit = $habits->get($item->habit_id);
             $percent = 0;
+            // F1. Si hi ha total, calcular percentatge
             if ($totalCompletions > 0) {
                 $percent = round(($item->completions / $totalCompletions) * 100, 1);
             }
             $nom = 'Desconegut';
+            // F2. Si existeix el hàbit i té títol, usar-lo
             if ($habit !== null && $habit->titol !== null) {
                 $nom = $habit->titol;
             }

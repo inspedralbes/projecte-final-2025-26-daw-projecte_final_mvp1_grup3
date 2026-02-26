@@ -11,20 +11,30 @@ import { ref } from 'vue';
 var config = useRuntimeConfig();
 
 // Perfil via API
-var { data: adminData, refresh: refreshAdmin } = useAuthFetch('/api/admin/perfil', {
+var respostaAdmin = useAuthFetch('/api/admin/perfil', {
   key: 'admin_profile'
 });
 
-var admin = computed(function() {
-  if (adminData.value && adminData.value.success) {
-    var d = adminData.value.data;
+var admin = computed(function () {
+  if (respostaAdmin.data.value && respostaAdmin.data.value.success) {
+    var d = respostaAdmin.data.value.data;
+    var rol = 'Administrador';
+    var dataUnio = '2024-01-01';
+
+    if (d.rol) {
+      rol = d.rol;
+    }
+    if (d.created_at) {
+      dataUnio = d.created_at.split('T')[0];
+    }
+
     return {
       id: d.id,
       nom: d.nom,
       email: d.email,
-      rol: d.rol || 'Administrador',
+      rol: rol,
       avatar: (d.nom || 'A').charAt(0),
-      dataUnio: d.created_at ? d.created_at.split('T')[0] : '2024-01-01',
+      dataUnio: dataUnio,
       ultimAcces: 'Recent'
     };
   }
@@ -58,10 +68,11 @@ function tancaPopup() {
 
 async function guardarCanvis() {
   var authStore = useAuthStore();
-  var url = popupObert.value === 'editar_perfil' ? '/api/admin/perfil' : '/api/admin/perfil/password';
+  var url = '/api/admin/perfil/password';
   var body = {};
-  
+
   if (popupObert.value === 'editar_perfil') {
+    url = '/api/admin/perfil';
     body = { nom: formulari.value.nom, email: formulari.value.email };
   } else {
     body = {
@@ -72,20 +83,32 @@ async function guardarCanvis() {
   }
 
   try {
+    var metode = 'PATCH';
+    if (popupObert.value === 'editar_perfil') {
+      metode = 'PUT';
+    }
+
     var res = await $fetch(url, {
-      method: popupObert.value === 'editar_perfil' ? 'PUT' : 'PATCH',
+      method: metode,
       baseURL: config.public.apiUrl,
       headers: authStore.getAuthHeaders(),
       body: body
     });
     
     if (res.success) {
-      refreshAdmin();
+      respostaAdmin.refresh();
       tancaPopup();
     }
   } catch (e) {
     console.error('Error guardant perfil:', e);
   }
+}
+
+function obtenirTitolPopup() {
+  if (popupObert.value === 'editar_perfil') {
+    return 'Editar Dades';
+  }
+  return 'Canviar Contrasenya';
 }
 </script>
 
@@ -166,7 +189,7 @@ async function guardarCanvis() {
           <div class="p-10 border-b border-gray-100 flex justify-between items-center bg-gray-50/30">
             <div>
               <h3 class="text-2xl font-black text-gray-900 uppercase tracking-tighter">
-                {{ popupObert === 'editar_perfil' ? 'Editar Dades' : 'Canviar Contrasenya' }}
+                {{ obtenirTitolPopup() }}
               </h3>
               <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Sistemes de privacitat</p>
             </div>

@@ -8,17 +8,17 @@ definePageMeta({ layout: 'admin' });
 import { ref } from 'vue';
 
 // 1. DADES (VAR)
-var { $socket } = useNuxtApp();
-var config = useRuntimeConfig();
+var nuxtApp = useNuxtApp();
+var socketGlobal = nuxtApp.$socket;
 
 // Plantilles via API
-var { data: plantillesData, refresh: refreshPlantilles } = useAuthFetch('/api/admin/plantilles/1/50', {
+var respostaPlantilles = useAuthFetch('/api/admin/plantilles/1/50', {
   key: 'admin_templates_list'
 });
 
-var plantilles = computed(function() {
-  if (plantillesData.value && plantillesData.value.success) {
-    return plantillesData.value.data.data;
+var plantilles = computed(function () {
+  if (respostaPlantilles.data.value && respostaPlantilles.data.value.success) {
+    return respostaPlantilles.data.value.data.data;
   }
   return [];
 });
@@ -58,21 +58,28 @@ function tancaPopup() {
 }
 
 // Lifecycle i Sockets
-onMounted(function() {
-  if ($socket) {
-    $socket.on('admin_action_confirmed', function(payload) {
-      if (payload.entity === 'plantilla' && payload.success) {
-        refreshPlantilles();
+onMounted(function () {
+  if (socketGlobal) {
+    socketGlobal.on('admin_action_confirmed', function (carrega) {
+      if (carrega.entity === 'plantilla' && carrega.success) {
+        respostaPlantilles.refresh();
       }
     });
   }
 });
 
 function guardarPlantilla() {
-  if (!$socket) return;
-  
-  var payload = {
-    action: popupObert.value === 'crear' ? 'CREATE' : 'UPDATE',
+  if (!socketGlobal) {
+    return;
+  }
+
+  var accio = 'UPDATE';
+  if (popupObert.value === 'crear') {
+    accio = 'CREATE';
+  }
+
+  var carrega = {
+    action: accio,
     entity: 'plantilla',
     data: {
       titol: formulari.value.titol,
@@ -82,23 +89,35 @@ function guardarPlantilla() {
   };
   
   if (popupObert.value === 'editar') {
-    payload.data.id = plantillaSeleccionada.value.id;
+    carrega.data.id = plantillaSeleccionada.value.id;
   }
   
-  $socket.emit('admin_action', payload);
+  socketGlobal.emit('admin_action', carrega);
   tancaPopup();
 }
 
 function confirmarEliminacio() {
-  if (!$socket || !plantillaSeleccionada.value) return;
-  
-  $socket.emit('admin_action', {
+  if (!socketGlobal || !plantillaSeleccionada.value) {
+    return;
+  }
+
+  socketGlobal.emit('admin_action', {
     action: 'DELETE',
     entity: 'plantilla',
     data: { id: plantillaSeleccionada.value.id }
   });
   
   tancaPopup();
+}
+
+function obtenirTitolPopup() {
+  if (popupObert.value === 'crear') {
+    return 'Nova Plantilla';
+  }
+  if (popupObert.value === 'editar') {
+    return 'Editar Plantilla';
+  }
+  return 'Eliminar Plantilla';
 }
 </script>
 
@@ -153,7 +172,7 @@ function confirmarEliminacio() {
           <div class="p-10 border-b border-gray-100 flex justify-between items-center bg-gray-50/30">
             <div>
               <h3 class="text-2xl font-black text-gray-900 uppercase tracking-tighter">
-                {{ popupObert === 'crear' ? 'Nova Plantilla' : (popupObert === 'editar' ? 'Editar Plantilla' : 'Eliminar Plantilla') }}
+                {{ obtenirTitolPopup() }}
               </h3>
               <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Configuració del catàleg</p>
             </div>
@@ -170,14 +189,14 @@ function confirmarEliminacio() {
                 <div class="space-y-2">
                   <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">Categoria</label>
                   <select v-model="formulari.categoria" class="w-full bg-gray-50 border border-gray-100 rounded-[1.5rem] px-6 py-4 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-blue-100 transition-all appearance-none">
-                    <option>Activitat fisica</option>
-                    <option>alimentación</option>
-                    <option>estudio</option>
-                    <option>lectura</option>
-                    <option>bienestar</option>
-                    <option>mejora habitos</option>
-                    <option>hogar</option>
-                    <option>hobby</option>
+                    <option>Activitat física</option>
+                    <option>Alimentació</option>
+                    <option>Estudi</option>
+                    <option>Lectura</option>
+                    <option>Benestar</option>
+                    <option>Millora d'hàbits</option>
+                    <option>Llar</option>
+                    <option>Hobby</option>
                   </select>
                 </div>
                 <div class="space-y-2 flex flex-col justify-center items-center">

@@ -1,62 +1,96 @@
 'use strict';
 
-/**
- * Cua d'hàbits: Envia dades a Redis per a que Laravel les processi.
- */
+//==============================================================================
+//================================ IMPORTS =====================================
+//==============================================================================
+
 var redis = require('redis');
 
-var client = null;
-var habitsQueueKey = 'habits_queue';
+//==============================================================================
+//================================ VARIABLES ===================================
+//==============================================================================
+
+var clientRedis = null;
+var clauCuaHabits = 'habits_queue';
+
+//==============================================================================
+//================================ FUNCIONS ====================================
+//==============================================================================
 
 /**
  * Obté el client de Redis connectat.
+ * A. Si ja existeix, retornar-lo.
+ * B. Crear client i configurar errors.
+ * C. Connectar i retornar.
  */
-async function getClient() {
-  if (client) {
-    return client;
+async function obtenirClientRedis() {
+  if (clientRedis) {
+    return clientRedis;
   }
+
   var host = process.env.REDIS_HOST || '127.0.0.1';
   var port = parseInt(process.env.REDIS_PORT || '6379', 10);
 
-  client = redis.createClient({
+  clientRedis = redis.createClient({
     socket: {
       host: host,
       port: port
     }
   });
 
-  client.on('error', function (err) {
+  clientRedis.on('error', function (err) {
     console.error('Error Redis Client (habitQueue):', err);
   });
 
-  await client.connect();
-  return client;
+  await clientRedis.connect();
+  return clientRedis;
 }
 
 /**
- * Afegeix un hàbit completat a la cua de Redis.
- * @param {string} action - L'acció a realitzar ('CREATE', 'UPDATE', 'DELETE', 'TOGGLE').
- * @param {number} userId - L'ID de l'usuari (provinent del token).
- * @param {Object} data - Objecte amb habit_id i/o habit_data (titol, dificultat, etc.).
+ * Afegeix una acció d'hàbit a la cua de Redis.
+ * Pas A: Obtenir connexió Redis.
+ * Pas B: Preparar carrega per Laravel.
+ * Pas C: Executar LPUSH a habits_queue.
+ *
+ * @param {string} accio - L'acció a realitzar ('CREATE', 'UPDATE', 'DELETE', 'TOGGLE').
+ * @param {number} usuariId - L'ID de l'usuari (provinent del token).
+ * @param {Object} dades - Objecte amb habit_id i/o habit_data (titol, dificultat, etc.).
  */
-async function pushToLaravel(action, userId, data) {
-  var c = await getClient();
+async function pushToLaravel(accio, usuariId, dades) {
+  // A. Obtenir connexió Redis
+  var clientRedis = await obtenirClientRedis();
 
-  // Creem el JSON que Laravel "entendrà"
-  var payloadObj = {
-    action: action,
-    user_id: userId,
-    habit_id: data.habit_id || null,
-    habit_data: data.habit_data || null
-  };
-  if (action === 'TOGGLE' && data.data) {
-    payloadObj.data = data.data;
+  // B. Preparar carrega per Laravel
+  var habitId = null;
+  var habitData = null;
+  if (dades && dades.habit_id) {
+    habitId = dades.habit_id;
   }
-  var payload = JSON.stringify(payloadObj);
+  if (dades && dades.habit_data) {
+    habitData = dades.habit_data;
+  }
 
-  console.log('Pushing to Redis (' + action + ') for user ' + userId);
-  return await c.lPush(habitsQueueKey, payload);
+  var carregaObj = {
+    action: accio,
+    user_id: usuariId,
+    habit_id: habitId,
+    habit_data: habitData
+  };
+
+  if (accio === 'TOGGLE' && dades && dades.data) {
+    carregaObj.data = dades.data;
+  }
+
+  var carregaJson = JSON.stringify(carregaObj);
+
+  // C. Executar LPUSH a la cua
+  console.log('Pushing to Redis (' + accio + ') for user ' + usuariId);
+  return await clientRedis.lPush(clauCuaHabits, carregaJson);
 }
+
+//==============================================================================
+//================================ EXPORTS =====================================
+//==============================================================================
 
 module.exports = {
   pushToLaravel: pushToLaravel

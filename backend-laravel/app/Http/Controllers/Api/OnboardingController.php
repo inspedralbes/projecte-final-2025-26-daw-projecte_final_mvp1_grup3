@@ -24,23 +24,28 @@ class OnboardingController extends Controller
      */
     public function questions(): JsonResponse
     {
-        // Obtenim la primera pregunta de cada categoria (ID 1 a 8)
-        // Nota: En una app real, podríem tenir una columna 'es_representativa' o similar.
-        // Aquí agafem el MIN(id) de cada categoria per simplicitat.
+        // Obtenim totes les categories per iterar (MVP1: 1 a 8)
+        $categories = [1, 2, 3, 4, 5, 6, 7, 8];
+        $preguntesFinals = collect();
 
-        $preguntes = DB::table('preguntes_registre')
-            ->select('id', 'categoria_id', 'pregunta')
-            ->whereIn('id', function ($query) {
-                $query->select(DB::raw('MIN(id)'))
-                    ->from('preguntes_registre')
-                    ->groupBy('categoria_id');
-            })
-            ->orderBy('categoria_id')
-            ->get();
+        foreach ($categories as $catId) {
+            // Agafem 2 preguntes aleatòries de cada categoria
+            $preguntesCategoria = DB::table('preguntes_registre')
+                ->select('id', 'categoria_id', 'pregunta')
+                ->where('categoria_id', $catId)
+                ->inRandomOrder()
+                ->limit(2)
+                ->get();
+
+            $preguntesFinals = $preguntesFinals->concat($preguntesCategoria);
+        }
+
+        // Aleatoritzem l'ordre de totes les preguntes (perquè no surtin per blocs de categoria)
+        $preguntesFinals = $preguntesFinals->shuffle();
 
         return response()->json([
             'success' => true,
-            'preguntes' => $preguntes
+            'preguntes' => $preguntesFinals
         ]);
     }
 }

@@ -105,7 +105,7 @@
               </div>
               <h3 class="text-lg font-bold text-gray-800 mb-2">Descobreix el teu camí</h3>
               <p class="text-sm text-gray-600 mb-6">
-                Respon aquestes 8 preguntes i t'assignarem automàticament la millor categoria d'hàbits per a tu.
+                Respon aquestes 16 preguntes i t'assignarem automàticament la millor categoria d'hàbits per a tu.
               </p>
               <button
                 @click="iniciarOnboarding"

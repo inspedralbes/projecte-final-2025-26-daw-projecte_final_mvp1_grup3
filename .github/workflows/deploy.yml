@@ -1,0 +1,34 @@
+name: Deploy to Server via SSH
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Desplegar al servidor
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Executar comandes SSH
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.SERVER_IP }}
+        username: ${{ secrets.SERVER_USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          cd /var/www/EL_TEU_PROJECTE
+          git pull origin main
+
+          # Crear l'arxiu .env de l'arrel a partir de secrets
+          echo "${{ secrets.ENV_ARREL }}" > .env
+
+          # Crear l'arxiu .env dins de backend-laravel a partir de secrets
+          echo "${{ secrets.ENV_BACKEND }}" > backend-laravel/.env
+
+          # Aixecar i reconstruir contenidors amb Docker Compose
+          docker-compose up -d --build
+
+          # Executar migracions de Laravel al contenidor adient
+          docker-compose exec -T backend-laravel php artisan migrate --force

@@ -1,12 +1,13 @@
 -- INSERTS (dades inicials)
 -- 1. ADMINISTRADORS
+-- contrasenya sense hashear: admin123
 INSERT INTO ADMINISTRADORS (nom, email, contrasenya_hash) 
-VALUES ('admin', 'admin@admin.com', 'admin123');
+VALUES ('admin', 'admin@admin.com', '$2y$10$V8t4bNRKScWo6pn.xz9pAOq5OuwqQzhnZ662lR.HRB58U0y.Hr.X.');
 
 -- 2. USUARIS
+-- contrasenya sense hashear: user123
 INSERT INTO USUARIS (nom, email, contrasenya_hash) 
-VALUES ('llorenç carnicer', 'llorcar@user.com', 'user123'),
-       ('marta rodríguez', 'marrod@user.com', 'user123');
+VALUES ('llorenç carnicer', 'llorcar@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG');
 
 -- 2.1 MISSIOS_DIARIES (15 missions)
 INSERT INTO MISSIOS_DIARIES (id, titol, tipus_comprovacio, parametres) VALUES
@@ -68,7 +69,18 @@ INSERT INTO LOGROS_MEDALLES (nom, descripcio, tipus) VALUES
 ('Guía Espiritual', 'Recibe 5 agradecimientos de otros usuarios en el foro', 'Generales'),--encara no es pot fer el logro
 ('Mascota Mimada', 'Interactúa con tu mascota 10 veces en un día', 'Generales');--encara no es pot fer el logro
 
-
+-- 3.1 CATEGORIES (abans de PLANTILLES i HABITS per FK categoria_id)
+-- ----------------------------------------------------------
+INSERT INTO CATEGORIES (id, nom) VALUES 
+(1, 'Activitat física (Gym Pro)'),
+(2, 'Alimentació (Dieta Mediterrània)'),
+(3, 'Estudi (Concentració Màxima)'),
+(4, 'Lectura (Club de Lectura)'),
+(5, 'Benestar (Mindfulness)'),
+(6, 'Millora d''hàbits (Vida sense Fum)'),
+(7, 'Llar (Neteja Express)'),
+(8, 'Hobby (Modelisme)');
+SELECT setval('categories_id_seq', (SELECT MAX(id) FROM CATEGORIES));
 
 
 
@@ -156,21 +168,6 @@ SELECT 1, id, 1 FROM HABITS;
 INSERT INTO RATXES (usuari_id, ratxa_actual, ratxa_maxima, ultima_data)
 VALUES (1, 0, 0, CURRENT_TIMESTAMP);
 
--- 7. CATEGORIES (PAS 1)
--- ----------------------------------------------------------
-INSERT INTO CATEGORIES (id, nom) VALUES 
-(1, 'Activitat física (Gym Pro)'),
-(2, 'Alimentació (Dieta Mediterrània)'),
-(3, 'Estudi (Concentració Màxima)'),
-(4, 'Lectura (Club de Lectura)'),
-(5, 'Benestar (Mindfulness)'),
-(6, 'Millora d''hàbits (Vida sense Fum)'),
-(7, 'Llar (Neteja Express)'),
-(8, 'Hobby (Modelisme)');
-
--- Ajustar la seqüència
-SELECT setval('categories_id_seq', (SELECT MAX(id) FROM CATEGORIES));
-
 -- 8. PREGUNTES DE REGISTRE (PAS 2)
 -- ----------------------------------------------------------
 
@@ -238,17 +235,18 @@ INSERT INTO PREGUNTES_REGISTRE (categoria_id, pregunta) VALUES
 (8, 'Sols dedicar temps a investigar tècniques de pintat o muntatge a internet?'),
 (8, 'Et agradaria compartir fotos dels teus avenços amb altres aficionats?');
 -- 2. USUARIS (Més usuaris per a proves)
+-- contrasenya sense hashear: user123
 INSERT INTO USUARIS (nom, email, contrasenya_hash, nivell, xp_total, monedes) VALUES 
-('Marta Sánchez', 'marta@user.com', 'user123', 5, 1200, 50),
-('Jordi Valls', 'jordi@user.com', 'user123', 3, 450, 20),
-('Carme Ruscalleda', 'carme@user.com', 'user123', 10, 5000, 1000),
-('Pep Guardiola', 'pep@user.com', 'user123', 8, 3200, 400),
-('Rosalia Vila', 'rosalia@user.com', 'user123', 2, 100, 10),
-('Pau Gasol', 'pau@user.com', 'user123', 12, 8000, 2000),
-('Andreu Buenafuente', 'andreu@user.com', 'user123', 4, 800, 80),
-('Berto Romero', 'berto@user.com', 'user123', 4, 750, 75),
-('Ada Colau', 'ada@user.com', 'user123', 6, 1800, 150),
-('Xavi Hernández', 'xavi@user.com', 'user123', 7, 2500, 250);
+('Marta Sánchez', 'marta@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG', 5, 1200, 50),
+('Jordi Valls', 'jordi@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG', 3, 450, 20),
+('Carme Ruscalleda', 'carme@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG', 10, 5000, 1000),
+('Pep Guardiola', 'pep@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG', 8, 3200, 400),
+('Rosalia Vila', 'rosalia@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG', 2, 100, 10),
+('Pau Gasol', 'pau@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG', 12, 8000, 2000),
+('Andreu Buenafuente', 'andreu@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG', 4, 800, 80),
+('Berto Romero', 'berto@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG', 4, 750, 75),
+('Ada Colau', 'ada@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG', 6, 1800, 150),
+('Xavi Hernández', 'xavi@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG', 7, 2500, 250);
 
 -- Vinculació d'hàbits per als nous usuaris (id 2 a 11)
 INSERT INTO USUARIS_HABITS (usuari_id, habit_id, objetiu_vegades_personalitzat)

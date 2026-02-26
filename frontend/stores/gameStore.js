@@ -1,4 +1,4 @@
-import { defineStore } from 'pinia';
+import { defineStore } from "pinia";
 
 // Constants de configuració
 var TEMPS_ESPERA_MS = 5000;
@@ -6,14 +6,14 @@ var XP_BASE = 10;
 var XP_PER_DIFICULTAT = {
   facil: 100,
   media: 250,
-  dificil: 400
+  dificil: 400,
 };
 
 /**
  * Store principal del joc per gestionar el progrés de l'usuari.
  * Segueix les normes de l'Agent Javascript (ES5 Estricte).
  */
-export var useGameStore = defineStore('game', {
+export var useGameStore = defineStore("game", {
   state: function () {
     return {
       userId: 1,
@@ -24,7 +24,7 @@ export var useGameStore = defineStore('game', {
       nivell: 1,
       habits: [],
       missioDiaria: null,
-      missioCompletada: false
+      missioCompletada: false,
     };
   },
 
@@ -37,7 +37,7 @@ export var useGameStore = defineStore('game', {
       var urlApi = configuracio.public.apiUrl;
       var base;
 
-      if (urlApi.endsWith('/')) {
+      if (urlApi.endsWith("/")) {
         base = urlApi.slice(0, -1);
       } else {
         base = urlApi;
@@ -55,7 +55,7 @@ export var useGameStore = defineStore('game', {
       var i;
 
       if (!socket) {
-        throw new Error('Socket no disponible');
+        throw new Error("Socket no disponible");
       }
 
       for (i = 0; i < self.habits.length; i++) {
@@ -73,10 +73,13 @@ export var useGameStore = defineStore('game', {
         var idTemps;
 
         var gestionarResposta = function (resposta) {
-          socket.off('update_xp', gestionarResposta);
+          socket.off("update_xp", gestionarResposta);
           clearTimeout(idTemps);
 
-          if (resposta && (resposta.xp_total !== undefined || resposta.success === true)) {
+          if (
+            resposta &&
+            (resposta.xp_total !== undefined || resposta.success === true)
+          ) {
             habitCercat.completat = true;
             self.obtenirEstatJoc().then(function () {
               resolve(true);
@@ -87,16 +90,15 @@ export var useGameStore = defineStore('game', {
         };
 
         idTemps = setTimeout(function () {
-          socket.off('update_xp', gestionarResposta);
+          socket.off("update_xp", gestionarResposta);
           resolve(false);
         }, TEMPS_ESPERA_MS);
 
-        socket.on('update_xp', gestionarResposta);
+        socket.on("update_xp", gestionarResposta);
 
-        socket.emit('habit_completed', {
-          user_id: self.userId,
+        socket.emit("habit_completed", {
           habit_id: idHabit,
-          data: new Date().toISOString()
+          data: new Date().toISOString(),
         });
       });
     },
@@ -116,10 +118,20 @@ export var useGameStore = defineStore('game', {
     },
 
     /**
-     * Estableix l'ID de l'usuari.
+     * Estableix l'ID de l'usuari (des del authStore).
      */
     assignarUsuariId: function (id) {
-      this.userId = id;
+      this.usuariId = id;
+    },
+
+    /**
+     * Sincronitza usuariId des de l'authStore.
+     */
+    sincronitzarUsuariId: function () {
+      var authStore = useAuthStore();
+      if (authStore.user && authStore.user.id) {
+        this.usuariId = authStore.user.id;
+      }
     },
 
     /**
@@ -134,9 +146,9 @@ export var useGameStore = defineStore('game', {
      */
     registrarListenerMissionCompletada: function (socket, callback) {
       if (socket) {
-        socket.on('mission_completed', function (data) {
-          console.log('🎯 Missió completada detectada per socket');
-          if (typeof callback === 'function') {
+        socket.on("mission_completed", function (data) {
+          console.log("🎯 Missió completada detectada per socket");
+          if (typeof callback === "function") {
             callback(data);
           }
         });
@@ -157,8 +169,18 @@ export var useGameStore = defineStore('game', {
       var i;
 
       try {
-        url = self.construirUrlApi('/api/habits');
-        resposta = await fetch(url);
+        url = self.construirUrlApi("/api/habits");
+        var authStore = useAuthStore();
+        resposta = await fetch(url, {
+          headers: authStore.getAuthHeaders(),
+          mode: "cors",
+        });
+
+        if (resposta.status === 401) {
+          authStore.logout();
+          await navigateTo("/Login");
+          return [];
+        }
 
         if (!resposta.ok) {
           throw new Error("Error en obtenir hàbits");
@@ -176,18 +198,21 @@ export var useGameStore = defineStore('game', {
           h = llistaHabits[i];
           mapejats.push({
             id: h.id,
-            nom: h.titol || 'Sense nom',
-            descripcio: (h.frequencia_tipus || '') + " - Dificultat: " + (h.dificultat || ''),
+            nom: h.titol || "Sense nom",
+            descripcio:
+              (h.frequencia_tipus || "") +
+              " - Dificultat: " +
+              (h.dificultat || ""),
             completat: !!h.completat,
             recompensaXP: XP_PER_DIFICULTAT[h.dificultat] || XP_BASE,
-            dificultat: h.dificultat
+            dificultat: h.dificultat,
           });
         }
 
         self.habits = mapejats;
         return self.habits;
       } catch (error) {
-        console.error('Error fetching habits:', error);
+        console.error("Error fetching habits:", error);
         self.habits = [];
         return [];
       }
@@ -203,9 +228,18 @@ export var useGameStore = defineStore('game', {
       var dades;
 
       try {
-        url = self.construirUrlApi('/api/game-state');
-        resposta = await fetch(url);
+        url = self.construirUrlApi("/api/game-state");
+        var authStore = useAuthStore();
+        resposta = await fetch(url, {
+          headers: authStore.getAuthHeaders(),
+          mode: "cors",
+        });
 
+        if (resposta.status === 401) {
+          authStore.logout();
+          await navigateTo("/Login");
+          return null;
+        }
         if (!resposta.ok) {
           throw new Error("Error en obtenir estat");
         }
@@ -231,9 +265,9 @@ export var useGameStore = defineStore('game', {
         }
         return dades;
       } catch (error) {
-        console.error('Error fetching game-state:', error);
+        console.error("Error fetching game-state:", error);
         return null;
       }
-    }
-  }
+    },
+  },
 });

@@ -12,8 +12,7 @@ var { $socket } = useNuxtApp();
 var config = useRuntimeConfig();
 
 // Reports via API
-var { data: reportsData, refresh: refreshReports } = useFetch('/api/admin/reports/1/20', {
-  baseURL: config.public.apiUrl,
+var { data: reportsData, refresh: refreshReports } = useAuthFetch('/api/admin/reports/1/20', {
   key: 'admin_reports_list'
 });
 

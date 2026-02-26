@@ -20,7 +20,13 @@
             </p>
           </div>
 
-          <form class="mt-6 space-y-4">
+          <form class="mt-6 space-y-4" @submit.prevent>
+            <div
+              v-if="errorMissatge"
+              class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded text-sm"
+            >
+              {{ errorMissatge }}
+            </div>
             <div>
               <label class="block text-xs font-medium text-gray-600 mb-2"
                 >EMAIL</label
@@ -44,23 +50,15 @@
               />
             </div>
 
-            <div class="pt-2 grid grid-cols-2 gap-3">
-              <NuxtLink to="/admin">
-                <button
-                  type="button"
-                  class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 rounded-lg"
-                >
-                  ADMIN
-                </button>
-              </NuxtLink>
-              <NuxtLink to="/home">
-                <button
-                  type="button"
-                  class="w-full bg-green-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg"
-                >
-                  USUARI
-                </button>
-              </NuxtLink>
+            <div class="pt-2">
+              <button
+                type="button"
+                :disabled="estaCarregant"
+                @click="ferLogin"
+                class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 rounded-lg disabled:opacity-50"
+              >
+                LOGIN
+              </button>
             </div>
 
             <div class="pt-2">
@@ -82,7 +80,6 @@
 
         <!-- Dreta: vista prèvia del dashboard -->
         <div class="grid grid-rows-3 gap-6 h-full">
-          <!-- Fila superior: targeta avatar + progrés -->
           <div class="grid grid-cols-3 gap-6 items-start">
             <div class="col-span-1"></div>
             <div
@@ -106,16 +103,13 @@
             </div>
           </div>
 
-          <!-- Fila central: targeta central mascota -->
           <div class="flex items-center justify-center">
             <div
               class="bg-white rounded-xl p-8 shadow-md w-full max-w-xl flex items-center gap-6"
             >
               <div
                 class="w-24 h-24 rounded-xl bg-amber-50 flex items-center justify-center"
-              >
-                <!-- Imatge o icona de la mascota -->
-              </div>
+              ></div>
               <div>
                 <div class="text-lg font-semibold uppercase">ElTeuMonstre</div>
                 <div class="text-sm text-gray-400">
@@ -126,7 +120,6 @@
             </div>
           </div>
 
-          <!-- Fila inferior: dues targetes de colors -->
           <div class="grid grid-cols-3 gap-6 items-end">
             <div
               class="col-span-1 bg-blue-50 rounded-xl p-6 shadow-sm flex items-center justify-center"
@@ -142,9 +135,7 @@
             >
               <div class="text-center">
                 <div class="text-sm text-gray-700">Diari</div>
-                <div class="text-xs text-gray-400">
-                  Completat · Creativitat
-                </div>
+                <div class="text-xs text-gray-400">Completat · Creativitat</div>
               </div>
             </div>
           </div>
@@ -155,35 +146,64 @@
 </template>
 
 <script>
-/**
- * Configuració de la pàgina de Login.
- * Segueix les normes de l'Agent Javascript (ES5 Estricte).
- */
 definePageMeta({ layout: false });
 
 export default {
-  /**
-   * Retorna les dades inicials del component.
-   */
   data: function () {
     return {
       formulari: {
         email: "",
-        contrasenya: ""
+        contrasenya: "",
       },
-      percentatgeProgres: 60
+      percentatgeProgres: 60,
+      errorMissatge: "",
+      estaCarregant: false,
     };
   },
 
   methods: {
-    // Les accions de navegació s'han mogut directament al template amb NuxtLink
+    ferLogin: async function () {
+      var self = this;
+      var email = (self.formulari.email || "").trim();
+      var contrasenya = self.formulari.contrasenya || "";
+
+      if (!email || !contrasenya) {
+        self.errorMissatge = "Introduïu email i contrasenya.";
+        return;
+      }
+
+      self.errorMissatge = "";
+      self.estaCarregant = true;
+
+      try {
+        var authStore = useAuthStore();
+        var nuxtApp = useNuxtApp();
+        try {
+          await authStore.loginUser(email, contrasenya);
+          if (nuxtApp.$updateSocketAuth) nuxtApp.$updateSocketAuth();
+          await navigateTo("/HomePage");
+          return;
+        } catch (errUser) {
+          try {
+            await authStore.loginAdmin(email, contrasenya);
+            if (nuxtApp.$updateSocketAuth) nuxtApp.$updateSocketAuth();
+            await navigateTo("/admin");
+          } catch (errAdmin) {
+            self.errorMissatge = errAdmin.message || "Credencials incorrectes";
+          }
+        }
+      } finally {
+        self.estaCarregant = false;
+      }
+    },
   },
 };
 </script>
 
 <style scoped>
-/* Ajustos per simular les ombres i l'espaiat */
 .shadow-md {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 </style>

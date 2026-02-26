@@ -21,11 +21,15 @@ class AdminPerfilController extends Controller
     //================================ MÈTODES / FUNCIONS ===========
 
     /**
-     * Retorna les dades de l'administrador.
+     * Retorna les dades de l'administrador autenticat.
      */
-    public function show(): JsonResponse
+    public function show(Request $request): JsonResponse
     {
-        $admin = Administrador::find(1);
+        $adminId = $request->admin_id;
+        if (!$adminId) {
+            return response()->json(['error' => 'No autoritzat'], 401);
+        }
+        $admin = Administrador::find($adminId);
         if ($admin === null) {
             return response()->json(['error' => 'Administrador no trobat'], 404);
         }
@@ -51,7 +55,11 @@ class AdminPerfilController extends Controller
             'email' => 'sometimes|email|max:150',
         ]);
 
-        $admin = Administrador::find(1);
+        $adminId = $request->admin_id;
+        if (!$adminId) {
+            return response()->json(['error' => 'No autoritzat'], 401);
+        }
+        $admin = Administrador::find($adminId);
         if ($admin === null) {
             return response()->json(['error' => 'Administrador no trobat'], 404);
         }
@@ -84,7 +92,11 @@ class AdminPerfilController extends Controller
             'contrasenya_nova' => 'required|string|min:6|confirmed',
         ]);
 
-        $admin = Administrador::find(1);
+        $adminId = $request->admin_id;
+        if (!$adminId) {
+            return response()->json(['error' => 'No autoritzat'], 401);
+        }
+        $admin = Administrador::find($adminId);
         if ($admin === null) {
             return response()->json(['error' => 'Administrador no trobat'], 404);
         }

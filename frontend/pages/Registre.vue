@@ -24,7 +24,10 @@
             </p>
           </div>
 
-          <form class="mt-6 space-y-4">
+          <form class="mt-6 space-y-4" @submit.prevent>
+            <div v-if="errorMissatge" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded text-sm">
+              {{ errorMissatge }}
+            </div>
             <div>
               <label class="block text-xs font-medium text-gray-600 mb-2"
                 >NOM</label
@@ -73,8 +76,9 @@
             <div class="pt-2">
               <button
                 type="button"
+                :disabled="estaCarregant"
                 @click="registrarUsuari"
-                class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 rounded-lg"
+                class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 rounded-lg disabled:opacity-50"
               >
                 REGISTRAR-SE
               </button>
@@ -109,7 +113,7 @@
               @click="seleccionarCategoria('gym')"
             >
               <div class="text-xs font-medium text-gray-700">
-                💪 Activitat física
+                Activitat física
               </div>
             </div>
             <div
@@ -117,33 +121,33 @@
               @click="seleccionarCategoria('nutrition')"
             >
               <div class="text-xs font-medium text-gray-700">
-                🥗 Alimentació
+                Alimentació
               </div>
             </div>
             <div
               class="bg-white rounded-xl p-2 shadow-sm flex items-center justify-center cursor-pointer hover:bg-yellow-50"
               @click="seleccionarCategoria('study')"
             >
-              <div class="text-xs font-medium text-gray-700">📚 Estudi</div>
+              <div class="text-xs font-medium text-gray-700">Estudi</div>
             </div>
             <div
               class="bg-white rounded-xl p-2 shadow-sm flex items-center justify-center cursor-pointer hover:bg-purple-50"
               @click="seleccionarCategoria('reading')"
             >
-              <div class="text-xs font-medium text-gray-700">📖 Lectura</div>
+              <div class="text-xs font-medium text-gray-700">Lectura</div>
             </div>
             <div
               class="bg-white rounded-xl p-2 shadow-sm flex items-center justify-center cursor-pointer hover:bg-pink-50"
               @click="seleccionarCategoria('wellness')"
             >
-              <div class="text-xs font-medium text-gray-700">🧘 Benestar</div>
+              <div class="text-xs font-medium text-gray-700">Benestar</div>
             </div>
             <div
               class="bg-white rounded-xl p-2 shadow-sm flex items-center justify-center cursor-pointer hover:bg-red-50"
               @click="seleccionarCategoria('smoking')"
             >
               <div class="text-xs font-medium text-gray-700">
-                🚭 Vida sense Fum
+                Vida sense Fum
               </div>
             </div>
             <div
@@ -151,14 +155,14 @@
               @click="seleccionarCategoria('cleaning')"
             >
               <div class="text-xs font-medium text-gray-700">
-                🏠 Neteja Express
+                Neteja Express
               </div>
             </div>
             <div
               class="bg-white rounded-xl p-2 shadow-sm flex items-center justify-center cursor-pointer hover:bg-gray-50"
               @click="seleccionarCategoria('hobby')"
             >
-              <div class="text-xs font-medium text-gray-700">🎨 Modelisme</div>
+              <div class="text-xs font-medium text-gray-700">Modelisme</div>
             </div>
           </template>
 
@@ -185,24 +189,14 @@
                   <button
                     type="button"
                     @click="respondre(pregunta.id, 'forza')"
-                    :class="[
-                      'px-3 py-1 text-xs rounded-md',
-                      respostes[pregunta.id] === 'forza'
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-gray-200',
-                    ]"
+                    :class="obtenirClasseBoto(pregunta.id, 'forza')"
                   >
                     Força
                   </button>
                   <button
                     type="button"
                     @click="respondre(pregunta.id, 'massa_muscular')"
-                    :class="[
-                      'px-3 py-1 text-xs rounded-md',
-                      respostes[pregunta.id] === 'massa_muscular'
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-gray-200',
-                    ]"
+                    :class="obtenirClasseBoto(pregunta.id, 'massa_muscular')"
                   >
                     Massa Muscular
                   </button>
@@ -217,24 +211,14 @@
                   <button
                     type="button"
                     @click="respondre(pregunta.id, 'ansietat')"
-                    :class="[
-                      'px-3 py-1 text-xs rounded-md',
-                      respostes[pregunta.id] === 'ansietat'
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-gray-200',
-                    ]"
+                    :class="obtenirClasseBoto(pregunta.id, 'ansietat')"
                   >
                     Per Ansietat
                   </button>
                   <button
                     type="button"
                     @click="respondre(pregunta.id, 'compromis')"
-                    :class="[
-                      'px-3 py-1 text-xs rounded-md',
-                      respostes[pregunta.id] === 'compromis'
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-gray-200',
-                    ]"
+                    :class="obtenirClasseBoto(pregunta.id, 'compromis')"
                   >
                     Per Compromís
                   </button>
@@ -243,24 +227,14 @@
                   <button
                     type="button"
                     @click="respondre(pregunta.id, 'si')"
-                    :class="[
-                      'px-3 py-1 text-xs rounded-md',
-                      respostes[pregunta.id] === 'si'
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-gray-200',
-                    ]"
+                    :class="obtenirClasseBoto(pregunta.id, 'si')"
                   >
                     Sí
                   </button>
                   <button
                     type="button"
                     @click="respondre(pregunta.id, 'no')"
-                    :class="[
-                      'px-3 py-1 text-xs rounded-md',
-                      respostes[pregunta.id] === 'no'
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-gray-200',
-                    ]"
+                    :class="obtenirClasseBoto(pregunta.id, 'no')"
                   >
                     No
                   </button>
@@ -306,6 +280,8 @@ export default {
       categoriaSeleccionada: null,
       llistaPreguntes: [],
       respostes: {},
+      errorMissatge: "",
+      estaCarregant: false,
       formulari: {
         nom: "",
         email: "",
@@ -401,25 +377,151 @@ export default {
     },
 
     /**
-     * Acció per registrar un usuari.
+     * Mostra SweetAlert confirmant que el compte s'ha creat correctament.
+     * En clicar OK, redirigeix a HomePage i actualitza el socket.
      */
-    registrarUsuari: function () {
+    mostrarAlertaCompteCreat: function () {
+      var self = this;
+      var mostrarAlerta = function () {
+        if (typeof window !== "undefined" && window.Swal) {
+          window.Swal.fire({
+            title: "Compte creat correctament",
+            text: "Benvingut a Loopy! El teu compte s'ha creat amb èxit.",
+            icon: "success",
+            confirmButtonText: "OK"
+          }).then(function (result) {
+            if (result.isConfirmed) {
+              var nuxtApp = useNuxtApp();
+              if (nuxtApp.$updateSocketAuth) nuxtApp.$updateSocketAuth();
+              navigateTo("/HomePage");
+            }
+          });
+        } else {
+          navigateTo("/HomePage");
+        }
+      };
+
+      if (typeof window !== "undefined" && window.Swal) {
+        mostrarAlerta();
+      } else if (typeof document !== "undefined") {
+        var script = document.createElement("script");
+        script.src = "https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js";
+        script.onload = mostrarAlerta;
+        document.head.appendChild(script);
+      } else {
+        navigateTo("/HomePage");
+      }
+    },
+
+    /**
+     * Extreu el missatge d'error de la resposta de l'API.
+     * Evita Object.values, flat i ternaris (AgentJavascript).
+     */
+    extraureMissatgeError: function (dades) {
+      var missatge = "Error en el registre";
+      if (dades.message) {
+        return String(dades.message);
+      }
+      if (dades.errors && typeof dades.errors === "object") {
+        var parts = [];
+        var claus = Object.keys(dades.errors);
+        for (var i = 0; i < claus.length; i++) {
+          var val = dades.errors[claus[i]];
+          if (Array.isArray(val)) {
+            for (var j = 0; j < val.length; j++) {
+              parts.push(val[j]);
+            }
+          } else {
+            parts.push(String(val));
+          }
+        }
+        if (parts.length > 0) {
+          return parts.join(" ");
+        }
+      }
+      return missatge;
+    },
+
+    /**
+     * Retorna la classe CSS del botó de resposta segons si està seleccionat.
+     * Evita ternaris al template (AgentJavascript).
+     */
+    obtenirClasseBoto: function (preguntaId, valor) {
+      if (this.respostes[preguntaId] === valor) {
+        return "px-3 py-1 text-xs rounded-md bg-blue-500 text-white";
+      }
+      return "px-3 py-1 text-xs rounded-md bg-gray-200";
+    },
+
+    /**
+     * Acció per registrar un usuari. POST /api/auth/register
+     */
+    registrarUsuari: async function () {
         var self = this;
-        console.log("Intentant registre...");
         
-        // A. Validar camps
         if (!self.formulari.nom || !self.formulari.email || !self.formulari.contrasenya) {
-            alert("Si us plau, omple tots els camps.");
+            self.errorMissatge = "Si us plau, omple tots els camps.";
             return;
         }
         
         if (self.formulari.contrasenya !== self.formulari.confirmacio) {
-            alert("Les contrasenyes no coincideixen.");
+            self.errorMissatge = "Les contrasenyes no coincideixen.";
             return;
         }
 
-        // B. Processar registre (simulació)
-        alert("Registre en desenvolupament");
+        if (self.formulari.contrasenya.length < 6) {
+            self.errorMissatge = "La contrasenya ha de tenir almenys 6 caràcters.";
+            return;
+        }
+
+        self.errorMissatge = "";
+        self.estaCarregant = true;
+
+        try {
+            var config = useRuntimeConfig();
+            var base = (config.public.apiUrl || '').replace(/\/$/, '');
+            var resposta = await fetch(base + '/api/auth/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json'
+                },
+                body: JSON.stringify({
+                    nom: self.formulari.nom,
+                    email: self.formulari.email,
+                    contrasenya: self.formulari.contrasenya,
+                    contrasenya_confirmation: self.formulari.confirmacio
+                })
+            });
+            var dades = await resposta.json();
+
+            if (!resposta.ok) {
+                self.errorMissatge = self.extraureMissatgeError(dades);
+                return;
+            }
+
+            var authStore = useAuthStore();
+            authStore.token = dades.token;
+            authStore.user = dades.user;
+            authStore.admin = null;
+            authStore.role = 'user';
+            authStore.isAuthenticated = true;
+            if (typeof localStorage !== 'undefined') {
+                localStorage.setItem('loopy_token', dades.token);
+                localStorage.setItem('loopy_user', JSON.stringify(dades.user));
+                localStorage.removeItem('loopy_admin');
+                localStorage.setItem('loopy_role', 'user');
+            }
+            self.mostrarAlertaCompteCreat();
+        } catch (err) {
+            if (err.message) {
+                self.errorMissatge = err.message;
+            } else {
+                self.errorMissatge = 'Error de connexió';
+            }
+        } finally {
+            self.estaCarregant = false;
+        }
     }
   },
 };

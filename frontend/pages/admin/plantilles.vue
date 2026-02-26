@@ -12,8 +12,7 @@ var { $socket } = useNuxtApp();
 var config = useRuntimeConfig();
 
 // Plantilles via API
-var { data: plantillesData, refresh: refreshPlantilles } = useFetch('/api/admin/plantilles/1/50', {
-  baseURL: config.public.apiUrl,
+var { data: plantillesData, refresh: refreshPlantilles } = useAuthFetch('/api/admin/plantilles/1/50', {
   key: 'admin_templates_list'
 });
 

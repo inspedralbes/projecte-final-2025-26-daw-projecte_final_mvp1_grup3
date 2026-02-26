@@ -77,12 +77,11 @@ class HabitService
             $accio = '';
         }
 
-        // A2. Validar si s'ha rebut usuari
-        if (isset($dades['user_id'])) {
-            $usuariId = (int) $dades['user_id'];
-        } else {
-            $usuariId = 1;
+        // A2. Validar usuari obligatori (prové del token JWT via Node)
+        if (!isset($dades['user_id']) || (int) $dades['user_id'] < 1) {
+            return;
         }
+        $usuariId = (int) $dades['user_id'];
 
         // A3. Validar si s'ha rebut id d'hàbit
         if (isset($dades['habit_id'])) {

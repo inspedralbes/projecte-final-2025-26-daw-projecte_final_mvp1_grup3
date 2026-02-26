@@ -50,7 +50,7 @@ async function pushToLaravel(action, adminId, entityType, data) {
   var payload = JSON.stringify({
     entity: entityType,
     action: action,
-    admin_id: adminId || 1,
+    admin_id: adminId,
     data: data || {}
   });
 

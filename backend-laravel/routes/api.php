@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\Admin\AdminAuthController;
 use App\Http\Controllers\Api\Admin\AdminConfiguracioController;
 use App\Http\Controllers\Api\Admin\AdminDashboardController;
 use App\Http\Controllers\Api\Admin\AdminHabitController;
@@ -12,44 +13,51 @@ use App\Http\Controllers\Api\Admin\AdminPlantillaController;
 use App\Http\Controllers\Api\Admin\AdminRankingController;
 use App\Http\Controllers\Api\Admin\AdminReportController;
 use App\Http\Controllers\Api\Admin\AdminUsuariController;
+use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\GameStateController;
 use App\Http\Controllers\Api\HabitController;
 use App\Http\Controllers\Api\LogroController;
+use App\Http\Controllers\Api\PlantillaController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\PreguntaRegistreController;
 use App\Http\Controllers\Api\PlantillaController;
 use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| API Routes - Lectura d'hàbits
+| Rutes públiques (sense autenticació)
 |--------------------------------------------------------------------------
-|
-| Rutes de consulta (GET) per al frontend. Les creacions i actualitzacions
-| es gestionen de forma asíncrona via Redis.
-|
 */
+
+Route::post('/auth/login', [AuthController::class, 'login']);
+Route::post('/admin/auth/login', [AdminAuthController::class, 'login']);
+Route::post('/auth/register', [AuthController::class, 'register']);
+Route::get('/preguntes-registre/{categoria_id}', [PreguntaRegistreController::class, 'index']);
 
 /*
 |--------------------------------------------------------------------------
-| Usuari per defecte: id 1 (administrador). Sense autenticació.
+| Rutes usuari (middleware ensure.user)
 |--------------------------------------------------------------------------
 */
 
-Route::get('/habits', [HabitController::class, 'index']);
-Route::get('/habits/{id}', [HabitController::class, 'show']);
-Route::get('/plantilles', [PlantillaController::class, 'index']);
+Route::middleware('ensure.user')->group(function () {
+    Route::get('/habits', [HabitController::class, 'index']);
+    Route::get('/habits/{id}', [HabitController::class, 'show']);
+    Route::get('/plantilles', [PlantillaController::class, 'index']);
 Route::get('/plantilles/{id}', [PlantillaController::class, 'show']);
 Route::get('/game-state', [GameStateController::class, 'show']);
-Route::get('/logros', [LogroController::class, 'index']);
-Route::get('/user/profile', [UserController::class, 'profile']);
+    Route::get('/logros', [LogroController::class, 'index']);
+    Route::get('/plantilles', [PlantillaController::class, 'index']);
+    Route::get('/user/profile', [UserController::class, 'profile']);
+});
 
 /*
 |--------------------------------------------------------------------------
-| API Admin - Panel d'administració (MVP1: admin_id 1 per defecte)
+| Rutes admin (middleware ensure.admin)
 |--------------------------------------------------------------------------
 */
 
-Route::prefix('admin')->group(function () {
+Route::prefix('admin')->middleware('ensure.admin')->group(function () {
     Route::get('/dashboard', [AdminDashboardController::class, 'index']);
     Route::get('/notificacions/{page}/{per_page}/{llegida}', [AdminNotificacioController::class, 'index']);
     Route::patch('/notificacions/{id}', [AdminNotificacioController::class, 'marcarLlegida']);

@@ -12,8 +12,7 @@ var { $socket } = useNuxtApp();
 var config = useRuntimeConfig();
 
 // Hàbits via API
-var { data: habitsData, refresh: refreshHabits } = useFetch('/api/admin/habits/1/50', {
-  baseURL: config.public.apiUrl,
+var { data: habitsData, refresh: refreshHabits } = useAuthFetch('/api/admin/habits/1/50', {
   key: 'admin_habits_list'
 });
 
@@ -28,7 +27,7 @@ var popupObert = ref(null); // 'crear', 'editar', 'eliminar'
 var habitSeleccionat = ref(null);
 var formulari = ref({
   titol: "",
-  usuari_id: 1,
+  usuari_id: "",
   categoria_id: 1,
   dificultat: "media",
   frequencia_tipus: "diaria",
@@ -40,7 +39,7 @@ var formulari = ref({
 function obreCrear() {
   formulari.value = { 
     titol: "", 
-    usuari_id: 1, 
+    usuari_id: "", 
     categoria_id: 1, 
     dificultat: "media",
     frequencia_tipus: "diaria",
@@ -102,7 +101,7 @@ function guardarHabit() {
   };
   
   if (popupObert.value === 'crear') {
-    payload.data.usuari_id = parseInt(formulari.value.usuari_id) || 1;
+    payload.data.usuari_id = parseInt(formulari.value.usuari_id) || null;
   } else {
     payload.data.id = habitSeleccionat.value.id;
   }
@@ -200,7 +199,7 @@ function confirmarEliminacio() {
               </div>
               <div v-if="popupObert === 'crear'" class="space-y-2">
                 <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">ID de l'Usuari</label>
-                <input v-model="formulari.usuari_id" type="number" class="w-full bg-gray-50 border border-gray-100 rounded-[1.5rem] px-6 py-4 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-green-100 transition-all placeholder:text-gray-300" placeholder="1" />
+                <input v-model="formulari.usuari_id" type="number" class="w-full bg-gray-50 border border-gray-100 rounded-[1.5rem] px-6 py-4 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-green-100 transition-all placeholder:text-gray-300" placeholder="ID usuari" required />
               </div>
               <div class="grid grid-cols-2 gap-6">
                 <div class="space-y-2">

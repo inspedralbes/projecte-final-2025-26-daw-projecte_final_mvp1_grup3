@@ -20,17 +20,14 @@ class UserController extends Controller
     //================================ MÈTODES / FUNCIONS ===========
 
     /**
-     * Retorna el perfil de l'usuari amb els seus logros i dades de gamificació.
-     *
-     * A. Utilitza l'usuari per defecte amb id 1.
-     * B. Carrega l'usuari amb els seus logros.
-     * C. Obté la ratxa actual de l'usuari.
-     * D. Retorna la informació estructurada per al frontend.
+     * Retorna el perfil de l'usuari autenticat amb els seus logros i dades de gamificació.
      */
-    public function profile(): JsonResponse
+    public function profile(Request $request): JsonResponse
     {
-        // A. Usuari per defecte (id 1)
-        $usuariId = 1;
+        $usuariId = $request->user_id;
+        if (!$usuariId) {
+            return response()->json(['message' => 'No autoritzat'], 401);
+        }
 
         // B. Cercar usuari i carregar relacions
         $usuari = User::with('logros')->find($usuariId);

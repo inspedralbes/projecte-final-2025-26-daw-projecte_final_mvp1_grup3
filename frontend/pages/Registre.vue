@@ -164,9 +164,20 @@
                 <span class="text-3xl">🎯</span>
               </div>
               <h3 class="text-lg font-bold text-gray-800 mb-2">Hem trobat el teu perfil!</h3>
-              <p class="text-sm text-indigo-700 mb-4 font-medium uppercase tracking-widest">
+              <p class="text-sm text-indigo-700 mb-2 font-medium uppercase tracking-widest">
                 {{ nomCategoriaGuanyadora }}
               </p>
+              
+              <div v-if="plantillaRecomanada" class="bg-white/60 p-4 rounded-xl mb-6 w-full max-w-xs border border-indigo-100">
+                <p class="text-xs text-indigo-500 font-bold uppercase mb-1">Plantilla recomanada</p>
+                <p class="text-md font-bold text-gray-800">{{ plantillaRecomanada.titol }}</p>
+                <div class="mt-2 flex flex-wrap justify-center gap-1">
+                  <span v-for="habit in plantillaRecomanada.habits" :key="habit.id" class="text-[10px] bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full">
+                    {{ habit.titol }}
+                  </span>
+                </div>
+              </div>
+
               <p class="text-xs text-gray-500 mb-6 px-4">
                 Basant-nos en les teves respostes, aquesta és la millor àrea per començar. Pots canviar-la més endavant si vols.
               </p>
@@ -220,6 +231,7 @@ const nomsCategories = {
 };
 
 const categoriaGuanyadoraId = ref(null);
+const plantillaRecomanada = ref(null);
 
 // --- COMPUTED ---
 const nomCategoriaGuanyadora = computed(() => {
@@ -277,7 +289,7 @@ const respondrePregunta = (valor) => {
 /**
  * Calcula la categoria guanyadora i finalitza el test.
  */
-const finalitzarTest = () => {
+const finalitzarTest = async () => {
   let maxPunts = -1;
   let guanyador = 1;
 
@@ -290,6 +302,22 @@ const finalitzarTest = () => {
   });
 
   categoriaGuanyadoraId.value = guanyador;
+  
+  // Buscar plantilla recomanada
+  try {
+    let base = config.public.apiUrl;
+    if (base.endsWith("/")) {
+      base = base.slice(0, -1);
+    }
+    const resp = await fetch(`${base}/api/plantilles/recommend/${guanyador}`);
+    const data = await resp.json();
+    if (data.success) {
+      plantillaRecomanada.value = data.plantilla;
+    }
+  } catch (err) {
+    console.error("Error fetching recommended plantilla:", err);
+  }
+
   quizFinalitzat.value = true;
   console.log("Categoria assignada automàticament:", guanyador);
 };

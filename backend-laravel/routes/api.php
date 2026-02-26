@@ -40,6 +40,7 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::get('/habits', [HabitController::class, 'index']);
 Route::get('/habits/{id}', [HabitController::class, 'show']);
 Route::get('/plantilles', [PlantillaController::class, 'index']);
+Route::get('/plantilles/recommend/{categoria_id}', [PlantillaController::class, 'recommend']);
 Route::get('/plantilles/{id}', [PlantillaController::class, 'show']);
 Route::get('/game-state', [GameStateController::class, 'show']);
 Route::get('/logros', [LogroController::class, 'index']);

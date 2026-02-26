@@ -153,13 +153,13 @@ SELECT setval('categories_id_seq', (SELECT MAX(id) FROM CATEGORIES));
 -- 8. PREGUNTES DE REGISTRE (PAS 2)
 -- ----------------------------------------------------------
 
--- Activitat física
+-- Esport i Gimnàs
 INSERT INTO PREGUNTES_REGISTRE (categoria_id, pregunta) VALUES 
 (1, 'Entrenes actualment en un gimnàs de forma regular?'),
-(1, 'El teu objectiu principal és guanyar força o massa muscular?'),
+(1, 'El teu objectiu físic principal és guanyar força o massa muscular?'),
 (1, 'Tens experiència prèvia amb l''aixecament de peses?'),
-(1, 'Disposes d''almenys 45 minuts tres cops per setmana per entrenar?'),
-(1, 'Et agradaria rebre rutines específiques d''exercicis compostos?');
+(1, 'Disposes d''almenys 45 minuts tres cops per setmana per entrenar al gimnàs?'),
+(1, 'Et agradaria rebre rutines específiques d''exercicis compostos (com esquat o pes mort)?');
 
 -- Alimentació
 INSERT INTO PREGUNTES_REGISTRE (categoria_id, pregunta) VALUES 
@@ -167,55 +167,55 @@ INSERT INTO PREGUNTES_REGISTRE (categoria_id, pregunta) VALUES
 (2, 'Consumes fruites i verdures en gairebé tots els teus àpats diaris?'),
 (2, 'Sols utilitzar oli d''oliva com a greix principal per cuinar?'),
 (2, 'Evites habitualment el consum de begudes ensucrades i refrescos?'),
-(2, 'Et agradaria planificar els teus menús setmanals per evitar menjar qualsevol cosa?');
+(2, 'Et agradaria planificar els teus menús setmanals per evitar el menjar ràpid o precuinat?');
 
--- Estudi
+-- Estudi i Productivitat
 INSERT INTO PREGUNTES_REGISTRE (categoria_id, pregunta) VALUES 
 (3, 'Sols estudiar o treballar en un espai lliure de distraccions?'),
-(3, 'Utilitzes alguna tècnica de gestió del temps (com el mètode Pomodoro)?'),
-(3, 'Et costa arrencar quan tens una tasca complexa o llarga al davant?'),
+(3, 'Utilitzes alguna tècnica de gestió del temps per estudiar (com el mètode Pomodoro)?'),
+(3, 'Et costa arrencar quan tens una tasca acadèmica o laboral complexa al davant?'),
 (3, 'Utilitzes un calendari o agenda per organitzar els teus exàmens o lliuraments?'),
-(3, 'Sents que aprofites bé les teves hores de major energia durant el dia?');
+(3, 'Sents que aprofites bé les teves hores de major energia per a les tasques intel·lectuals?');
 
 -- Lectura
 INSERT INTO PREGUNTES_REGISTRE (categoria_id, pregunta) VALUES 
-(4, 'Llegeixes habitualment abans de dormir o mentre vas en transport públic?'),
+(4, 'Llegeixes llibres habitualment abans de dormir o mentre vas en transport públic?'),
 (4, 'Tens una llista de llibres pendents que t''agradaria començar aviat?'),
-(4, 'Et marques objectius de pàgines o capítols diaris per avançar?'),
+(4, 'Et marques objectius de pàgines o capítols diaris per avançar en la lectura?'),
 (4, 'Sols deixar els llibres a mitges per falta de constància o temps?'),
-(4, 'Et agrada anotar o subratllar les idees que més t''inspiren mentre llegeixes?');
+(4, 'Et agrada anotar o subratllar les idees que més t''inspiren mentre llegeixes un llibre?');
 
--- Benestar
+-- Benestar i Salut Mental
 INSERT INTO PREGUNTES_REGISTRE (categoria_id, pregunta) VALUES 
-(5, 'Dediques almenys 5 minuts al dia a respirar de forma conscient?'),
+(5, 'Dediques almenys 5 minuts al dia a respirar de forma conscient o meditar?'),
 (5, 'Sents que pots desconnectar totalment de la feina en arribar a casa?'),
 (5, 'Practiques algun tipus d''estirament o ioga de manera habitual?'),
 (5, 'Sols identificar i analitzar les teves emocions quan estàs sota estrès?'),
-(5, 'Prioritzes tenir un horari de son regular per descansar bé?');
+(5, 'Prioritzes tenir un horari de son regular per descansar correctament?');
 
--- Millora d'hàbits
+-- Deixar de Fumar (Millora d'hàbits)
 INSERT INTO PREGUNTES_REGISTRE (categoria_id, pregunta) VALUES 
 (6, 'Estàs convençut que aquest és el moment definitiu per deixar de fumar?'),
-(6, 'Fumes principalment per ansietat o per compromís social amb amics?'),
-(6, 'Has identificat ja els moments del dia en què més necessites fumar?'),
-(6, 'Tens el suport del teu entorn proper (família/amics) en aquest procés?'),
-(6, 'Estàs obert a usar substituts (xiclets, pegats) si el desig és molt fort?');
+(6, 'Fumes cigarretes principalment per ansietat o per compromís social?'),
+(6, 'Has identificat ja els moments del dia en què sents més necessitat de fumar?'),
+(6, 'Tens el suport del teu entorn proper per deixar l''hàbit del tabac?'),
+(6, 'Estàs obert a usar substituts de la nicotina (xiclets, pegats) si el desig és molt fort?');
 
--- Llar
+-- Llar i Ordre
 INSERT INTO PREGUNTES_REGISTRE (categoria_id, pregunta) VALUES 
 (7, 'Dediques un temps fix cada dia a recollir les zones comunes de la casa?'),
 (7, 'Et resulta fàcil mantenir el teu escriptori o zona de treball neta i ordenada?'),
-(7, 'Prefereixes netejar un poc cada dia que donar-te una pallissa de neteja el dissabte?'),
-(7, 'Tens l''hàbit de fregar els plats immediatament després de dinar?'),
+(7, 'Prefereixes netejar la llar una mica cada dia en comptes de fer-ho tot el dissabte?'),
+(7, 'Tens l''hàbit de fregar els plats immediatament després de dinar o sopar?'),
 (7, 'Sents que l''ordre a casa teva t''ajuda a tenir més claredat mental?');
 
--- Hobby
+-- Hobby (Maquetisme)
 INSERT INTO PREGUNTES_REGISTRE (categoria_id, pregunta) VALUES 
-(8, 'Disposes d''un lloc ben il·luminat i fix per treballar en les teves maquetes?'),
-(8, 'Tens ja les eines bàsiques (pinces, pega, pintures) llestes?'),
-(8, 'Et motiva realitzar treballs minuciosos que requereixen molta paciència?'),
-(8, 'Sols dedicar temps a investigar tècniques de pintat o muntatge a internet?'),
-(8, 'Et agradaria compartir fotos dels teus avenços amb altres aficionats?');
+(8, 'Disposes d''un lloc fix per treballar en el muntatge de les teves maquetes?'),
+(8, 'Tens ja les eines de maquetisme bàsiques (pinces, pega, pintures) llestes?'),
+(8, 'Et motiva realitzar treballs minuciosos de muntatge que requereixen paciència?'),
+(8, 'Sols investigar tècniques de pintat o muntatge de maquetes a internet?'),
+(8, 'Et agradaria compartir fotos de les teves maquetes acabades amb altres aficionats?');
 -- 2. USUARIS (Més usuaris per a proves)
 INSERT INTO USUARIS (nom, email, contrasenya_hash, nivell, xp_total, monedes) VALUES 
 ('Marta Sánchez', 'marta@user.com', 'user123', 5, 1200, 50),

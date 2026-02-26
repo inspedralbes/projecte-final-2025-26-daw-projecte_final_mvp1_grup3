@@ -67,16 +67,23 @@
             >
               Últims Assoliments
             </h3>
-            <div class="flex justify-around items-center relative group">
-              <div
-                class="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-lg hover:scale-110 transition"
-              ></div>
-              <div
-                class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-lg hover:scale-110 transition"
-              ></div>
-              <div
-                class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-lg hover:scale-110 transition"
-              ></div>
+            <div class="flex justify-around items-center relative group min-h-[48px]">
+              <template v-if="ultimsLogros.length > 0">
+                <div
+                  v-for="logro in ultimsLogros"
+                  :key="logro.id"
+                  class="w-12 h-12 rounded-full flex items-center justify-center text-lg hover:scale-110 transition shadow-inner"
+                  :class="logro.obtingut ? 'bg-orange-100' : 'bg-gray-100 opacity-40'"
+                  :title="logro.nom"
+                >
+                  {{ logro.obtingut ? '🏅' : '🔒' }}
+                </div>
+              </template>
+              <template v-else>
+                <div class="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center text-xs text-gray-300 border border-dashed border-gray-200">?</div>
+                <div class="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center text-xs text-gray-300 border border-dashed border-gray-200">?</div>
+                <div class="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center text-xs text-gray-300 border border-dashed border-gray-200">?</div>
+              </template>
               
               <!-- Botó per veure tots els logros -->
               <button 
@@ -346,8 +353,22 @@ export default {
         return useLogroStore();
     },
     logrosFiltrats: function () {
-        // En un futur es podria filtrar per tipus o estat de bloqueig
-        return this.logroStore.logros;
+      return this.logroStore.logros;
+    },
+    ultimsLogros: function () {
+      var obtinguts = [];
+      var i;
+      var l = this.logroStore.logros;
+      for (i = 0; i < l.length; i++) {
+        if (l[i].obtingut) {
+          obtinguts.push(l[i]);
+        }
+      }
+      // Si no n'hi ha cap de desbloquejat, mostrem els 3 primers com a 'bloquejats' o simplement els 3 primers
+      if (obtinguts.length === 0) {
+        return l.slice(0, 3);
+      }
+      return obtinguts.slice(-3);
     },
     missioDiaria: function () {
       return this.gameStore.missioDiaria;
@@ -373,10 +394,11 @@ export default {
     self.estaCarregantHabits = true;
     Promise.all([
       self.gameStore.obtenirHabitos(),
-      self.gameStore.obtenirEstatJoc()
+      self.gameStore.obtenirEstatJoc(),
+      self.logroStore.carregarLogros()
     ])
     .then(function() {
-        console.log("✅ Dades carregades correctament");
+        console.log("✅ Dades carregades correctament (Incloent Logros)");
     })
     .catch(function(error) {
         console.error("❌ Error carregant dades:", error);

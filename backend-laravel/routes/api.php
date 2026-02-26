@@ -39,6 +39,8 @@ Route::get('/habits/{id}', [HabitController::class, 'show']);
 Route::get('/game-state', [GameStateController::class, 'show']);
 Route::get('/logros', [LogroController::class, 'index']);
 Route::get('/user/profile', [UserController::class, 'profile']);
+Route::get('/preguntes-registre/{categoria_id}', [\App\Http\Controllers\PreguntaRegistreController::class, 'index']);
+Route::get('/onboarding/questions', [\App\Http\Controllers\Api\OnboardingController::class, 'questions']);
 
 /*
 |--------------------------------------------------------------------------

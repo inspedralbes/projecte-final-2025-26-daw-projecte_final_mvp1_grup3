@@ -95,192 +95,86 @@
 
         <!-- Dreta: Test de preguntes -->
         <div class="grid grid-cols-2 gap-4 h-full">
-          <!-- Pas 1: Pregunta Maestra -->
-          <template v-if="categoriaSeleccionada === null">
+          <!-- Pas 1: Introducció al Quiz Dinàmic -->
+          <template v-if="!quizIniciat && !quizFinalitzat">
             <div
-              class="col-span-2 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 shadow-sm flex flex-col items-center justify-center"
+              class="col-span-2 bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-8 shadow-sm flex flex-col items-center justify-center text-center"
             >
-              <div class="text-xs font-bold text-gray-600 text-center">
-                En quina àrea et vols centrar?
+              <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 shadow-sm">
+                <span class="text-3xl">✨</span>
               </div>
-            </div>
-            <div
-              class="bg-white rounded-xl p-2 shadow-sm flex items-center justify-center cursor-pointer hover:bg-blue-50"
-              @click="seleccionarCategoria('gym')"
-            >
-              <div class="text-xs font-medium text-gray-700">
-                💪 Activitat física
-              </div>
-            </div>
-            <div
-              class="bg-white rounded-xl p-2 shadow-sm flex items-center justify-center cursor-pointer hover:bg-green-50"
-              @click="seleccionarCategoria('nutrition')"
-            >
-              <div class="text-xs font-medium text-gray-700">
-                🥗 Alimentació
-              </div>
-            </div>
-            <div
-              class="bg-white rounded-xl p-2 shadow-sm flex items-center justify-center cursor-pointer hover:bg-yellow-50"
-              @click="seleccionarCategoria('study')"
-            >
-              <div class="text-xs font-medium text-gray-700">📚 Estudi</div>
-            </div>
-            <div
-              class="bg-white rounded-xl p-2 shadow-sm flex items-center justify-center cursor-pointer hover:bg-purple-50"
-              @click="seleccionarCategoria('reading')"
-            >
-              <div class="text-xs font-medium text-gray-700">📖 Lectura</div>
-            </div>
-            <div
-              class="bg-white rounded-xl p-2 shadow-sm flex items-center justify-center cursor-pointer hover:bg-pink-50"
-              @click="seleccionarCategoria('wellness')"
-            >
-              <div class="text-xs font-medium text-gray-700">🧘 Benestar</div>
-            </div>
-            <div
-              class="bg-white rounded-xl p-2 shadow-sm flex items-center justify-center cursor-pointer hover:bg-red-50"
-              @click="seleccionarCategoria('smoking')"
-            >
-              <div class="text-xs font-medium text-gray-700">
-                🚭 Vida sense Fum
-              </div>
-            </div>
-            <div
-              class="bg-white rounded-xl p-2 shadow-sm flex items-center justify-center cursor-pointer hover:bg-indigo-50"
-              @click="seleccionarCategoria('cleaning')"
-            >
-              <div class="text-xs font-medium text-gray-700">
-                🏠 Neteja Express
-              </div>
-            </div>
-            <div
-              class="bg-white rounded-xl p-2 shadow-sm flex items-center justify-center cursor-pointer hover:bg-gray-50"
-              @click="seleccionarCategoria('hobby')"
-            >
-              <div class="text-xs font-medium text-gray-700">🎨 Modelisme</div>
+              <h3 class="text-lg font-bold text-gray-800 mb-2">Descobreix el teu camí</h3>
+              <p class="text-sm text-gray-600 mb-6">
+                Respon aquestes 8 preguntes i t'assignarem automàticament la millor categoria d'hàbits per a tu.
+              </p>
+              <button
+                @click="iniciarOnboarding"
+                class="bg-green-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors shadow-lg"
+              >
+                COMENÇAR EL TEST
+              </button>
             </div>
           </template>
 
-          <!-- Pas 2: Preguntes de Profundització -->
-          <template v-else>
+          <!-- Pas 2: Preguntes Seqüencials -->
+          <template v-else-if="quizIniciat && !quizFinalitzat">
             <div
-              v-for="(pregunta, index) in obtenirPreguntesActuals()"
-              :key="pregunta.id"
-              class="bg-white rounded-xl p-3 shadow-sm flex flex-col items-center justify-center overflow-hidden"
+              class="col-span-2 bg-white rounded-2xl p-8 shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center min-h-[300px]"
             >
-              <div class="text-xs font-bold text-gray-600 text-center mb-2">
-                Pregunta {{ index + 1 }}/{{ llistaPreguntes.length }}
+              <div class="text-xs font-bold text-green-600 uppercase tracking-wider mb-2">
+                Pregunta {{ indexPregunta + 1 }} de {{ llistaPreguntes.length }}
               </div>
-              <div class="text-xs text-gray-700 text-center leading-tight mb-3">
-                {{ pregunta.pregunta }}
+              
+              <div class="h-1.5 w-full bg-gray-100 rounded-full mb-8 overflow-hidden">
+                <div 
+                  class="h-full bg-green-500 transition-all duration-500"
+                  :style="{ width: ((indexPregunta + 1) / llistaPreguntes.length * 100) + '%' }"
+                ></div>
               </div>
-              <div class="flex gap-2">
-                <!-- Botons de resposta condicionals -->
-                <template
-                  v-if="
-                    pregunta.pregunta.indexOf('força o massa muscular') !== -1
-                  "
+
+              <h4 class="text-xl font-medium text-gray-800 mb-10 min-h-[60px]">
+                {{ llistaPreguntes[indexPregunta]?.pregunta }}
+              </h4>
+
+              <div class="grid grid-cols-2 gap-4 w-full max-w-sm">
+                <button
+                  @click="respondrePregunta('si')"
+                  class="flex flex-col items-center p-6 border-2 border-gray-100 rounded-2xl hover:border-green-500 hover:bg-green-50 transition-all group"
                 >
-                  <button
-                    type="button"
-                    @click="respondre(pregunta.id, 'forza')"
-                    :class="[
-                      'px-3 py-1 text-xs rounded-md',
-                      respostes[pregunta.id] === 'forza'
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-gray-200',
-                    ]"
-                  >
-                    Força
-                  </button>
-                  <button
-                    type="button"
-                    @click="respondre(pregunta.id, 'massa_muscular')"
-                    :class="[
-                      'px-3 py-1 text-xs rounded-md',
-                      respostes[pregunta.id] === 'massa_muscular'
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-gray-200',
-                    ]"
-                  >
-                    Massa Muscular
-                  </button>
-                </template>
-                <template
-                  v-else-if="
-                    pregunta.pregunta.indexOf(
-                      'ansietat o per compromís social',
-                    ) !== -1
-                  "
+                  <span class="text-2xl mb-2 group-hover:scale-110 transition-transform">👍</span>
+                  <span class="font-bold text-gray-700">SÍ</span>
+                </button>
+                <button
+                  @click="respondrePregunta('no')"
+                  class="flex flex-col items-center p-6 border-2 border-gray-100 rounded-2xl hover:border-red-500 hover:bg-red-50 transition-all group"
                 >
-                  <button
-                    type="button"
-                    @click="respondre(pregunta.id, 'ansietat')"
-                    :class="[
-                      'px-3 py-1 text-xs rounded-md',
-                      respostes[pregunta.id] === 'ansietat'
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-gray-200',
-                    ]"
-                  >
-                    Per Ansietat
-                  </button>
-                  <button
-                    type="button"
-                    @click="respondre(pregunta.id, 'compromis')"
-                    :class="[
-                      'px-3 py-1 text-xs rounded-md',
-                      respostes[pregunta.id] === 'compromis'
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-gray-200',
-                    ]"
-                  >
-                    Per Compromís
-                  </button>
-                </template>
-                <template v-else>
-                  <button
-                    type="button"
-                    @click="respondre(pregunta.id, 'si')"
-                    :class="[
-                      'px-3 py-1 text-xs rounded-md',
-                      respostes[pregunta.id] === 'si'
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-gray-200',
-                    ]"
-                  >
-                    Sí
-                  </button>
-                  <button
-                    type="button"
-                    @click="respondre(pregunta.id, 'no')"
-                    :class="[
-                      'px-3 py-1 text-xs rounded-md',
-                      respostes[pregunta.id] === 'no'
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-gray-200',
-                    ]"
-                  >
-                    No
-                  </button>
-                </template>
+                  <span class="text-2xl mb-2 group-hover:scale-110 transition-transform">👎</span>
+                  <span class="font-bold text-gray-700">NO</span>
+                </button>
               </div>
             </div>
-            <div class="col-span-full mt-2 grid grid-cols-2 gap-2">
+          </template>
+
+          <!-- Pas 3: Resultat -->
+          <template v-else-if="quizFinalitzat">
+            <div
+              class="col-span-2 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-xl p-8 shadow-sm flex flex-col items-center justify-center text-center"
+            >
+              <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 shadow-sm">
+                <span class="text-3xl">🎯</span>
+              </div>
+              <h3 class="text-lg font-bold text-gray-800 mb-2">Hem trobat el teu perfil!</h3>
+              <p class="text-sm text-indigo-700 mb-4 font-medium uppercase tracking-widest">
+                {{ nomCategoriaGuanyadora }}
+              </p>
+              <p class="text-xs text-gray-500 mb-6 px-4">
+                Basant-nos en les teves respostes, aquesta és la millor àrea per començar. Pots canviar-la més endavant si vols.
+              </p>
               <button
-                type="button"
-                @click="seleccionarCategoria(null)"
-                class="w-full bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium py-2 rounded-lg text-xs"
+                @click="quizFinalitzat = false; quizIniciat = false; indexPregunta = 0"
+                class="text-indigo-600 font-bold text-xs hover:underline"
               >
-                TORNAR
-              </button>
-              <button
-                type="button"
-                @click="finalitzarTest"
-                class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 rounded-lg text-xs"
-              >
-                FINALITZAR
+                REPETIR TEST
               </button>
             </div>
           </template>
@@ -290,138 +184,146 @@
   </div>
 </template>
 
-<script>
+<script setup>
 /**
- * Configuració de la pàgina de Registre.
- * Segueix les normes de l'Agent Javascript (ES5 Estricte).
+ * Pàgina de Registre amb Onboarding interactiu.
+ * Refactoritzada a Vue 3 <script setup>.
  */
+import { ref, reactive, computed } from 'vue';
+
 definePageMeta({ layout: false });
 
-export default {
-  /**
-   * Retorna les dades inicials del component.
-   */
-  data: function () {
-    return {
-      categoriaSeleccionada: null,
-      llistaPreguntes: [],
-      respostes: {},
-      formulari: {
-        nom: "",
-        email: "",
-        contrasenya: "",
-        confirmacio: ""
-      },
-      mapaCategories: {
-        gym: 1,
-        nutrition: 2,
-        study: 3,
-        reading: 4,
-        wellness: 5,
-        smoking: 6,
-        cleaning: 7,
-        hobby: 8,
-      },
-    };
-  },
+const config = useRuntimeConfig();
 
-  methods: {
-    /**
-     * Selecciona una categoria i carrega les preguntes des de l'API Laravel.
-     */
-    seleccionarCategoria: async function (categoria) {
-      var self = this;
-      var idCategoria;
-      var base;
-      var resposta;
-      var dades;
+// --- ESTAT ---
+const quizIniciat = ref(false);
+const quizFinalitzat = ref(false);
+const indexPregunta = ref(0);
+const llistaPreguntes = ref([]);
+const respostesOnboarding = reactive({}); // { categoria_id: punts }
+const formulari = reactive({
+  nom: "",
+  email: "",
+  contrasenya: "",
+  confirmacio: ""
+});
 
-      // A. Assignar la categoria
-      self.categoriaSeleccionada = categoria;
+const nomsCategories = {
+  1: 'Activitat física',
+  2: 'Alimentació',
+  3: 'Estudi',
+  4: 'Lectura',
+  5: 'Benestar',
+  6: 'Vida sense Fum',
+  7: 'Neteja Express',
+  8: 'Modelisme'
+};
 
-      if (categoria) {
-        // B. Obtenir l'ID corresponent
-        idCategoria = self.mapaCategories[categoria];
+const categoriaGuanyadoraId = ref(null);
 
-        try {
-          base = self.$config.public.apiUrl;
-          if (base.endsWith("/")) {
-            base = base.slice(0, -1);
-          }
-          
-          // C. Cridar a l'API via fetch (GET)
-          resposta = await fetch(base + "/api/preguntes-registre/" + idCategoria);
-          dades = await resposta.json();
+// --- COMPUTED ---
+const nomCategoriaGuanyadora = computed(() => {
+  return categoriaGuanyadoraId.value ? nomsCategories[categoriaGuanyadoraId.value] : '';
+});
 
-          if (dades && dades.preguntes) {
-            self.llistaPreguntes = dades.preguntes;
-          }
-        } catch (error) {
-          console.error("Error al carregar les preguntes:", error);
-        }
-      } else {
-        // D. Netejar si es deselecciona
-        self.llistaPreguntes = [];
-        self.respostes = {};
-      }
-    },
+// --- MÈTODES ---
 
-    /**
-     * Retorna el llistat de preguntes carregades.
-     */
-    obtenirPreguntesActuals: function () {
-      return this.llistaPreguntes;
-    },
-
-    /**
-     * Desa la resposta d'una pregunta específica.
-     */
-    respondre: function (preguntaId, resposta) {
-      this.respostes[preguntaId] = resposta;
-    },
-
-    /**
-     * Finalitza el test i processa les respostes.
-     */
-    finalitzarTest: function () {
-      var self = this;
-      var textRespostes;
-
-      // A. Mostrar respostes per consola
-      textRespostes = JSON.stringify(self.respostes);
-      console.log("Respostes a enviar:", textRespostes);
-
-      // B. Alerta de finalització
-      alert("Test finalitzat! Revisa la consola per veure les teves respostes.");
-
-      // C. Reset de l'estat local
-      self.categoriaSeleccionada = null;
-      self.llistaPreguntes = [];
-      self.respostes = {};
-    },
-
-    /**
-     * Acció per registrar un usuari.
-     */
-    registrarUsuari: function () {
-        var self = this;
-        console.log("Intentant registre...");
-        
-        // A. Validar camps
-        if (!self.formulari.nom || !self.formulari.email || !self.formulari.contrasenya) {
-            alert("Si us plau, omple tots els camps.");
-            return;
-        }
-        
-        if (self.formulari.contrasenya !== self.formulari.confirmacio) {
-            alert("Les contrasenyes no coincideixen.");
-            return;
-        }
-
-        // B. Processar registre (simulació)
-        alert("Registre en desenvolupament");
+/**
+ * Inicia el flux d'onboarding carregant les preguntes representatives.
+ */
+const iniciarOnboarding = async () => {
+  try {
+    let base = config.public.apiUrl;
+    if (base.endsWith("/")) {
+      base = base.slice(0, -1);
     }
-  },
+    
+    const resposta = await fetch(`${base}/api/onboarding/questions`);
+    const dades = await resposta.json();
+
+    if (dades && dades.preguntes) {
+      llistaPreguntes.value = dades.preguntes;
+      quizIniciat.value = true;
+      indexPregunta.value = 0;
+      // Reset respostes
+      for (let i = 1; i <= 8; i++) respostesOnboarding[i] = 0;
+    }
+  } catch (error) {
+    console.error("Error al carregar les preguntes d'onboarding:", error);
+    alert("Error al carregar el test. Revisa la connexió.");
+  }
+};
+
+/**
+ * Gestiona la resposta a la pregunta actual i avança.
+ */
+const respondrePregunta = (valor) => {
+  const preguntaActual = llistaPreguntes.value[indexPregunta.value];
+  if (!preguntaActual) return;
+
+  // Si respon SÍ, sumem punt a la categoria
+  if (valor === 'si') {
+    respostesOnboarding[preguntaActual.categoria_id]++;
+  }
+
+  // Avançar
+  if (indexPregunta.value < llistaPreguntes.value.length - 1) {
+    indexPregunta.value++;
+  } else {
+    finalitzarTest();
+  }
+};
+
+/**
+ * Calcula la categoria guanyadora i finalitza el test.
+ */
+const finalitzarTest = () => {
+  let maxPunts = -1;
+  let guanyador = 1;
+
+  // Trobem la categoria amb més punts
+  Object.keys(respostesOnboarding).forEach(catId => {
+    if (respostesOnboarding[catId] > maxPunts) {
+      maxPunts = respostesOnboarding[catId];
+      guanyador = parseInt(catId);
+    }
+  });
+
+  categoriaGuanyadoraId.value = guanyador;
+  quizFinalitzat.value = true;
+  console.log("Categoria assignada automàticament:", guanyador);
+};
+
+/**
+ * Acció per registrar un usuari enviant la categoria calculada.
+ */
+const registrarUsuari = async () => {
+  console.log("Intentant registre...");
+  
+  if (!formulari.nom || !formulari.email || !formulari.contrasenya) {
+    alert("Si us plau, omple tots els camps.");
+    return;
+  }
+  
+  if (formulari.contrasenya !== formulari.confirmacio) {
+    alert("Les contrasenyes no coincideixen.");
+    return;
+  }
+
+  if (!categoriaGuanyadoraId.value) {
+    alert("Si us plau, completa el test per rebre una recomanació.");
+    return;
+  }
+
+  const payload = {
+    name: formulari.nom,
+    email: formulari.email,
+    password: formulari.contrasenya,
+    categoria_id: categoriaGuanyadoraId.value
+  };
+
+  console.log("Enviant registre:", payload);
+  alert(`Registre simulat ambèxit! Categoria: ${nomCategoriaGuanyadora.value}`);
 };
 </script>
 

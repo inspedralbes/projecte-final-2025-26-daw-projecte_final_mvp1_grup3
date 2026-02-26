@@ -25,7 +25,10 @@
           </div>
 
           <form class="mt-6 space-y-4" @submit.prevent>
-            <div v-if="errorMissatge" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded text-sm">
+            <div
+              v-if="errorMissatge"
+              class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded text-sm"
+            >
               {{ errorMissatge }}
             </div>
             <div>
@@ -120,9 +123,7 @@
               class="bg-white rounded-xl p-2 shadow-sm flex items-center justify-center cursor-pointer hover:bg-green-50"
               @click="seleccionarCategoria('nutrition')"
             >
-              <div class="text-xs font-medium text-gray-700">
-                Alimentació
-              </div>
+              <div class="text-xs font-medium text-gray-700">Alimentació</div>
             </div>
             <div
               class="bg-white rounded-xl p-2 shadow-sm flex items-center justify-center cursor-pointer hover:bg-yellow-50"
@@ -286,7 +287,7 @@ export default {
         nom: "",
         email: "",
         contrasenya: "",
-        confirmacio: ""
+        confirmacio: "",
       },
       mapaCategories: {
         gym: 1,
@@ -324,9 +325,11 @@ export default {
           if (base.endsWith("/")) {
             base = base.slice(0, -1);
           }
-          
+
           // C. Cridar a l'API via fetch (GET)
-          resposta = await fetch(base + "/api/preguntes-registre/" + idCategoria);
+          resposta = await fetch(
+            base + "/api/preguntes-registre/" + idCategoria,
+          );
           dades = await resposta.json();
 
           if (dades && dades.preguntes) {
@@ -368,7 +371,9 @@ export default {
       console.log("Respostes a enviar:", textRespostes);
 
       // B. Alerta de finalització
-      alert("Test finalitzat! Revisa la consola per veure les teves respostes.");
+      alert(
+        "Test finalitzat! Revisa la consola per veure les teves respostes.",
+      );
 
       // C. Reset de l'estat local
       self.categoriaSeleccionada = null;
@@ -388,16 +393,16 @@ export default {
             title: "Compte creat correctament",
             text: "Benvingut a Loopy! El teu compte s'ha creat amb èxit.",
             icon: "success",
-            confirmButtonText: "OK"
+            confirmButtonText: "OK",
           }).then(function (result) {
             if (result.isConfirmed) {
               var nuxtApp = useNuxtApp();
               if (nuxtApp.$updateSocketAuth) nuxtApp.$updateSocketAuth();
-              navigateTo("/HomePage");
+              navigateTo("/home");
             }
           });
         } else {
-          navigateTo("/HomePage");
+          navigateTo("/home");
         }
       };
 
@@ -405,11 +410,12 @@ export default {
         mostrarAlerta();
       } else if (typeof document !== "undefined") {
         var script = document.createElement("script");
-        script.src = "https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js";
+        script.src =
+          "https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js";
         script.onload = mostrarAlerta;
         document.head.appendChild(script);
       } else {
-        navigateTo("/HomePage");
+        navigateTo("/home");
       }
     },
 
@@ -457,72 +463,76 @@ export default {
      * Acció per registrar un usuari. POST /api/auth/register
      */
     registrarUsuari: async function () {
-        var self = this;
-        
-        if (!self.formulari.nom || !self.formulari.email || !self.formulari.contrasenya) {
-            self.errorMissatge = "Si us plau, omple tots els camps.";
-            return;
+      var self = this;
+
+      if (
+        !self.formulari.nom ||
+        !self.formulari.email ||
+        !self.formulari.contrasenya
+      ) {
+        self.errorMissatge = "Si us plau, omple tots els camps.";
+        return;
+      }
+
+      if (self.formulari.contrasenya !== self.formulari.confirmacio) {
+        self.errorMissatge = "Les contrasenyes no coincideixen.";
+        return;
+      }
+
+      if (self.formulari.contrasenya.length < 6) {
+        self.errorMissatge = "La contrasenya ha de tenir almenys 6 caràcters.";
+        return;
+      }
+
+      self.errorMissatge = "";
+      self.estaCarregant = true;
+
+      try {
+        var config = useRuntimeConfig();
+        var base = (config.public.apiUrl || "").replace(/\/$/, "");
+        var resposta = await fetch(base + "/api/auth/register", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({
+            nom: self.formulari.nom,
+            email: self.formulari.email,
+            contrasenya: self.formulari.contrasenya,
+            contrasenya_confirmation: self.formulari.confirmacio,
+          }),
+        });
+        var dades = await resposta.json();
+
+        if (!resposta.ok) {
+          self.errorMissatge = self.extraureMissatgeError(dades);
+          return;
         }
-        
-        if (self.formulari.contrasenya !== self.formulari.confirmacio) {
-            self.errorMissatge = "Les contrasenyes no coincideixen.";
-            return;
+
+        var authStore = useAuthStore();
+        authStore.token = dades.token;
+        authStore.user = dades.user;
+        authStore.admin = null;
+        authStore.role = "user";
+        authStore.isAuthenticated = true;
+        if (typeof localStorage !== "undefined") {
+          localStorage.setItem("loopy_token", dades.token);
+          localStorage.setItem("loopy_user", JSON.stringify(dades.user));
+          localStorage.removeItem("loopy_admin");
+          localStorage.setItem("loopy_role", "user");
         }
-
-        if (self.formulari.contrasenya.length < 6) {
-            self.errorMissatge = "La contrasenya ha de tenir almenys 6 caràcters.";
-            return;
+        self.mostrarAlertaCompteCreat();
+      } catch (err) {
+        if (err.message) {
+          self.errorMissatge = err.message;
+        } else {
+          self.errorMissatge = "Error de connexió";
         }
-
-        self.errorMissatge = "";
-        self.estaCarregant = true;
-
-        try {
-            var config = useRuntimeConfig();
-            var base = (config.public.apiUrl || '').replace(/\/$/, '');
-            var resposta = await fetch(base + '/api/auth/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Accept: 'application/json'
-                },
-                body: JSON.stringify({
-                    nom: self.formulari.nom,
-                    email: self.formulari.email,
-                    contrasenya: self.formulari.contrasenya,
-                    contrasenya_confirmation: self.formulari.confirmacio
-                })
-            });
-            var dades = await resposta.json();
-
-            if (!resposta.ok) {
-                self.errorMissatge = self.extraureMissatgeError(dades);
-                return;
-            }
-
-            var authStore = useAuthStore();
-            authStore.token = dades.token;
-            authStore.user = dades.user;
-            authStore.admin = null;
-            authStore.role = 'user';
-            authStore.isAuthenticated = true;
-            if (typeof localStorage !== 'undefined') {
-                localStorage.setItem('loopy_token', dades.token);
-                localStorage.setItem('loopy_user', JSON.stringify(dades.user));
-                localStorage.removeItem('loopy_admin');
-                localStorage.setItem('loopy_role', 'user');
-            }
-            self.mostrarAlertaCompteCreat();
-        } catch (err) {
-            if (err.message) {
-                self.errorMissatge = err.message;
-            } else {
-                self.errorMissatge = 'Error de connexió';
-            }
-        } finally {
-            self.estaCarregant = false;
-        }
-    }
+      } finally {
+        self.estaCarregant = false;
+      }
+    },
   },
 };
 </script>

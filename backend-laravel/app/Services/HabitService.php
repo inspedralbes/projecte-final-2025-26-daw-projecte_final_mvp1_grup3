@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Models\Habit;
 use App\Models\Ratxa;
 use App\Models\User;
+use App\Models\UsuariHabit;
 use App\Services\MissionService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -119,6 +120,7 @@ class HabitService
         } elseif ($accio === 'TOGGLE') {
             $xpUpdate = $this->processarHabitCompletat([
                 'habit_id' => $habitId,
+                'user_id' => $usuariId,
                 'data' => isset($dades['data']) ? $dades['data'] : null,
             ]);
             $habitModel = Habit::find($habitId);
@@ -199,7 +201,12 @@ class HabitService
             throw new \InvalidArgumentException("No s'ha trobat l'hàbit amb id {$habitId}.");
         }
 
-        $usuariId = (int) ($habit->usuari_id);
+        // A4. Usuari que completa (del payload o propietari de l'hàbit)
+        if (isset($dades['user_id']) && $dades['user_id'] > 0) {
+            $usuariId = (int) $dades['user_id'];
+        } else {
+            $usuariId = (int) ($habit->usuari_id);
+        }
 
         // B. Determinar la data/hora de l'activitat (avui ara per defecte)
         // B1. Si arriba data, parsejar (conservar hora); si no, usar ara
@@ -238,9 +245,15 @@ class HabitService
                 'acabado' => true,
                 'xp_guanyada' => $xpGuanyada,
             ]);
+
+            // D4. Actualitzar usuaris_habits.actiu = true (completat) per l'usuari
+            UsuariHabit::updateOrCreate(
+                ['usuari_id' => $usuariId, 'habit_id' => $habit->id],
+                ['actiu' => true]
+            );
         });
 
-        // D4. Comprovar i atorgar logros un cop guardada l'activitat de l'hàbit
+        // D5. Comprovar i atorgar logros un cop guardada l'activitat de l'hàbit
         $this->logroService->comprovarLogros($usuariId, $habit);
 
         // E. Recuperar valors finals per retornar el resultat

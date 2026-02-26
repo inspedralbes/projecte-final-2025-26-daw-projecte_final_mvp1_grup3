@@ -19,8 +19,8 @@ definePageMeta({ layout: false });
 
 var route = useRoute();
 var codi = 500;
-var titol = 'S\'ha produït un error';
-var missatge = 'Torna-ho a provar més tard o contacta amb el suport.';
+var titol = "S'ha produït un error";
+var missatge = "Torna-ho a provar més tard o contacta amb el suport.";
 
 // A. Llegir codi, títol i missatge des dels query params
 if (route.query.codi) {
@@ -39,15 +39,15 @@ if (route.query.missatge) {
 }
 
 // B. Determinar ruta del botó Tornar segons el rol de l'usuari
-var rutaTornar = '/';
+var rutaTornar = "/";
 var authStore = useAuthStore();
-if (typeof authStore !== 'undefined' && authStore.loadFromStorage) {
+if (typeof authStore !== "undefined" && authStore.loadFromStorage) {
   authStore.loadFromStorage();
-  if (authStore.role === 'admin') {
-    rutaTornar = '/admin';
+  if (authStore.role === "admin") {
+    rutaTornar = "/admin";
   } else {
-    if (authStore.role === 'user') {
-      rutaTornar = '/HomePage';
+    if (authStore.role === "user") {
+      rutaTornar = "/home";
     }
   }
 }

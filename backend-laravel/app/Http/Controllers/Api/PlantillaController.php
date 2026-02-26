@@ -37,14 +37,16 @@ class PlantillaController extends Controller
         // El filtre 'my' o 'all' es manté com a query parameter per no modificar les rutes fora de l'abast.
         $filter = $request->query('filter', 'all'); // 'all' o 'my'
 
-        // L'ID de l'usuari per defecte és 1, segons les normes de l'agent (sense autenticació).
-        $usuariId = 1;
+        // B. Usuari autenticat (injectat pel middleware ensure.user)
+        $usuariId = $request->user_id;
+        if (!$usuariId) {
+            return response()->json(['message' => 'No autoritzat'], 401);
+        }
 
-        // B. Obtenir plantilles usant el servei amb els filtres i l'usuari per defecte
-        // No es necessita validar usuari_id ja que sempre és 1.
+        // C. Obtenir plantilles usant el servei amb els filtres i l'usuari autenticat
         $plantilles = $this->plantillaService->getPlantilles( $filter, $usuariId)->load('habits');
 
-        // C. Retornar resposta amb el recurs
+        // D. Retornar resposta amb el recurs
         return PlantillaResource::collection($plantilles)->toResponse($request);
     }
 
@@ -53,8 +55,11 @@ class PlantillaController extends Controller
      */
     public function show(Request $request, int $id): JsonResponse
     {
-        // A. Usuari per defecte sense autenticació (id 1)
-        $usuariId = 1; // This should ideally come from authenticated user
+        // A. Usuari autenticat (injectat pel middleware ensure.user)
+        $usuariId = $request->user_id;
+        if (!$usuariId) {
+            return response()->json(['message' => 'No autoritzat'], 401);
+        }
 
         // B. Cercar plantilla i comprovar propietat o visibilitat pública
         $plantilla = Plantilla::where('id', $id)

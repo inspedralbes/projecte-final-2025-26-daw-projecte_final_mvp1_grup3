@@ -121,7 +121,7 @@ export var useGameStore = defineStore("game", {
      * Estableix l'ID de l'usuari (des del authStore).
      */
     assignarUsuariId: function (id) {
-      this.usuariId = id;
+      this.userId = id;
     },
 
     /**
@@ -130,7 +130,7 @@ export var useGameStore = defineStore("game", {
     sincronitzarUsuariId: function () {
       var authStore = useAuthStore();
       if (authStore.user && authStore.user.id) {
-        this.usuariId = authStore.user.id;
+        this.userId = authStore.user.id;
       }
     },
 

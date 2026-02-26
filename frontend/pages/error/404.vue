@@ -17,16 +17,16 @@
  */
 definePageMeta({ layout: false });
 
-var rutaTornar = '/';
+var rutaTornar = "/";
 // Determinar ruta del botó Tornar segons el rol de l'usuari
 var authStore = useAuthStore();
-if (typeof authStore !== 'undefined' && authStore.loadFromStorage) {
+if (typeof authStore !== "undefined" && authStore.loadFromStorage) {
   authStore.loadFromStorage();
-  if (authStore.role === 'admin') {
-    rutaTornar = '/admin';
+  if (authStore.role === "admin") {
+    rutaTornar = "/admin";
   } else {
-    if (authStore.role === 'user') {
-      rutaTornar = '/HomePage';
+    if (authStore.role === "user") {
+      rutaTornar = "/home";
     }
   }
 }

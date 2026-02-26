@@ -18,23 +18,26 @@
 definePageMeta({ layout: false });
 
 var route = useRoute();
-var missatge = 'No tens els permisos necessaris per accedir a aquesta pàgina.';
-var rutaTornar = '/';
+var missatge = "No tens els permisos necessaris per accedir a aquesta pàgina.";
+var rutaTornar = "/";
 
 // A. Personalitzar missatge si s'indica la ruta bloquejada (query from)
 if (route.query.from) {
-  missatge = 'No tens els permisos necessaris per accedir a "' + String(route.query.from) + '".';
+  missatge =
+    'No tens els permisos necessaris per accedir a "' +
+    String(route.query.from) +
+    '".';
 }
 
 // B. Determinar ruta del botó Tornar segons el rol de l'usuari
 var authStore = useAuthStore();
-if (typeof authStore !== 'undefined' && authStore.loadFromStorage) {
+if (typeof authStore !== "undefined" && authStore.loadFromStorage) {
   authStore.loadFromStorage();
-  if (authStore.role === 'admin') {
-    rutaTornar = '/admin';
+  if (authStore.role === "admin") {
+    rutaTornar = "/admin";
   } else {
-    if (authStore.role === 'user') {
-      rutaTornar = '/HomePage';
+    if (authStore.role === "user") {
+      rutaTornar = "/home";
     }
   }
 }

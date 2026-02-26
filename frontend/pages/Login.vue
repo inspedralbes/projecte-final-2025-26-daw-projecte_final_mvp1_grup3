@@ -181,7 +181,7 @@ export default {
         try {
           await authStore.loginUser(email, contrasenya);
           if (nuxtApp.$updateSocketAuth) nuxtApp.$updateSocketAuth();
-          await navigateTo("/HomePage");
+          await navigateTo("/home");
           return;
         } catch (errUser) {
           try {

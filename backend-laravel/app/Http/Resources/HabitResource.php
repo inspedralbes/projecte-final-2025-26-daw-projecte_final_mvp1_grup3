@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 //================================ NAMESPACES / IMPORTS ============
 
+use App\Models\UsuariHabit;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -12,6 +13,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 /**
  * Recurs JSON per transformar el model Habit.
  * Format net per consum del frontend (Nuxt 3).
+ * El camp 'completat' prové de USUARIS_HABITS.actiu per l'usuari autenticat.
  */
 class HabitResource extends JsonResource
 {
@@ -25,7 +27,19 @@ class HabitResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        // A. Mapatge directe dels camps del model a l'estructura de resposta
+        // A. Obtenir 'completat' des de usuaris_habits.actiu per l'usuari autenticat
+        $completat = false;
+        $usuariId = $request->user_id ?? null;
+        if ($usuariId) {
+            $pivot = UsuariHabit::where('habit_id', $this->id)
+                ->where('usuari_id', $usuariId)
+                ->first();
+            if ($pivot !== null && isset($pivot->actiu)) {
+                $completat = (bool) $pivot->actiu;
+            }
+        }
+
+        // B. Mapatge dels camps del model
         return [
             'id' => $this->id,
             'usuari_id' => $this->usuari_id,
@@ -34,7 +48,7 @@ class HabitResource extends JsonResource
             'frequencia_tipus' => $this->frequencia_tipus,
             'dies_setmana' => $this->dies_setmana,
             'objectiu_vegades' => $this->objectiu_vegades,
-            'completat' => (bool) $this->completat,
+            'completat' => $completat,
         ];
     }
 }

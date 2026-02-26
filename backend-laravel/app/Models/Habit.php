@@ -85,14 +85,6 @@ class Habit extends Model
     }
 
     /**
-     * Categoria de l'hàbit.
-     */
-    public function categoria(): BelongsTo
-    {
-        return $this->belongsTo(Categoria::class, 'categoria_id');
-    }
-
-    /**
      * Defineix la relació amb els usuaris que tenen aquest hàbit assignat.
      *
      * @return BelongsToMany

@@ -32,8 +32,16 @@ class HabitController extends Controller
         // A. Usuari per defecte sense autenticació (id 1)
         $usuariId = 1;
 
-        // B. Filtrar hàbits per usuari i obtenir resultats
-        $habits = Habit::where('usuari_id', $usuariId)->get();
+        // B. Filtrar hàbits per usuari i obtenir resultats amb l'estat de completat per avui
+        $avui = now()->startOfDay();
+        $habits = Habit::where('usuari_id', $usuariId)
+            ->withCount([
+                'registresActivitat as completat' => function ($query) use ($avui) {
+                    $query->where('data', '>=', $avui)
+                        ->where('acabado', true);
+                }
+            ])
+            ->get();
 
         // C. Retornar resposta amb el recurs
         return HabitResource::collection($habits)->toResponse($request);

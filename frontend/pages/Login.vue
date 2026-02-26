@@ -53,7 +53,7 @@
                   ADMIN
                 </button>
               </NuxtLink>
-              <NuxtLink to="/HomePage">
+              <NuxtLink to="/home">
                 <button
                   type="button"
                   class="w-full bg-green-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg"

@@ -149,8 +149,8 @@ SELECT 1, id, 1 FROM HABITS;
 
 -- 5. REGISTRE_ACTIVITAT (Uno por hábito)
 -- Inserta un registro para cada uno de los 24 hábitos creados
-INSERT INTO REGISTRE_ACTIVITAT (habit_id, acabado, xp_guanyada)
-SELECT id, true, 10 FROM HABITS;
+-- INSERT INTO REGISTRE_ACTIVITAT (habit_id, acabado, xp_guanyada)
+-- SELECT id, true, 10 FROM HABITS;
 
 -- 6. RATXES
 INSERT INTO RATXES (usuari_id, ratxa_actual, ratxa_maxima, ultima_data)
@@ -257,11 +257,11 @@ FROM USUARIS u, HABITS h
 WHERE u.id > 1 AND h.id <= 5; -- Els donem els 5 primers hàbits a cadascú
 
 -- Registre d'activitat per simular rànquings
-INSERT INTO REGISTRE_ACTIVITAT (habit_id, acabado, xp_guanyada)
-SELECT h.id, true, 20 
-FROM HABITS h 
-JOIN USUARIS_HABITS uh ON h.id = uh.habit_id
-WHERE uh.usuari_id > 1;
+-- INSERT INTO REGISTRE_ACTIVITAT (habit_id, acabado, xp_guanyada)
+-- SELECT h.id, true, 20 
+-- FROM HABITS h 
+-- JOIN USUARIS_HABITS uh ON h.id = uh.habit_id
+-- WHERE uh.usuari_id > 1;
 
 -- 5. ADMIN_LOGS (Simulació d'historial)
 INSERT INTO ADMIN_LOGS (administrador_id, accio, detall, ip) VALUES

@@ -16,7 +16,7 @@ var XP_PER_DIFICULTAT = {
 export var useGameStore = defineStore('game', {
   state: function () {
     return {
-      userId: null,
+      userId: 1,
       racha: 0,
       ratxaMaxima: 0,
       xpTotal: 0,
@@ -47,67 +47,54 @@ export var useGameStore = defineStore('game', {
     },
 
     /**
-     * Completa un hàbit i gestiona la comunicació via Socket i fetch.
+     * Completa un hàbit i gestiona la comunicació via Socket.
      */
     completarHabit: async function (idHabit, socket) {
       var self = this;
-      var hàbit;
+      var habitCercat;
       var i;
 
-      // A. Validar socket
       if (!socket) {
         throw new Error('Socket no disponible');
       }
 
-      // B. Cercar l'hàbit localment
       for (i = 0; i < self.habits.length; i++) {
         if (self.habits[i].id === idHabit) {
-          hàbit = self.habits[i];
+          habitCercat = self.habits[i];
           break;
         }
       }
 
-      if (!hàbit) {
+      if (!habitCercat) {
         return false;
       }
 
-      // C. Processar via Promise clàssica per al socket
       return new Promise(function (resolve) {
         var idTemps;
 
-        // Funció de gestió de la resposta del socket
         var gestionarResposta = function (resposta) {
           socket.off('update_xp', gestionarResposta);
           clearTimeout(idTemps);
 
-          // Validar resposta del backend com confirmació de CUD
-          if (resposta && resposta.xp_total !== undefined && resposta.ratxa_actual !== undefined) {
-            hàbit.completat = true;
-
-            // Refrescar estat des del backend (font de veritat)
-            self.obtenirEstatJoc()
-              .then(function () {
-                resolve(true);
-              })
-              .catch(function () {
-                resolve(true); // Encara que falli el refresh, el socket ha confirmat
-              });
+          if (resposta && (resposta.xp_total !== undefined || resposta.success === true)) {
+            habitCercat.completat = true;
+            self.obtenirEstatJoc().then(function () {
+              resolve(true);
+            });
           } else {
             resolve(false);
           }
         };
 
-        // Timeout de seguretat
         idTemps = setTimeout(function () {
           socket.off('update_xp', gestionarResposta);
           resolve(false);
         }, TEMPS_ESPERA_MS);
 
-        // Escoltar resposta i emetre esdeveniment
         socket.on('update_xp', gestionarResposta);
 
         socket.emit('habit_completed', {
-          user_id: self.usuariId,
+          user_id: self.userId,
           habit_id: idHabit,
           data: new Date().toISOString()
         });
@@ -118,21 +105,9 @@ export var useGameStore = defineStore('game', {
      * Actualitza la ratxa localment.
      */
     actualitzarRatxa: function (novaRatxa) {
-      this.ratxa = novaRatxa;
-    },
-    /**
-     * Actualitza la ratxa localment.
-     */
-    actualitzarRatxa: function (novaRatxa) {
-      this.ratxa = novaRatxa;
+      this.racha = novaRatxa;
     },
 
-    /**
-     * Actualitza l'XP localment.
-     */
-    actualitzarXP: function (xp) {
-      this.xpTotal = xp;
-    },
     /**
      * Actualitza l'XP localment.
      */
@@ -144,13 +119,7 @@ export var useGameStore = defineStore('game', {
      * Estableix l'ID de l'usuari.
      */
     assignarUsuariId: function (id) {
-      this.usuariId = id;
-    },
-    /**
-     * Estableix l'ID de l'usuari.
-     */
-    assignarUsuariId: function (id) {
-      this.usuariId = id;
+      this.userId = id;
     },
 
     /**
@@ -161,9 +130,23 @@ export var useGameStore = defineStore('game', {
     },
 
     /**
+     * Registra un listener per a l'event de missió completada.
+     */
+    registrarListenerMissionCompletada: function (socket, callback) {
+      if (socket) {
+        socket.on('mission_completed', function (data) {
+          console.log('🎯 Missió completada detectada per socket');
+          if (typeof callback === 'function') {
+            callback(data);
+          }
+        });
+      }
+    },
+
+    /**
      * Obté els hàbits des de l'API de Laravel.
      */
-    fetchHabitos: async function () {
+    obtenirHabitos: async function () {
       var self = this;
       var url;
       var resposta;
@@ -193,19 +176,19 @@ export var useGameStore = defineStore('game', {
           h = llistaHabits[i];
           mapejats.push({
             id: h.id,
-            nombre: h.titol || 'Sense nom',
-            descripcion: (h.frequencia_tipus || '') + " - Dificultat: " + (h.dificultat || ''),
-            completado: false,
-            xpReward: XP_PER_DIFICULTAT[h.dificultat] || XP_BASE,
+            nom: h.titol || 'Sense nom',
+            descripcio: (h.frequencia_tipus || '') + " - Dificultat: " + (h.dificultat || ''),
+            completat: !!h.completat,
+            recompensaXP: XP_PER_DIFICULTAT[h.dificultat] || XP_BASE,
             dificultat: h.dificultat
           });
         }
 
-        self.habitos = mapejats;
-        return self.habitos;
+        self.habits = mapejats;
+        return self.habits;
       } catch (error) {
         console.error('Error fetching habits:', error);
-        self.habitos = [];
+        self.habits = [];
         return [];
       }
     },
@@ -213,7 +196,7 @@ export var useGameStore = defineStore('game', {
     /**
      * Obté l'estat del joc (XP, Ratxa) des de l'API de Laravel.
      */
-    fetchGameState: async function () {
+    obtenirEstatJoc: async function () {
       var self = this;
       var url;
       var resposta;
@@ -236,67 +219,21 @@ export var useGameStore = defineStore('game', {
           if (dades.ratxa_actual !== undefined) {
             self.racha = dades.ratxa_actual;
           }
+          if (dades.monedes !== undefined) {
+            self.monedes = dades.monedes;
+          }
+          if (dades.missio_diaria !== undefined) {
+            self.missioDiaria = dades.missio_diaria;
+          }
+          if (dades.missio_completada !== undefined) {
+            self.missioCompletada = dades.missio_completada;
+          }
         }
         return dades;
       } catch (error) {
         console.error('Error fetching game-state:', error);
         return null;
       }
-    },
-
-    /**
-     * Completa un hàbit i gestiona la comunicació via Socket.
-     */
-    completHabit: async function (idHabit, socket) {
-      var self = this;
-      var habitCercat;
-      var i;
-
-      if (!socket) {
-        throw new Error('Socket no disponible');
-      }
-
-      for (i = 0; i < self.habitos.length; i++) {
-        if (self.habitos[i].id === idHabit) {
-          habitCercat = self.habitos[i];
-          break;
-        }
-      }
-
-      if (!habitCercat) {
-        return false;
-      }
-
-      return new Promise(function (resolve) {
-        var idTemps;
-
-        var gestionarResposta = function (resposta) {
-          socket.off('update_xp', gestionarResposta);
-          clearTimeout(idTemps);
-
-          if (resposta && resposta.xp_total !== undefined) {
-            habitCercat.completado = true;
-            self.fetchGameState().then(function () {
-              resolve(true);
-            });
-          } else {
-            resolve(false);
-          }
-        };
-
-        idTemps = setTimeout(function () {
-          socket.off('update_xp', gestionarResposta);
-          resolve(false);
-        }, TEMPS_ESPERA_MS);
-
-        socket.on('update_xp', gestionarResposta);
-
-        socket.emit('habit_completed', {
-          user_id: self.userId,
-          habit_id: idHabit,
-          data: new Date().toISOString()
-        });
-      });
     }
   }
 });

@@ -34,6 +34,7 @@ class HabitResource extends JsonResource
             'frequencia_tipus' => $this->frequencia_tipus,
             'dies_setmana' => $this->dies_setmana,
             'objectiu_vegades' => $this->objectiu_vegades,
+            'completat' => (bool) $this->completat,
         ];
     }
 }

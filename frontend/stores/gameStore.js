@@ -48,9 +48,11 @@ export var useGameStore = defineStore("game", {
 
     /**
      * Completa un hàbit i gestiona la comunicació via Socket.
+     * Completa un hàbit i gestiona la comunicació via Socket.
      */
     completarHabit: async function (idHabit, socket) {
       var self = this;
+      var habitCercat;
       var habitCercat;
       var i;
 
@@ -61,10 +63,12 @@ export var useGameStore = defineStore("game", {
       for (i = 0; i < self.habits.length; i++) {
         if (self.habits[i].id === idHabit) {
           habitCercat = self.habits[i];
+          habitCercat = self.habits[i];
           break;
         }
       }
 
+      if (!habitCercat) {
       if (!habitCercat) {
         return false;
       }
@@ -107,7 +111,7 @@ export var useGameStore = defineStore("game", {
      * Actualitza la ratxa localment.
      */
     actualitzarRatxa: function (novaRatxa) {
-      this.ratxa = novaRatxa;
+      this.racha = novaRatxa;
     },
 
     /**
@@ -143,6 +147,7 @@ export var useGameStore = defineStore("game", {
 
     /**
      * Registra un listener per a l'event de missió completada.
+     * Registra un listener per a l'event de missió completada.
      */
     registrarListenerMissionCompletada: function (socket, callback) {
       if (socket) {
@@ -151,6 +156,8 @@ export var useGameStore = defineStore("game", {
           if (typeof callback === "function") {
             callback(data);
           }
+        });
+      }
         });
       }
     },
@@ -166,6 +173,7 @@ export var useGameStore = defineStore("game", {
       var llistaHabits;
       var h;
       var mapejats = [];
+      var i;
       var i;
 
       try {
@@ -184,6 +192,7 @@ export var useGameStore = defineStore("game", {
 
         if (!resposta.ok) {
           throw new Error("Error en obtenir hàbits");
+          throw new Error("Error en obtenir hàbits");
         }
 
         dadesBrutes = await resposta.json();
@@ -192,8 +201,10 @@ export var useGameStore = defineStore("game", {
           llistaHabits = dadesBrutes;
         } else {
           llistaHabits = dadesBrutes.data || [];
+          llistaHabits = dadesBrutes.data || [];
         }
 
+        for (i = 0; i < llistaHabits.length; i++) {
         for (i = 0; i < llistaHabits.length; i++) {
           h = llistaHabits[i];
           mapejats.push({
@@ -220,6 +231,7 @@ export var useGameStore = defineStore("game", {
 
     /**
      * Obté l'estat del joc (XP, Ratxa) des de l'API de Laravel.
+     * Obté l'estat del joc (XP, Ratxa) des de l'API de Laravel.
      */
     obtenirEstatJoc: async function () {
       var self = this;
@@ -241,6 +253,7 @@ export var useGameStore = defineStore("game", {
           return null;
         }
         if (!resposta.ok) {
+          throw new Error("Error en obtenir estat");
           throw new Error("Error en obtenir estat");
         }
 

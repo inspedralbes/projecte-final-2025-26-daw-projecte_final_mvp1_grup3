@@ -51,7 +51,7 @@
 
       <!-- Footer SideBar -->
       <div class="p-6 border-t border-gray-100 bg-gray-50/50">
-        <NuxtLink to="/Login" class="flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-black text-red-500 hover:bg-red-50 transition-all uppercase tracking-widest">
+        <NuxtLink to="/login" class="flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-black text-red-500 hover:bg-red-50 transition-all uppercase tracking-widest">
           <div class="w-2 h-2 rounded-full bg-red-400"></div>
           Sortir
         </NuxtLink>

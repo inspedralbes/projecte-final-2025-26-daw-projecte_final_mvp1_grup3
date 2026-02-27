@@ -32,7 +32,7 @@ class HabitResource extends JsonResource
         $usuariId = $request->user_id ?? null;
         if ($usuariId) {
             $completat = \App\Models\RegistreActivitat::where('habit_id', $this->id)
-                ->whereHas('habit', function($q) use ($usuariId) {
+                ->whereHas('habit', function ($q) use ($usuariId) {
                     $q->where('usuari_id', $usuariId);
                 })
                 ->whereDate('data', \Carbon\Carbon::today())

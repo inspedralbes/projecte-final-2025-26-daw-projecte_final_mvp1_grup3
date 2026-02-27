@@ -102,18 +102,31 @@
 
         <!-- Dreta: Test de preguntes -->
         <div class="grid grid-cols-2 gap-4 h-full">
-          <!-- Pas 1: Pregunta Maestra -->
-          <template v-if="categoriaSeleccionada === null">
+          <!-- Pas 1: Introducció al Quiz Dinàmic -->
+          <template v-if="!quizIniciat && !quizFinalitzat">
             <div
-              class="col-span-2 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 shadow-sm flex flex-col items-center justify-center"
+              class="col-span-2 bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-8 shadow-sm flex flex-col items-center justify-center text-center"
             >
-              <div class="text-xs font-bold text-gray-600 text-center">
-                En quina àrea et vols centrar?
+              <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 shadow-sm">
+                <span class="text-3xl">✨</span>
               </div>
+              <h3 class="text-lg font-bold text-gray-800 mb-2">Descobreix el teu camí</h3>
+              <p class="text-sm text-gray-600 mb-6">
+                Respon aquestes 16 preguntes i t'assignarem automàticament la millor categoria d'hàbits per a tu.
+              </p>
+              <button
+                @click="iniciarOnboarding"
+                class="bg-green-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors shadow-lg"
+              >
+                COMENÇAR EL TEST
+              </button>
             </div>
+          </template>
+
+          <!-- Pas 2: Preguntes Seqüencials -->
+          <template v-else-if="quizIniciat && !quizFinalitzat">
             <div
-              class="bg-white rounded-xl p-2 shadow-sm flex items-center justify-center cursor-pointer hover:bg-blue-50"
-              @click="seleccionarCategoria('gym')"
+              class="col-span-2 bg-white rounded-2xl p-8 shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center min-h-[300px]"
             >
               <div class="text-xs font-medium text-gray-700">
                 Activitat física
@@ -167,15 +180,13 @@
             </div>
           </template>
 
-          <!-- Pas 2: Preguntes de Profundització -->
-          <template v-else>
+          <!-- Pas 3: Resultat -->
+          <template v-else-if="quizFinalitzat">
             <div
-              v-for="(pregunta, index) in obtenirPreguntesActuals()"
-              :key="pregunta.id"
-              class="bg-white rounded-xl p-3 shadow-sm flex flex-col items-center justify-center overflow-hidden"
+              class="col-span-2 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-xl p-8 shadow-sm flex flex-col items-center justify-center text-center"
             >
-              <div class="text-xs font-bold text-gray-600 text-center mb-2">
-                Pregunta {{ index + 1 }}/{{ llistaPreguntes.length }}
+              <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 shadow-sm">
+                <span class="text-3xl">🎯</span>
               </div>
               <div class="text-xs text-gray-700 text-center leading-tight mb-3">
                 {{ pregunta.pregunta }}
@@ -241,21 +252,15 @@
                   </button>
                 </template>
               </div>
-            </div>
-            <div class="col-span-full mt-2 grid grid-cols-2 gap-2">
+
+              <p class="text-xs text-gray-500 mb-6 px-4">
+                Basant-nos en les teves respostes, aquesta és la millor àrea per començar. Pots canviar-la més endavant si vols.
+              </p>
               <button
-                type="button"
-                @click="seleccionarCategoria(null)"
-                class="w-full bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium py-2 rounded-lg text-xs"
+                @click="quizFinalitzat = false; quizIniciat = false; indexPregunta = 0"
+                class="text-indigo-600 font-bold text-xs hover:underline"
               >
-                TORNAR
-              </button>
-              <button
-                type="button"
-                @click="finalitzarTest"
-                class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 rounded-lg text-xs"
-              >
-                FINALITZAR
+                REPETIR TEST
               </button>
             </div>
           </template>
@@ -265,11 +270,13 @@
   </div>
 </template>
 
-<script>
+<script setup>
 /**
- * Configuració de la pàgina de Registre.
- * Segueix les normes de l'Agent Javascript (ES5 Estricte).
+ * Pàgina de Registre amb Onboarding interactiu.
+ * Refactoritzada a Vue 3 <script setup>.
  */
+import { ref, reactive, computed } from 'vue';
+
 definePageMeta({ layout: false });
 
 export default {

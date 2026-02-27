@@ -95,6 +95,16 @@
               </button>
             </div>
           </div>
+
+          <!-- Icona Ruleta Diària -->
+          <div
+            class="bg-white rounded-2xl shadow-lg p-4 flex items-center justify-center cursor-pointer transition"
+            :class="classeIconaRuleta"
+            @click="obrirModalRuleta"
+            title="Ruleta diària"
+          >
+            <span class="text-sm font-bold">RULETA</span>
+          </div>
         </div>
 
         <!-- CENTRE: El teu Monstre -->
@@ -223,6 +233,48 @@
       </div>
     </div>
 
+    <!-- MODAL DE RULETA DIARIA -->
+    <div v-if="esObertModalRuleta" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="tancarModalRuleta"></div>
+
+      <div class="bg-white rounded-3xl w-full max-w-xl p-6 shadow-2xl relative">
+        <button
+          @click="tancarModalRuleta"
+          class="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-600"
+        >
+          <span class="text-2xl">×</span>
+        </button>
+
+        <div class="flex flex-col items-center gap-4">
+          <h2 class="text-lg font-bold text-gray-800">Ruleta diària</h2>
+          <p class="text-xs text-gray-500">Fes click a la ruleta per tirar</p>
+
+          <div class="relative">
+            <div class="roulette-pointer"></div>
+            <div
+              class="roulette-wheel"
+              :class="classeRuleta"
+              :style="estilRuleta"
+              @click="tirarRuleta"
+            >
+              <div
+                v-for="(premi, index) in ruletaPremis"
+                :key="premi.key"
+                class="roulette-label"
+                :style="estilEtiquetaRuleta(index)"
+              >
+                {{ premi.label }}
+              </div>
+            </div>
+          </div>
+
+          <p v-if="!canSpinRoulette" class="text-xs text-gray-400">
+            Ruleta desactivada fins demà.
+          </p>
+        </div>
+      </div>
+    </div>
+
     <!-- MODAL DE LOGROS (Achivements) -->
     <div v-if="esObertModalLogros" class="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="tancarModalLogros"></div>
@@ -324,6 +376,28 @@ export default {
       errorMissatge: "",
       imatgeMascota: mascotaImg,
       esObertModalLogros: false,
+      esObertModalRuleta: false,
+      ruletaProcessant: false,
+      ruletaRotacio: 0,
+      ruletaDuracioMs: 4000,
+      ruletaPremis: [
+        { key: "xp_50", label: "50 XP" },
+        { key: "xp_150", label: "150 XP" },
+        { key: "xp_500", label: "500 XP" },
+        { key: "coins_1", label: "1 moneda" },
+        { key: "coins_5", label: "5 monedes" },
+        { key: "coins_10", label: "10 monedes" },
+        { key: "shop_item", label: "Objecte botiga" }
+      ],
+      ruletaColors: [
+        "#fde68a",
+        "#bfdbfe",
+        "#fecaca",
+        "#bbf7d0",
+        "#e9d5ff",
+        "#fed7aa",
+        "#c7d2fe"
+      ],
       estilFons: {
         backgroundImage: "url(" + bosqueImg + ")",
         backgroundSize: "cover",
@@ -377,6 +451,31 @@ export default {
     },
     monedes: function () {
       return this.gameStore.monedes;
+    },
+    canSpinRoulette: function () {
+      return this.gameStore.canSpinRoulette;
+    },
+    ruletaUltimaTirada: function () {
+      return this.gameStore.ruletaUltimaTirada;
+    },
+    classeIconaRuleta: function () {
+      if (this.canSpinRoulette) {
+        return "hover:shadow-xl";
+      }
+      return "grayscale opacity-60 cursor-not-allowed";
+    },
+    classeRuleta: function () {
+      if (!this.canSpinRoulette || this.ruletaProcessant) {
+        return "roulette-disabled";
+      }
+      return "";
+    },
+    estilRuleta: function () {
+      return {
+        transform: "rotate(" + this.ruletaRotacio + "deg)",
+        transition: "transform " + (this.ruletaDuracioMs / 1000) + "s cubic-bezier(0.2, 0.8, 0.2, 1)",
+        background: this.obtenirGradientRuleta()
+      };
     }
   },
 
@@ -447,6 +546,10 @@ export default {
         }
       });
 
+      self.socket.on("roulette_result", function (data) {
+        self.gestionarResultatRuleta(data);
+      });
+
       self.gameStore.registrarListenerMissionCompletada(self.socket, function () {
         self.mostrarAlertaMissioCompletada();
       });
@@ -454,6 +557,140 @@ export default {
       self.socket.on("disconnect", function () {
         console.log("❌ Desconectat del servidor de sockets");
       });
+    },
+
+    /**
+     * Obre el modal de la ruleta (si està disponible).
+     */
+    obrirModalRuleta: function () {
+      if (!this.canSpinRoulette) {
+        return;
+      }
+      this.esObertModalRuleta = true;
+    },
+
+    /**
+     * Tanca el modal de la ruleta.
+     */
+    tancarModalRuleta: function () {
+      this.esObertModalRuleta = false;
+    },
+
+    /**
+     * Calcula l'angle de cada segment.
+     */
+    obtenirAngleRuleta: function () {
+      return 360 / this.ruletaPremis.length;
+    },
+
+    /**
+     * Genera el gradient de la ruleta.
+     */
+    obtenirGradientRuleta: function () {
+      var parts = [];
+      var angle = this.obtenirAngleRuleta();
+      var i;
+      for (i = 0; i < this.ruletaPremis.length; i++) {
+        var start = angle * i;
+        var end = angle * (i + 1);
+        var color = this.ruletaColors[i % this.ruletaColors.length];
+        parts.push(color + " " + start + "deg " + end + "deg");
+      }
+      return "conic-gradient(" + parts.join(", ") + ")";
+    },
+
+    /**
+     * Estil per a les etiquetes de la ruleta.
+     */
+    estilEtiquetaRuleta: function (index) {
+      var angle = this.obtenirAngleRuleta();
+      var rot = angle * index + angle / 2;
+      return {
+        transform: "rotate(" + rot + "deg) translateY(-120px) rotate(" + (-rot) + "deg)"
+      };
+    },
+
+    /**
+     * Envia la tirada de ruleta via socket.
+     */
+    tirarRuleta: function () {
+      if (!this.canSpinRoulette || this.ruletaProcessant) {
+        return;
+      }
+      if (!this.socket) {
+        return;
+      }
+      this.ruletaProcessant = true;
+      this.socket.emit("roulette_spin", {});
+    },
+
+    /**
+     * Gestiona el resultat de la ruleta.
+     */
+    gestionarResultatRuleta: function (data) {
+      var self = this;
+      if (!data) {
+        self.ruletaProcessant = false;
+        return;
+      }
+      if (data.error) {
+        self.ruletaProcessant = false;
+        self.mostrarAlertaRuleta("Ruleta", data.error, "error");
+        return;
+      }
+
+      var angle = self.obtenirAngleRuleta();
+      var index = 0;
+      var i;
+      for (i = 0; i < self.ruletaPremis.length; i++) {
+        if (self.ruletaPremis[i].key === data.key) {
+          index = i;
+          break;
+        }
+      }
+      var targetAngle = index * angle + angle / 2;
+      var rotacioFinal = 360 * 5 + (360 - targetAngle);
+      self.ruletaRotacio = rotacioFinal;
+
+      self.gameStore.canSpinRoulette = false;
+      if (data.ruleta_ultima_tirada !== undefined) {
+        self.gameStore.ruletaUltimaTirada = data.ruleta_ultima_tirada;
+      }
+
+      setTimeout(function () {
+        var label;
+        if (data.label) {
+          label = data.label;
+        } else {
+          label = "un premi";
+        }
+        self.mostrarAlertaRuleta("Felicidades!", "Has recibido " + label + "!", "success");
+        self.ruletaProcessant = false;
+      }, self.ruletaDuracioMs);
+    },
+
+    /**
+     * Mostra SweetAlert per la ruleta.
+     */
+    mostrarAlertaRuleta: function (titol, text, icona) {
+      var mostrarAlerta = function () {
+        if (typeof window !== "undefined" && window.Swal) {
+          window.Swal.fire({
+            title: titol,
+            text: text,
+            icon: icona || "success"
+          });
+        }
+      };
+
+      if (typeof window !== "undefined" && window.Swal) {
+        mostrarAlerta();
+      } else if (typeof document !== "undefined") {
+        var script = document.createElement("script");
+        script.src = "https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js";
+        script.onload = mostrarAlerta;
+        document.head.appendChild(script);
+      }
     },
 
     /**
@@ -559,4 +796,47 @@ export default {
 
 <style scoped>
 /* Estils locals per a la pàgina d'inici */
+.roulette-wheel {
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  border: 6px solid #ffffff;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+  position: relative;
+  cursor: pointer;
+}
+
+.roulette-disabled {
+  filter: grayscale(1);
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.roulette-pointer {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-bottom: 18px solid #111827;
+  z-index: 10;
+}
+
+.roulette-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform-origin: center;
+  width: 90px;
+  margin-left: -45px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #111827;
+  text-align: center;
+  user-select: none;
+  pointer-events: none;
+}
 </style>

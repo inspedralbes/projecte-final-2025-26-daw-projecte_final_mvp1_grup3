@@ -21,6 +21,8 @@ export var useGameStore = defineStore("game", {
       ratxaMaxima: 0,
       xpTotal: 0,
       monedes: 0,
+      canSpinRoulette: false,
+      ruletaUltimaTirada: null,
       nivell: 1,
       habits: [],
       missioDiaria: null,
@@ -262,6 +264,12 @@ export var useGameStore = defineStore("game", {
           }
           if (dades.monedes !== undefined) {
             self.monedes = dades.monedes;
+          }
+          if (dades.can_spin_roulette !== undefined) {
+            self.canSpinRoulette = !!dades.can_spin_roulette;
+          }
+          if (dades.ruleta_ultima_tirada !== undefined) {
+            self.ruletaUltimaTirada = dades.ruleta_ultima_tirada;
           }
           if (dades.missio_diaria !== undefined) {
             self.missioDiaria = dades.missio_diaria;

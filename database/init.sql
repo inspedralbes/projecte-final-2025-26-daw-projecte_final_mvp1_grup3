@@ -42,6 +42,7 @@ CREATE TABLE USUARIS (
     nivell INT DEFAULT 1,
     xp_total INT DEFAULT 0,
     monedes INT DEFAULT 0,
+    ruleta_ultima_tirada DATE,
     missio_diaria_id INT, -- FK se añade después de crear la tabla de misiones
     missio_completada BOOLEAN DEFAULT FALSE,
     prohibit BOOLEAN DEFAULT FALSE,

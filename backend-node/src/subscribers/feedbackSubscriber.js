@@ -1,15 +1,33 @@
 'use strict';
 
+//==============================================================================
+//================================ IMPORTS =====================================
+//==============================================================================
+
 /**
  * Subscriptor de Redis per rebre el feedback de Laravel.
  */
 var redis = require('redis');
 
+//==============================================================================
+//================================ VARIABLES ===================================
+//==============================================================================
+
 var subscriber = null;
 var feedbackChannel = 'feedback_channel';
 
+//==============================================================================
+//================================ FUNCIONS ====================================
+//==============================================================================
+
 /**
  * Inicialitza la subscripció i connecta amb Socket.io.
+ */
+/**
+ * Inicialitza la subscripció de Redis i reemet per Socket.io.
+ * Pas A: Crear client Redis i connectar.
+ * Pas B: Subscriure el canal de feedback.
+ * Pas C: Emitir events segons el payload.
  */
 async function init(io) {
   if (subscriber) {
@@ -64,11 +82,22 @@ async function init(io) {
           io.to('user_' + userId).emit('mission_completed', payload.mission_completed);
         }
 
+        // 1c. Resultat de ruleta
+        if (payload.roulette_result) {
+          io.to('user_' + userId).emit('roulette_result', payload.roulette_result);
+        }
+
         // 2. Confirmem l'acció del CRUD al front per tancar el cicle
         // Fem servir "to('user_' + userId)" per a que només li arribi a qui toca
-        var eventName = type === 'PLANTILLA' ? 'plantilla_action_confirmed' : 'habit_action_confirmed';
-        
-        io.to('user_' + userId).emit(eventName, payload);
+        if (type !== 'ROULETTE') {
+          var eventName;
+          if (type === 'PLANTILLA') {
+            eventName = 'plantilla_action_confirmed';
+          } else {
+            eventName = 'habit_action_confirmed';
+          }
+          io.to('user_' + userId).emit(eventName, payload);
+        }
 
         console.log('Feedback enviat a la sala user_' + userId + ' per l acció ' + action);
       }
@@ -77,6 +106,10 @@ async function init(io) {
     }
   });
 }
+
+//==============================================================================
+//================================ EXPORTS =====================================
+//==============================================================================
 
 module.exports = {
   init: init

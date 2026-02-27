@@ -37,6 +37,7 @@ class User extends Model implements JWTSubject
         'nivell',
         'xp_total',
         'monedes',
+        'ruleta_ultima_tirada',
         'missio_diaria_id',
         'missio_completada',
         'ultim_reset_missio',

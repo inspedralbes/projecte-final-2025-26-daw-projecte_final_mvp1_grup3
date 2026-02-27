@@ -64,8 +64,16 @@ class GamificationService
             $ratxaActual = 0;
             $ratxaMaxima = 0;
         } else {
-            $ratxaActual = isset($ratxa->ratxa_actual) ? (int) $ratxa->ratxa_actual : 0;
-            $ratxaMaxima = isset($ratxa->ratxa_maxima) ? (int) $ratxa->ratxa_maxima : 0;
+            if (isset($ratxa->ratxa_actual)) {
+                $ratxaActual = (int) $ratxa->ratxa_actual;
+            } else {
+                $ratxaActual = 0;
+            }
+            if (isset($ratxa->ratxa_maxima)) {
+                $ratxaMaxima = (int) $ratxa->ratxa_maxima;
+            } else {
+                $ratxaMaxima = 0;
+            }
         }
 
         // D. Missió diària
@@ -81,15 +89,31 @@ class GamificationService
         }
 
         $missioCompletada = (bool) $usuari->missio_completada;
-        $monedes = isset($usuari->monedes) ? (int) $usuari->monedes : 0;
+        if (isset($usuari->monedes)) {
+            $monedes = (int) $usuari->monedes;
+        } else {
+            $monedes = 0;
+        }
 
-        // E. Retornar valors normalitzats
+        // E. Estat de la ruleta diària
+        $ruletaUltimaTirada = $usuari->ruleta_ultima_tirada;
+        $potTirarRuleta = true;
+        if ($ruletaUltimaTirada !== null) {
+            $dataTirada = Carbon::parse($ruletaUltimaTirada)->startOfDay();
+            if ($dataTirada->isSameDay(Carbon::today())) {
+                $potTirarRuleta = false;
+            }
+        }
+
+        // F. Retornar valors normalitzats
         return [
             'usuari_id' => $usuariId,
             'xp_total' => (int) $usuari->xp_total,
             'ratxa_actual' => $ratxaActual,
             'ratxa_maxima' => $ratxaMaxima,
             'monedes' => $monedes,
+            'can_spin_roulette' => $potTirarRuleta,
+            'ruleta_ultima_tirada' => $ruletaUltimaTirada,
             'missio_diaria' => $missioDiaria,
             'missio_completada' => $missioCompletada,
         ];

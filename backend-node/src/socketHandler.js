@@ -1,11 +1,20 @@
 "use strict";
 
+//==============================================================================
+//================================ IMPORTS =====================================
+//==============================================================================
+
 /**
  * Gestor d'esdeveniments de Socket.io.
  */
 var habitQueue = require("./queues/habitQueue");
 var plantillaQueue = require("./queues/plantillaQueue");
 var adminQueue = require("./queues/adminQueue");
+var rouletteQueue = require("./queues/rouletteQueue");
+
+//==============================================================================
+//================================ VARIABLES ===================================
+//==============================================================================
 
 /**
  * Map: userId -> { nom, email, connected_at, socketId }
@@ -13,8 +22,18 @@ var adminQueue = require("./queues/adminQueue");
  */
 var usuarisConnectats = {};
 
+//==============================================================================
+//================================ FUNCIONS ====================================
+//==============================================================================
+
 /**
  * Defineix la lògica de recepció de missatges dels clients.
+ */
+/**
+ * Inicialitza la gestió d'esdeveniments de sockets.
+ * Pas A: Escoltar connexions.
+ * Pas B: Registrar listeners d'usuari i admin.
+ * Pas C: Enviar missatges a Redis segons l'acció.
  */
 function init(io) {
   io.on("connection", function (socket) {
@@ -62,6 +81,23 @@ function init(io) {
         await habitQueue.pushToLaravel("TOGGLE", userId, payload);
       } catch (error) {
         console.error("Error gestionant habit_completed:", error);
+      }
+    });
+
+    socket.on("roulette_spin", async function (data) {
+      try {
+        // A. Validar usuari autenticat
+        var usuariId = socket.decoded_token && socket.decoded_token.user_id;
+        if (!usuariId) {
+          console.warn("roulette_spin: usuari no autenticat");
+          return;
+        }
+        // B. Assignar sala d'usuari
+        socket.join("user_" + usuariId);
+        // C. Enviar a la cua de Redis
+        await rouletteQueue.enviarALaravel(usuariId, data || {});
+      } catch (error) {
+        console.error("Error gestionant roulette_spin:", error);
       }
     });
 
@@ -114,12 +150,24 @@ function init(io) {
     });
 
     socket.on("user_register", function (data) {
-      var userId =
-        socket.decoded_token && socket.decoded_token.user_id
-          ? String(socket.decoded_token.user_id)
-          : String(socket.id);
-      var nom = data && data.nom ? data.nom : "Usuari";
-      var email = data && data.email ? data.email : "";
+      var userId;
+      if (socket.decoded_token && socket.decoded_token.user_id) {
+        userId = String(socket.decoded_token.user_id);
+      } else {
+        userId = String(socket.id);
+      }
+      var nom;
+      var email;
+      if (data && data.nom) {
+        nom = data.nom;
+      } else {
+        nom = "Usuari";
+      }
+      if (data && data.email) {
+        email = data.email;
+      } else {
+        email = "";
+      }
       usuarisConnectats[userId] = {
         nom: nom,
         email: email,
@@ -137,6 +185,10 @@ function init(io) {
     });
   });
 }
+
+//==============================================================================
+//================================ EXPORTS =====================================
+//==============================================================================
 
 module.exports = {
   init: init,

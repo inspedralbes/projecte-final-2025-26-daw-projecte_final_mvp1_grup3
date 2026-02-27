@@ -271,13 +271,14 @@
 </template>
 
 <script setup>
+definePageMeta({ layout: false });
+</script>
+
+<script>
 /**
  * Pàgina de Registre amb Onboarding interactiu.
- * Refactoritzada a Vue 3 <script setup>.
+ * Refactoritzada per utilitzar l'API d'opcions correctament.
  */
-import { ref, reactive, computed } from 'vue';
-
-definePageMeta({ layout: false });
 
 export default {
   /**
@@ -285,6 +286,9 @@ export default {
    */
   data: function () {
     return {
+      quizIniciat: false,
+      quizFinalitzat: false,
+      indexPregunta: 0,
       categoriaSeleccionada: null,
       llistaPreguntes: [],
       respostes: {},
@@ -309,7 +313,42 @@ export default {
     };
   },
 
+  computed: {
+    /**
+     * Retorna la pregunta actual segons l'índex.
+     */
+    pregunta: function () {
+      if (this.llistaPreguntes && this.llistaPreguntes.length > 0) {
+        return this.llistaPreguntes[this.indexPregunta];
+      }
+      return { id: 0, pregunta: "" };
+    },
+  },
+
   methods: {
+    /**
+     * Inicia el flux d'onboarding carregant les preguntes dinàmiques.
+     */
+    iniciarOnboarding: async function () {
+      var self = this;
+      self.estaCarregant = true;
+      try {
+        var base = (self.$config.public.apiUrl || "").replace(/\/$/, "");
+        var resposta = await fetch(base + "/api/onboarding/questions");
+        var dades = await resposta.json();
+
+        if (dades && dades.success) {
+          self.llistaPreguntes = dades.preguntes;
+          self.quizIniciat = true;
+          self.indexPregunta = 0;
+        }
+      } catch (err) {
+        console.error("Error en iniciar onboarding:", err);
+      } finally {
+        self.estaCarregant = false;
+      }
+    },
+
     /**
      * Selecciona una categoria i carrega les preguntes des de l'API Laravel.
      */
@@ -360,10 +399,15 @@ export default {
     },
 
     /**
-     * Desa la resposta d'una pregunta específica.
+     * Desa la resposta d'una pregunta específica i avança.
      */
     respondre: function (preguntaId, resposta) {
       this.respostes[preguntaId] = resposta;
+      if (this.indexPregunta < this.llistaPreguntes.length - 1) {
+        this.indexPregunta++;
+      } else {
+        this.quizFinalitzat = true;
+      }
     },
 
     /**

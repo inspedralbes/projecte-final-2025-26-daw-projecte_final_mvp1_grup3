@@ -31,6 +31,7 @@ use Illuminate\Support\Facades\Route;
 Route::post('/auth/login', [AuthController::class, 'login']);
 Route::post('/admin/auth/login', [AdminAuthController::class, 'login']);
 Route::post('/auth/register', [AuthController::class, 'register']);
+Route::get('/onboarding/questions', [\App\Http\Controllers\Api\OnboardingController::class, 'questions']);
 Route::get('/preguntes-registre/{categoria_id}', [PreguntaRegistreController::class, 'index']);
 
 /*

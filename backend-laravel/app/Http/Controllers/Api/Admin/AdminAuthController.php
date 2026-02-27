@@ -30,7 +30,7 @@ class AdminAuthController extends Controller
             'contrasenya' => 'required|string',
         ]);
 
-        $admin = Administrador::where('email', $request->input('email'))->first();
+        $admin = Administrador::where('email', 'ILIKE', $request->input('email'))->first();
 
         if ($admin === null || !Hash::check($request->input('contrasenya'), $admin->contrasenya_hash)) {
             return response()->json(['message' => 'Credencials incorrectes'], 401);

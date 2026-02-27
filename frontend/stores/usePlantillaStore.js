@@ -136,7 +136,7 @@ export var usePlantillaStore = defineStore("plantilla", {
 
         if (resposta.status === 401) {
           authStore.logout();
-          await navigateTo("/Login");
+          await navigateTo("/login");
           this.plantilles = [];
           return [];
         }

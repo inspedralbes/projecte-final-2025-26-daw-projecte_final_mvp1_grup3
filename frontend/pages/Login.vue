@@ -145,9 +145,11 @@
   </div>
 </template>
 
-<script>
+<script setup>
 definePageMeta({ layout: false });
+</script>
 
+<script>
 export default {
   data: function () {
     return {

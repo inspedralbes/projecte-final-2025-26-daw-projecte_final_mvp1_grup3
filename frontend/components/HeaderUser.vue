@@ -3,15 +3,13 @@
     <nav class="w-full flex items-center justify-between px-4">
       
       <NuxtLink to="/home" class="brand">
-      <NuxtLink to="/home" class="brand">
         <img :src="logo" alt="Loopy logo" class="logo-img"/>
         <span class="app-name">Loopy</span>
       </NuxtLink>
 
       <ul class="flex-1 flex items-center justify-center space-x-6 list-none m-0 p-0">
         <li>
-          <NuxtLink to="/home" class="nav-link">Home</NuxtLink>
-          <NuxtLink to="/home" class="nav-link">Home</NuxtLink>
+          <NuxtLink to="/home" class="nav-link">Home</NuxtLink> 
         </li>
         <li>
           <NuxtLink to="/habits" class="nav-link">Crear</NuxtLink>

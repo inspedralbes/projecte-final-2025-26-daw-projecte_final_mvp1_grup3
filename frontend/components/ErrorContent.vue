@@ -21,7 +21,7 @@
             Tornar
           </NuxtLink>
           <NuxtLink
-            to="/Login"
+            to="/login"
             class="px-6 py-3 bg-green-600 text-white font-bold rounded-xl hover:bg-green-700 transition-all duration-300 uppercase tracking-widest text-xs"
           >
             Anar al Login

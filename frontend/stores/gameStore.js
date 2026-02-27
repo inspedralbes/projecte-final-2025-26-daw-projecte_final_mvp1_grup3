@@ -69,7 +69,6 @@ export var useGameStore = defineStore("game", {
       }
 
       if (!habitCercat) {
-      if (!habitCercat) {
         return false;
       }
 
@@ -158,8 +157,6 @@ export var useGameStore = defineStore("game", {
           }
         });
       }
-        });
-      }
     },
 
     /**
@@ -186,7 +183,7 @@ export var useGameStore = defineStore("game", {
 
         if (resposta.status === 401) {
           authStore.logout();
-          await navigateTo("/Login");
+          await navigateTo("/login");
           return [];
         }
 
@@ -201,10 +198,8 @@ export var useGameStore = defineStore("game", {
           llistaHabits = dadesBrutes;
         } else {
           llistaHabits = dadesBrutes.data || [];
-          llistaHabits = dadesBrutes.data || [];
         }
 
-        for (i = 0; i < llistaHabits.length; i++) {
         for (i = 0; i < llistaHabits.length; i++) {
           h = llistaHabits[i];
           mapejats.push({
@@ -249,11 +244,10 @@ export var useGameStore = defineStore("game", {
 
         if (resposta.status === 401) {
           authStore.logout();
-          await navigateTo("/Login");
+          await navigateTo("/login");
           return null;
         }
         if (!resposta.ok) {
-          throw new Error("Error en obtenir estat");
           throw new Error("Error en obtenir estat");
         }
 

@@ -78,7 +78,7 @@ services:
       REDIS_READ_TIMEOUT: 60
       REDIS_READ_WRITE_TIMEOUT: 60
       REDIS_PREFIX: ""
-      JWT_SECRET: ${JWT_SECRET:-shared-secret-change-in-production}
+      JWT_SECRET: ${JWT_SECRET:-4b2e95c71827e0f29601e4566112841c47b7fe53eab506fb3884be7e8735c623}
       CACHE_DRIVER: redis
       SESSION_DRIVER: redis
       QUEUE_CONNECTION: redis
@@ -118,7 +118,7 @@ services:
       REDIS_READ_TIMEOUT: 60
       REDIS_READ_WRITE_TIMEOUT: 60
       REDIS_PREFIX: ""
-      JWT_SECRET: ${JWT_SECRET:-shared-secret-change-in-production}
+      JWT_SECRET: ${JWT_SECRET:-4b2e95c71827e0f29601e4566112841c47b7fe53eab506fb3884be7e8735c623}
     volumes:
       - ../backend-laravel:/var/www
       - ../database:/var/database:ro
@@ -190,7 +190,7 @@ services:
       REDIS_READ_TIMEOUT: 60
       REDIS_READ_WRITE_TIMEOUT: 60
       REDIS_PREFIX: ""
-      JWT_SECRET: ${JWT_SECRET:-shared-secret-change-in-production}
+      JWT_SECRET: ${JWT_SECRET:-4b2e95c71827e0f29601e4566112841c47b7fe53eab506fb3884be7e8735c623}
     volumes:
       - ../backend-laravel:/var/www
       - ../database:/var/database:ro
@@ -215,7 +215,7 @@ services:
       PORT: 3001
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      JWT_SECRET: ${JWT_SECRET:-shared-secret-change-in-production}
+      JWT_SECRET: ${JWT_SECRET:-4b2e95c71827e0f29601e4566112841c47b7fe53eab506fb3884be7e8735c623}
       LARAVEL_URL: http://backend-laravel:8000
     volumes:
       - ../backend-node:/app

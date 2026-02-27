@@ -77,7 +77,7 @@ var route = useRoute();
 
 function sortir() {
   useAuthStore().logout();
-  navigateTo('/Login');
+  navigateTo('/login');
 }
 
 var menuPrincipal = [

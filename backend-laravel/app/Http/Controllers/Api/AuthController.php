@@ -32,7 +32,7 @@ class AuthController extends Controller
             'contrasenya' => 'required|string',
         ]);
 
-        $usuari = User::where('email', $request->input('email'))->first();
+        $usuari = User::where('email', 'ILIKE', $request->input('email'))->first();
 
         if ($usuari === null || !Hash::check($request->input('contrasenya'), $usuari->contrasenya_hash)) {
             return response()->json(['message' => 'Credencials incorrectes'], 401);

@@ -9,7 +9,7 @@ export default defineNuxtRouteMiddleware(function (to, from) {
   authStore.loadFromStorage();
 
   var path = to.path || "";
-  var rutasPubliques = ["/Login", "/login", "/registre", "/"];
+  var rutasPubliques = ["/login", "/registre", "/"];
   var esPublica = false;
   // B. Comprovar si la ruta actual és pública
   for (var i = 0; i < rutasPubliques.length; i++) {
@@ -35,14 +35,14 @@ export default defineNuxtRouteMiddleware(function (to, from) {
           return navigateTo("/home");
         }
       }
-      return navigateTo("/Login");
+      return navigateTo("/login");
     }
     return;
   }
 
   // E. Rutes protegides: exigeix token vàlid
   if (!authStore.token || !authStore.isAuthenticated) {
-    return navigateTo("/Login");
+    return navigateTo("/login");
   }
 
   // F. Comprovar rol: admin només a /admin, user només a rutes no-admin

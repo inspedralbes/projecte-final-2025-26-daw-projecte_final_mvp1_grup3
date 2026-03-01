@@ -60,9 +60,10 @@ Leyenda:
 
 ## 4.3 Sistema de progresión y recompensas
 - [x] (HECHA) Acumulación de XP al completar hábitos.
-  - **Socket Node→Front:** `update_xp` con `{"xp_total":1200,"ratxa_actual":3,"ratxa_maxima":5,"monedes":25}`.
-- [ ] (FALTA) Subida automática de nivel según umbrales de XP.
-  - **JSON sockets/Redis (óptimo):** `update_xp` incluir `nivell`.
+  - **Socket Node→Front:** `update_xp` con `{"xp_total":1200,"ratxa_actual":3,"ratxa_maxima":5,"monedes":25,"nivell":2,"xp_actual_nivel":200,"xp_objetivo_nivel":1200}`.
+- [x] (HECHA) Subida automática de nivel según umbrales de XP.
+  - **Socket Node→Front:** `level_up` con `{"nivell":3,"bonus_monedes":10,"xp_total":2400,"monedes":120}`.
+  - **BD:** `usuaris.xp_actual_nivel`, `usuaris.xp_objetivo_nivel`.
 - [x] (HECHA) Logros/insignias con condiciones y desbloqueo.
   - **Read JSON:** `GET /api/logros` → `[{"id":1,"nom":"...","obtingut":true}]`
   - **XP (HECHA):** `HabitService::processarConfirmacioHabit` suma XP y monedes; feedback `update_xp`.
@@ -70,10 +71,10 @@ Leyenda:
   - **Nivel (FALTA):** añadir en `HabitService` o `GamificationService` actualización de `usuaris.nivell`.
 
 ## 4.4 Ratxes y fallos
-- [x] (DIFERENTE) Ratxa: se actualiza al completar hábitos, pero no hay reset diario automático.
+- [x] (HECHA) Ratxa: se actualiza al completar hábitos y reset diario automático.
   - **Socket Node→Front:** `update_xp` incluye `ratxa_actual`/`ratxa_maxima`.
-- [ ] (FALTA) Trencamiento de ratxa por inactividad diaria al finalizar el día (falta el job/cron de reset).
-  - **JSON sockets/Redis:** N/A (job interno).
+- [x] (HECHA) Trencamiento de ratxa por inactividad diaria al finalizar el día.
+  - **Redis→Node→Front:** evento `streak_broken` con `{"ratxa_anterior":5,"ratxa_actual":0,"data":"2026-03-01"}`.
 - [ ] (FALTA) Impacto visual de la mascota por inactividad.
   - **JSON sockets/Redis:** N/A.
   - **Ratxa actual (HECHA):** `HabitService::actualitzarRatxa`.
@@ -85,7 +86,7 @@ Leyenda:
   - **Socket Node→Front:** `update_xp` con XP/monedes.
 - [x] (HECHA) Frecuencia diaria por defecto (UI).
   - **JSON sockets/Redis:** N/A.
-- [x] (DIFERENTE) Persistencia ratxa volátil sin reset diario automático.
+- [x] (HECHA) Persistencia ratxa volátil con reset diario automático.
   - **JSON sockets/Redis:** N/A.
 - [x] (HECHA) Lógica de overachieving y cap diario de XP (no XP extra por encima del 100%).
   - **JSON sockets/Redis:** ver PROGRESS/COMPLETE en 4.2.
@@ -120,8 +121,8 @@ Leyenda:
 ## 8. Casos límite y escenarios especiales
 - [ ] (FALTA) Mascota cambia estado por inactividad.
   - **JSON sockets/Redis:** N/A.
-- [ ] (FALTA) XP proporcional en hábitos incompletos.
-  - **JSON sockets/Redis:** N/A.
+- [x] (HECHA) XP proporcional en hábitos incompletos (job diario).
+  - **JSON sockets/Redis:** feedback `update_xp` tras aplicar proporcional.
 - [ ] (FALTA) Fallback a plantillas si IA falla.
   - **JSON sockets/Redis:** N/A.
   - **Mascota (FALTA):** estado backend + UI.

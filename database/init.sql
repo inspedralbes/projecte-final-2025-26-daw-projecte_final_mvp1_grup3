@@ -41,6 +41,8 @@ CREATE TABLE USUARIS (
     contrasenya_hash VARCHAR(255) NOT NULL,
     nivell INT DEFAULT 1,
     xp_total INT DEFAULT 0,
+    xp_actual_nivel INT DEFAULT 0,
+    xp_objetivo_nivel INT DEFAULT 1000,
     monedes INT DEFAULT 0,
     ruleta_ultima_tirada DATE,
     missio_diaria_id INT, -- FK se añade después de crear la tabla de misiones

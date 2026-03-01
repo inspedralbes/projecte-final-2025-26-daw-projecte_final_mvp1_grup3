@@ -824,6 +824,9 @@ export default {
           mapejat = self.habitStore.mapejarHabitDesDeApi(pàrrega.habit);
           self.habitStore.guardarOActualitzarHabit(mapejat);
           self.netejarFormulari();
+          if (pàrrega.action === "CREATE") {
+            self.mostrarAlertaHabitCreat();
+          }
         }
       } else if (pàrrega.action === "DELETE") {
         if (pàrrega.habit && pàrrega.habit.id) {
@@ -845,6 +848,30 @@ export default {
       this.formulari.objectiuVegades = 1;
       this.formulari.unitat = "vegades";
       this.formulari.dificultat = "facil";
+    },
+
+    /**
+     * Mostra SweetAlert quan es crea un hàbit.
+     */
+    mostrarAlertaHabitCreat: function () {
+      var mostrarAlerta = function () {
+        if (typeof window !== "undefined" && window.Swal) {
+          window.Swal.fire({
+            title: "Hábito creado",
+            text: "El hábito se ha creado correctamente.",
+            icon: "success"
+          });
+        }
+      };
+
+      if (typeof window !== "undefined" && window.Swal) {
+        mostrarAlerta();
+      } else if (typeof document !== "undefined") {
+        var script = document.createElement("script");
+        script.src = "https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js";
+        script.onload = mostrarAlerta;
+        document.head.appendChild(script);
+      }
     },
 
     /**

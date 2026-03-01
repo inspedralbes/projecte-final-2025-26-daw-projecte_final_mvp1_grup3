@@ -24,6 +24,8 @@ export var useGameStore = defineStore("game", {
       canSpinRoulette: false,
       ruletaUltimaTirada: null,
       nivell: 1,
+      xpActualNivel: 0,
+      xpObjetivoNivel: 1000,
       habits: [],
       habitProgress: {},
       missioDiaria: null,
@@ -231,6 +233,15 @@ export var useGameStore = defineStore("game", {
         if (dades) {
           if (dades.xp_total !== undefined) {
             self.xpTotal = dades.xp_total;
+          }
+          if (dades.nivell !== undefined) {
+            self.nivell = dades.nivell;
+          }
+          if (dades.xp_actual_nivel !== undefined) {
+            self.xpActualNivel = dades.xp_actual_nivel;
+          }
+          if (dades.xp_objetivo_nivel !== undefined) {
+            self.xpObjetivoNivel = dades.xp_objetivo_nivel;
           }
           if (dades.ratxa_actual !== undefined) {
             this.ratxa = dades.ratxa_actual;

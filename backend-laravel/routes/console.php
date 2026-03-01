@@ -9,3 +9,13 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 // Redis worker: ejecutar en un proceso aparte con php artisan habits:redis-worker
+
+// Reset diari de ratxes (Europe/Madrid) a les 00:00
+Schedule::command('ratxes:reset-diary')
+    ->dailyAt('00:00')
+    ->timezone('Europe/Madrid');
+
+// XP proporcional diari a les 00:05 (Europe/Madrid)
+Schedule::command('habits:partial-xp')
+    ->dailyAt('00:05')
+    ->timezone('Europe/Madrid');

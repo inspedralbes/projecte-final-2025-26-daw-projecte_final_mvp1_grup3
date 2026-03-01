@@ -72,9 +72,21 @@ async function init(io) {
         var type = payload.type; // Get type from payload
         var action = payload.action;
 
+        // 0. Event específic: ratxa trencada
+        if (payload.event === 'streak_broken') {
+          io.to('user_' + userId).emit('streak_broken', payload);
+          console.log('Streak broken enviat a la sala user_' + userId);
+          return;
+        }
+
         // 1. Enviem l'actualització d'XP si Laravel la inclou
         if (payload.xp_update) {
           io.to('user_' + userId).emit('update_xp', payload.xp_update);
+        }
+
+        // 1a. Si hi ha level_up, emetre event
+        if (payload.level_up) {
+          io.to('user_' + userId).emit('level_up', payload.level_up);
         }
 
         // 1b. Si s'ha completat una missió diària, emetre mission_completed
@@ -89,6 +101,9 @@ async function init(io) {
 
         // 2. Confirmem l'acció del CRUD al front per tancar el cicle
         // Fem servir "to('user_' + userId)" per a que només li arribi a qui toca
+        if (payload.action === 'PARTIAL_XP') {
+          return;
+        }
         if (type !== 'ROULETTE') {
           var eventName;
           if (type === 'PLANTILLA') {

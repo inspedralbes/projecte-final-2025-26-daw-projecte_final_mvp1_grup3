@@ -54,8 +54,16 @@
               <div
                 class="flex justify-center items-center gap-1 text-xs text-gray-600"
               >
-                <span>Lv 1</span>
-                <div class="w-20 h-1 bg-gray-200 rounded-full"></div>
+                <span>Lv {{ nivell }}</span>
+                <div class="w-20 h-1 bg-gray-200 rounded-full overflow-hidden">
+                  <div
+                    class="h-1 bg-blue-500"
+                    :style="{ width: percentatgeNivell + '%' }"
+                  ></div>
+                </div>
+                <span class="text-[10px] text-gray-500">
+                  {{ xpActualNivel }}/{{ xpObjetivoNivel }}
+                </span>
               </div>
             </div>
           </div>
@@ -247,6 +255,12 @@
       @invalid-complete="mostrarAvisIncomplet"
     />
 
+    <StreakBrokenModal
+      :is-open="esObertModalRatxa"
+      :ratxa-anterior="ratxaAnteriorModal"
+      @close="tancarModalRatxa"
+    />
+
     <!-- MODAL DE RULETA DIARIA -->
     <div v-if="esObertModalRuleta" class="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="tancarModalRuleta"></div>
@@ -372,6 +386,7 @@
 import { useGameStore } from "~/stores/gameStore.js";
 import { useLogroStore } from "~/stores/useLogroStore.js";
 import HabitProgressModal from "~/components/home/HabitProgressModal.vue";
+import StreakBrokenModal from "~/components/home/StreakBrokenModal.vue";
 import bosqueImg from "~/assets/img/Bosque.png";
 import mascotaImg from "~/assets/img/Mascota.png";
 
@@ -381,7 +396,8 @@ import mascotaImg from "~/assets/img/Mascota.png";
  */
 export default {
   components: {
-    HabitProgressModal: HabitProgressModal
+    HabitProgressModal: HabitProgressModal,
+    StreakBrokenModal: StreakBrokenModal
   },
   /**
    * Configuració de l'estat local.
@@ -396,6 +412,8 @@ export default {
       esObertModalLogros: false,
       esObertModalRuleta: false,
       esObertModalHabit: false,
+      esObertModalRatxa: false,
+      ratxaAnteriorModal: 0,
       habitSeleccionat: null,
       ruletaProcessant: false,
       ruletaRotacio: 0,
@@ -438,6 +456,28 @@ export default {
     },
     xpTotal: function () {
       return this.gameStore.xpTotal;
+    },
+    nivell: function () {
+      return this.gameStore.nivell || 1;
+    },
+    xpActualNivel: function () {
+      return this.gameStore.xpActualNivel || 0;
+    },
+    xpObjetivoNivel: function () {
+      return this.gameStore.xpObjetivoNivel || 1000;
+    },
+    percentatgeNivell: function () {
+      if (!this.xpObjetivoNivel || this.xpObjetivoNivel <= 0) {
+        return 0;
+      }
+      var percent = (this.xpActualNivel / this.xpObjetivoNivel) * 100;
+      if (percent > 100) {
+        percent = 100;
+      }
+      if (percent < 0) {
+        percent = 0;
+      }
+      return Math.round(percent);
     },
     habits: function () {
       return this.gameStore.habits;
@@ -616,6 +656,14 @@ export default {
     },
 
     /**
+     * Tanca el modal de ratxa trencada.
+     */
+    tancarModalRatxa: function () {
+      this.esObertModalRatxa = false;
+      this.ratxaAnteriorModal = 0;
+    },
+
+    /**
      * Incrementa el progrés de l'hàbit seleccionat.
      */
     incrementarHabit: function () {
@@ -703,7 +751,19 @@ export default {
           if (payload.habit && payload.habit.id) {
             self.actualitzarProgresLocal(payload.habit.id, self.obtenirProgres(payload.habit.id), true);
           }
+          self.mostrarAlertaHabitCompletat();
         }
+      });
+
+      self.socket.on("streak_broken", function (payload) {
+        var anterior = payload && payload.ratxa_anterior ? payload.ratxa_anterior : 0;
+        self.ratxaAnteriorModal = anterior;
+        self.esObertModalRatxa = true;
+        self.gameStore.obtenirEstatJoc();
+      });
+
+      self.socket.on("level_up", function (data) {
+        self.mostrarAlertaLevelUp(data);
       });
 
       self.socket.on("roulette_result", function (data) {
@@ -839,6 +899,56 @@ export default {
             title: titol,
             text: text,
             icon: icona || "success"
+          });
+        }
+      };
+
+      if (typeof window !== "undefined" && window.Swal) {
+        mostrarAlerta();
+      } else if (typeof document !== "undefined") {
+        var script = document.createElement("script");
+        script.src = "https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js";
+        script.onload = mostrarAlerta;
+        document.head.appendChild(script);
+      }
+    },
+
+    /**
+     * Mostra SweetAlert quan es completa un hàbit.
+     */
+    mostrarAlertaHabitCompletat: function () {
+      var mostrarAlerta = function () {
+        if (typeof window !== "undefined" && window.Swal) {
+          window.Swal.fire({
+            title: "Felicidades!",
+            text: "Has completado un hábito!",
+            icon: "success"
+          });
+        }
+      };
+
+      if (typeof window !== "undefined" && window.Swal) {
+        mostrarAlerta();
+      } else if (typeof document !== "undefined") {
+        var script = document.createElement("script");
+        script.src = "https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js";
+        script.onload = mostrarAlerta;
+        document.head.appendChild(script);
+      }
+    },
+
+    /**
+     * Mostra SweetAlert quan es puja de nivell.
+     */
+    mostrarAlertaLevelUp: function (data) {
+      var nivell = data && data.nivell ? data.nivell : this.nivell;
+      var bonusMonedes = data && data.bonus_monedes ? data.bonus_monedes : 10;
+      var mostrarAlerta = function () {
+        if (typeof window !== "undefined" && window.Swal) {
+          window.Swal.fire({
+            title: "Nivel aumentado!",
+            text: "Has subido al nivel " + nivell + ". Has conseguido +" + bonusMonedes + " monedas.",
+            icon: "success"
           });
         }
       };

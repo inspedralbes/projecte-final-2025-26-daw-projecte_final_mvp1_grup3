@@ -45,6 +45,9 @@ class GamificationService
             return [
                 'usuari_id' => $usuariId,
                 'xp_total' => 0,
+                'nivell' => 1,
+                'xp_actual_nivel' => 0,
+                'xp_objetivo_nivel' => 1000,
                 'ratxa_actual' => 0,
                 'ratxa_maxima' => 0,
                 'monedes' => 0,
@@ -109,6 +112,9 @@ class GamificationService
         return [
             'usuari_id' => $usuariId,
             'xp_total' => (int) $usuari->xp_total,
+            'nivell' => isset($usuari->nivell) ? (int) $usuari->nivell : 1,
+            'xp_actual_nivel' => isset($usuari->xp_actual_nivel) ? (int) $usuari->xp_actual_nivel : 0,
+            'xp_objetivo_nivel' => isset($usuari->xp_objetivo_nivel) ? (int) $usuari->xp_objetivo_nivel : 1000,
             'ratxa_actual' => $ratxaActual,
             'ratxa_maxima' => $ratxaMaxima,
             'monedes' => $monedes,

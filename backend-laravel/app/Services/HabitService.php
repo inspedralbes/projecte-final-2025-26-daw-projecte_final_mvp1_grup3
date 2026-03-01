@@ -49,6 +49,13 @@ class HabitService
     private const MONEDES_DEFECTE = 2;
 
     /**
+     * Configuració de nivell.
+     */
+    private const XP_BASE_NIVELL = 1000;
+    private const MULTIPLICADOR_NIVELL = 1.2;
+    private const BONUS_MONEDES_NIVELL = 10;
+
+    /**
      * Servei de feedback per Redis.
      */
     private RedisFeedbackService $feedbackService;
@@ -235,6 +242,9 @@ class HabitService
         if ($missionCompleted !== null) {
             $payload['mission_completed'] = $missionCompleted;
         }
+        if (isset($resultatComplete) && is_array($resultatComplete) && isset($resultatComplete['level_up'])) {
+            $payload['level_up'] = $resultatComplete['level_up'];
+        }
 
         // D. Publicar feedback a Redis
         $this->feedbackService->publicarPayload($payload);
@@ -320,11 +330,43 @@ class HabitService
         $xpGuanyada = $this->calcularXPSegonsDificultat($habit->dificultat);
         $monedesGuanyades = $this->calcularMonedesSegonsDificultat($habit->dificultat);
 
+        $levelUpData = null;
+
         // D. Executar tot dins d'una transacció
-        DB::transaction(function () use ($habit, $usuariId, $dataActivitat, $timestampComplet, $xpGuanyada, $monedesGuanyades) {
-            // D1. Actualitzar xp_total de l'usuari a la taula USUARIS
-            User::where('id', $usuariId)->increment('xp_total', $xpGuanyada);
-            User::where('id', $usuariId)->increment('monedes', $monedesGuanyades);
+        DB::transaction(function () use (
+            $habit,
+            $usuariId,
+            $dataActivitat,
+            $timestampComplet,
+            $xpGuanyada,
+            $monedesGuanyades,
+            &$levelUpData
+        ) {
+            // D1. Actualitzar XP/Nivell/Monedes de l'usuari
+            $usuari = User::where('id', $usuariId)->lockForUpdate()->first();
+            if ($usuari === null) {
+                throw new \RuntimeException('Usuari no trobat.');
+            }
+
+            $nivellData = $this->aplicarXpINivell($usuari, $xpGuanyada);
+            $monedesTotals = (int) $usuari->monedes + $monedesGuanyades + $nivellData['bonus_monedes'];
+
+            $usuari->update([
+                'xp_total' => $nivellData['xp_total'],
+                'nivell' => $nivellData['nivell'],
+                'xp_actual_nivel' => $nivellData['xp_actual_nivel'],
+                'xp_objetivo_nivel' => $nivellData['xp_objetivo_nivel'],
+                'monedes' => $monedesTotals,
+            ]);
+
+            if ($nivellData['level_up'] === true) {
+                $levelUpData = [
+                    'nivell' => $nivellData['nivell'],
+                    'bonus_monedes' => self::BONUS_MONEDES_NIVELL,
+                    'xp_total' => $nivellData['xp_total'],
+                    'monedes' => $monedesTotals,
+                ];
+            }
 
             // D2. Obtenir o crear la ratxa de l'usuari i actualitzar-la
             $ratxa = Ratxa::firstOrCreate(
@@ -376,16 +418,23 @@ class HabitService
         }
 
         $monedes = isset($usuari->monedes) ? (int) $usuari->monedes : 0;
+        $nivell = isset($usuari->nivell) ? (int) $usuari->nivell : 1;
+        $xpActualNivell = isset($usuari->xp_actual_nivel) ? (int) $usuari->xp_actual_nivel : 0;
+        $xpObjectiuNivell = isset($usuari->xp_objetivo_nivel) ? (int) $usuari->xp_objetivo_nivel : self::XP_BASE_NIVELL;
 
         return [
             'success' => true,
             'completed_today' => true,
             'xp_update' => [
                 'xp_total' => (int) $usuari->xp_total,
+                'nivell' => $nivell,
+                'xp_actual_nivel' => $xpActualNivell,
+                'xp_objetivo_nivel' => $xpObjectiuNivell,
                 'ratxa_actual' => $ratxaActual,
                 'ratxa_maxima' => $ratxaMaxima,
                 'monedes' => $monedes,
             ],
+            'level_up' => $levelUpData,
         ];
     }
 
@@ -584,6 +633,51 @@ class HabitService
     }
 
     /**
+     * Reseteja ratxes per inactivitat diària segons timezone Europe/Madrid.
+     * Retorna el nombre de ratxes resetejades i emet feedback per a cada usuari.
+     */
+    public function processarResetRatxesDiaries(?Carbon $dataActual = null): int
+    {
+        $avui = $dataActual ? $dataActual->copy() : Carbon::now('Europe/Madrid');
+        $avui = $avui->setTimezone('Europe/Madrid')->startOfDay();
+        $ahir = $avui->copy()->subDay();
+
+        $ratxes = Ratxa::where('ratxa_actual', '>', 0)->get();
+        $resetejades = 0;
+
+        foreach ($ratxes as $ratxa) {
+            if ($ratxa->ultima_data === null) {
+                continue;
+            }
+
+            $ultimaData = Carbon::parse($ratxa->ultima_data, 'Europe/Madrid')->startOfDay();
+
+            // Si l'última activitat és anterior a ahir, la ratxa es trenca
+            if ($ultimaData->lt($ahir)) {
+                $ratxaAnterior = (int) $ratxa->ratxa_actual;
+                $ratxa->update([
+                    'ratxa_actual' => 0,
+                    'ultima_data' => null,
+                ]);
+
+                $this->feedbackService->publicarPayload([
+                    'event' => 'streak_broken',
+                    'action' => 'STREAK_BROKEN',
+                    'user_id' => (int) $ratxa->usuari_id,
+                    'ratxa_anterior' => $ratxaAnterior,
+                    'ratxa_actual' => 0,
+                    'data' => $avui->toDateString(),
+                    'message' => "Tu racha de {$ratxaAnterior} días se ha roto!",
+                ]);
+
+                $resetejades++;
+            }
+        }
+
+        return $resetejades;
+    }
+
+    /**
      * Crea un hàbit nou per a l'usuari.
      *
      * @param  int  $usuariId
@@ -714,5 +808,194 @@ class HabitService
         }
 
         return $dades;
+    }
+
+    /**
+     * Calcula l'objectiu d'XP per al nivell indicat.
+     */
+    private function calcularObjectiuNivell(int $nivell): int
+    {
+        if ($nivell < 1) {
+            $nivell = 1;
+        }
+        $objectiu = self::XP_BASE_NIVELL * pow(self::MULTIPLICADOR_NIVELL, $nivell - 1);
+        return (int) round($objectiu);
+    }
+
+    /**
+     * Normalitza nivells a partir del total d'XP si cal.
+     *
+     * @return array{nivell:int,xp_actual_nivel:int,xp_objetivo_nivel:int}
+     */
+    private function normalitzarNivell(User $usuari): array
+    {
+        $nivell = isset($usuari->nivell) ? (int) $usuari->nivell : 1;
+        $xpActual = isset($usuari->xp_actual_nivel) ? (int) $usuari->xp_actual_nivel : 0;
+        $xpObjectiu = isset($usuari->xp_objetivo_nivel) ? (int) $usuari->xp_objetivo_nivel : 0;
+
+        if ($xpObjectiu <= 0) {
+            $xpObjectiu = $this->calcularObjectiuNivell($nivell);
+        }
+
+        if ($xpActual < 0 || $xpActual >= $xpObjectiu) {
+            $xpTotal = isset($usuari->xp_total) ? (int) $usuari->xp_total : 0;
+            $nivell = 1;
+            $xpObjectiu = $this->calcularObjectiuNivell($nivell);
+            $restant = $xpTotal;
+            while ($restant >= $xpObjectiu) {
+                $restant -= $xpObjectiu;
+                $nivell++;
+                $xpObjectiu = $this->calcularObjectiuNivell($nivell);
+            }
+            $xpActual = $restant;
+        }
+
+        return [
+            'nivell' => $nivell,
+            'xp_actual_nivel' => $xpActual,
+            'xp_objetivo_nivel' => $xpObjectiu,
+        ];
+    }
+
+    /**
+     * Aplica XP i calcula canvi de nivell.
+     *
+     * @return array{xp_total:int,nivell:int,xp_actual_nivel:int,xp_objetivo_nivel:int,level_up:bool,bonus_monedes:int}
+     */
+    private function aplicarXpINivell(User $usuari, int $xpAfegida): array
+    {
+        $nivellData = $this->normalitzarNivell($usuari);
+        $nivell = $nivellData['nivell'];
+        $xpActual = $nivellData['xp_actual_nivel'];
+        $xpObjectiu = $nivellData['xp_objetivo_nivel'];
+
+        $xpActual += $xpAfegida;
+        $levelUp = false;
+        $bonusMonedes = 0;
+
+        while ($xpActual >= $xpObjectiu) {
+            $xpActual -= $xpObjectiu;
+            $nivell++;
+            $levelUp = true;
+            $bonusMonedes += self::BONUS_MONEDES_NIVELL;
+            $xpObjectiu = $this->calcularObjectiuNivell($nivell);
+        }
+
+        $xpTotal = isset($usuari->xp_total) ? (int) $usuari->xp_total : 0;
+        $xpTotal += $xpAfegida;
+
+        return [
+            'xp_total' => $xpTotal,
+            'nivell' => $nivell,
+            'xp_actual_nivel' => $xpActual,
+            'xp_objetivo_nivel' => $xpObjectiu,
+            'level_up' => $levelUp,
+            'bonus_monedes' => $bonusMonedes,
+        ];
+    }
+
+    /**
+     * Processa l'XP proporcional diari per hàbits incomplets.
+     */
+    public function processarXpProporcionalDiari(?Carbon $dataActual = null): int
+    {
+        $avui = $dataActual ? $dataActual->copy() : Carbon::now('Europe/Madrid');
+        $avui = $avui->setTimezone('Europe/Madrid')->startOfDay();
+        $diaObjectiu = $avui->copy()->subDay();
+
+        $habits = Habit::all();
+        $processats = 0;
+
+        foreach ($habits as $habit) {
+            $habitId = (int) $habit->id;
+            $usuariId = (int) $habit->usuari_id;
+            $objectiu = (int) ($habit->objectiu_vegades ?? 0);
+            if ($objectiu <= 0 || $usuariId <= 0) {
+                continue;
+            }
+
+            $jaCompletat = RegistreActivitat::where('habit_id', $habitId)
+                ->whereDate('data', $diaObjectiu)
+                ->where('acabado', true)
+                ->exists();
+            if ($jaCompletat) {
+                continue;
+            }
+
+            $jaXpParcial = RegistreActivitat::where('habit_id', $habitId)
+                ->whereDate('data', $diaObjectiu)
+                ->where('xp_guanyada', '>', 0)
+                ->exists();
+            if ($jaXpParcial) {
+                continue;
+            }
+
+            $progres = RegistreActivitat::where('habit_id', $habitId)
+                ->whereBetween('data', [$diaObjectiu->copy()->startOfDay(), $diaObjectiu->copy()->endOfDay()])
+                ->sum('valor');
+            $progres = (int) $progres;
+            if ($progres <= 0) {
+                continue;
+            }
+
+            $percentatge = min($progres / $objectiu, 1);
+            $xpBase = $this->calcularXPSegonsDificultat($habit->dificultat);
+            $xpGuanyada = (int) floor($xpBase * $percentatge);
+            if ($xpGuanyada <= 0) {
+                continue;
+            }
+
+            DB::transaction(function () use ($usuariId, $habit, $diaObjectiu, $xpGuanyada, &$processats) {
+                $usuari = User::where('id', $usuariId)->lockForUpdate()->first();
+                if ($usuari === null) {
+                    return;
+                }
+
+                $nivellData = $this->aplicarXpINivell($usuari, $xpGuanyada);
+                $monedesTotals = (int) $usuari->monedes + $nivellData['bonus_monedes'];
+
+                $usuari->update([
+                    'xp_total' => $nivellData['xp_total'],
+                    'nivell' => $nivellData['nivell'],
+                    'xp_actual_nivel' => $nivellData['xp_actual_nivel'],
+                    'xp_objetivo_nivel' => $nivellData['xp_objetivo_nivel'],
+                    'monedes' => $monedesTotals,
+                ]);
+
+                $habit->registresActivitat()->create([
+                    'data' => $diaObjectiu->copy()->endOfDay(),
+                    'valor' => 0,
+                    'acabado' => false,
+                    'xp_guanyada' => $xpGuanyada,
+                ]);
+
+                $payload = [
+                    'action' => 'PARTIAL_XP',
+                    'user_id' => $usuariId,
+                    'success' => true,
+                    'xp_update' => [
+                        'xp_total' => $nivellData['xp_total'],
+                        'nivell' => $nivellData['nivell'],
+                        'xp_actual_nivel' => $nivellData['xp_actual_nivel'],
+                        'xp_objetivo_nivel' => $nivellData['xp_objetivo_nivel'],
+                        'monedes' => $monedesTotals,
+                    ],
+                ];
+
+                if ($nivellData['level_up'] === true) {
+                    $payload['level_up'] = [
+                        'nivell' => $nivellData['nivell'],
+                        'bonus_monedes' => self::BONUS_MONEDES_NIVELL,
+                        'xp_total' => $nivellData['xp_total'],
+                        'monedes' => $monedesTotals,
+                    ];
+                }
+
+                $this->feedbackService->publicarPayload($payload);
+                $processats++;
+            });
+        }
+
+        return $processats;
     }
 }

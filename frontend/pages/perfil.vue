@@ -77,6 +77,50 @@
               <p class="text-sm">Encara no has obtingut cap logro</p>
             </div>
           </div>
+
+          <!-- HISTORIAL DIARI -->
+          <div class="bg-white rounded-2xl shadow-lg p-6 w-full">
+            <h2 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-6">Historial Diari</h2>
+
+            <div v-if="loadingLogs" class="space-y-3">
+              <div class="h-4 bg-gray-200 rounded w-full animate-pulse"></div>
+              <div class="h-4 bg-gray-200 rounded w-3/4 animate-pulse"></div>
+              <div class="h-4 bg-gray-200 rounded w-2/3 animate-pulse"></div>
+            </div>
+
+            <div v-else-if="errorLogs" class="text-sm text-red-500">
+              {{ errorLogs }}
+            </div>
+
+            <div v-else-if="logs.length === 0" class="text-sm text-gray-400">
+              Encara no hi ha registres diaris.
+            </div>
+
+            <div v-else class="space-y-3">
+              <div
+                v-for="(log, idx) in logs"
+                :key="log.dia + '-' + log.habit_id + '-' + idx"
+                class="border border-gray-100 rounded-xl p-3 flex flex-col gap-1"
+              >
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-gray-500">{{ log.dia }}</span>
+                  <span
+                    class="text-[10px] font-bold px-2 py-1 rounded-full"
+                    :class="log.completado ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'"
+                  >
+                    {{ log.completado ? 'Completat' : 'Incomplet' }}
+                  </span>
+                </div>
+                <div class="text-sm font-semibold text-gray-800">{{ log.titol }}</div>
+                <div class="text-xs text-gray-500">
+                  {{ log.progreso_diario }}/{{ log.objectiu_vegades }} {{ log.unitat || 'vegades' }}
+                </div>
+                <div class="text-xs text-gray-500">
+                  XP: {{ log.xp_ganada }} · Monedes: {{ log.monedes_ganadas }}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Columna Dreta: Mascota -->
@@ -124,6 +168,9 @@ var config = useRuntimeConfig();
 var user = ref(null);
 var loading = ref(true);
 var error = ref(null);
+var logs = ref([]);
+var loadingLogs = ref(true);
+var errorLogs = ref(null);
 
 // Recursos estàtics
 var imatgeMascota = mascotaImg;
@@ -168,9 +215,37 @@ function carregarPerfil() {
     });
 }
 
+/**
+ * Carrega logs diaris des de l'API.
+ */
+function carregarLogs() {
+  var baseUrl, fullUrl;
+  loadingLogs.value = true;
+  errorLogs.value = null;
+
+  baseUrl = config.public.apiUrl;
+  fullUrl = baseUrl.endsWith('/') ? baseUrl + 'api/habits/logs' : baseUrl + '/api/habits/logs';
+
+  $fetch(fullUrl)
+    .then(function(dades) {
+      if (Array.isArray(dades)) {
+        logs.value = dades;
+      } else {
+        logs.value = [];
+      }
+      loadingLogs.value = false;
+    })
+    .catch(function(err) {
+      console.error("Error al carregar logs:", err);
+      errorLogs.value = "Error al carregar l'historial diari.";
+      loadingLogs.value = false;
+    });
+}
+
 // Inicialització quan el component estigui muntat
 onMounted(function() {
   carregarPerfil();
+  carregarLogs();
 });
 </script>
 

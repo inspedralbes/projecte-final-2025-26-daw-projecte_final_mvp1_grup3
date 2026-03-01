@@ -32,9 +32,6 @@ class HabitResource extends JsonResource
         $usuariId = $request->user_id ?? null;
         if ($usuariId) {
             $completat = \App\Models\RegistreActivitat::where('habit_id', $this->id)
-                ->whereHas('habit', function ($q) use ($usuariId) {
-                    $q->where('usuari_id', $usuariId);
-                })
                 ->whereDate('data', \Carbon\Carbon::today())
                 ->where('acabado', true)
                 ->exists();
@@ -47,9 +44,16 @@ class HabitResource extends JsonResource
             'titol' => $this->titol,
             'dificultat' => $this->dificultat,
             'frequencia_tipus' => $this->frequencia_tipus,
-            'dies_setmana' => $this->dies_setmana,
             'objectiu_vegades' => $this->objectiu_vegades,
+            'unitat' => $this->unitat,
             'completat' => $completat,
         ];
     }
+
+    /**
+     * Parseja dies_setmana (Postgres boolean array) a array de booleans.
+     *
+     * @param mixed $diesSetmana
+     * @return array<int, bool>
+     */
 }

@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Models\Habit;
 use App\Models\Ratxa;
+use App\Models\RegistreActivitat;
 use App\Models\User;
 use App\Models\UsuariHabit;
 use App\Services\MissionService;
@@ -29,11 +30,23 @@ class HabitService
         'media' => 250,
         'dificil' => 400,
     ];
+    /**
+     * Map de dificultat -> monedes.
+     */
+    private const MONEDES_PER_DIFICULTAT = [
+        'facil' => 2,
+        'media' => 5,
+        'dificil' => 10,
+    ];
 
     /**
      * XP per defecte si la dificultat no es reconeix.
      */
     private const XP_DEFECTE = 100;
+    /**
+     * Monedes per defecte si la dificultat no es reconeix.
+     */
+    private const MONEDES_DEFECTE = 2;
 
     /**
      * Servei de feedback per Redis.
@@ -102,6 +115,9 @@ class HabitService
         $habitModel = null;
         $xpUpdate = null;
         $missionCompleted = null;
+        $progress = null;
+        $completedToday = null;
+        $message = null;
 
         // B. Executar l'acció
         // B1. Acció CREATE
@@ -116,27 +132,70 @@ class HabitService
         } elseif ($accio === 'DELETE') {
             $habitModel = $this->eliminarHabit($usuariId, $habitId);
             $success = $habitModel !== null;
-        // B4. Acció TOGGLE (completar hàbit)
-        } elseif ($accio === 'TOGGLE') {
-            $xpUpdate = $this->processarHabitCompletat([
+        // B4. Acció PROGRESS (increment/decrement)
+        } elseif ($accio === 'PROGRESS') {
+            $delta = isset($dades['valor']) ? (int) $dades['valor'] : 1;
+            $resultatProgres = $this->processarProgresHabit($habitId, $usuariId, $delta);
+            $habitModel = Habit::find($habitId);
+            if ($resultatProgres !== null) {
+                $success = true;
+                $progress = $resultatProgres['progress'];
+                $completedToday = $resultatProgres['completed_today'];
+            } else {
+                $success = false;
+                $message = 'No s\'ha pogut actualitzar el progrés.';
+            }
+        // B5. Acció COMPLETE (confirmar finalització)
+        } elseif ($accio === 'COMPLETE') {
+            $resultatComplete = $this->processarConfirmacioHabit([
                 'habit_id' => $habitId,
                 'user_id' => $usuariId,
                 'data' => isset($dades['data']) ? $dades['data'] : null,
             ]);
             $habitModel = Habit::find($habitId);
-            $success = true;
-
-            // B4.1. Comprovar missió diària (després del registre)
-            $resultatMissio = $this->missionService->comprovarMissioCompletada(
-                $usuariId,
-                $habitId,
-                isset($dades['data']) ? Carbon::parse($dades['data']) : Carbon::now()
-            );
-            if ($resultatMissio !== null && $resultatMissio['completada'] === true) {
-                $missionCompleted = ['success' => true];
-                if (isset($resultatMissio['xp_update'])) {
-                    $xpUpdate = $resultatMissio['xp_update'];
+            if ($resultatComplete['success'] === true) {
+                $success = true;
+                if (isset($resultatComplete['xp_update'])) {
+                    $xpUpdate = $resultatComplete['xp_update'];
                 }
+                if (isset($resultatComplete['completed_today'])) {
+                    $completedToday = $resultatComplete['completed_today'];
+                }
+                // B5.1. Comprovar missió diària (després de completar)
+                $resultatMissio = $this->missionService->comprovarMissioCompletada(
+                    $usuariId,
+                    $habitId,
+                    isset($dades['data']) ? Carbon::parse($dades['data']) : Carbon::now()
+                );
+                if ($resultatMissio !== null && $resultatMissio['completada'] === true) {
+                    $missionCompleted = ['success' => true];
+                    if (isset($resultatMissio['xp_update'])) {
+                        $xpUpdate = $resultatMissio['xp_update'];
+                    }
+                }
+            } else {
+                $success = false;
+                $message = $resultatComplete['message'] ?? 'No s\'ha pogut completar l\'hàbit.';
+            }
+        // B6. Acció TOGGLE (compatibilitat antiga)
+        } elseif ($accio === 'TOGGLE') {
+            $resultatComplete = $this->processarConfirmacioHabit([
+                'habit_id' => $habitId,
+                'user_id' => $usuariId,
+                'data' => isset($dades['data']) ? $dades['data'] : null,
+            ]);
+            $habitModel = Habit::find($habitId);
+            if ($resultatComplete['success'] === true) {
+                $success = true;
+                if (isset($resultatComplete['xp_update'])) {
+                    $xpUpdate = $resultatComplete['xp_update'];
+                }
+                if (isset($resultatComplete['completed_today'])) {
+                    $completedToday = $resultatComplete['completed_today'];
+                }
+            } else {
+                $success = false;
+                $message = $resultatComplete['message'] ?? 'No s\'ha pogut completar l\'hàbit.';
             }
         // B5. Acció no reconeguda
         } else {
@@ -162,6 +221,15 @@ class HabitService
         if ($xpUpdate !== null) {
             $payload['xp_update'] = $xpUpdate;
         }
+        if ($progress !== null) {
+            $payload['progress'] = $progress;
+        }
+        if ($completedToday !== null) {
+            $payload['completed_today'] = $completedToday;
+        }
+        if ($message !== null) {
+            $payload['message'] = $message;
+        }
 
         // C3. Afegir mission_completed si s'ha completat la missió
         if ($missionCompleted !== null) {
@@ -179,7 +247,7 @@ class HabitService
      * @param  array<string, mixed>  $dades  { habit_id: int, data?: string }
      * @return array<string, int>
      */
-    public function processarHabitCompletat(array $dades): array
+    public function processarConfirmacioHabit(array $dades): array
     {
         // A. Validació i recuperació de l'hàbit
         // A1. Comprovar si hi ha habit_id
@@ -219,13 +287,44 @@ class HabitService
         // B2. Data només per a la lògica de ratxa (startOfDay)
         $dataActivitat = $timestampComplet->copy()->startOfDay();
 
-        // C. Calcular XP segons la dificultat de l'hàbit
+        // B3. Verificar accés de l'usuari a l'hàbit
+        if (! $this->usuariTeAccesHabit($habitId, $usuariId)) {
+            return [
+                'success' => false,
+                'message' => 'No autoritzat per completar aquest hàbit.',
+            ];
+        }
+
+        // C. Obtenir progrés d'avui i validar objectiu
+        $progresAvui = $this->obtenirProgresDiari($habitId, $dataActivitat);
+        if ($progresAvui < (int) $habit->objectiu_vegades) {
+            return [
+                'success' => false,
+                'message' => 'Has de completar l\'objectiu abans de finalitzar l\'hàbit.',
+            ];
+        }
+
+        // C1. Comprovar si ja s'ha completat avui
+        $jaCompletat = RegistreActivitat::where('habit_id', $habitId)
+            ->whereDate('data', $dataActivitat)
+            ->where('acabado', true)
+            ->exists();
+        if ($jaCompletat) {
+            return [
+                'success' => false,
+                'message' => 'Aquest hàbit ja s\'ha completat avui.',
+            ];
+        }
+
+        // D. Calcular XP i monedes segons la dificultat de l'hàbit
         $xpGuanyada = $this->calcularXPSegonsDificultat($habit->dificultat);
+        $monedesGuanyades = $this->calcularMonedesSegonsDificultat($habit->dificultat);
 
         // D. Executar tot dins d'una transacció
-        DB::transaction(function () use ($habit, $usuariId, $dataActivitat, $timestampComplet, $xpGuanyada) {
+        DB::transaction(function () use ($habit, $usuariId, $dataActivitat, $timestampComplet, $xpGuanyada, $monedesGuanyades) {
             // D1. Actualitzar xp_total de l'usuari a la taula USUARIS
             User::where('id', $usuariId)->increment('xp_total', $xpGuanyada);
+            User::where('id', $usuariId)->increment('monedes', $monedesGuanyades);
 
             // D2. Obtenir o crear la ratxa de l'usuari i actualitzar-la
             $ratxa = Ratxa::firstOrCreate(
@@ -242,6 +341,7 @@ class HabitService
             // D3. Inserir fila a REGISTRE_ACTIVITAT amb timestamp complet (hora real)
             $habit->registresActivitat()->create([
                 'data' => $timestampComplet,
+                'valor' => 0,
                 'acabado' => true,
                 'xp_guanyada' => $xpGuanyada,
             ]);
@@ -278,10 +378,14 @@ class HabitService
         $monedes = isset($usuari->monedes) ? (int) $usuari->monedes : 0;
 
         return [
-            'xp_total' => (int) $usuari->xp_total,
-            'ratxa_actual' => $ratxaActual,
-            'ratxa_maxima' => $ratxaMaxima,
-            'monedes' => $monedes,
+            'success' => true,
+            'completed_today' => true,
+            'xp_update' => [
+                'xp_total' => (int) $usuari->xp_total,
+                'ratxa_actual' => $ratxaActual,
+                'ratxa_maxima' => $ratxaMaxima,
+                'monedes' => $monedes,
+            ],
         ];
     }
 
@@ -307,6 +411,129 @@ class HabitService
         }
 
         return self::XP_DEFECTE;
+    }
+
+    /**
+     * Calcula les monedes segons la dificultat de l'hàbit.
+     *
+     * @param  string|null  $dificultat
+     */
+    private function calcularMonedesSegonsDificultat(?string $dificultat): int
+    {
+        if ($dificultat === null || $dificultat === '') {
+            return self::MONEDES_DEFECTE;
+        }
+
+        $clau = strtolower(trim($dificultat));
+        $mapMonedes = self::MONEDES_PER_DIFICULTAT;
+
+        if (array_key_exists($clau, $mapMonedes)) {
+            return $mapMonedes[$clau];
+        }
+
+        return self::MONEDES_DEFECTE;
+    }
+
+    /**
+     * Normalitza dies_setmana a format Postgres array {t,f,...}.
+     *
+     * @param mixed $diesSetmana
+     */
+    private function normalitzarDiesSetmana($diesSetmana): string
+    {
+        if (is_array($diesSetmana)) {
+            $valors = [];
+            for ($i = 0; $i < count($diesSetmana); $i++) {
+                $valors[] = $diesSetmana[$i] ? 't' : 'f';
+            }
+            return '{' . implode(',', $valors) . '}';
+        }
+        if (is_string($diesSetmana)) {
+            return $diesSetmana;
+        }
+        return '{t,t,t,t,t,t,t}';
+    }
+
+    /**
+     * Retorna true si l'usuari té accés a l'hàbit (propietari o assignat).
+     */
+    private function usuariTeAccesHabit(int $habitId, int $usuariId): bool
+    {
+        $habit = Habit::find($habitId);
+        if ($habit && (int) $habit->usuari_id === $usuariId) {
+            return true;
+        }
+        return UsuariHabit::where('habit_id', $habitId)
+            ->where('usuari_id', $usuariId)
+            ->exists();
+    }
+
+    /**
+     * Obté el progrés diari d'un hàbit (sumatori de valor).
+     */
+    private function obtenirProgresDiari(int $habitId, Carbon $dataActivitat): int
+    {
+        $inici = $dataActivitat->copy()->startOfDay();
+        $fi = $dataActivitat->copy()->endOfDay();
+
+        $sum = RegistreActivitat::where('habit_id', $habitId)
+            ->whereBetween('data', [$inici, $fi])
+            ->sum('valor');
+
+        return (int) $sum;
+    }
+
+    /**
+     * Processa increment/decrement del progrés diari.
+     *
+     * @return array{progress:int, completed_today:bool}|null
+     */
+    private function processarProgresHabit(int $habitId, int $usuariId, int $delta): ?array
+    {
+        $habit = Habit::find($habitId);
+        if (! $habit || ! $this->usuariTeAccesHabit($habitId, $usuariId)) {
+            return null;
+        }
+
+        $ara = Carbon::now();
+        $progresActual = $this->obtenirProgresDiari($habitId, $ara);
+
+        if ($delta < 0 && $progresActual <= 0) {
+            return [
+                'progress' => 0,
+                'completed_today' => $this->habitCompletatAvui($habitId, $ara),
+            ];
+        }
+
+        if ($delta < 0 && ($progresActual + $delta) < 0) {
+            $delta = -$progresActual;
+        }
+
+        RegistreActivitat::create([
+            'habit_id' => $habitId,
+            'data' => $ara,
+            'valor' => $delta,
+            'acabado' => false,
+            'xp_guanyada' => 0,
+        ]);
+
+        $nouProgres = $progresActual + $delta;
+
+        return [
+            'progress' => (int) $nouProgres,
+            'completed_today' => $this->habitCompletatAvui($habitId, $ara),
+        ];
+    }
+
+    /**
+     * Retorna si l'hàbit està completat avui.
+     */
+    private function habitCompletatAvui(int $habitId, Carbon $dataActivitat): bool
+    {
+        return RegistreActivitat::where('habit_id', $habitId)
+            ->whereDate('data', $dataActivitat)
+            ->where('acabado', true)
+            ->exists();
     }
 
     /**
@@ -458,12 +685,17 @@ class HabitService
         
         // E. Copiar dies_setmana si existeix
         if (isset($habitData['dies_setmana'])) {
-            $dades['dies_setmana'] = $habitData['dies_setmana'];
+            $dades['dies_setmana'] = $this->normalitzarDiesSetmana($habitData['dies_setmana']);
         }
         
         // F. Copiar objectiu_vegades si existeix
         if (isset($habitData['objectiu_vegades'])) {
             $dades['objectiu_vegades'] = $habitData['objectiu_vegades'];
+        }
+
+        // F2. Copiar unitat si existeix
+        if (isset($habitData['unitat'])) {
+            $dades['unitat'] = $habitData['unitat'];
         }
 
         // G. Copiar categoria_id si existeix

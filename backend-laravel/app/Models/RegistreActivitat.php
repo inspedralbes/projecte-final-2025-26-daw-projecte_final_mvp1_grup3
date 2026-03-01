@@ -23,6 +23,7 @@ class RegistreActivitat extends Model
     protected $fillable = [
         'habit_id',
         'data',
+        'valor',
         'acabado',
         'xp_guanyada',
     ];
@@ -32,6 +33,7 @@ class RegistreActivitat extends Model
         return [
             'data' => 'datetime',
             'acabado' => 'boolean',
+            'valor' => 'integer',
         ];
     }
 

@@ -107,8 +107,9 @@ CREATE TABLE HABITS (
     titol VARCHAR(100) NOT NULL,
     dificultat VARCHAR(50),
     frequencia_tipus VARCHAR(50),
-    dies_setmana VARCHAR(50),
+    dies_setmana BOOLEAN[7],
     objectiu_vegades INT DEFAULT 1,
+    unitat VARCHAR(50),
     icona VARCHAR(50),
     color VARCHAR(20)
 );
@@ -137,6 +138,7 @@ CREATE TABLE REGISTRE_ACTIVITAT (
     id SERIAL PRIMARY KEY,
     habit_id INT REFERENCES HABITS(id) ON DELETE CASCADE,
     data TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    valor INT DEFAULT 0,
     acabado BOOLEAN DEFAULT TRUE,
     xp_guanyada INT DEFAULT 0
 );

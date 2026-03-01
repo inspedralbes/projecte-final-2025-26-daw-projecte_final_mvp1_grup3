@@ -25,6 +25,7 @@ export var useGameStore = defineStore("game", {
       ruletaUltimaTirada: null,
       nivell: 1,
       habits: [],
+      habitProgress: {},
       missioDiaria: null,
       missioCompletada: false,
     };
@@ -52,59 +53,29 @@ export var useGameStore = defineStore("game", {
      * Completa un hàbit i gestiona la comunicació via Socket.
      * Completa un hàbit i gestiona la comunicació via Socket.
      */
-    completarHabit: async function (idHabit, socket) {
-      var self = this;
-      var habitCercat;
-      var habitCercat;
-      var i;
-
+    /**
+     * Envia un increment/decrement de progrés via socket.
+     */
+    enviarProgresHabit: function (idHabit, delta, socket) {
       if (!socket) {
         throw new Error("Socket no disponible");
       }
+      socket.emit("habit_progress", {
+        habit_id: idHabit,
+        valor: delta,
+      });
+    },
 
-      for (i = 0; i < self.habits.length; i++) {
-        if (self.habits[i].id === idHabit) {
-          habitCercat = self.habits[i];
-          habitCercat = self.habits[i];
-          break;
-        }
+    /**
+     * Confirma la finalització d'un hàbit (només si està al 100%).
+     */
+    confirmarHabit: function (idHabit, socket) {
+      if (!socket) {
+        throw new Error("Socket no disponible");
       }
-
-      if (!habitCercat) {
-        return false;
-      }
-
-      return new Promise(function (resolve) {
-        var idTemps;
-
-        var gestionarResposta = function (resposta) {
-          socket.off("update_xp", gestionarResposta);
-          clearTimeout(idTemps);
-
-          if (
-            resposta &&
-            (resposta.xp_total !== undefined || resposta.success === true)
-          ) {
-            habitCercat.completat = true;
-            self.obtenirEstatJoc().then(function () {
-              resolve(true);
-            });
-          } else {
-            resolve(false);
-          }
-        };
-
-        idTemps = setTimeout(function () {
-          socket.off("update_xp", gestionarResposta);
-          resolve(false);
-        }, TEMPS_ESPERA_MS);
-
-        socket.on("update_xp", gestionarResposta);
-
-        socket.emit("habit_completed", {
-          habit_id: idHabit,
-          data: new Date().toISOString(),
-        });
+      socket.emit("habit_complete", {
+        habit_id: idHabit,
+        data: new Date().toISOString(),
       });
     },
 
@@ -214,6 +185,8 @@ export var useGameStore = defineStore("game", {
             completat: !!h.completat,
             recompensaXP: XP_PER_DIFICULTAT[h.dificultat] || XP_BASE,
             dificultat: h.dificultat,
+            objectiuVegades: h.objectiu_vegades || 1,
+            unitat: h.unitat || "",
           });
         }
 
@@ -282,6 +255,50 @@ export var useGameStore = defineStore("game", {
       } catch (error) {
         console.error("Error fetching game-state:", error);
         return null;
+      }
+    },
+
+    /**
+     * Carrega el progrés d'avui per a tots els hàbits.
+     */
+    obtenirProgresHabits: async function () {
+      var self = this;
+      var url;
+      var resposta;
+      var dades;
+      try {
+        url = self.construirUrlApi("/api/habits/progress");
+        var authStore = useAuthStore();
+        resposta = await fetch(url, {
+          headers: authStore.getAuthHeaders(),
+          mode: "cors",
+        });
+
+        if (resposta.status === 401) {
+          authStore.logout();
+          await navigateTo("/login");
+          return {};
+        }
+        if (!resposta.ok) {
+          throw new Error("Error en obtenir progrés");
+        }
+
+        dades = await resposta.json();
+        if (Array.isArray(dades)) {
+          var mapa = {};
+          var i;
+          for (i = 0; i < dades.length; i++) {
+            mapa[dades[i].habit_id] = {
+              progress: dades[i].progress || 0,
+              completed_today: !!dades[i].completed_today,
+            };
+          }
+          self.habitProgress = mapa;
+        }
+        return self.habitProgress;
+      } catch (error) {
+        console.error("Error fetching progress:", error);
+        return {};
       }
     },
   },

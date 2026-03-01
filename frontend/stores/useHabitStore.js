@@ -26,8 +26,11 @@ export var useHabitStore = defineStore("habit", {
         icona: hàbit.icona || "📝",
         color: hàbit.color || "#10B981",
         dificultat: hàbit.dificultat || null,
-        diesSetmana: hàbit.dies_setmana || "",
+        diesSetmana: Array.isArray(hàbit.dies_setmana)
+          ? hàbit.dies_setmana
+          : [],
         objectiuVegades: hàbit.objectiu_vegades || 1,
+        unitat: hàbit.unitat || "",
         usuariId: hàbit.usuari_id || null,
         plantillaId: hàbit.plantilla_id || null,
         categoriaId: hàbit.categoria_id || null,

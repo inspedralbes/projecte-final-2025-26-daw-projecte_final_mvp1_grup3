@@ -84,6 +84,38 @@ function init(io) {
       }
     });
 
+    // Increment/decrement de progrés
+    socket.on("habit_progress", async function (data) {
+      try {
+        var userId = socket.decoded_token && socket.decoded_token.user_id;
+        if (!userId) {
+          console.warn("habit_progress: usuari no autenticat");
+          return;
+        }
+        socket.join("user_" + userId);
+        var payload = { habit_id: data.habit_id, valor: data.valor };
+        await habitQueue.pushToLaravel("PROGRESS", userId, payload);
+      } catch (error) {
+        console.error("Error gestionant habit_progress:", error);
+      }
+    });
+
+    // Confirmació de completar hàbit
+    socket.on("habit_complete", async function (data) {
+      try {
+        var userId = socket.decoded_token && socket.decoded_token.user_id;
+        if (!userId) {
+          console.warn("habit_complete: usuari no autenticat");
+          return;
+        }
+        socket.join("user_" + userId);
+        var payload = { habit_id: data.habit_id, data: data.data };
+        await habitQueue.pushToLaravel("COMPLETE", userId, payload);
+      } catch (error) {
+        console.error("Error gestionant habit_complete:", error);
+      }
+    });
+
     socket.on("roulette_spin", async function (data) {
       try {
         // A. Validar usuari autenticat

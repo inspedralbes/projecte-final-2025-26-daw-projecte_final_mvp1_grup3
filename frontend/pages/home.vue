@@ -209,29 +209,43 @@
                   <p class="text-xs text-gray-500 truncate">
                     {{ hàbit.descripcio }} • +{{ hàbit.recompensaXP }} XP
                   </p>
+                  <p class="text-xs text-blue-600 font-semibold">
+                    {{ obtenirProgres(hàbit.id) }}/{{ hàbit.objectiuVegades || 1 }}
+                  </p>
                   <p
-                    v-if="hàbit.completat"
+                    v-if="habitCompletatAvui(hàbit.id)"
                     class="text-xs text-green-600 font-semibold"
                   >
                     ✓ Completat
                   </p>
                 </div>
                 <button
-                  v-if="!hàbit.completat"
-                  @click="completarHabit(hàbit.id)"
+                  @click="obrirModalHabit(hàbit)"
                   :disabled="comvprovarSiSestaProcessant(hàbit.id)"
-                  class="px-3 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed min-w-[90px]"
+                  class="px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed min-w-[110px]"
                 >
                   <span v-if="comvprovarSiSestaProcessant(hàbit.id)">...</span>
-                  <span v-else>Completar</span>
+                  <span v-else>Progrés</span>
                 </button>
-                <div v-else class="text-green-500 font-bold ml-2">✓</div>
               </div>
             </template>
           </div>
         </div>
       </div>
     </div>
+
+    <HabitProgressModal
+      :is-open="esObertModalHabit"
+      :habit="habitSeleccionat"
+      :progress="progresModal"
+      :objectiu="objectiuModal"
+      :unitat="unitatModal"
+      @close="tancarModalHabit"
+      @increment="incrementarHabit"
+      @decrement="decrementarHabit"
+      @confirm="confirmarHabit"
+      @invalid-complete="mostrarAvisIncomplet"
+    />
 
     <!-- MODAL DE RULETA DIARIA -->
     <div v-if="esObertModalRuleta" class="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -357,6 +371,7 @@
 <script>
 import { useGameStore } from "~/stores/gameStore.js";
 import { useLogroStore } from "~/stores/useLogroStore.js";
+import HabitProgressModal from "~/components/home/HabitProgressModal.vue";
 import bosqueImg from "~/assets/img/Bosque.png";
 import mascotaImg from "~/assets/img/Mascota.png";
 
@@ -365,6 +380,9 @@ import mascotaImg from "~/assets/img/Mascota.png";
  * Gestiona el visualitzador del monstre i la llista d'hàbits diaris.
  */
 export default {
+  components: {
+    HabitProgressModal: HabitProgressModal
+  },
   /**
    * Configuració de l'estat local.
    */
@@ -377,6 +395,8 @@ export default {
       imatgeMascota: mascotaImg,
       esObertModalLogros: false,
       esObertModalRuleta: false,
+      esObertModalHabit: false,
+      habitSeleccionat: null,
       ruletaProcessant: false,
       ruletaRotacio: 0,
       ruletaDuracioMs: 4000,
@@ -476,6 +496,24 @@ export default {
         transition: "transform " + (this.ruletaDuracioMs / 1000) + "s cubic-bezier(0.2, 0.8, 0.2, 1)",
         background: this.obtenirGradientRuleta()
       };
+    },
+    progresModal: function () {
+      if (!this.habitSeleccionat) {
+        return 0;
+      }
+      return this.obtenirProgres(this.habitSeleccionat.id);
+    },
+    objectiuModal: function () {
+      if (!this.habitSeleccionat) {
+        return 1;
+      }
+      return this.habitSeleccionat.objectiuVegades || 1;
+    },
+    unitatModal: function () {
+      if (!this.habitSeleccionat) {
+        return "vegades";
+      }
+      return this.habitSeleccionat.unitat || "vegades";
     }
   },
 
@@ -492,6 +530,7 @@ export default {
     self.estaCarregantHabits = true;
     Promise.all([
       self.gameStore.obtenirHabitos(),
+      self.gameStore.obtenirProgresHabits(),
       self.gameStore.obtenirEstatJoc(),
       self.logroStore.carregarLogros()
     ])
@@ -519,6 +558,109 @@ export default {
 
   methods: {
     /**
+     * Retorna progrés d'un hàbit.
+     */
+    obtenirProgres: function (habitId) {
+      var mapa = this.gameStore.habitProgress || {};
+      if (mapa[habitId]) {
+        return mapa[habitId].progress || 0;
+      }
+      return 0;
+    },
+
+    /**
+     * Retorna si l'hàbit està completat avui.
+     */
+    habitCompletatAvui: function (habitId) {
+      var mapa = this.gameStore.habitProgress || {};
+      if (mapa[habitId]) {
+        return !!mapa[habitId].completed_today;
+      }
+      return false;
+    },
+
+    /**
+     * Actualitza el progrés local al store.
+     */
+    actualitzarProgresLocal: function (habitId, progress, completed) {
+      if (!habitId) {
+        return;
+      }
+      var mapa = this.gameStore.habitProgress || {};
+      if (!mapa[habitId]) {
+        mapa[habitId] = { progress: 0, completed_today: false };
+      }
+      if (typeof progress === "number") {
+        mapa[habitId].progress = progress;
+      }
+      if (typeof completed !== "undefined") {
+        mapa[habitId].completed_today = !!completed;
+      }
+      this.gameStore.habitProgress = mapa;
+    },
+
+    /**
+     * Obre el modal de progrés per a un hàbit.
+     */
+    obrirModalHabit: function (habit) {
+      this.habitSeleccionat = habit;
+      this.esObertModalHabit = true;
+    },
+
+    /**
+     * Tanca el modal de progrés.
+     */
+    tancarModalHabit: function () {
+      this.esObertModalHabit = false;
+      this.habitSeleccionat = null;
+    },
+
+    /**
+     * Incrementa el progrés de l'hàbit seleccionat.
+     */
+    incrementarHabit: function () {
+      if (!this.habitSeleccionat || !this.socket) {
+        return;
+      }
+      this.gameStore.enviarProgresHabit(this.habitSeleccionat.id, 1, this.socket);
+    },
+
+    /**
+     * Decrementa el progrés de l'hàbit seleccionat.
+     */
+    decrementarHabit: function () {
+      if (!this.habitSeleccionat || !this.socket) {
+        return;
+      }
+      this.gameStore.enviarProgresHabit(this.habitSeleccionat.id, -1, this.socket);
+    },
+
+    /**
+     * Confirma la finalització de l'hàbit seleccionat.
+     */
+    confirmarHabit: function () {
+      if (!this.habitSeleccionat || !this.socket) {
+        return;
+      }
+      this.gameStore.confirmarHabit(this.habitSeleccionat.id, this.socket);
+    },
+
+    /**
+     * Mostra avís quan l'hàbit no està completat.
+     */
+    mostrarAvisIncomplet: function () {
+      this.mostrarAvis("Has de completar l'objectiu abans de finalitzar l'hàbit.");
+    },
+
+    /**
+     * Mostra alert genèrica.
+     */
+    mostrarAvis: function (text) {
+      if (typeof window !== "undefined" && window.alert) {
+        window.alert(text);
+      }
+    },
+    /**
      * Inicialitza la conexió de sockets.
      */
     inicialitzarSocket: function () {
@@ -543,6 +685,24 @@ export default {
           await self.gameStore.obtenirEstatJoc();
         } catch (error) {
           console.error("❌ Error actualitzant estat:", error);
+        }
+      });
+
+      self.socket.on("habit_action_confirmed", function (payload) {
+        if (!payload || payload.success !== true) {
+          if (payload && payload.message) {
+            self.mostrarAvis(payload.message);
+          }
+          return;
+        }
+        if (payload.action === "PROGRESS" && payload.progress !== undefined) {
+          var habitId = payload.habit && payload.habit.id ? payload.habit.id : payload.habit_id;
+          self.actualitzarProgresLocal(habitId, payload.progress, payload.completed_today);
+        }
+        if (payload.action === "COMPLETE") {
+          if (payload.habit && payload.habit.id) {
+            self.actualitzarProgresLocal(payload.habit.id, self.obtenirProgres(payload.habit.id), true);
+          }
         }
       });
 

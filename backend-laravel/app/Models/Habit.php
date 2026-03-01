@@ -43,6 +43,7 @@ class Habit extends Model
         'frequencia_tipus',
         'dies_setmana',
         'objectiu_vegades',
+        'unitat',
         'icona',
         'color',
     ];

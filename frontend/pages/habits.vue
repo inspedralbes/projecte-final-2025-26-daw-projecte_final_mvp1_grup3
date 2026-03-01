@@ -45,6 +45,48 @@
                 ></textarea>
               </div>
 
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label
+                    class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
+                    >Objectiu diari</label
+                  >
+                  <input
+                    v-model.number="formulari.objectiuVegades"
+                    type="number"
+                    min="1"
+                    class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white transition-all"
+                  />
+                </div>
+                <div>
+                  <label
+                    class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
+                    >Unitat</label
+                  >
+                  <input
+                    v-model="formulari.unitat"
+                    type="text"
+                    placeholder="vegades, minuts, km..."
+                    class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white transition-all"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label
+                  class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
+                  >Dificultat</label
+                >
+                <select
+                  v-model="formulari.dificultat"
+                  class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white transition-all"
+                >
+                  <option value="facil">Fàcil</option>
+                  <option value="media">Mitja</option>
+                  <option value="dificil">Difícil</option>
+                </select>
+              </div>
+
               <!-- Sección de Icona Ràpida eliminada para automatización -->
             </div>
           </div>
@@ -326,6 +368,48 @@
             />
           </div>
 
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label
+                class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
+                >Objectiu diari</label
+              >
+              <input
+                v-model.number="formulariEdicio.objectiuVegades"
+                type="number"
+                min="1"
+                class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500"
+              />
+            </div>
+            <div>
+              <label
+                class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
+                >Unitat</label
+              >
+              <input
+                v-model="formulariEdicio.unitat"
+                type="text"
+                placeholder="vegades, minuts, km..."
+                class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label
+              class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
+              >Dificultat</label
+            >
+            <select
+              v-model="formulariEdicio.dificultat"
+              class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm"
+            >
+              <option value="facil">Fàcil</option>
+              <option value="media">Mitja</option>
+              <option value="dificil">Difícil</option>
+            </select>
+          </div>
+
           <!-- Icon Selection eliminado para automatización -->
 
           <!-- Category -->
@@ -470,6 +554,9 @@ export default {
         recordatori: "08:00",
         diesSeleccionats: [0, 1, 2, 3, 4], // Dilluns a Divendres per defecte
         color: "#10B981",
+        objectiuVegades: 1,
+        unitat: "vegades",
+        dificultat: "facil",
       },
       esObertModalEdicio: false,
       idHabitEdicio: null,
@@ -482,6 +569,9 @@ export default {
         recordatori: "08:00",
         diesSeleccionats: [],
         color: "#10B981",
+        objectiuVegades: 1,
+        unitat: "vegades",
+        dificultat: "facil",
       },
       categories: [
         { id: 1, nom: "Activitat física", icona: "🏃" },
@@ -634,7 +724,7 @@ export default {
     construirDadesHabit: function () {
       var self = this;
       var frequencia = "diaria";
-      var dies = [];
+      var booleans = [];
       var i;
 
       if (self.formulari.frequencia === "Setmanal") {
@@ -643,16 +733,17 @@ export default {
         frequencia = "mensual";
       }
 
-      for (i = 0; i < self.formulari.diesSeleccionats.length; i++) {
-        dies.push(self.formulari.diesSeleccionats[i] + 1);
+      for (i = 0; i < 7; i++) {
+        booleans.push(self.formulari.diesSeleccionats.indexOf(i) !== -1);
       }
 
       return {
         titol: self.formulari.nom,
-        dificultat: "facil",
+        dificultat: self.formulari.dificultat || "facil",
         frequencia_tipus: frequencia,
-        dies_setmana: dies.join(","),
-        objectiu_vegades: 1,
+        dies_setmana: booleans,
+        objectiu_vegades: self.formulari.objectiuVegades || 1,
+        unitat: self.formulari.unitat || "vegades",
         categoria_id: self.formulari.categoria,
         icona: self.formulari.icona,
         color: self.formulari.color,
@@ -724,6 +815,10 @@ export default {
         return;
       }
 
+      if (pàrrega.action !== "CREATE" && pàrrega.action !== "UPDATE" && pàrrega.action !== "DELETE") {
+        return;
+      }
+
       if (pàrrega.action === "CREATE" || pàrrega.action === "UPDATE") {
         if (pàrrega.habit) {
           mapejat = self.habitStore.mapejarHabitDesDeApi(pàrrega.habit);
@@ -747,6 +842,9 @@ export default {
       this.formulari.categoria = "";
       this.formulari.frequencia = "Diari";
       this.formulari.recordatori = "08:00";
+      this.formulari.objectiuVegades = 1;
+      this.formulari.unitat = "vegades";
+      this.formulari.dificultat = "facil";
     },
 
     /**
@@ -761,9 +859,19 @@ export default {
       this.formulariEdicio.frequencia = hàbit.frequencia;
       this.formulariEdicio.recordatori = hàbit.recordatori || "08:00";
       this.formulariEdicio.color = hàbit.color || "#10B981";
+      this.formulariEdicio.objectiuVegades = hàbit.objectiuVegades || 1;
+      this.formulariEdicio.unitat = hàbit.unitat || "vegades";
+      this.formulariEdicio.dificultat = hàbit.dificultat || "facil";
 
-      // Reconstruir dies seleccionats (simulat de moment, hauria de venir de l'api mapejat)
-      this.formulariEdicio.diesSeleccionats = [0, 1, 2, 3, 4];
+      // Reconstruir dies seleccionats a partir del boolean array
+      this.formulariEdicio.diesSeleccionats = [];
+      if (Array.isArray(hàbit.diesSetmana)) {
+        for (var i = 0; i < hàbit.diesSetmana.length; i++) {
+          if (hàbit.diesSetmana[i]) {
+            this.formulariEdicio.diesSeleccionats.push(i);
+          }
+        }
+      }
       this.esObertModalEdicio = true;
     },
 
@@ -809,17 +917,18 @@ export default {
         frequencia = "mensual";
       }
 
-      var dies = [];
-      for (var i = 0; i < self.formulariEdicio.diesSeleccionats.length; i++) {
-        dies.push(self.formulariEdicio.diesSeleccionats[i] + 1);
+      var booleans = [];
+      for (var i = 0; i < 7; i++) {
+        booleans.push(self.formulariEdicio.diesSeleccionats.indexOf(i) !== -1);
       }
 
       var dadesActualitzades = {
         titol: self.formulariEdicio.nom,
-        dificultat: "facil",
+        dificultat: self.formulariEdicio.dificultat || "facil",
         frequencia_tipus: frequencia,
-        dies_setmana: dies.join(","),
-        objectiu_vegades: 1,
+        dies_setmana: booleans,
+        objectiu_vegades: self.formulariEdicio.objectiuVegades || 1,
+        unitat: self.formulariEdicio.unitat || "vegades",
         icona: self.formulariEdicio.icona,
         color: self.formulariEdicio.color,
         categoria_id: self.formulariEdicio.categoria,

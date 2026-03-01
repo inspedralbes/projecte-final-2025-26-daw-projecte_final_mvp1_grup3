@@ -32,9 +32,14 @@ class HabitController extends Controller
             return response()->json(['message' => 'No autoritzat'], 401);
         }
 
+        $diaIndex = (int) now()->dayOfWeekIso; // 1..7 (Dilluns..Diumenge)
         $habitIdsAssignats = UsuariHabit::where('usuari_id', $usuariId)->pluck('habit_id');
         $habits = Habit::where('usuari_id', $usuariId)
             ->orWhereIn('id', $habitIdsAssignats)
+            ->where(function ($q) use ($diaIndex) {
+                $q->whereNull('dies_setmana')
+                    ->orWhereRaw('dies_setmana[' . $diaIndex . '] = true');
+            })
             ->get();
 
         return HabitResource::collection($habits)->toResponse($request);
@@ -51,10 +56,15 @@ class HabitController extends Controller
             return response()->json(['message' => 'No autoritzat'], 401);
         }
 
+        $diaIndex = (int) now()->dayOfWeekIso; // 1..7
         $habit = Habit::where('id', $id)
             ->where(function ($q) use ($usuariId) {
                 $q->where('usuari_id', $usuariId)
                     ->orWhereIn('id', UsuariHabit::where('usuari_id', $usuariId)->pluck('habit_id'));
+            })
+            ->where(function ($q) use ($diaIndex) {
+                $q->whereNull('dies_setmana')
+                    ->orWhereRaw('dies_setmana[' . $diaIndex . '] = true');
             })
             ->first();
 

@@ -49,7 +49,13 @@ async function pushToLaravel(action, userId, data) {
     habit_id: data.habit_id || null,
     habit_data: data.habit_data || null
   };
+  if (typeof data.valor !== 'undefined') {
+    payloadObj.valor = data.valor;
+  }
   if (action === 'TOGGLE' && data.data) {
+    payloadObj.data = data.data;
+  }
+  if (action === 'COMPLETE' && data.data) {
     payloadObj.data = data.data;
   }
   var payload = JSON.stringify(payloadObj);

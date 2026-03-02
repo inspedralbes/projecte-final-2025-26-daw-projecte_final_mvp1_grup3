@@ -131,9 +131,12 @@
                 <h2 class="text-lg font-bold text-gray-800 uppercase tracking-tight">La teva Mascota</h2>
                 <p class="text-sm text-gray-500">Estat actual: Feliç</p>
               </div>
-              <div class="text-right flex-shrink-0">
+              <div class="text-right flex-shrink-0 flex flex-col items-end gap-2">
                 <div class="inline-flex items-center gap-2 bg-orange-100 px-4 py-2 rounded-full border border-orange-200 shadow-sm">
                   <span class="text-orange-600 font-bold text-sm tracking-wide">RATXA: {{ user ? user.ratxa_actual : 0 }}</span>
+                </div>
+                <div class="inline-flex items-center gap-2 bg-yellow-100 px-3 py-1 rounded-full border border-yellow-200 shadow-sm">
+                  <span class="text-yellow-700 font-bold text-xs tracking-wide" title="Rècord Personal">Ratxa Màxima: {{ user ? user.ratxa_maxima : 0 }}</span>
                 </div>
               </div>
             </div>

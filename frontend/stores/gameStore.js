@@ -85,7 +85,7 @@ export var useGameStore = defineStore("game", {
      * Actualitza la ratxa localment.
      */
     actualitzarRatxa: function (novaRatxa) {
-      this.racha = novaRatxa;
+      this.ratxa = novaRatxa;
     },
 
     /**
@@ -244,7 +244,10 @@ export var useGameStore = defineStore("game", {
             self.xpObjetivoNivel = dades.xp_objetivo_nivel;
           }
           if (dades.ratxa_actual !== undefined) {
-            this.ratxa = dades.ratxa_actual;
+            self.ratxa = dades.ratxa_actual;
+          }
+          if (dades.ratxa_maxima !== undefined) {
+            self.ratxaMaxima = dades.ratxa_maxima;
           }
           if (dades.monedes !== undefined) {
             self.monedes = dades.monedes;

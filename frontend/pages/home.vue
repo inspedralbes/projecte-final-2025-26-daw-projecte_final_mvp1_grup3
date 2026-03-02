@@ -132,6 +132,7 @@
                 </div>
                 <div class="text-right">
                   <p class="text-2xl font-bold">Ratxa: {{ ratxa }}</p>
+                  <p class="text-xs font-bold text-yellow-600 mb-1">Ratxa Màxima: {{ ratxaMaxima }}</p>
                   <p class="text-sm text-green-600">XP Total: {{ xpTotal }}</p>
                   <p class="text-sm text-amber-600">Monedes: {{ monedes }}</p>
                 </div>
@@ -199,7 +200,7 @@
 
             <!-- Estat buit -->
             <div
-              v-else-if="habits.length === 0"
+              v-else-if="habitsDelDia.length === 0"
               class="bg-gray-50 border border-gray-200 text-gray-600 px-4 py-3 rounded text-center"
             >
               <span>No hi ha hàbits disponibles</span>
@@ -208,7 +209,7 @@
             <!-- Llista d'hàbits -->
             <template v-else>
               <div
-                v-for="hàbit in habits"
+                v-for="hàbit in habitsDelDia"
                 :key="hàbit.id"
                 class="bg-white rounded-lg p-4 shadow flex items-center justify-between transition-all hover:shadow-md"
               >
@@ -416,16 +417,21 @@ export default {
       ratxaAnteriorModal: 0,
       habitSeleccionat: null,
       ruletaProcessant: false,
+      ruletaSpinActiva: false,
+      ruletaSpinTimer: null,
+      ruletaSpinIntervalMs: 120,
+      ruletaSpinStepDeg: 24,
       ruletaRotacio: 0,
       ruletaDuracioMs: 4000,
+      ruletaPremiSeleccionat: null,
       ruletaPremis: [
-        { key: "xp_50", label: "50 XP" },
-        { key: "xp_150", label: "150 XP" },
-        { key: "xp_500", label: "500 XP" },
-        { key: "coins_1", label: "1 moneda" },
-        { key: "coins_5", label: "5 monedes" },
-        { key: "coins_10", label: "10 monedes" },
-        { key: "shop_item", label: "Objecte botiga" }
+        { key: "xp_50", type: "xp", amount: 50, label: "50 XP" },
+        { key: "xp_150", type: "xp", amount: 150, label: "150 XP" },
+        { key: "xp_500", type: "xp", amount: 500, label: "500 XP" },
+        { key: "coins_1", type: "coins", amount: 1, label: "1 moneda" },
+        { key: "coins_5", type: "coins", amount: 5, label: "5 monedes" },
+        { key: "coins_10", type: "coins", amount: 10, label: "10 monedes" },
+        { key: "shop_item", type: "shop_item", amount: null, label: "Objecte botiga" }
       ],
       ruletaColors: [
         "#fde68a",
@@ -454,6 +460,9 @@ export default {
     ratxa: function () {
       return this.gameStore.ratxa;
     },
+    ratxaMaxima: function () {
+      return this.gameStore.ratxaMaxima;
+    },
     xpTotal: function () {
       return this.gameStore.xpTotal;
     },
@@ -481,6 +490,21 @@ export default {
     },
     habits: function () {
       return this.gameStore.habits;
+    },
+    habitsDelDia: function () {
+      var llista = this.habits || [];
+      var idxDia = this.obtenirIndexDiaActual();
+      var filtrats = [];
+      var i;
+      for (i = 0; i < llista.length; i++) {
+        var dies = llista[i].diesSetmana;
+        if (!Array.isArray(dies) || dies.length < 7) {
+          filtrats.push(llista[i]);
+        } else if (dies[idxDia] === true) {
+          filtrats.push(llista[i]);
+        }
+      }
+      return filtrats;
     },
     logroStore: function () {
         return useLogroStore();
@@ -531,9 +555,15 @@ export default {
       return "";
     },
     estilRuleta: function () {
+      var transicio;
+      if (this.ruletaSpinActiva) {
+        transicio = "transform 0.15s linear";
+      } else {
+        transicio = "transform " + (this.ruletaDuracioMs / 1000) + "s cubic-bezier(0.2, 0.8, 0.2, 1)";
+      }
       return {
         transform: "rotate(" + this.ruletaRotacio + "deg)",
-        transition: "transform " + (this.ruletaDuracioMs / 1000) + "s cubic-bezier(0.2, 0.8, 0.2, 1)",
+        transition: transicio,
         background: this.obtenirGradientRuleta()
       };
     },
@@ -597,6 +627,15 @@ export default {
   },
 
   methods: {
+    /**
+     * Retorna l'índex del dia actual (0 = Dilluns ... 6 = Diumenge).
+     */
+    obtenirIndexDiaActual: function () {
+      var avui = new Date();
+      var dia = avui.getDay(); // 0 = Diumenge ... 6 = Dissabte
+      return (dia + 6) % 7;
+    },
+
     /**
      * Retorna progrés d'un hàbit.
      */
@@ -794,6 +833,8 @@ export default {
      */
     tancarModalRuleta: function () {
       this.esObertModalRuleta = false;
+      this.aturarSpinRuleta();
+      this.ruletaProcessant = false;
     },
 
     /**
@@ -841,7 +882,102 @@ export default {
         return;
       }
       this.ruletaProcessant = true;
-      this.socket.emit("roulette_spin", {});
+      this.ruletaPremiSeleccionat = this.seleccionarPremiRuleta();
+      this.iniciarSpinRuleta();
+      this.enviarResultatRuleta();
+      this.aterrarRuleta();
+    },
+
+    /**
+     * Selecciona un premi aleatori de la ruleta.
+     */
+    seleccionarPremiRuleta: function () {
+      if (!this.ruletaPremis || this.ruletaPremis.length === 0) {
+        return null;
+      }
+      var index = Math.floor(Math.random() * this.ruletaPremis.length);
+      return this.ruletaPremis[index];
+    },
+
+    /**
+     * Envia el premi seleccionat al backend via socket.
+     */
+    enviarResultatRuleta: function () {
+      if (!this.socket) {
+        return;
+      }
+      if (!this.ruletaPremiSeleccionat) {
+        return;
+      }
+      this.socket.emit("roulette_spin", {
+        prize: this.ruletaPremiSeleccionat
+      });
+    },
+
+    /**
+     * Atura el gir continu i fa aterrar la ruleta al premi.
+     */
+    aterrarRuleta: function () {
+      var self = this;
+      if (!self.ruletaPremiSeleccionat) {
+        return;
+      }
+      setTimeout(function () {
+        self.aturarSpinRuleta();
+        var angle = self.obtenirAngleRuleta();
+        var index = 0;
+        var i;
+        for (i = 0; i < self.ruletaPremis.length; i++) {
+          if (self.ruletaPremis[i].key === self.ruletaPremiSeleccionat.key) {
+            index = i;
+            break;
+          }
+        }
+        var targetAngle = index * angle + angle / 2;
+        var rotacioActual = self.ruletaRotacio % 360;
+        if (rotacioActual < 0) {
+          rotacioActual = rotacioActual + 360;
+        }
+        var delta = (360 - targetAngle - rotacioActual) % 360;
+        if (delta < 0) {
+          delta = delta + 360;
+        }
+        var rotacioFinal = rotacioActual + 360 * 5 + delta;
+        self.ruletaRotacio = rotacioFinal;
+
+        setTimeout(function () {
+          var label;
+          if (self.ruletaPremiSeleccionat && self.ruletaPremiSeleccionat.label) {
+            label = self.ruletaPremiSeleccionat.label;
+          } else {
+            label = "un premi";
+          }
+          self.mostrarAlertaRuleta("Felicidades!", "Has recibido " + label + "!", "success");
+        }, self.ruletaDuracioMs);
+      }, 600);
+    },
+
+    /**
+     * Inicia un gir continu fins rebre resultat.
+     */
+    iniciarSpinRuleta: function () {
+      var self = this;
+      self.aturarSpinRuleta();
+      self.ruletaSpinActiva = true;
+      self.ruletaSpinTimer = setInterval(function () {
+        self.ruletaRotacio = (self.ruletaRotacio + self.ruletaSpinStepDeg) % 360;
+      }, self.ruletaSpinIntervalMs);
+    },
+
+    /**
+     * Atura el gir continu si està actiu.
+     */
+    aturarSpinRuleta: function () {
+      if (this.ruletaSpinTimer) {
+        clearInterval(this.ruletaSpinTimer);
+        this.ruletaSpinTimer = null;
+      }
+      this.ruletaSpinActiva = false;
     },
 
     /**
@@ -849,6 +985,7 @@ export default {
      */
     gestionarResultatRuleta: function (data) {
       var self = this;
+      self.aturarSpinRuleta();
       if (!data) {
         self.ruletaProcessant = false;
         return;
@@ -859,34 +996,11 @@ export default {
         return;
       }
 
-      var angle = self.obtenirAngleRuleta();
-      var index = 0;
-      var i;
-      for (i = 0; i < self.ruletaPremis.length; i++) {
-        if (self.ruletaPremis[i].key === data.key) {
-          index = i;
-          break;
-        }
-      }
-      var targetAngle = index * angle + angle / 2;
-      var rotacioFinal = 360 * 5 + (360 - targetAngle);
-      self.ruletaRotacio = rotacioFinal;
-
       self.gameStore.canSpinRoulette = false;
       if (data.ruleta_ultima_tirada !== undefined) {
         self.gameStore.ruletaUltimaTirada = data.ruleta_ultima_tirada;
       }
-
-      setTimeout(function () {
-        var label;
-        if (data.label) {
-          label = data.label;
-        } else {
-          label = "un premi";
-        }
-        self.mostrarAlertaRuleta("Felicidades!", "Has recibido " + label + "!", "success");
-        self.ruletaProcessant = false;
-      }, self.ruletaDuracioMs);
+      self.ruletaProcessant = false;
     },
 
     /**

@@ -99,10 +99,21 @@ class RouletteService
             }
         }
 
-        // D. Seleccionar premi aleatori
-        $premis = $this->obtenirPremis();
-        $indexAleatori = array_rand($premis);
-        $premi = $premis[$indexAleatori];
+        // D. Validar premi rebut del frontend
+        $premi = $this->obtenirPremiDelPayload($dades);
+        if ($premi === null) {
+            $this->feedbackService->publicarPayload([
+                'type' => 'ROULETTE',
+                'action' => 'SPIN',
+                'user_id' => $usuariId,
+                'success' => false,
+                'roulette_result' => [
+                    'error' => 'Premi invàlid',
+                    'can_spin_roulette' => true,
+                ],
+            ]);
+            return;
+        }
 
         // E. Preparar increments de recompensa
         $incrementXp = 0;
@@ -164,5 +175,44 @@ class RouletteService
                 'ruleta_ultima_tirada' => $avui->toDateString(),
             ],
         ]);
+    }
+
+    /**
+     * Valida el premi rebut i retorna el premi definit.
+     *
+     * @param  array<string, mixed>  $dades
+     * @return array<string, mixed>|null
+     */
+    private function obtenirPremiDelPayload(array $dades): ?array
+    {
+        $premiPayload = null;
+        if (isset($dades['data']) && is_array($dades['data'])) {
+            if (isset($dades['data']['prize']) && is_array($dades['data']['prize'])) {
+                $premiPayload = $dades['data']['prize'];
+            }
+        }
+        if (! is_array($premiPayload) || ! isset($premiPayload['key'])) {
+            return null;
+        }
+
+        $premis = $this->obtenirPremis();
+        foreach ($premis as $premi) {
+            if ($premi['key'] === $premiPayload['key']) {
+                if (! isset($premiPayload['type']) || $premiPayload['type'] !== $premi['type']) {
+                    return null;
+                }
+                if (! array_key_exists('amount', $premiPayload)) {
+                    return null;
+                }
+                if ((string) $premiPayload['amount'] !== (string) $premi['amount']) {
+                    return null;
+                }
+                if (! isset($premiPayload['label']) || $premiPayload['label'] !== $premi['label']) {
+                    return null;
+                }
+                return $premi;
+            }
+        }
+        return null;
     }
 }

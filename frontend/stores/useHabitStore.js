@@ -81,7 +81,7 @@ export var useHabitStore = defineStore("habit", {
         var headers = authStore.getAuthHeaders();
         console.log("[HabitStore] Headers:", headers);
 
-        resposta = await fetch(base + "/api/habits", {
+        resposta = await fetch(base + "/api/habits/all", {
           headers: headers
         });
 

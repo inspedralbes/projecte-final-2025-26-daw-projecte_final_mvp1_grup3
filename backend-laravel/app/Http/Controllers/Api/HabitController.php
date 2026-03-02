@@ -34,13 +34,13 @@ class HabitController extends Controller
 
         $diaIndex = (int) now()->dayOfWeekIso; // 1..7 (Dilluns..Diumenge)
         $habitIdsAssignats = UsuariHabit::where('usuari_id', $usuariId)->pluck('habit_id');
-        $habits = Habit::where('usuari_id', $usuariId)
-            ->orWhereIn('id', $habitIdsAssignats)
-            ->where(function ($q) use ($diaIndex) {
-                $q->whereNull('dies_setmana')
-                    ->orWhereRaw('dies_setmana[' . $diaIndex . '] = true');
-            })
-            ->get();
+        $query = Habit::where('usuari_id', $usuariId)
+            ->orWhereIn('id', $habitIdsAssignats);
+        $query->where(function ($q) use ($diaIndex) {
+            $q->whereNull('dies_setmana')
+                ->orWhereRaw('dies_setmana[' . $diaIndex . '] = true');
+        });
+        $habits = $query->get();
 
         return HabitResource::collection($habits)->toResponse($request);
     }
@@ -73,5 +73,23 @@ class HabitController extends Controller
         }
 
         return (new HabitResource($habit))->toResponse($request);
+    }
+
+    /**
+     * Llista tots els hàbits (sense filtrar per dies).
+     */
+    public function indexAll(Request $request): JsonResponse
+    {
+        $usuariId = $request->user_id;
+        if (!$usuariId) {
+            return response()->json(['message' => 'No autoritzat'], 401);
+        }
+
+        $habitIdsAssignats = UsuariHabit::where('usuari_id', $usuariId)->pluck('habit_id');
+        $habits = Habit::where('usuari_id', $usuariId)
+            ->orWhereIn('id', $habitIdsAssignats)
+            ->get();
+
+        return HabitResource::collection($habits)->toResponse($request);
     }
 }

@@ -23,6 +23,8 @@ return [
 
     'refresh_ttl' => env('JWT_REFRESH_TTL', 20160),
 
+    'cookie' => env('JWT_COOKIE', 'loopy_token'),
+
     'algo' => env('JWT_ALGO', 'HS256'),
 
     'required_claims' => [

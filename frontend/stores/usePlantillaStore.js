@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { useHabitStore } from "./useHabitStore";
-import { useAuthStore } from "./useAuthStore";
+import { authFetch } from "~/utils/authFetch.js";
 
 /**
  * Store per a la gestió de les plantilles d'hàbits.
@@ -125,21 +125,8 @@ export var usePlantillaStore = defineStore("plantilla", {
           fullUrl += "?" + queryParams.join("&");
         }
 
-        // C. Realitzar la petició amb Authorization
-        var authStore = useAuthStore();
-        var headers = authStore.getAuthHeaders();
-        console.log("[PlantillaStore] Headers:", headers);
-
-        resposta = await fetch(fullUrl, {
-          headers: headers
-        });
-
-        if (resposta.status === 401) {
-          authStore.logout();
-          await navigateTo("/login");
-          this.plantilles = [];
-          return [];
-        }
+        // C. Realitzar la petició amb cookies i refresh automàtic
+        resposta = await authFetch(fullUrl, {});
 
         if (!resposta.ok) {
           throw new Error("Error en obtenir plantilles: " + resposta.status);

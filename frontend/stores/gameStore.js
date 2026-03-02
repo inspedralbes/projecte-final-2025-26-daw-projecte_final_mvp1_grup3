@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import { authFetch } from "~/utils/authFetch.js";
 
 // Constants de configuració
 var TEMPS_ESPERA_MS = 5000;
@@ -150,17 +151,9 @@ export var useGameStore = defineStore("game", {
 
       try {
         url = self.construirUrlApi("/api/habits");
-        var authStore = useAuthStore();
-        resposta = await fetch(url, {
-          headers: authStore.getAuthHeaders(),
-          mode: "cors",
+        resposta = await authFetch(url, {
+          mode: "cors"
         });
-
-        if (resposta.status === 401) {
-          authStore.logout();
-          await navigateTo("/login");
-          return [];
-        }
 
         if (!resposta.ok) {
           throw new Error("Error en obtenir hàbits");
@@ -177,6 +170,12 @@ export var useGameStore = defineStore("game", {
 
         for (i = 0; i < llistaHabits.length; i++) {
           h = llistaHabits[i];
+          var diesSetmana;
+          if (Array.isArray(h.dies_setmana)) {
+            diesSetmana = h.dies_setmana;
+          } else {
+            diesSetmana = [];
+          }
           mapejats.push({
             id: h.id,
             nom: h.titol || "Sense nom",
@@ -185,7 +184,7 @@ export var useGameStore = defineStore("game", {
               " - Dificultat: " +
               (h.dificultat || ""),
             completat: !!h.completat,
-            diesSetmana: Array.isArray(h.dies_setmana) ? h.dies_setmana : [],
+            diesSetmana: diesSetmana,
             recompensaXP: XP_PER_DIFICULTAT[h.dificultat] || XP_BASE,
             dificultat: h.dificultat,
             objectiuVegades: h.objectiu_vegades || 1,
@@ -214,17 +213,9 @@ export var useGameStore = defineStore("game", {
 
       try {
         url = self.construirUrlApi("/api/game-state");
-        var authStore = useAuthStore();
-        resposta = await fetch(url, {
-          headers: authStore.getAuthHeaders(),
-          mode: "cors",
+        resposta = await authFetch(url, {
+          mode: "cors"
         });
-
-        if (resposta.status === 401) {
-          authStore.logout();
-          await navigateTo("/login");
-          return null;
-        }
         if (!resposta.ok) {
           throw new Error("Error en obtenir estat");
         }
@@ -280,17 +271,9 @@ export var useGameStore = defineStore("game", {
       var dades;
       try {
         url = self.construirUrlApi("/api/habits/progress");
-        var authStore = useAuthStore();
-        resposta = await fetch(url, {
-          headers: authStore.getAuthHeaders(),
-          mode: "cors",
+        resposta = await authFetch(url, {
+          mode: "cors"
         });
-
-        if (resposta.status === 401) {
-          authStore.logout();
-          await navigateTo("/login");
-          return {};
-        }
         if (!resposta.ok) {
           throw new Error("Error en obtenir progrés");
         }

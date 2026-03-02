@@ -1,13 +1,8 @@
 import { defineStore } from 'pinia';
 
-var TOKEN_KEY = 'loopy_token';
-var USER_KEY = 'loopy_user';
-var ADMIN_KEY = 'loopy_admin';
-var ROLE_KEY = 'loopy_role';
-
 /**
  * Store d'autenticació JWT.
- * Gestiona login de usuaris i admins, token, i persistència a localStorage.
+ * Gestiona login de usuaris i admins, token i cookies.
  */
 export var useAuthStore = defineStore('auth', {
   state: function () {
@@ -31,28 +26,14 @@ export var useAuthStore = defineStore('auth', {
 
   actions: {
     /**
-     * Carrega estat des de localStorage (cridar al boot de l'app).
+     * Carrega estat des de cookies (client i SSR).
      */
     loadFromStorage: function () {
-      if (typeof localStorage === 'undefined') return;
-      var token = localStorage.getItem(TOKEN_KEY);
-      var role = localStorage.getItem(ROLE_KEY);
-      if (!token || !role) return;
-      var user = null;
-      var admin = null;
-      try {
-        var userStr = localStorage.getItem(USER_KEY);
-        var adminStr = localStorage.getItem(ADMIN_KEY);
-        if (userStr) user = JSON.parse(userStr);
-        if (adminStr) admin = JSON.parse(adminStr);
-      } catch (e) {
-        this.logout();
+      var roleCookie = useCookie('loopy_role');
+      if (!roleCookie || !roleCookie.value) {
         return;
       }
-      this.token = token;
-      this.user = user;
-      this.admin = admin;
-      this.role = role;
+      this.role = roleCookie.value;
       this.isAuthenticated = true;
     },
 
@@ -69,23 +50,14 @@ export var useAuthStore = defineStore('auth', {
           'Content-Type': 'application/json',
           Accept: 'application/json'
         },
+        credentials: 'include',
         body: JSON.stringify({ email: email, contrasenya: contrasenya })
       });
       var dades = await resposta.json();
       if (!resposta.ok) {
         throw new Error(dades.message || 'Credencials incorrectes');
       }
-      this.token = dades.token;
-      this.user = dades.user;
-      this.admin = null;
-      this.role = 'user';
-      this.isAuthenticated = true;
-      if (typeof localStorage !== 'undefined') {
-        localStorage.setItem(TOKEN_KEY, dades.token);
-        localStorage.setItem(USER_KEY, JSON.stringify(dades.user));
-        localStorage.removeItem(ADMIN_KEY);
-        localStorage.setItem(ROLE_KEY, 'user');
-      }
+      this.aplicarSessio(dades);
       return dades;
     },
 
@@ -102,41 +74,40 @@ export var useAuthStore = defineStore('auth', {
           'Content-Type': 'application/json',
           Accept: 'application/json'
         },
+        credentials: 'include',
         body: JSON.stringify({ email: email, contrasenya: contrasenya })
       });
       var dades = await resposta.json();
       if (!resposta.ok) {
         throw new Error(dades.message || 'Credencials incorrectes');
       }
-      this.token = dades.token;
-      this.admin = dades.admin;
-      this.user = null;
-      this.role = 'admin';
-      this.isAuthenticated = true;
-      if (typeof localStorage !== 'undefined') {
-        localStorage.setItem(TOKEN_KEY, dades.token);
-        localStorage.setItem(ADMIN_KEY, JSON.stringify(dades.admin));
-        localStorage.removeItem(USER_KEY);
-        localStorage.setItem(ROLE_KEY, 'admin');
-      }
+      this.aplicarSessio(dades);
       return dades;
     },
 
     /**
      * Logout. Esborra token i dades.
      */
-    logout: function () {
+    logout: async function () {
+      var config = useRuntimeConfig();
+      var base = (config.public.apiUrl || '').replace(/\/$/, '');
+      var url = base + '/api/auth/logout';
+      try {
+        await fetch(url, {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json'
+          },
+          credentials: 'include'
+        });
+      } catch (e) {
+        // Ignorar errors de logout remot
+      }
       this.token = null;
       this.user = null;
       this.admin = null;
       this.role = null;
       this.isAuthenticated = false;
-      if (typeof localStorage !== 'undefined') {
-        localStorage.removeItem(TOKEN_KEY);
-        localStorage.removeItem(USER_KEY);
-        localStorage.removeItem(ADMIN_KEY);
-        localStorage.removeItem(ROLE_KEY);
-      }
     },
 
     /**
@@ -148,6 +119,58 @@ export var useAuthStore = defineStore('auth', {
         h['Authorization'] = 'Bearer ' + this.token;
       }
       return h;
+    },
+
+    /**
+     * Aplica la sessió des d'una resposta d'auth.
+     */
+    aplicarSessio: function (dades) {
+      if (!dades) {
+        return;
+      }
+      if (dades.token) {
+        this.token = dades.token;
+      }
+      if (dades.role) {
+        this.role = dades.role;
+      }
+      if (dades.user) {
+        this.user = dades.user;
+        this.admin = null;
+      }
+      if (dades.admin) {
+        this.admin = dades.admin;
+        this.user = null;
+      }
+      this.isAuthenticated = true;
+    },
+
+    /**
+     * Refresca la sessió a través de l'API.
+     */
+    refrescarSessio: async function () {
+      var config = useRuntimeConfig();
+      var base = (config.public.apiUrl || '').replace(/\/$/, '');
+      var url = base + '/api/auth/refresh';
+      try {
+        var resposta = await fetch(url, {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json'
+          },
+          credentials: 'include'
+        });
+        if (!resposta.ok) {
+          await this.logout();
+          return false;
+        }
+        var dades = await resposta.json();
+        this.aplicarSessio(dades);
+        return true;
+      } catch (e) {
+        await this.logout();
+        return false;
+      }
     }
   }
 });

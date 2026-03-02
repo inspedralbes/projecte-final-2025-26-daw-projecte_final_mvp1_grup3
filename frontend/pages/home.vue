@@ -132,6 +132,7 @@
                 </div>
                 <div class="text-right">
                   <p class="text-2xl font-bold">Ratxa: {{ ratxa }}</p>
+                  <p class="text-xs font-bold text-yellow-600 mb-1">Ratxa Màxima: {{ ratxaMaxima }}</p>
                   <p class="text-sm text-green-600">XP Total: {{ xpTotal }}</p>
                   <p class="text-sm text-amber-600">Monedes: {{ monedes }}</p>
                 </div>
@@ -458,6 +459,9 @@ export default {
     },
     ratxa: function () {
       return this.gameStore.ratxa;
+    },
+    ratxaMaxima: function () {
+      return this.gameStore.ratxaMaxima;
     },
     xpTotal: function () {
       return this.gameStore.xpTotal;

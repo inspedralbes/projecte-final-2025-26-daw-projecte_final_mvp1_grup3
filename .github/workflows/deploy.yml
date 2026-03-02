@@ -31,4 +31,4 @@ jobs:
           docker-compose up -d --build
 
           # Executar migracions de Laravel al contenidor adient
-          docker-compose exec -T backend-laravel php artisan migrate --force
+          docker-compose exec -T backend-laravel php artisan migrate

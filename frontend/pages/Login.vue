@@ -4,7 +4,10 @@
       <div class="grid grid-cols-2 gap-12 items-center">
         <!-- Esquerra: Targeta de login -->
         <div class="bg-white rounded-xl p-8 shadow-md" style="max-width: 420px">
-          <div class="flex flex-col items-center gap-4">
+          <div class="flex flex-col items-center gap-4 relative">
+            <div class="absolute top-0 right-0">
+              <LanguageSwitcher />
+            </div>
             <div
               class="w-20 h-20 rounded-full bg-green-500/10 flex items-center justify-center"
             >
@@ -16,7 +19,7 @@
             </div>
             <h2 class="text-2xl font-semibold text-gray-800">Loopy Master</h2>
             <p class="text-sm text-gray-500 text-center">
-              Domina els teus hàbits, puja de nivell.
+              {{ $t('dominate_habits') }}
             </p>
           </div>
 
@@ -29,7 +32,7 @@
             </div>
             <div>
               <label class="block text-xs font-medium text-gray-600 mb-2"
-                >EMAIL</label
+                >{{ $t('email') }}</label
               >
               <input
                 v-model="formulari.email"
@@ -40,7 +43,7 @@
             </div>
             <div>
               <label class="block text-xs font-medium text-gray-600 mb-2"
-                >CONTRASSENYA</label
+                >{{ $t('password') }}</label
               >
               <input
                 v-model="formulari.contrasenya"
@@ -57,7 +60,7 @@
                 @click="ferLogin"
                 class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 rounded-lg disabled:opacity-50"
               >
-                LOGIN
+                {{ $t('login') }}
               </button>
             </div>
 
@@ -67,13 +70,13 @@
                   type="button"
                   class="w-full bg-white border border-gray-200 text-gray-700 font-medium py-3 rounded-lg hover:bg-gray-50"
                 >
-                  REGISTRAR-SE
+                  {{ $t('register') }}
                 </button>
               </NuxtLink>
             </div>
 
             <div class="text-center text-xs text-green-600 mt-3 cursor-pointer">
-              Has oblidat la teva contrasenya?
+              {{ $t('forgot_password') }}
             </div>
           </form>
         </div>

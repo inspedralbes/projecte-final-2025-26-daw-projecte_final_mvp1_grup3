@@ -12,7 +12,10 @@ onMounted(function() {
   <div class="min-h-screen bg-gray-50 flex items-center justify-center">
     <div class="flex flex-col items-center gap-4 animate-pulse">
       <div class="w-12 h-12 rounded-full bg-green-600 flex items-center justify-center text-white font-bold">L</div>
-      <div class="text-gray-400 font-bold uppercase tracking-widest text-xs">Carregant Loopy</div>
+      <div class="text-gray-400 font-bold uppercase tracking-widest text-xs">{{ $t('loading_loopy') }}</div>
+      <div class="mt-4">
+        <LanguageSwitcher />
+      </div>
     </div>
   </div>
 </template>

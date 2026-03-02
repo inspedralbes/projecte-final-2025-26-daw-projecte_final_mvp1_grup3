@@ -185,6 +185,7 @@ export var useGameStore = defineStore("game", {
               " - Dificultat: " +
               (h.dificultat || ""),
             completat: !!h.completat,
+            diesSetmana: Array.isArray(h.dies_setmana) ? h.dies_setmana : [],
             recompensaXP: XP_PER_DIFICULTAT[h.dificultat] || XP_BASE,
             dificultat: h.dificultat,
             objectiuVegades: h.objectiu_vegades || 1,

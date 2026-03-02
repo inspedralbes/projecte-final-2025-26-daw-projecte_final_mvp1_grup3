@@ -44,6 +44,7 @@ class HabitResource extends JsonResource
             'titol' => $this->titol,
             'dificultat' => $this->dificultat,
             'frequencia_tipus' => $this->frequencia_tipus,
+            'dies_setmana' => $this->parseDiesSetmana($this->dies_setmana),
             'objectiu_vegades' => $this->objectiu_vegades,
             'unitat' => $this->unitat,
             'completat' => $completat,
@@ -56,4 +57,26 @@ class HabitResource extends JsonResource
      * @param mixed $diesSetmana
      * @return array<int, bool>
      */
+    private function parseDiesSetmana($diesSetmana): array
+    {
+        if (is_array($diesSetmana)) {
+            return array_map(function ($val) {
+                return (bool) $val;
+            }, $diesSetmana);
+        }
+        if (! is_string($diesSetmana) || $diesSetmana === '') {
+            return [];
+        }
+        $neteja = trim($diesSetmana, '{}');
+        if ($neteja === '') {
+            return [];
+        }
+        $parts = explode(',', $neteja);
+        $resultat = [];
+        foreach ($parts as $part) {
+            $valor = strtolower(trim($part));
+            $resultat[] = in_array($valor, ['t', 'true', '1', 'y', 'yes'], true);
+        }
+        return $resultat;
+    }
 }

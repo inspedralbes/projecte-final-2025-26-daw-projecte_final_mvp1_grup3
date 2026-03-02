@@ -758,13 +758,11 @@ export default {
             return;
         }
 
-        // --- NEW LOGIC: Use payload.exported_habits to update the store directly ---
-        // A. Actualitzar els hàbits a la botiga amb els hàbits retornats pel backend
-        for (j = 0; j < payload.exported_habits.length; j++) {
-            // Map the habit data from the backend payload to the frontend format
-            var mappedHabit = self.habitStore.mapejarHabitDesDeApi(payload.exported_habits[j]);
-            self.habitStore.guardarOActualitzarHabit(mappedHabit); // Add/Update the habit in the store
-        }
+        // --- SIMPLIFIED LOGIC: Refetch from DB to ensure "automatic" update ---
+        await self.habitStore.obtenirHabitos();
+        
+        // Refresh gameStore too if we want immediate home page consistency
+        // self.gameStore.obtenirHabitos(); 
 
         for (i = 0; i < payload.exported_habits.length; i++) {
             exportedHabitNames.push(payload.exported_habits[i].nom || payload.exported_habits[i].titol);

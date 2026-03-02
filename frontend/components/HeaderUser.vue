@@ -2,7 +2,7 @@
   <header class="w-full p-3">
     <nav class="w-full flex items-center justify-between px-4">
       
-      <NuxtLink to="/home" class="brand">
+      <NuxtLink to="/home" class="brand"> 
         <img :src="logo" alt="Loopy logo" class="logo-img"/>
         <span class="app-name">Loopy</span>
       </NuxtLink>

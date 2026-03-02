@@ -162,9 +162,11 @@
 // A. Imports (Seguint AgentNuxt.md: auto-imports preferibles)
 import bosqueImg from "~/assets/img/Bosque.png";
 import mascotaImg from "~/assets/img/Mascota.png";
+import { useAuthStore } from "~/stores/useAuthStore";
 
 // Estat reactiu amb variables VAR (ES5 segons AgentNuxt.md)
 var config = useRuntimeConfig();
+var authStore = useAuthStore();
 var user = ref(null);
 var loading = ref(true);
 var error = ref(null);
@@ -203,12 +205,19 @@ function carregarPerfil() {
   baseUrl = config.public.apiUrl;
   fullUrl = baseUrl.endsWith('/') ? baseUrl + 'api/user/profile' : baseUrl + '/api/user/profile';
 
-  $fetch(fullUrl)
+  $fetch(fullUrl, {
+    headers: authStore.getAuthHeaders()
+  })
     .then(function(dades) {
       user.value = dades;
       loading.value = false;
     })
     .catch(function(err) {
+      if (err.status === 401) {
+        authStore.logout();
+        navigateTo('/login');
+        return;
+      }
       console.error("Error al carregar perfil:", err);
       error.value = "Error al carregar la informació del perfil.";
       loading.value = false;
@@ -226,7 +235,9 @@ function carregarLogs() {
   baseUrl = config.public.apiUrl;
   fullUrl = baseUrl.endsWith('/') ? baseUrl + 'api/habits/logs' : baseUrl + '/api/habits/logs';
 
-  $fetch(fullUrl)
+  $fetch(fullUrl, {
+    headers: authStore.getAuthHeaders()
+  })
     .then(function(dades) {
       if (Array.isArray(dades)) {
         logs.value = dades;
@@ -236,6 +247,11 @@ function carregarLogs() {
       loadingLogs.value = false;
     })
     .catch(function(err) {
+      if (err.status === 401) {
+        authStore.logout();
+        navigateTo('/login');
+        return;
+      }
       console.error("Error al carregar logs:", err);
       errorLogs.value = "Error al carregar l'historial diari.";
       loadingLogs.value = false;

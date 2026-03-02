@@ -113,39 +113,39 @@ INSERT INTO PLANTILLES (creador_id, titol, categoria, es_publica) VALUES
 -- 4. HABITS (3 por cada plantilla = 24 hábitos)
 -- Se asume que las plantillas tienen IDs del 1 al 8 correlativamente
 -- dies_setmana: BOOLEAN[7] (lunes a domingo)
-INSERT INTO HABITS (usuari_id, titol, dificultat, frequencia_tipus, dies_setmana, objectiu_vegades, unitat) VALUES
--- Actividad física
-(1, 'Levantamiento de pesas', 'dificil', 'semanal', ARRAY[true,false,true,false,true,false,false], 3, 'vegades'), -- habit_id 1
-(1, 'Caminar 30 min', 'facil', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades'), -- habit_id 2
-(1, 'Estiramientos', 'facil', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades'), -- habit_id 3
--- Alimentación
-(1, 'Beber 2L agua', 'facil', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades'), -- habit_id 4
-(1, 'Cocinar en casa', 'media', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades'), -- habit_id 5
-(1, 'Evitar ultraprocesados', 'dificil', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades'), -- habit_id 6
--- Estudio
-(1, 'Repasar apuntes', 'media', 'diaria', ARRAY[true,true,true,true,true,false,false], 1, 'vegades'), -- habit_id 7
-(1, 'Resolver dudas', 'facil', 'semanal', ARRAY[false,false,false,false,true,false,false], 1, 'vegades'), -- habit_id 8
-(1, 'Simulacro examen', 'dificil', 'semanal', ARRAY[false,false,false,false,false,true,false], 1, 'vegades'), -- habit_id 9
--- Lectura
-(1, 'Leer 10 páginas', 'facil', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades'), -- habit_id 10
-(1, 'Anotar reflexiones', 'media', 'semanal', ARRAY[false,false,false,false,false,false,true], 1, 'vegades'), -- habit_id 11
-(1, 'Terminar capítulo', 'media', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades'), -- habit_id 12
--- Bienestar
-(1, 'Meditación mañana', 'facil', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades'), -- habit_id 13
-(1, 'Yoga 20 min', 'media', 'semanal', ARRAY[false,true,false,true,false,false,false], 2, 'vegades'), -- habit_id 14
-(1, 'Dormir 8 horas', 'dificil', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades'), -- habit_id 15
--- Mejora hábitos (Fumar)
-(1, 'No fumar hoy', 'dificil', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades'), -- habit_id 16
-(1, 'Ahorrar dinero tabaco', 'facil', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades'), -- habit_id 17
-(1, 'Uso de chicle nicotina', 'media', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades'), -- habit_id 18
--- Hogar
-(1, 'Fregar platos', 'facil', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades'), -- habit_id 19
-(1, 'Poner lavadora', 'facil', 'semanal', ARRAY[false,false,false,false,false,true,false], 1, 'vegades'), -- habit_id 20
-(1, 'Organizar escritorio', 'media', 'semanal', ARRAY[true,false,false,false,false,false,false], 1, 'vegades'), -- habit_id 21
--- Hobby
-(1, 'Pintar miniatura', 'media', 'semanal', ARRAY[false,false,false,false,false,true,true], 2, 'vegades'), -- habit_id 22
-(1, 'Investigar técnicas', 'facil', 'semanal', ARRAY[false,false,true,false,false,false,false], 1, 'vegades'), -- habit_id 23
-(1, 'Limpiar pinceles', 'facil', 'semanal', ARRAY[false,false,false,false,false,false,true], 1, 'vegades'); -- habit_id 24
+INSERT INTO HABITS (usuari_id, titol, dificultat, frequencia_tipus, dies_setmana, objectiu_vegades, unitat, categoria_id, icona, color) VALUES
+-- Actividad física (categoria_id: 1)
+(1, 'Levantamiento de pesas', 'dificil', 'semanal', ARRAY[true,false,true,false,true,false,false], 3, 'vegades', 1, '🏃', '#65A30D'), -- habit_id 1
+(1, 'Caminar 30 min', 'facil', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades', 1, '🏃', '#65A30D'), -- habit_id 2
+(1, 'Estiramientos', 'facil', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades', 1, '🏃', '#65A30D'), -- habit_id 3
+-- Alimentación (categoria_id: 2)
+(1, 'Beber 2L agua', 'facil', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades', 2, '🥗', '#3B82F6'), -- habit_id 4
+(1, 'Cocinar en casa', 'media', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades', 2, '🥗', '#3B82F6'), -- habit_id 5
+(1, 'Evitar ultraprocesados', 'dificil', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades', 2, '🥗', '#3B82F6'), -- habit_id 6
+-- Estudio (categoria_id: 3)
+(1, 'Repasar apuntes', 'media', 'diaria', ARRAY[true,true,true,true,true,false,false], 1, 'vegades', 3, '📚', '#A855F7'), -- habit_id 7
+(1, 'Resolver dudas', 'facil', 'semanal', ARRAY[false,false,false,false,true,false,false], 1, 'vegades', 3, '📚', '#A855F7'), -- habit_id 8
+(1, 'Simulacro examen', 'dificil', 'semanal', ARRAY[false,false,false,false,false,true,false], 1, 'vegades', 3, '📚', '#A855F7'), -- habit_id 9
+-- Lectura (categoria_id: 4)
+(1, 'Leer 10 páginas', 'facil', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades', 4, '📖', '#F97316'), -- habit_id 10
+(1, 'Anotar reflexiones', 'media', 'semanal', ARRAY[false,false,false,false,false,false,true], 1, 'vegades', 4, '📖', '#F97316'), -- habit_id 11
+(1, 'Terminar capítulo', 'media', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades', 4, '📖', '#F97316'), -- habit_id 12
+-- Bienestar (categoria_id: 5)
+(1, 'Meditación mañana', 'facil', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades', 5, '🧘', '#EC4899'), -- habit_id 13
+(1, 'Yoga 20 min', 'media', 'semanal', ARRAY[false,true,false,true,false,false,false], 2, 'vegades', 5, '🧘', '#EC4899'), -- habit_id 14
+(1, 'Dormir 8 horas', 'dificil', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades', 5, '🧘', '#EC4899'), -- habit_id 15
+-- Mejora hábitos (Fumar) (categoria_id: 6)
+(1, 'No fumar hoy', 'dificil', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades', 6, '✨', '#10B981'), -- habit_id 16
+(1, 'Ahorrar dinero tabaco', 'facil', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades', 6, '✨', '#10B981'), -- habit_id 17
+(1, 'Uso de chicle nicotina', 'media', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades', 6, '✨', '#10B981'), -- habit_id 18
+-- Hogar (categoria_id: 7)
+(1, 'Fregar platos', 'facil', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades', 7, '🏠', '#3B82F6'), -- habit_id 19
+(1, 'Poner lavadora', 'facil', 'semanal', ARRAY[false,false,false,false,false,true,false], 1, 'vegades', 7, '🏠', '#3B82F6'), -- habit_id 20
+(1, 'Organizar escritorio', 'media', 'semanal', ARRAY[true,false,false,false,false,false,false], 1, 'vegades', 7, '🏠', '#3B82F6'), -- habit_id 21
+-- Hobby (categoria_id: 8)
+(1, 'Pintar miniatura', 'media', 'semanal', ARRAY[false,false,false,false,false,true,true], 2, 'vegades', 8, '🎨', '#A855F7'), -- habit_id 22
+(1, 'Investigar técnicas', 'facil', 'semanal', ARRAY[false,false,true,false,false,false,false], 1, 'vegades', 8, '🎨', '#A855F7'), -- habit_id 23
+(1, 'Limpiar pinceles', 'facil', 'semanal', ARRAY[false,false,false,false,false,false,true], 1, 'vegades', 8, '🎨', '#A855F7'); -- habit_id 24
 
 -- Insert into PLANTILLA_HABIT to establish many-to-many relationships
 -- Assuming plantilla_id corresponds to the habit_id grouping as in the original structure

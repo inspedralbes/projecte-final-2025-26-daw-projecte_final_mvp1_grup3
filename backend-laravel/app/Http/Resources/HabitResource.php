@@ -41,11 +41,16 @@ class HabitResource extends JsonResource
         return [
             'id' => $this->id,
             'usuari_id' => $this->usuari_id,
+            'plantilla_id' => $this->plantilla_id,
+            'categoria_id' => $this->categoria_id,
             'titol' => $this->titol,
             'dificultat' => $this->dificultat,
             'frequencia_tipus' => $this->frequencia_tipus,
+            'dies_setmana' => $this->parseDiesSetmana($this->dies_setmana),
             'objectiu_vegades' => $this->objectiu_vegades,
             'unitat' => $this->unitat,
+            'icona' => $this->icona,
+            'color' => $this->color,
             'completat' => $completat,
         ];
     }
@@ -56,4 +61,28 @@ class HabitResource extends JsonResource
      * @param mixed $diesSetmana
      * @return array<int, bool>
      */
+    protected function parseDiesSetmana($diesSetmana): array
+    {
+        if (is_array($diesSetmana)) {
+            return array_map(function ($v) {
+                return filter_var($v, FILTER_VALIDATE_BOOLEAN);
+            }, $diesSetmana);
+        }
+
+        if (is_string($diesSetmana)) {
+            // Postgres format: {t,f,t,t,f,f,f} o {true,false,...}
+            $net = str_replace(['{', '}'], '', $diesSetmana);
+            if ($net === '') {
+                return [];
+            }
+
+            $parts = explode(',', $net);
+            return array_map(function ($val) {
+                $v = strtolower(trim($val));
+                return $v === 't' || $v === 'true' || $v === '1';
+            }, $parts);
+        }
+
+        return [false, false, false, false, false, false, false];
+    }
 }

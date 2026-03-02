@@ -34,7 +34,7 @@ class HabitProgressController extends Controller
                 $q->whereNull('dies_setmana')
                     ->orWhereRaw('dies_setmana[' . $diaIndex . '] = true');
             })
-            ->get(['id', 'objectiu_vegades', 'titol', 'unitat', 'dificultat']);
+            ->get(['id', 'objectiu_vegades', 'titol', 'unitat', 'dificultat', 'icona', 'color']);
 
         $habitIds = $habits->pluck('id')->toArray();
         $avui = Carbon::today();
@@ -66,6 +66,8 @@ class HabitProgressController extends Controller
                 'objectiu_vegades' => (int) $habit->objectiu_vegades,
                 'titol' => $habit->titol,
                 'unitat' => $habit->unitat,
+                'icona' => $habit->icona,
+                'color' => $habit->color,
             ];
         }
 
@@ -96,11 +98,11 @@ class HabitProgressController extends Controller
             ->join('habits as h', 'ra.habit_id', '=', 'h.id')
             ->whereIn('h.id', $habitIds)
             ->selectRaw('DATE(ra.data) as dia')
-            ->selectRaw('h.id as habit_id, h.titol, h.unitat, h.objectiu_vegades, h.dificultat')
+            ->selectRaw('h.id as habit_id, h.titol, h.unitat, h.objectiu_vegades, h.dificultat, h.icona, h.color')
             ->selectRaw('COALESCE(SUM(ra.valor), 0) as progreso_diario')
             ->selectRaw('MAX(CASE WHEN ra.acabado = true THEN 1 ELSE 0 END) as completado')
             ->selectRaw('COALESCE(SUM(CASE WHEN ra.acabado = true THEN ra.xp_guanyada ELSE 0 END), 0) as xp_ganada')
-            ->groupBy('dia', 'h.id', 'h.titol', 'h.unitat', 'h.objectiu_vegades', 'h.dificultat')
+            ->groupBy('dia', 'h.id', 'h.titol', 'h.unitat', 'h.objectiu_vegades', 'h.dificultat', 'h.icona', 'h.color')
             ->orderBy('dia', 'desc')
             ->get();
 
@@ -124,6 +126,8 @@ class HabitProgressController extends Controller
                 'habit_id' => (int) $fila->habit_id,
                 'titol' => $fila->titol,
                 'unitat' => $fila->unitat,
+                'icona' => $fila->icona,
+                'color' => $fila->color,
                 'objectiu_vegades' => (int) $fila->objectiu_vegades,
                 'progreso_diario' => (int) $fila->progreso_diario,
                 'completado' => ((int) $fila->completado === 1),

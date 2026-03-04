@@ -107,23 +107,6 @@
               </div>
 
               <div class="space-y-4">
-                <div class="grid grid-cols-2 gap-4">
-                  <div>
-                    <label
-                      class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
-                      >Objectiu diari</label
-                    >
-                    <input
-                      v-model.number="formulari.objectiuVegades"
-                      type="number"
-                      min="1"
-                      class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white transition-all"
-                    />
-                  </div>
-                  <div>
-                  </div>
-                </div>
-
                 <div>
                   <label
                     class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
@@ -147,7 +130,24 @@
                   </div>
                 </div>
 
-                <div>
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label
+                      class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
+                      >{{ obtenirEtiquetaObjectiu(formulari.frequencia) }}</label
+                    >
+                    <input
+                      v-model.number="formulari.objectiuVegades"
+                      type="number"
+                      min="1"
+                      class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white transition-all"
+                    />
+                  </div>
+                  <div>
+                  </div>
+                </div>
+
+                <div v-if="formulari.frequencia === 'Dies específics'">
                   <label
                     class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
                     >Dies Objectiu</label
@@ -396,11 +396,11 @@
           </div>
 
           <!-- Goal & Frequency & Days -->
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-2 gap-4" v-if="formulariEdicio.frequencia !== 'Dies específics'">
             <div>
               <label
                 class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
-                >Objectiu diari</label
+                >{{ obtenirEtiquetaObjectiu(formulariEdicio.frequencia) }}</label
               >
               <input
                 v-model.number="formulariEdicio.objectiuVegades"
@@ -439,7 +439,7 @@
             </div>
           </div>
 
-          <div>
+          <div v-if="formulariEdicio.frequencia === 'Dies específics'">
             <label
               class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
               >Dies Objectiu</label
@@ -555,7 +555,7 @@ export default {
         { id: 7, nom: "Llar", icona: "🏠" },
         { id: 8, nom: "Hobby", icona: "🎨" },
       ],
-      frequencies: ["Diari", "Setmanal", "Mensual"],
+      frequencies: ["Diari", "Setmanal", "Mensual", "Dies específics"],
       diesSetmana: ["L", "M", "X", "J", "V", "S", "D"],
       colors: ["#65A30D", "#3B82F6", "#A855F7", "#F97316", "#EC4899"],
     };
@@ -586,6 +586,18 @@ export default {
   },
 
   methods: {
+    /**
+     * Retorna l'etiqueta de l'objectiu segons la freqüència.
+     */
+    obtenirEtiquetaObjectiu: function (frequencia) {
+      if (frequencia === "Setmanal") {
+        return "Objectiu setmanal";
+      } else if (frequencia === "Mensual") {
+        return "Objectiu mensual";
+      }
+      return "Objectiu diari";
+    },
+
     /**
      * Inicialitza la conexió amb el servidor de sockets.
      */
@@ -698,15 +710,26 @@ export default {
       var frequencia = "diaria";
       var booleans = [];
       var i;
+      var objectiu = self.formulari.objectiuVegades || 1;
 
       if (self.formulari.frequencia === "Setmanal") {
         frequencia = "semanal";
       } else if (self.formulari.frequencia === "Mensual") {
         frequencia = "mensual";
+      } else if (self.formulari.frequencia === "Dies específics") {
+        frequencia = "especifica";
       }
 
-      for (i = 0; i < 7; i++) {
-        booleans.push(self.formulari.diesSeleccionats.indexOf(i) !== -1);
+      if (frequencia === "especifica") {
+        for (i = 0; i < 7; i++) {
+          booleans.push(self.formulari.diesSeleccionats.indexOf(i) !== -1);
+        }
+        objectiu = 1;
+      } else {
+        // Per diari, setmanal o mensual sempre visible
+        for (i = 0; i < 7; i++) {
+          booleans.push(true);
+        }
       }
 
       return {
@@ -714,7 +737,7 @@ export default {
         dificultat: self.formulari.dificultat || "facil",
         frequencia_tipus: frequencia,
         dies_setmana: booleans,
-        objectiu_vegades: self.formulari.objectiuVegades || 1,
+        objectiu_vegades: objectiu,
         categoria_id: self.formulari.categoria,
         icona: self.formulari.icona,
         color: self.formulari.color,
@@ -907,15 +930,27 @@ export default {
       }
 
       var frequencia = "diaria";
+      var booleans = [];
+      var i;
+      var objectiu = self.formulariEdicio.objectiuVegades || 1;
+
       if (self.formulariEdicio.frequencia === "Setmanal") {
         frequencia = "semanal";
       } else if (self.formulariEdicio.frequencia === "Mensual") {
         frequencia = "mensual";
+      } else if (self.formulariEdicio.frequencia === "Dies específics") {
+        frequencia = "especifica";
       }
 
-      var booleans = [];
-      for (var i = 0; i < 7; i++) {
-        booleans.push(self.formulariEdicio.diesSeleccionats.indexOf(i) !== -1);
+      if (frequencia === "especifica") {
+        for (i = 0; i < 7; i++) {
+          booleans.push(self.formulariEdicio.diesSeleccionats.indexOf(i) !== -1);
+        }
+        objectiu = 1;
+      } else {
+        for (i = 0; i < 7; i++) {
+          booleans.push(true);
+        }
       }
 
       var dadesActualitzades = {
@@ -923,7 +958,7 @@ export default {
         dificultat: self.formulariEdicio.dificultat || "facil",
         frequencia_tipus: frequencia,
         dies_setmana: booleans,
-        objectiu_vegades: self.formulariEdicio.objectiuVegades || 1,
+        objectiu_vegades: objectiu,
         icona: self.formulariEdicio.icona,
         color: self.formulariEdicio.color,
         categoria_id: self.formulariEdicio.categoria,

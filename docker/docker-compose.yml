@@ -62,8 +62,8 @@ services:
       - "8000:8000"
     environment:
       APP_NAME: Loopy
-      APP_ENV: local
-      APP_DEBUG: "true"
+      APP_ENV: production
+      APP_DEBUG: "false"
       APP_KEY: ${APP_KEY:-base64:AAAAAAAAAAAAAAAAAAAAAA==}
       APP_URL: http://localhost:8000
       DB_CONNECTION: pgsql
@@ -83,7 +83,6 @@ services:
       SESSION_DRIVER: redis
       QUEUE_CONNECTION: redis
     volumes:
-      - ../backend-laravel:/var/www
       - ../database:/var/database:ro
     depends_on:
       postgres:
@@ -102,8 +101,8 @@ services:
     entrypoint: []
     environment:
       APP_NAME: Loopy
-      APP_ENV: local
-      APP_DEBUG: "true"
+      APP_ENV: production
+      APP_DEBUG: "false"
       APP_KEY: ${APP_KEY:-base64:AAAAAAAAAAAAAAAAAAAAAA==}
       APP_URL: http://localhost:8000
       DB_CONNECTION: pgsql
@@ -120,7 +119,6 @@ services:
       REDIS_PREFIX: ""
       JWT_SECRET: ${JWT_SECRET:-4b2e95c71827e0f29601e4566112841c47b7fe53eab506fb3884be7e8735c623}
     volumes:
-      - ../backend-laravel:/var/www
       - ../database:/var/database:ro
     depends_on:
       postgres:
@@ -139,8 +137,8 @@ services:
     entrypoint: []
     environment:
       APP_NAME: Loopy
-      APP_ENV: local
-      APP_DEBUG: "true"
+      APP_ENV: production
+      APP_DEBUG: "false"
       APP_KEY: ${APP_KEY:-base64:AAAAAAAAAAAAAAAAAAAAAA==}
       APP_URL: http://localhost:8000
       DB_CONNECTION: pgsql
@@ -154,7 +152,6 @@ services:
       REDIS_CLIENT: predis
       REDIS_PREFIX: ""
     volumes:
-      - ../backend-laravel:/var/www
       - ../database:/var/database:ro
     depends_on:
       postgres:
@@ -174,8 +171,8 @@ services:
     entrypoint: []
     environment:
       APP_NAME: Loopy
-      APP_ENV: local
-      APP_DEBUG: "true"
+      APP_ENV: production
+      APP_DEBUG: "false"
       APP_KEY: ${APP_KEY:-base64:AAAAAAAAAAAAAAAAAAAAAA==}
       APP_URL: http://localhost:8000
       DB_CONNECTION: pgsql
@@ -192,7 +189,6 @@ services:
       REDIS_PREFIX: ""
       JWT_SECRET: ${JWT_SECRET:-4b2e95c71827e0f29601e4566112841c47b7fe53eab506fb3884be7e8735c623}
     volumes:
-      - ../backend-laravel:/var/www
       - ../database:/var/database:ro
     depends_on:
       postgres:
@@ -211,8 +207,8 @@ services:
     entrypoint: []
     environment:
       APP_NAME: Loopy
-      APP_ENV: local
-      APP_DEBUG: "true"
+      APP_ENV: production
+      APP_DEBUG: "false"
       APP_KEY: ${APP_KEY:-base64:AAAAAAAAAAAAAAAAAAAAAA==}
       APP_URL: http://localhost:8000
       DB_CONNECTION: pgsql
@@ -229,7 +225,6 @@ services:
       REDIS_PREFIX: ""
       JWT_SECRET: ${JWT_SECRET:-4b2e95c71827e0f29601e4566112841c47b7fe53eab506fb3884be7e8735c623}
     volumes:
-      - ../backend-laravel:/var/www
       - ../database:/var/database:ro
     depends_on:
       postgres:
@@ -248,8 +243,8 @@ services:
     entrypoint: []
     environment:
       APP_NAME: Loopy
-      APP_ENV: local
-      APP_DEBUG: "true"
+      APP_ENV: production
+      APP_DEBUG: "false"
       APP_KEY: ${APP_KEY:-base64:AAAAAAAAAAAAAAAAAAAAAA==}
       APP_URL: http://localhost:8000
       DB_CONNECTION: pgsql
@@ -269,7 +264,6 @@ services:
       SESSION_DRIVER: redis
       QUEUE_CONNECTION: redis
     volumes:
-      - ../backend-laravel:/var/www
       - ../database:/var/database:ro
     depends_on:
       postgres:
@@ -288,19 +282,15 @@ services:
     ports:
       - "3001:3001"
     environment:
-      NODE_ENV: development
+      NODE_ENV: production
       PORT: 3001
       REDIS_HOST: redis
       REDIS_PORT: 6379
       JWT_SECRET: ${JWT_SECRET:-4b2e95c71827e0f29601e4566112841c47b7fe53eab506fb3884be7e8735c623}
       LARAVEL_URL: http://backend-laravel:8000
-    volumes:
-      - ../backend-node:/app
-      - node_modules:/app/node_modules
     depends_on:
       redis:
         condition: service_healthy
-    command: npm run dev
 
   frontend:
     build:
@@ -312,20 +302,15 @@ services:
     ports:
       - "3000:3000"
     environment:
-      NODE_ENV: development
+      NODE_ENV: production
       NUXT_HOST: 0.0.0.0
       NUXT_PORT: 3000
       SOCKET_URL: http://localhost:3001
       API_URL: http://localhost:8000
       NITRO_PORT: 3000
-    volumes:
-      - ../frontend:/app
-      - /app/node_modules
-      - /app/.nuxt
     depends_on:
       - backend-node
       - backend-laravel
-    command: npm run dev
 
 volumes:
   postgres_data:

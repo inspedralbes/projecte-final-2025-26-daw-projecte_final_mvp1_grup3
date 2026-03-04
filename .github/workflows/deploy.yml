@@ -18,7 +18,7 @@ jobs:
         username: ${{ secrets.SERVER_USER }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
-          cd /var/www/EL_TEU_PROJECTE
+          cd /var/www/loopy
           git pull origin main
 
           # Crear l'arxiu .env de l'arrel a partir de secrets
@@ -27,8 +27,14 @@ jobs:
           # Crear l'arxiu .env dins de backend-laravel a partir de secrets
           echo "${{ secrets.ENV_BACKEND }}" > backend-laravel/.env
 
-          # Aixecar i reconstruir contenidors amb Docker Compose
-          docker-compose up -d --build
+          # Reconstruir imatges i aixecar contenidors
+          docker-compose -f docker/docker-compose.yml build
+          docker-compose -f docker/docker-compose.yml up -d
 
-          # Executar migracions de Laravel al contenidor adient
-          docker-compose exec -T backend-laravel php artisan migrate
+          # Executar migracions de Laravel al contenidor adient i caché
+          docker exec loopy-laravel php artisan migrate --force
+          docker exec loopy-laravel php artisan config:cache
+          docker exec loopy-laravel php artisan route:cache
+
+          # Neteja d'imatges òrfenes per no omplir el disc del servidor
+          docker image prune -f

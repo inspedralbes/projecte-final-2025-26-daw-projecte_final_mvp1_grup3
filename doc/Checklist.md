@@ -42,7 +42,7 @@ Leyenda:
   - **JSON Redis→Node:** `{"action":"CREATE","success":true,"habit":{...}}`
 - [x] (HECHA) El backend filtra y solo devuelve los hábitos del día actual según `dies_setmana`.
   - **Read JSON:** `GET /api/habits` → `[{"id":1,"titol":"...","objectiu_vegades":3,"unitat":"vegades","completat":false}]`
-- [ ] (FALTA) Asignación de plantilla para añadir hábitos en bloque desde el perfil de usuario.
+- [x] (HECHA) Asignación de plantilla para añadir hábitos en bloque desde el perfil de usuario.
   - **JSON sockets/Redis (óptimo):** Front `{"action":"ASSIGN","plantilla_id":5}` → Redis `{"type":"PLANTILLA","action":"ASSIGN","user_id":1,"plantilla_id":5}` → feedback `{"success":true,"plantilla":{...}}`.
 - [x] (HECHA) Marcar cumplimiento con contador +1 y overachieving sin XP extra.
   - **JSON Front→Node:** `{"habit_id":1,"valor":1}` / `{"habit_id":1,"valor":-1}`

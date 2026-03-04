@@ -18,10 +18,23 @@ export var useHabitStore = defineStore("habit", {
      * Transforma les dades de l'API al format del frontend.
      */
     mapejarHabitDesDeApi: function (hàbit) {
+      var freq = hàbit.frequencia_tipus || "";
+      var freqMapejada = freq;
+
+      if (freq === "diaria") {
+        freqMapejada = "Diari";
+      } else if (freq === "semanal") {
+        freqMapejada = "Setmanal";
+      } else if (freq === "mensual") {
+        freqMapejada = "Mensual";
+      } else if (freq === "especifica") {
+        freqMapejada = "Dies específics";
+      }
+
       return {
         id: hàbit.id,
         nom: hàbit.titol || "Sense nom",
-        frequencia: hàbit.frequencia_tipus || "",
+        frequencia: freqMapejada,
         recordatori: hàbit.recordatori || "",
         icona: hàbit.icona || "📝",
         color: hàbit.color || "#10B981",

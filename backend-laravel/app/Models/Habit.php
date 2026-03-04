@@ -63,6 +63,16 @@ class Habit extends Model
     }
 
     /**
+     * Defineix la relació amb la plantilla origen (plantilla_id).
+     *
+     * @return BelongsTo
+     */
+    public function plantilla(): BelongsTo
+    {
+        return $this->belongsTo(Plantilla::class, 'plantilla_id');
+    }
+
+    /**
      * Defineix la relació amb les plantilles a les que pertany l'hàbit.
      *
      * @return BelongsToMany

@@ -562,17 +562,11 @@ export default {
         }
 
         var authStore = useAuthStore();
-        authStore.token = dades.token;
-        authStore.user = dades.user;
-        authStore.admin = null;
-        authStore.role = "user";
-        authStore.isAuthenticated = true;
-        if (typeof localStorage !== "undefined") {
-          localStorage.setItem("loopy_token", dades.token);
-          localStorage.setItem("loopy_user", JSON.stringify(dades.user));
-          localStorage.removeItem("loopy_admin");
-          localStorage.setItem("loopy_role", "user");
-        }
+        authStore.aplicarSessio({
+          token: dades.token,
+          user: dades.user,
+          role: "user"
+        });
         self.mostrarAlertaCompteCreat();
       } catch (err) {
         if (err.message) {

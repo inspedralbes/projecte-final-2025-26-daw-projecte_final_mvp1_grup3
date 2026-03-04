@@ -714,9 +714,19 @@ export default {
 
     /**
      * Decrementa el progrés de l'hàbit seleccionat.
+     * Si restar faria que l'hàbit deixi d'estar completat, mostra avís amb SweetAlert.
      */
     decrementarHabit: function () {
       if (!this.habitSeleccionat || !this.socket) {
+        return;
+      }
+      var progressActual = this.progresModal;
+      var objectiu = this.objectiuModal;
+      var completatAvui = this.habitCompletatAvui(this.habitSeleccionat.id);
+      if (completatAvui && (progressActual - 1) < objectiu) {
+        this.mostrarAlertaRestarHabitCompletat(function () {
+          this.gameStore.enviarProgresHabit(this.habitSeleccionat.id, -1, this.socket);
+        }.bind(this));
         return;
       }
       this.gameStore.enviarProgresHabit(this.habitSeleccionat.id, -1, this.socket);
@@ -768,6 +778,9 @@ export default {
 
       self.socket.on("update_xp", async function (data) {
         console.log("⭐ Recept feedback gamificació:", data);
+        if (data) {
+          self.gameStore.actualitzarDesDeXpUpdate(data);
+        }
         try {
           await self.gameStore.obtenirEstatJoc();
         } catch (error) {
@@ -1052,6 +1065,62 @@ export default {
     },
 
     /**
+     * Mostra SweetAlert quan l'usuari vol restar progrés d'un hàbit completat.
+     * Adverteix que es restaran XP i monedes. Botons Confirmar i Cancel·lar.
+     *
+     * @param {Function} callbackOnConfirm - Cridat quan l'usuari prem Confirmar.
+     */
+    mostrarAlertaRestarHabitCompletat: function (callbackOnConfirm) {
+      var self = this;
+      var xp = this.habitSeleccionat && this.habitSeleccionat.recompensaXP ? this.habitSeleccionat.recompensaXP : 100;
+      var monedes = this.habitSeleccionat && this.habitSeleccionat.recompensaMonedes ? this.habitSeleccionat.recompensaMonedes : 2;
+      var monedesActuals = this.monedes || 0;
+      var monedesDespres = monedesActuals - monedes;
+      var textMonedes = "Se't restarien " + xp + " XP i " + monedes + " monedes.";
+      if (monedesDespres < 0) {
+        textMonedes = textMonedes + " El teu saldo de monedes quedaria en " + monedesDespres + ".";
+      }
+
+      var executarAlerta = function () {
+        if (typeof window !== "undefined" && window.Swal) {
+          window.Swal.fire({
+            title: "Desfer la completació?",
+            html: "<p>Si restes ara, l'hàbit deixarà d'estar completat i perdras la recompensa obtinguda.</p><p class=\"mt-2 font-semibold\">" + textMonedes + "</p><p class=\"mt-2 text-sm text-gray-500\">N'estàs segur que vols continuar?</p>",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Confirmar",
+            cancelButtonText: "Cancel·lar",
+            confirmButtonColor: "#dc2626",
+            cancelButtonColor: "#374151",
+            customClass: {
+              popup: "swal-restar-habit-popup",
+              actions: "swal-restar-habit-actions",
+              confirmButton: "swal-restar-habit-confirm",
+              cancelButton: "swal-restar-habit-cancel"
+            },
+            buttonsStyling: true
+          }).then(function (result) {
+            if (result && result.isConfirmed && typeof callbackOnConfirm === "function") {
+              var habitId = self.habitSeleccionat && self.habitSeleccionat.id;
+              var nouProgress = self.progresModal - 1;
+              self.actualitzarProgresLocal(habitId, nouProgress, false);
+              callbackOnConfirm();
+            }
+          });
+        }
+      };
+
+      if (typeof window !== "undefined" && window.Swal) {
+        executarAlerta();
+      } else if (typeof document !== "undefined") {
+        var script = document.createElement("script");
+        script.src = "https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js";
+        script.onload = executarAlerta;
+        document.head.appendChild(script);
+      }
+    },
+
+    /**
      * Mostra SweetAlert quan es puja de nivell.
      */
     mostrarAlertaLevelUp: function (data) {
@@ -1222,5 +1291,27 @@ export default {
   text-align: center;
   user-select: none;
   pointer-events: none;
+}
+</style>
+
+<style>
+/* Estils globals per als botons del SweetAlert de restar hàbit - sempre visibles */
+.swal-restar-habit-popup .swal-restar-habit-confirm {
+  opacity: 1 !important;
+  visibility: visible !important;
+  background-color: #dc2626 !important;
+  color: white !important;
+  border: none !important;
+  padding: 0.625em 1.5em !important;
+  font-weight: 600 !important;
+}
+.swal-restar-habit-popup .swal-restar-habit-cancel {
+  opacity: 1 !important;
+  visibility: visible !important;
+  background-color: #374151 !important;
+  color: white !important;
+  border: none !important;
+  padding: 0.625em 1.5em !important;
+  font-weight: 600 !important;
 }
 </style>

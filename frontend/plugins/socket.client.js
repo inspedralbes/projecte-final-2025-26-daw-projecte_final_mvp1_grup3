@@ -9,11 +9,10 @@ export default defineNuxtPlugin(function (nuxtApp) {
     var config = useRuntimeConfig();
     var socketUrl = config.public.socketUrl || 'http://localhost:3001';
     var authStore = useAuthStore();
-    if (typeof window !== 'undefined') authStore.loadFromStorage();
 
     var socket = io(socketUrl, {
         auth: { token: authStore.token || '' },
-        autoConnect: true,
+        autoConnect: false,
         transports: ['websocket']
     });
 
@@ -32,7 +31,16 @@ export default defineNuxtPlugin(function (nuxtApp) {
         var authStore = useAuthStore();
         socket.auth = { token: authStore.token || '' };
         socket.disconnect();
-        socket.connect();
+        if (authStore.token && authStore.isAuthenticated) {
+            socket.connect();
+        }
+    }
+
+    if (typeof window !== 'undefined') {
+        socket.auth = { token: authStore.token || '' };
+        if (authStore.token && authStore.isAuthenticated) {
+            socket.connect();
+        }
     }
 
     return {

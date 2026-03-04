@@ -51,10 +51,10 @@
 
       <!-- Footer SideBar -->
       <div class="p-6 border-t border-gray-100 bg-gray-50/50">
-        <NuxtLink to="/login" class="flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-black text-red-500 hover:bg-red-50 transition-all uppercase tracking-widest">
+        <button type="button" @click="sortir" class="flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-black text-red-500 hover:bg-red-50 transition-all uppercase tracking-widest w-full text-left">
           <div class="w-2 h-2 rounded-full bg-red-400"></div>
           Sortir
-        </NuxtLink>
+        </button>
       </div>
     </aside>
 
@@ -76,8 +76,13 @@ import { computed } from 'vue';
 var route = useRoute();
 
 function sortir() {
-  useAuthStore().logout();
-  navigateTo('/login');
+  var nuxtApp = useNuxtApp();
+  useAuthStore().logout().then(function () {
+    if (nuxtApp.$socket) {
+      nuxtApp.$socket.disconnect();
+    }
+    navigateTo('/login');
+  });
 }
 
 var menuPrincipal = [

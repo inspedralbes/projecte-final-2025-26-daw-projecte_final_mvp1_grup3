@@ -148,6 +148,9 @@ class HabitService
                 $success = true;
                 $progress = $resultatProgres['progress'];
                 $completedToday = $resultatProgres['completed_today'];
+                if (isset($resultatProgres['xp_update']) && is_array($resultatProgres['xp_update'])) {
+                    $xpUpdate = $resultatProgres['xp_update'];
+                }
             } else {
                 $success = false;
                 $message = 'No s\'ha pogut actualitzar el progrés.';
@@ -534,6 +537,7 @@ class HabitService
 
     /**
      * Processa increment/decrement del progrés diari.
+     * Si es desfà una completació (restar quan estava completat), es resten XP i monedes.
      *
      * @return array{progress:int, completed_today:bool}|null
      */
@@ -546,6 +550,10 @@ class HabitService
 
         $ara = Carbon::now();
         $progresActual = $this->obtenirProgresDiari($habitId, $ara);
+        $objectiu = (int) ($habit->objectiu_vegades ?? 1);
+        if ($objectiu <= 0) {
+            $objectiu = 1;
+        }
 
         if ($delta < 0 && $progresActual <= 0) {
             return [
@@ -556,6 +564,15 @@ class HabitService
 
         if ($delta < 0 && ($progresActual + $delta) < 0) {
             $delta = -$progresActual;
+        }
+
+        $desferCompletacio = false;
+        if ($delta < 0 && $this->habitCompletatAvui($habitId, $ara) && ($progresActual + $delta) < $objectiu) {
+            $desferCompletacio = true;
+        }
+
+        if ($desferCompletacio) {
+            return $this->desferCompletacioIRestarProgres($habit, $usuariId, $ara, $progresActual, $delta);
         }
 
         RegistreActivitat::create([
@@ -571,6 +588,113 @@ class HabitService
         return [
             'progress' => (int) $nouProgres,
             'completed_today' => $this->habitCompletatAvui($habitId, $ara),
+        ];
+    }
+
+    /**
+     * Desfà la completació d'un hàbit: elimina el registre acabado, resta XP i monedes a l'usuari
+     * i afegeix el registre de progrés negatiu.
+     *
+     * @param  Habit  $habit
+     * @param  int  $usuariId
+     * @param  Carbon  $ara
+     * @param  int  $progresActual
+     * @param  int  $delta
+     * @return array{progress:int, completed_today:bool}
+     */
+    private function desferCompletacioIRestarProgres(Habit $habit, int $usuariId, Carbon $ara, int $progresActual, int $delta): array
+    {
+        $habitId = (int) $habit->id;
+        $xpARestar = $this->calcularXPSegonsDificultat($habit->dificultat);
+        $monedesARestar = $this->calcularMonedesSegonsDificultat($habit->dificultat);
+
+        DB::transaction(function () use ($habitId, $usuariId, $ara, $progresActual, $delta, $xpARestar, $monedesARestar) {
+            $registreCompletat = RegistreActivitat::where('habit_id', $habitId)
+                ->whereDate('data', $ara)
+                ->where('acabado', true)
+                ->first();
+
+            if ($registreCompletat !== null) {
+                $xpReal = (int) ($registreCompletat->xp_guanyada ?? 0);
+                if ($xpReal > 0) {
+                    $xpARestar = $xpReal;
+                }
+                $registreCompletat->delete();
+            }
+
+            $usuari = User::where('id', $usuariId)->lockForUpdate()->first();
+            if ($usuari !== null) {
+                $nouXpTotal = max(0, (int) $usuari->xp_total - $xpARestar);
+                $novesMonedes = (int) $usuari->monedes - $monedesARestar;
+                $nivellData = $this->recalcularNivellDesDeXpTotal($nouXpTotal);
+
+                $usuari->update([
+                    'xp_total' => $nouXpTotal,
+                    'nivell' => $nivellData['nivell'],
+                    'xp_actual_nivel' => $nivellData['xp_actual_nivel'],
+                    'xp_objetivo_nivel' => $nivellData['xp_objetivo_nivel'],
+                    'monedes' => $novesMonedes,
+                ]);
+            }
+
+            RegistreActivitat::create([
+                'habit_id' => $habitId,
+                'data' => $ara,
+                'valor' => $delta,
+                'acabado' => false,
+                'xp_guanyada' => 0,
+            ]);
+        });
+
+        $nouProgres = $progresActual + $delta;
+        $ratxa = Ratxa::where('usuari_id', $usuariId)->first();
+        $ratxaActual = $ratxa ? (int) $ratxa->ratxa_actual : 0;
+        $ratxaMaxima = $ratxa ? (int) $ratxa->ratxa_maxima : 0;
+        $usuari = User::find($usuariId);
+        $monedes = $usuari ? (int) $usuari->monedes : 0;
+        $nivellData = $this->recalcularNivellDesDeXpTotal($usuari ? (int) $usuari->xp_total : 0);
+
+        return [
+            'progress' => (int) $nouProgres,
+            'completed_today' => false,
+            'xp_update' => [
+                'xp_total' => $usuari ? (int) $usuari->xp_total : 0,
+                'nivell' => $nivellData['nivell'],
+                'xp_actual_nivel' => $nivellData['xp_actual_nivel'],
+                'xp_objetivo_nivel' => $nivellData['xp_objetivo_nivel'],
+                'ratxa_actual' => $ratxaActual,
+                'ratxa_maxima' => $ratxaMaxima,
+                'monedes' => $monedes,
+            ],
+        ];
+    }
+
+    /**
+     * Recalcula nivell, xp_actual_nivel i xp_objetivo_nivel a partir del xp_total.
+     *
+     * @return array{nivell:int,xp_actual_nivel:int,xp_objetivo_nivel:int}
+     */
+    private function recalcularNivellDesDeXpTotal(int $xpTotal): array
+    {
+        if ($xpTotal <= 0) {
+            return [
+                'nivell' => 1,
+                'xp_actual_nivel' => 0,
+                'xp_objetivo_nivel' => self::XP_BASE_NIVELL,
+            ];
+        }
+        $nivell = 1;
+        $xpObjectiu = $this->calcularObjectiuNivell($nivell);
+        $restant = $xpTotal;
+        while ($restant >= $xpObjectiu) {
+            $restant -= $xpObjectiu;
+            $nivell++;
+            $xpObjectiu = $this->calcularObjectiuNivell($nivell);
+        }
+        return [
+            'nivell' => $nivell,
+            'xp_actual_nivel' => $restant,
+            'xp_objetivo_nivel' => $xpObjectiu,
         ];
     }
 

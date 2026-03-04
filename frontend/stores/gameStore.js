@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import { authFetch } from "~/utils/authFetch.js";
 
 // Constants de configuració
 var TEMPS_ESPERA_MS = 5000;
@@ -6,7 +7,14 @@ var XP_BASE = 10;
 var XP_PER_DIFICULTAT = {
   facil: 100,
   mitja: 250,
+  media: 250,
   dificil: 400,
+};
+var MONEDES_PER_DIFICULTAT = {
+  facil: 2,
+  mitja: 5,
+  media: 5,
+  dificil: 10,
 };
 
 /**
@@ -96,6 +104,29 @@ export var useGameStore = defineStore("game", {
     },
 
     /**
+     * Actualitza l'estat del joc des del payload xp_update rebut per socket
+     * (habit completat, ruleta, etc.).
+     * @param {Object} dades - { xp_total, ratxa_actual, ratxa_maxima, monedes }
+     */
+    actualitzarDesDeXpUpdate: function (dades) {
+      if (!dades) {
+        return;
+      }
+      if (dades.xp_total !== undefined) {
+        this.xpTotal = dades.xp_total;
+      }
+      if (dades.ratxa_actual !== undefined) {
+        this.ratxa = dades.ratxa_actual;
+      }
+      if (dades.ratxa_maxima !== undefined) {
+        this.ratxaMaxima = dades.ratxa_maxima;
+      }
+      if (dades.monedes !== undefined) {
+        this.monedes = dades.monedes;
+      }
+    },
+
+    /**
      * Estableix l'ID de l'usuari (des del authStore).
      */
     assignarUsuariId: function (id) {
@@ -150,20 +181,11 @@ export var useGameStore = defineStore("game", {
 
       try {
         url = self.construirUrlApi("/api/habits");
-        var authStore = useAuthStore();
-        resposta = await fetch(url, {
-          headers: authStore.getAuthHeaders(),
-          mode: "cors",
+        resposta = await authFetch(url, {
+          mode: "cors"
         });
 
-        if (resposta.status === 401) {
-          authStore.logout();
-          await navigateTo("/login");
-          return [];
-        }
-
         if (!resposta.ok) {
-          throw new Error("Error en obtenir hàbits");
           throw new Error("Error en obtenir hàbits");
         }
 
@@ -177,6 +199,12 @@ export var useGameStore = defineStore("game", {
 
         for (i = 0; i < llistaHabits.length; i++) {
           h = llistaHabits[i];
+          var diesSetmana;
+          if (Array.isArray(h.dies_setmana)) {
+            diesSetmana = h.dies_setmana;
+          } else {
+            diesSetmana = [];
+          }
           mapejats.push({
             id: h.id,
             nom: h.titol || "Sense nom",
@@ -185,8 +213,9 @@ export var useGameStore = defineStore("game", {
               " - Dificultat: " +
               (h.dificultat || ""),
             completat: !!h.completat,
-            diesSetmana: Array.isArray(h.dies_setmana) ? h.dies_setmana : [],
+            diesSetmana: diesSetmana,
             recompensaXP: XP_PER_DIFICULTAT[h.dificultat] || XP_BASE,
+            recompensaMonedes: MONEDES_PER_DIFICULTAT[h.dificultat] || 2,
             dificultat: h.dificultat,
             objectiuVegades: h.objectiu_vegades || 1,
             unitat: h.unitat || "",
@@ -214,17 +243,9 @@ export var useGameStore = defineStore("game", {
 
       try {
         url = self.construirUrlApi("/api/game-state");
-        var authStore = useAuthStore();
-        resposta = await fetch(url, {
-          headers: authStore.getAuthHeaders(),
-          mode: "cors",
+        resposta = await authFetch(url, {
+          mode: "cors"
         });
-
-        if (resposta.status === 401) {
-          authStore.logout();
-          await navigateTo("/login");
-          return null;
-        }
         if (!resposta.ok) {
           throw new Error("Error en obtenir estat");
         }
@@ -283,17 +304,9 @@ export var useGameStore = defineStore("game", {
       var dades;
       try {
         url = self.construirUrlApi("/api/habits/progress");
-        var authStore = useAuthStore();
-        resposta = await fetch(url, {
-          headers: authStore.getAuthHeaders(),
-          mode: "cors",
+        resposta = await authFetch(url, {
+          mode: "cors"
         });
-
-        if (resposta.status === 401) {
-          authStore.logout();
-          await navigateTo("/login");
-          return {};
-        }
         if (!resposta.ok) {
           throw new Error("Error en obtenir progrés");
         }

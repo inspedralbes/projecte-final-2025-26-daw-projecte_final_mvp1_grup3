@@ -9,6 +9,7 @@ use App\Models\Administrador;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use App\Services\AuthService;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
 //================================ PROPIETATS / ATRIBUTS ==========
@@ -18,6 +19,16 @@ use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
  */
 class AdminAuthController extends Controller
 {
+    //================================ PROPIETATS / ATRIBUTS ==========
+
+    private AuthService $authService;
+
+    public function __construct(AuthService $authService)
+    {
+        // A. Assignar servei d'autenticació
+        $this->authService = $authService;
+    }
+
     //================================ MÈTODES / FUNCIONS ===========
 
     /**
@@ -25,26 +36,23 @@ class AdminAuthController extends Controller
      */
     public function login(Request $request): JsonResponse
     {
+        // A. Validar dades d'entrada
         $request->validate([
             'email' => 'required|email',
             'contrasenya' => 'required|string',
         ]);
 
+        // B. Cercar administrador
         $admin = Administrador::where('email', 'ILIKE', $request->input('email'))->first();
 
+        // C. Verificar credencials
         if ($admin === null || !Hash::check($request->input('contrasenya'), $admin->contrasenya_hash)) {
             return response()->json(['message' => 'Credencials incorrectes'], 401);
         }
 
+        // D. Generar token i resposta
         $token = JWTAuth::fromUser($admin);
 
-        return response()->json([
-            'token' => $token,
-            'admin' => [
-                'id' => $admin->id,
-                'nom' => $admin->nom,
-                'email' => $admin->email,
-            ],
-        ]);
+        return $this->authService->crearRespostaLoginAdmin($admin, $token);
     }
 }

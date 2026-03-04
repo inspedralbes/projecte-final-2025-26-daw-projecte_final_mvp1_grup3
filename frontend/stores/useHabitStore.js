@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { useAuthStore } from "./useAuthStore";
+import { authFetch } from "~/utils/authFetch.js";
 
 /**
  * Store per a la gestió dels hàbits de l'usuari.
@@ -55,9 +55,6 @@ export var useHabitStore = defineStore("habit", {
      * Obté els hàbits des de l'API de Laravel via fetch.
      */
     obtenirHabitsDesDeApi: async function () {
-      var configuracio;
-      var urlApi;
-      var base;
       var resposta;
       var dadesBrutes;
       var llista;
@@ -66,31 +63,8 @@ export var useHabitStore = defineStore("habit", {
       this.error = null;
 
       try {
-        configuracio = useRuntimeConfig();
-        urlApi = configuracio.public.apiUrl;
-
-        // A. Normalitzar la URL base
-        if (urlApi.endsWith("/")) {
-          base = urlApi.slice(0, -1);
-        } else {
-          base = urlApi;
-        }
-
-        // B. Realitzar la petició amb Authorization
-        var authStore = useAuthStore();
-        var headers = authStore.getAuthHeaders();
-        console.log("[HabitStore] Headers:", headers);
-
-        resposta = await fetch(base + "/api/habits/all", {
-          headers: headers
-        });
-
-        if (resposta.status === 401) {
-          authStore.logout();
-          await navigateTo("/Login");
-          this.habits = [];
-          return [];
-        }
+        // A. Realitzar la petició amb cookies i refresh automàtic
+        resposta = await authFetch("/api/habits/all", {});
         if (!resposta.ok) {
           throw new Error("Error en obtenir hàbits: " + resposta.status);
         }

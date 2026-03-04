@@ -96,6 +96,12 @@
     "confirm_undo_footer": "Are you sure you want to continue?",
     "level_up_title": "Level up!",
     "level_up_text": "You reached level {nivell}. You got +{bonus} coins.",
+    "habit_completed_title": "Congratulations!",
+    "habit_completed_text": "You have completed a habit!",
+    "roulette_won_title": "Congratulations!",
+    "roulette_won_text": "You've received {premi}!",
+    "mission_completed_title": "Mission completed!",
+    "mission_completed_text": "You have completed your daily mission! +10 coins and +20 XP",
     "confirm": "Confirm",
     "cancel": "Cancel"
   },

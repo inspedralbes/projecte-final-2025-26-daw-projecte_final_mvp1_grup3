@@ -96,6 +96,12 @@
         "confirm_undo_footer": "N'estàs segur que vols continuar?",
         "level_up_title": "Nivell augmentat!",
         "level_up_text": "Has pujat al nivell {nivell}. Has aconseguit +{bonus} monedes.",
+        "habit_completed_title": "Felicitats!",
+        "habit_completed_text": "Has completat un hàbit!",
+        "roulette_won_title": "Felicitats!",
+        "roulette_won_text": "Has rebut {premi}!",
+        "mission_completed_title": "Missió completada!",
+        "mission_completed_text": "Has completat la teva missió diària! +10 monedes i +20 XP",
         "confirm": "Confirmar",
         "cancel": "Cancel·lar"
     },

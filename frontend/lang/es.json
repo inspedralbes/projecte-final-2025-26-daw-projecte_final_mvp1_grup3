@@ -96,6 +96,12 @@
     "confirm_undo_footer": "¿Estás seguro de que quieres continuar?",
     "level_up_title": "¡Nivel aumentado!",
     "level_up_text": "Has subido al nivel {nivell}. Has conseguido +{bonus} monedas.",
+    "habit_completed_title": "¡Felicidades!",
+    "habit_completed_text": "¡Has completado un hábito!",
+    "roulette_won_title": "¡Felicidades!",
+    "roulette_won_text": "¡Has recibido {premi}!",
+    "mission_completed_title": "¡Misión completada!",
+    "mission_completed_text": "¡Has completado tu misión diaria! +10 monedas y +20 XP",
     "confirm": "Confirmar",
     "cancel": "Cancelar"
   },

@@ -979,9 +979,9 @@ export default {
           if (self.ruletaPremiSeleccionat && self.ruletaPremiSeleccionat.label) {
             label = self.ruletaPremiSeleccionat.label;
           } else {
-            label = "un premi";
+            label = "...";
           }
-          self.mostrarAlertaRuleta("Felicidades!", "Has recibido " + label + "!", "success");
+          self.mostrarAlertaRuleta(self.$t('home.roulette_won_title'), self.$t('home.roulette_won_text', { premi: label }), "success");
         }, self.ruletaDuracioMs);
       }, 600);
     },
@@ -1060,11 +1060,12 @@ export default {
      * Mostra SweetAlert quan es completa un hàbit.
      */
     mostrarAlertaHabitCompletat: function () {
+      var self = this;
       var mostrarAlerta = function () {
         if (typeof window !== "undefined" && window.Swal) {
           window.Swal.fire({
-            title: "Felicidades!",
-            text: "Has completado un hábito!",
+            title: self.$t('home.habit_completed_title'),
+            text: self.$t('home.habit_completed_text'),
             icon: "success"
           });
         }
@@ -1100,12 +1101,12 @@ export default {
       var executarAlerta = function () {
         if (typeof window !== "undefined" && window.Swal) {
           window.Swal.fire({
-            title: this.$t('home.confirm_undo_title'),
-            html: "<p>" + this.$t('home.confirm_undo_text') + "</p><p class=\"mt-2 font-semibold\">" + textMonedes + "</p><p class=\"mt-2 text-sm text-gray-500\">" + this.$t('home.confirm_undo_footer') + "</p>",
+            title: self.$t('home.confirm_undo_title'),
+            html: "<p>" + self.$t('home.confirm_undo_text') + "</p><p class=\"mt-2 font-semibold\">" + textMonedes + "</p><p class=\"mt-2 text-sm text-gray-500\">" + self.$t('home.confirm_undo_footer') + "</p>",
             icon: "warning",
             showCancelButton: true,
-            confirmButtonText: this.$t('home.confirm'),
-            cancelButtonText: this.$t('home.cancel'),
+            confirmButtonText: self.$t('home.confirm'),
+            cancelButtonText: self.$t('home.cancel'),
             confirmButtonColor: "#dc2626",
             cancelButtonColor: "#374151",
             customClass: {
@@ -1140,13 +1141,14 @@ export default {
      * Mostra SweetAlert quan es puja de nivell.
      */
     mostrarAlertaLevelUp: function (data) {
+      var self = this;
       var nivell = data && data.nivell ? data.nivell : this.nivell;
       var bonusMonedes = data && data.bonus_monedes ? data.bonus_monedes : 10;
       var mostrarAlerta = function () {
         if (typeof window !== "undefined" && window.Swal) {
           window.Swal.fire({
-            title: this.$t('home.level_up_title'),
-            text: this.$t('home.level_up_text', { nivell: nivell, bonus: bonusMonedes }),
+            title: self.$t('home.level_up_title'),
+            text: self.$t('home.level_up_text', { nivell: nivell, bonus: bonusMonedes }),
             icon: "success"
           });
         }
@@ -1167,11 +1169,12 @@ export default {
      * Carrega SweetAlert2 des del CDN si encara no és disponible.
      */
     mostrarAlertaMissioCompletada: function () {
+      var self = this;
       var mostrarAlerta = function () {
         if (typeof window !== "undefined" && window.Swal) {
           window.Swal.fire({
-            title: "Missió completada!",
-            text: "Has completat la teva missió diària! +10 monedes i +20 XP",
+            title: self.$t('home.mission_completed_title'),
+            text: self.$t('home.mission_completed_text'),
             icon: "success"
           });
         }

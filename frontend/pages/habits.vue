@@ -45,33 +45,6 @@
                 ></textarea>
               </div>
 
-              <div class="grid grid-cols-2 gap-4">
-                <div>
-                  <label
-                    class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
-                    >Objectiu diari</label
-                  >
-                  <input
-                    v-model.number="formulari.objectiuVegades"
-                    type="number"
-                    min="1"
-                    class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white transition-all"
-                  />
-                </div>
-                <div>
-                  <label
-                    class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
-                    >Unitat</label
-                  >
-                  <input
-                    v-model="formulari.unitat"
-                    type="text"
-                    placeholder="vegades, minuts, km..."
-                    class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white transition-all"
-                  />
-                </div>
-              </div>
-
               <div>
                 <label
                   class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
@@ -86,8 +59,6 @@
                   <option value="dificil">Difícil</option>
                 </select>
               </div>
-
-              <!-- Sección de Icona Ràpida eliminada para automatización -->
             </div>
           </div>
 
@@ -136,6 +107,23 @@
               </div>
 
               <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label
+                      class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
+                      >Objectiu diari</label
+                    >
+                    <input
+                      v-model.number="formulari.objectiuVegades"
+                      type="number"
+                      min="1"
+                      class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white transition-all"
+                    />
+                  </div>
+                  <div>
+                  </div>
+                </div>
+
                 <div>
                   <label
                     class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
@@ -368,33 +356,6 @@
             />
           </div>
 
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label
-                class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
-                >Objectiu diari</label
-              >
-              <input
-                v-model.number="formulariEdicio.objectiuVegades"
-                type="number"
-                min="1"
-                class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500"
-              />
-            </div>
-            <div>
-              <label
-                class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
-                >Unitat</label
-              >
-              <input
-                v-model="formulariEdicio.unitat"
-                type="text"
-                placeholder="vegades, minuts, km..."
-                class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500"
-              />
-            </div>
-          </div>
-
           <div>
             <label
               class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
@@ -409,8 +370,6 @@
               <option value="dificil">Difícil</option>
             </select>
           </div>
-
-          <!-- Icon Selection eliminado para automatización -->
 
           <!-- Category -->
           <div>
@@ -436,7 +395,22 @@
             </div>
           </div>
 
-          <!-- Frequency & Days -->
+          <!-- Goal & Frequency & Days -->
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label
+                class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
+                >Objectiu diari</label
+              >
+              <input
+                v-model.number="formulariEdicio.objectiuVegades"
+                type="number"
+                min="1"
+                class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500"
+              />
+            </div>
+          </div>
+
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label
@@ -555,7 +529,6 @@ export default {
         diesSeleccionats: [0, 1, 2, 3, 4], // Dilluns a Divendres per defecte
         color: "#10B981",
         objectiuVegades: 1,
-        unitat: "vegades",
         dificultat: "facil",
       },
       esObertModalEdicio: false,
@@ -570,7 +543,6 @@ export default {
         diesSeleccionats: [],
         color: "#10B981",
         objectiuVegades: 1,
-        unitat: "vegades",
         dificultat: "facil",
       },
       categories: [
@@ -743,7 +715,6 @@ export default {
         frequencia_tipus: frequencia,
         dies_setmana: booleans,
         objectiu_vegades: self.formulari.objectiuVegades || 1,
-        unitat: self.formulari.unitat || "vegades",
         categoria_id: self.formulari.categoria,
         icona: self.formulari.icona,
         color: self.formulari.color,
@@ -846,7 +817,6 @@ export default {
       this.formulari.frequencia = "Diari";
       this.formulari.recordatori = "08:00";
       this.formulari.objectiuVegades = 1;
-      this.formulari.unitat = "vegades";
       this.formulari.dificultat = "facil";
     },
 
@@ -887,7 +857,6 @@ export default {
       this.formulariEdicio.recordatori = hàbit.recordatori || "08:00";
       this.formulariEdicio.color = hàbit.color || "#10B981";
       this.formulariEdicio.objectiuVegades = hàbit.objectiuVegades || 1;
-      this.formulariEdicio.unitat = hàbit.unitat || "vegades";
       this.formulariEdicio.dificultat = hàbit.dificultat || "facil";
 
       // Reconstruir dies seleccionats a partir del boolean array
@@ -955,7 +924,6 @@ export default {
         frequencia_tipus: frequencia,
         dies_setmana: booleans,
         objectiu_vegades: self.formulariEdicio.objectiuVegades || 1,
-        unitat: self.formulariEdicio.unitat || "vegades",
         icona: self.formulariEdicio.icona,
         color: self.formulariEdicio.color,
         categoria_id: self.formulariEdicio.categoria,

@@ -496,6 +496,8 @@ export default {
       var idxDia = this.obtenirIndexDiaActual();
       var filtrats = [];
       var i;
+
+      // 1. Filtrar hàbits per al dia actual
       for (i = 0; i < llista.length; i++) {
         var dies = llista[i].diesSetmana;
         if (!Array.isArray(dies) || dies.length < 7) {
@@ -504,7 +506,21 @@ export default {
           filtrats.push(llista[i]);
         }
       }
-      return filtrats;
+
+      // 2. Separar hàbits completats dels pendents
+      var completats = [];
+      var pendents = [];
+      var j;
+      for (j = 0; j < filtrats.length; j++) {
+        if (this.habitCompletatAvui(filtrats[j].id)) {
+          completats.push(filtrats[j]);
+        } else {
+          pendents.push(filtrats[j]);
+        }
+      }
+
+      // 3. Retornar els hàbits pendents seguits dels completats
+      return pendents.concat(completats);
     },
     logroStore: function () {
         return useLogroStore();

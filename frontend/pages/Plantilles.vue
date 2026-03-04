@@ -75,6 +75,12 @@
             >
               Eliminar
             </button>
+            <button
+              @click="obrirModalExportarHabits(plantilla)"
+              class="text-sm bg-green-500 hover:bg-green-600 text-white font-semibold px-3 py-1 rounded-xl shadow-sm transition-colors"
+            >
+              Exportar
+            </button>
           </div>
         </div>
       </div>
@@ -210,6 +216,78 @@
         </div>
       </div>
     </div>
+    <!-- New Modal per exportar hàbits de plantilla -->
+    <div
+      v-if="modalExportarVisible"
+      class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center z-50"
+      @click.self="tancarModalExportar"
+    >
+      <div
+        class="relative bg-white rounded-2xl shadow-xl p-8 m-4 max-w-2xl w-full"
+      >
+        <button
+          @click="tancarModalExportar"
+          class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl font-bold"
+        >
+          &times;
+        </button>
+
+        <h2 class="2xl font-bold text-gray-800 mb-6">
+          Exportar Hàbits de Plantilla: {{ plantillaAExportar ? plantillaAExportar.titol : '' }}
+        </h2>
+
+        <div class="space-y-6">
+          <!-- Selecció d'Hàbits per exportar -->
+          <div>
+            <h3 class="text-lg font-bold text-gray-800 mb-4">Selecciona els hàbits a exportar</h3>
+            <div v-if="!plantillaAExportar || !plantillaAExportar.habits || plantillaAExportar.habits.length === 0" class="text-center py-4 text-gray-400">
+              <p>Aquesta plantilla no conté hàbits.</p>
+            </div>
+            <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-60 overflow-y-auto pr-2">
+              <div
+                v-for="habit in plantillaAExportar.habits"
+                :key="habit.id"
+                class="flex items-center p-3 rounded-lg border transition-all cursor-pointer"
+                :class="{
+                  'bg-green-50 border-green-500 shadow-sm': habitsAExportarSeleccionats.indexOf(habit.id) !== -1,
+                  'border-gray-200 hover:bg-gray-50': habitsAExportarSeleccionats.indexOf(habit.id) === -1
+                }"
+                @click="toggleHabitAExportarSeleccionat(habit.id)"
+              >
+                <input
+                  type="checkbox"
+                  :checked="habitsAExportarSeleccionats.indexOf(habit.id) !== -1"
+                  class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded mr-3"
+                />
+                <div
+                  :style="{ backgroundColor: habit.color || '#10B981' }"
+                  class="w-8 h-8 rounded-full flex items-center justify-center text-sm text-white mr-3"
+                >
+                  {{ habit.icona }}
+                </div>
+                <span class="text-sm font-medium" :class="habitsAExportarSeleccionats.indexOf(habit.id) !== -1 ? 'text-green-800 font-bold' : 'text-gray-700'">{{ habit.nom || habit.titol }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Botons d'Acció per exportar -->
+          <div class="flex justify-end gap-3 mt-8">
+            <button
+              @click="tancarModalExportar"
+              class="px-6 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-100 transition-colors"
+            >
+              Cancel·lar
+            </button>
+            <button
+              @click="confirmarExportacioHabits"
+              class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-lg transition-all transform active:scale-95"
+            >
+              Exportar Hàbits
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -243,6 +321,9 @@ export default {
         esPublica: false,
         habitsSeleccionats: [], // Array d'IDs d'hàbits seleccionats per a la plantilla.
       },
+      modalExportarVisible: false, // New: Controla la visibilitat del modal d'exportació.
+      plantillaAExportar: null,    // New: Objecte de plantilla seleccionada per exportar.
+      habitsAExportarSeleccionats: [], // New: Array d'IDs d'hàbits seleccionats per a l'exportació.
     };
   },
   // Hook de cicle de vida: s'executa quan el component és muntat.
@@ -430,6 +511,10 @@ export default {
         self.handlePlantillaFeedback(payload);
       });
 
+      self.socket.on("habit_action_confirmed", function (payload) {
+        self.handlePlantillaFeedback(payload);
+      });
+
       self.socket.on("disconnect", function () {
         console.log("Socket de Plantilles desconnectat");
       });
@@ -551,7 +636,163 @@ export default {
       } else if (payload.action === "DELETE") {
         alert("Plantilla eliminada amb èxit!");
         self.carregarPlantilles();
+      } else if (payload.action === "EXPORT_HABITS") {
+          // After habits are exported, show the confirmation to create a new template
+          self.handleExportHabitsConfirmation(payload);
       }
+    },
+
+    /**
+     * Obre el modal d'exportació d'hàbits per a una plantilla específica.
+     * @param {object} plantilla - La plantilla de la qual exportar hàbits.
+     */
+    obrirModalExportarHabits: function (plantilla) {
+      var self = this;
+      self.plantillaAExportar = plantilla;
+      self.modalExportarVisible = true;
+
+      // Seleccionar tots els hàbits de la plantilla per defecte per a l'exportació.
+      self.habitsAExportarSeleccionats = [];
+      if (plantilla.habits && Array.isArray(plantilla.habits)) {
+        var i;
+        for (i = 0; i < plantilla.habits.length; i++) {
+          self.habitsAExportarSeleccionats.push(plantilla.habits[i].id);
+        }
+      }
+    },
+
+    /**
+     * Tanca el modal d'exportació d'hàbits.
+     */
+    tancarModalExportar: function () {
+      this.modalExportarVisible = false;
+      this.plantillaAExportar = null;
+      this.habitsAExportarSeleccionats = [];
+    },
+
+    /**
+     * Afegeix o treu un hàbit de la llista de seleccionats per a l'exportació.
+     * @param {number} habitId - L'ID de l'hàbit a alternar.
+     */
+    toggleHabitAExportarSeleccionat: function (habitId) {
+      var self = this;
+      var pos = self.habitsAExportarSeleccionats.indexOf(habitId);
+      if (pos === -1) {
+        self.habitsAExportarSeleccionats.push(habitId);
+      } else {
+        self.habitsAExportarSeleccionats.splice(pos, 1);
+      }
+    },
+
+    /**
+     * Confirma la selecció d'hàbits per a l'exportació i sol·licita confirmació a l'usuari.
+     */
+    confirmarExportacioHabits: function () {
+      var self = this;
+      var plantilla = self.plantillaAExportar;
+      var habitsConfirmacio = [];
+      var i;
+
+      if (!plantilla || self.habitsAExportarSeleccionats.length === 0) {
+        alert("Si us plau, selecciona al menys un hàbit per exportar.");
+        return;
+      }
+
+      // Preparar el missatge de confirmació amb els noms dels hàbits seleccionats.
+      for (i = 0; i < plantilla.habits.length; i++) {
+        if (self.habitsAExportarSeleccionats.indexOf(plantilla.habits[i].id) !== -1) {
+          habitsConfirmacio.push(plantilla.habits[i].nom || plantilla.habits[i].titol);
+        }
+      }
+
+      var missatgeConfirmacio = "Vols exportar els hàbits següents de la plantilla '" + plantilla.titol + "':\n\n";
+      missatgeConfirmacio += habitsConfirmacio.join(", ") + "\n\n";
+      missatgeConfirmacio += "Aquests hàbits s'afegiran als teus hàbits actuals.";
+
+      if (confirm(missatgeConfirmacio)) {
+        self.exportarHabitsSeleccionats();
+      }
+    },
+
+    /**
+     * Envia els hàbits seleccionats al servidor per a la seva exportació a l'usuari.
+     */
+    exportarHabitsSeleccionats: function () {
+      var self = this;
+      var plantilla = self.plantillaAExportar;
+
+      if (!self.socket) {
+        alert("Socket no disponible per exportar els hàbits.");
+        return;
+      }
+
+      if (!plantilla || self.habitsAExportarSeleccionats.length === 0) {
+        alert("Error: No hi ha plantilla o hàbits seleccionats per exportar.");
+        return;
+      }
+
+      // A. Emitir l'acció de "export_habits" via socket.
+      self.socket.emit("habit_action", {
+        action: "EXPORT_HABITS",
+        plantilla_id: plantilla.id,
+        selected_habits: self.habitsAExportarSeleccionats,
+        user_id: self.gameStore.userId,
+      });
+      self.tancarModalExportar(); // Close the export modal immediately.
+    },
+
+    /**
+     * Gestiona la confirmació per crear una nova plantilla després d'exportar hàbits.
+     * @param {object} payload - Les dades de resposta del servidor amb els hàbits exportats.
+     */
+    handleExportHabitsConfirmation: async function (payload) { // Keep async
+        var self = this;
+        var exportedHabitNames = [];
+        var i;
+        var j; // New loop variable
+
+        // Ensure payload has the necessary data
+        if (!payload.exported_habits || !Array.isArray(payload.exported_habits)) {
+            alert("S'han exportat els hàbits amb èxit, però no s'ha pogut obtenir la informació per a la nova plantilla.");
+            self.$router.push('/home'); // Assuming home is where user habits are displayed
+            return;
+        }
+
+        // --- SIMPLIFIED LOGIC: Refetch from DB to ensure "automatic" update ---
+        await self.habitStore.obtenirHabitos();
+        
+        // Refresh gameStore too if we want immediate home page consistency
+        // self.gameStore.obtenirHabitos(); 
+
+        for (i = 0; i < payload.exported_habits.length; i++) {
+            exportedHabitNames.push(payload.exported_habits[i].nom || payload.exported_habits[i].titol);
+        }
+
+        var confirmSaveAsNewTemplate = confirm(
+            "Els hàbits han estat exportats amb èxit! Vols guardar-los com una nova plantilla personal amb els següents hàbits:\n\n" +
+            exportedHabitNames.join(", ") + "\n\n" +
+            "Aquesta nova plantilla es crearà amb el títol 'Plantilla Exportada de " + self.plantillaAExportar.titol + "'."
+        );
+
+        if (confirmSaveAsNewTemplate) {
+            self.socket.emit("habit_action", {
+                action: "CREATE", // Reusing CREATE action for the new user template
+                plantilla_data: {
+                    titol: "Plantilla Exportada de " + self.plantillaAExportar.titol,
+                    categoria: "Personal", // Default category for exported templates
+                    es_publica: false, // Exported templates are private by default
+                    habits_ids: self.habitsAExportarSeleccionats,
+                },
+                user_id: self.gameStore.userId,
+                // Add a flag to indicate this is a follow-up creation from export, if needed by backend
+                is_exported_template: true
+            });
+            alert("La nova plantilla personal s'està creant.");
+        } else {
+            alert("Els hàbits han estat exportats. No s'ha creat una nova plantilla personal.");
+        }
+
+        self.$router.push('/home');
     },
   },
 };

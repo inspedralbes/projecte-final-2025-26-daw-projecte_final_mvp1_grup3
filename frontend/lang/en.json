@@ -1,4 +1,4 @@
-﻿{
+{
   "welcome": "Welcome",
   "dominate_habits": "Dominate your habits, dominate your life.",
   "login": "Login",
@@ -159,7 +159,8 @@
     "frequencies": {
       "diari": "Daily",
       "setmanal": "Weekly",
-      "mensual": "Monthly"
+      "mensual": "Monthly",
+      "especifics": "Specific Days"
     },
     "daily_goal_label": "Daily goal",
     "complete_habit": "Complete habit",
@@ -222,7 +223,7 @@
     "export_button": "Export Habits",
     "export_error_no_selection": "Please select at least one habit to export.",
     "export_confirm_msg": "Do you want to export the following habits from the template '{titol}':\n\n{habits}\n\nThese habits will be added to your current habits.",
-    "export_error_socket": "Socket not available to export habits.",
+    "export_error_socket": "Socket no available to export habits.",
     "export_error_no_data": "Error: No template or habits selected to export.",
     "export_success_error_info": "Habits exported successfully, but template information could not be retrieved.",
     "export_confirm_save_template": "Habits have been exported successfully! Do you want to save them as a new personal template with the following habits:\n\n{habits}\n\nThis new template will be created with the title '{titol}'.",

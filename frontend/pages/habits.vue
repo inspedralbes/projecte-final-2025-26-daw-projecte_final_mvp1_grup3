@@ -107,33 +107,6 @@
               </div>
 
               <div class="space-y-4">
-                <div class="grid grid-cols-2 gap-4">
-                  <div>
-                    <label
-                      class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
-                      >{{ $t('habits.daily_goal') }}</label
-                    >
-                    <input
-                      v-model.number="formulari.objectiuVegades"
-                      type="number"
-                      min="1"
-                      class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white transition-all"
-                    />
-                  </div>
-                  <div>
-                    <label
-                      class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
-                      >{{ $t('habits.unit') }}</label
-                    >
-                    <input
-                      v-model="formulari.unitat"
-                      type="text"
-                      :placeholder="$t('habits.placeholder_unit')"
-                      class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white transition-all"
-                    />
-                  </div>
-                </div>
-
                 <div>
                   <label
                     class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
@@ -174,10 +147,10 @@
                   </div>
                 </div>
 
-                <div v-if="formulari.frequencia === 'Dies específics'">
+                <div v-if="formulari.frequencia === 'Especifics'">
                   <label
                     class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
-                    >Dies Objectiu</label
+                    >{{ $t('habits.target_days') }}</label
                   >
                   <div class="flex justify-between">
                     <button
@@ -423,7 +396,7 @@
           </div>
 
           <!-- Goal & Frequency & Days -->
-          <div class="grid grid-cols-2 gap-4" v-if="formulariEdicio.frequencia !== 'Dies específics'">
+          <div class="grid grid-cols-2 gap-4" v-if="formulariEdicio.frequencia !== 'Especifics'">
             <div>
               <label
                 class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
@@ -433,18 +406,6 @@
                 v-model.number="formulariEdicio.objectiuVegades"
                 type="number"
                 min="1"
-                class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500"
-              />
-            </div>
-            <div>
-              <label
-                class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
-                >{{ $t('habits.unit') }}</label
-              >
-              <input
-                v-model="formulariEdicio.unitat"
-                type="text"
-                :placeholder="$t('habits.placeholder_unit')"
                 class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500"
               />
             </div>
@@ -478,7 +439,7 @@
             </div>
           </div>
 
-          <div v-if="formulariEdicio.frequencia === 'Dies específics'">
+          <div v-if="formulariEdicio.frequencia === 'Especifics'">
             <label
               class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
               >{{ $t('habits.target_days') }}</label
@@ -568,7 +529,6 @@ export default {
         diesSeleccionats: [0, 1, 2, 3, 4], // Dilluns a Divendres per defecte
         color: "#10B981",
         objectiuVegades: 1,
-        unitat: "",
         dificultat: "facil",
       },
       esObertModalEdicio: false,
@@ -583,7 +543,6 @@ export default {
         diesSeleccionats: [],
         color: "#10B981",
         objectiuVegades: 1,
-        unitat: "",
         dificultat: "facil",
       },
       categories: [
@@ -596,7 +555,7 @@ export default {
         { id: 7, key: "home", icona: "🏠" },
         { id: 8, key: "hobby", icona: "🎨" },
       ],
-      frequencies: ["Diari", "Setmanal", "Mensual", "Dies específics"],
+      frequencies: ["Diari", "Setmanal", "Mensual", "Especifics"],
       diesSetmana: ["L", "M", "X", "J", "V", "S", "D"],
       colors: ["#65A30D", "#3B82F6", "#A855F7", "#F97316", "#EC4899"],
     };
@@ -757,7 +716,7 @@ export default {
         frequencia = "semanal";
       } else if (self.formulari.frequencia === "Mensual") {
         frequencia = "mensual";
-      } else if (self.formulari.frequencia === "Dies específics") {
+      } else if (self.formulari.frequencia === "Especifics") {
         frequencia = "especifica";
       }
 
@@ -979,7 +938,7 @@ export default {
         frequencia = "semanal";
       } else if (self.formulariEdicio.frequencia === "Mensual") {
         frequencia = "mensual";
-      } else if (self.formulariEdicio.frequencia === "Dies específics") {
+      } else if (self.formulariEdicio.frequencia === "Especifics") {
         frequencia = "especifica";
       }
 

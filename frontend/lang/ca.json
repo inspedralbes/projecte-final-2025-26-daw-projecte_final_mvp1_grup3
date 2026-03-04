@@ -1,4 +1,4 @@
-﻿{
+{
     "welcome": "Benvingut",
     "dominate_habits": "Domina els teus hàbits, domina la teva vida.",
     "login": "Iniciar sessió",
@@ -159,7 +159,8 @@
         "frequencies": {
             "diari": "Diari",
             "setmanal": "Setmanal",
-            "mensual": "Mensual"
+            "mensual": "Mensual",
+            "especifics": "Dies específics"
         },
         "daily_goal_label": "Objectiu diari",
         "complete_habit": "Completar hàbit",

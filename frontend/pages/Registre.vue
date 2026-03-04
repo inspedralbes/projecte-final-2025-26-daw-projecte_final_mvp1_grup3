@@ -17,10 +17,10 @@
               </div>
             </div>
             <h2 class="text-2xl font-semibold text-gray-800">
-              Uneix-te a Loopy
+              {{ $t('join_loopy') }}
             </h2>
             <p class="text-sm text-gray-500 text-center">
-              Crea el teu compte i comença el teu viatge.
+              {{ $t('create_account') }}
             </p>
           </div>
 
@@ -33,12 +33,12 @@
             </div>
             <div>
               <label class="block text-xs font-medium text-gray-600 mb-2"
-                >NOM</label
+                >{{ $t('name') }}</label
               >
               <input
                 v-model="formulari.nom"
                 type="text"
-                placeholder="El teu nom"
+                :placeholder="$t('name_placeholder')"
                 class="w-full px-4 py-3 rounded-lg border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-200"
               />
             </div>
@@ -83,7 +83,7 @@
                 @click="registrarUsuari"
                 class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 rounded-lg disabled:opacity-50"
               >
-                REGISTRAR-SE
+                {{ $t('register_button') }}
               </button>
             </div>
 
@@ -93,7 +93,7 @@
                   type="button"
                   class="w-full bg-white border border-gray-200 text-gray-700 font-medium py-3 rounded-lg hover:bg-gray-50"
                 >
-                  TORNAR AL LOGIN
+                  {{ $t('back_to_login') }}
                 </button>
               </NuxtLink>
             </div>
@@ -110,15 +110,15 @@
               <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 shadow-sm">
                 <span class="text-3xl">✨</span>
               </div>
-              <h3 class="text-lg font-bold text-gray-800 mb-2">Descobreix el teu camí</h3>
+              <h3 class="text-lg font-bold text-gray-800 mb-2">{{ $t('quiz.discover_path') }}</h3>
               <p class="text-sm text-gray-600 mb-6">
-                Respon aquestes 16 preguntes i t'assignarem automàticament la millor categoria d'hàbits per a tu.
+                {{ $t('quiz.quiz_description') }}
               </p>
               <button
                 @click="iniciarOnboarding"
                 class="bg-green-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors shadow-lg"
               >
-                COMENÇAR EL TEST
+                {{ $t('quiz.start_test') }}
               </button>
             </div>
           </template>
@@ -129,39 +129,39 @@
               class="col-span-2 bg-white rounded-2xl p-8 shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center min-h-[300px]"
             >
               <div class="text-xs font-medium text-gray-700">
-                Activitat física
+                {{ $t('quiz.physical_activity') }}
               </div>
             </div>
             <div
               class="bg-white rounded-xl p-2 shadow-sm flex items-center justify-center cursor-pointer hover:bg-green-50"
               @click="seleccionarCategoria('nutrition')"
             >
-              <div class="text-xs font-medium text-gray-700">Alimentació</div>
+              <div class="text-xs font-medium text-gray-700">{{ $t('quiz.nutrition') }}</div>
             </div>
             <div
               class="bg-white rounded-xl p-2 shadow-sm flex items-center justify-center cursor-pointer hover:bg-yellow-50"
               @click="seleccionarCategoria('study')"
             >
-              <div class="text-xs font-medium text-gray-700">Estudi</div>
+              <div class="text-xs font-medium text-gray-700">{{ $t('quiz.study') }}</div>
             </div>
             <div
               class="bg-white rounded-xl p-2 shadow-sm flex items-center justify-center cursor-pointer hover:bg-purple-50"
               @click="seleccionarCategoria('reading')"
             >
-              <div class="text-xs font-medium text-gray-700">Lectura</div>
+              <div class="text-xs font-medium text-gray-700">{{ $t('quiz.reading') }}</div>
             </div>
             <div
               class="bg-white rounded-xl p-2 shadow-sm flex items-center justify-center cursor-pointer hover:bg-pink-50"
               @click="seleccionarCategoria('wellness')"
             >
-              <div class="text-xs font-medium text-gray-700">Benestar</div>
+              <div class="text-xs font-medium text-gray-700">{{ $t('quiz.wellness') }}</div>
             </div>
             <div
               class="bg-white rounded-xl p-2 shadow-sm flex items-center justify-center cursor-pointer hover:bg-red-50"
               @click="seleccionarCategoria('smoking')"
             >
               <div class="text-xs font-medium text-gray-700">
-                Vida sense Fum
+                {{ $t('quiz.smoke_free') }}
               </div>
             </div>
             <div
@@ -169,14 +169,14 @@
               @click="seleccionarCategoria('cleaning')"
             >
               <div class="text-xs font-medium text-gray-700">
-                Neteja Express
+                {{ $t('quiz.express_cleaning') }}
               </div>
             </div>
             <div
               class="bg-white rounded-xl p-2 shadow-sm flex items-center justify-center cursor-pointer hover:bg-gray-50"
               @click="seleccionarCategoria('hobby')"
             >
-              <div class="text-xs font-medium text-gray-700">Modelisme</div>
+              <div class="text-xs font-medium text-gray-700">{{ $t('quiz.hobby') }}</div>
             </div>
           </template>
 
@@ -241,26 +241,26 @@
                     @click="respondre(pregunta.id, 'si')"
                     :class="obtenirClasseBoto(pregunta.id, 'si')"
                   >
-                    Sí
+                    {{ $t('quiz.yes') }}
                   </button>
                   <button
                     type="button"
                     @click="respondre(pregunta.id, 'no')"
                     :class="obtenirClasseBoto(pregunta.id, 'no')"
                   >
-                    No
+                    {{ $t('quiz.no') }}
                   </button>
                 </template>
               </div>
 
               <p class="text-xs text-gray-500 mb-6 px-4">
-                Basant-nos en les teves respostes, aquesta és la millor àrea per començar. Pots canviar-la més endavant si vols.
+                {{ $t('quiz.quiz_result_footnote') }}
               </p>
               <button
                 @click="quizFinalitzat = false; quizIniciat = false; indexPregunta = 0"
                 class="text-indigo-600 font-bold text-xs hover:underline"
               >
-                REPETIR TEST
+                {{ $t('quiz.repeat_test') }}
               </button>
             </div>
           </template>
@@ -422,9 +422,7 @@ export default {
       console.log("Respostes a enviar:", textRespostes);
 
       // B. Alerta de finalització
-      alert(
-        "Test finalitzat! Revisa la consola per veure les teves respostes.",
-      );
+      alert(this.$t("quiz_finished_alert"));
 
       // C. Reset de l'estat local
       self.categoriaSeleccionada = null;
@@ -441,8 +439,8 @@ export default {
       var mostrarAlerta = function () {
         if (typeof window !== "undefined" && window.Swal) {
           window.Swal.fire({
-            title: "Compte creat correctament",
-            text: "Benvingut a Loopy! El teu compte s'ha creat amb èxit.",
+            title: this.$t("account_created_title"),
+            text: this.$t("account_created_text"),
             icon: "success",
             confirmButtonText: "OK",
           }).then(function (result) {
@@ -475,7 +473,7 @@ export default {
      * Evita Object.values, flat i ternaris (AgentJavascript).
      */
     extraureMissatgeError: function (dades) {
-      var missatge = "Error en el registre";
+      var missatge = this.$t("error_registration_generic");
       if (dades.message) {
         return String(dades.message);
       }
@@ -521,17 +519,17 @@ export default {
         !self.formulari.email ||
         !self.formulari.contrasenya
       ) {
-        self.errorMissatge = "Si us plau, omple tots els camps.";
+        self.errorMissatge = this.$t("error_empty_fields");
         return;
       }
 
       if (self.formulari.contrasenya !== self.formulari.confirmacio) {
-        self.errorMissatge = "Les contrasenyes no coincideixen.";
+        self.errorMissatge = this.$t("error_password_mismatch");
         return;
       }
 
       if (self.formulari.contrasenya.length < 6) {
-        self.errorMissatge = "La contrasenya ha de tenir almenys 6 caràcters.";
+        self.errorMissatge = this.$t("error_password_short");
         return;
       }
 
@@ -572,7 +570,7 @@ export default {
         if (err.message) {
           self.errorMissatge = err.message;
         } else {
-          self.errorMissatge = "Error de connexió";
+          self.errorMissatge = this.$t("error_connection");
         }
       } finally {
         self.estaCarregant = false;

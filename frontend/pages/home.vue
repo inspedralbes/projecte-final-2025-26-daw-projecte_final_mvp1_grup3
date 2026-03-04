@@ -18,7 +18,7 @@
               <h2
                 class="text-sm font-bold text-gray-800 uppercase tracking-wide"
               >
-                Missions Diàries
+                {{ $t('home.daily_missions') }}
               </h2>
             </div>
 
@@ -29,7 +29,7 @@
                     {{ missioDiaria.titol }}
                   </template>
                   <template v-else>
-                    Carregant...
+                    {{ $t('home.loading') }}
                   </template>
                 </p>
                 <p class="text-2xl font-bold text-orange-500">
@@ -49,12 +49,12 @@
               >
                 <span class="text-3xl"></span>
               </div>
-              <h3 class="font-bold text-gray-800 text-sm">Nom</h3>
-              <p class="text-xs text-gray-500 mb-2">Etiqueta</p>
+              <h3 class="font-bold text-gray-800 text-sm">{{ user ? user.nom : $t('home.user_name') }}</h3>
+              <p class="text-xs text-gray-500 mb-2">{{ $t('home.user_tag') }}</p>
               <div
                 class="flex justify-center items-center gap-1 text-xs text-gray-600"
               >
-                <span>Lv {{ nivell }}</span>
+                <span>{{ $t('home.level') }} {{ nivell }}</span>
                 <div class="w-20 h-1 bg-gray-200 rounded-full overflow-hidden">
                   <div
                     class="h-1 bg-blue-500"
@@ -73,7 +73,7 @@
             <h3
               class="text-xs font-bold text-gray-800 uppercase tracking-wide mb-4"
             >
-              Últims Assoliments
+              {{ $t('home.latest_achievements') }}
             </h3>
             <div class="flex justify-around items-center relative group min-h-[48px]">
               <template v-if="ultimsLogros.length > 0">
@@ -97,7 +97,7 @@
               <button 
                 @click="obrirModalLogros"
                 class="absolute -right-2 -bottom-2 w-8 h-8 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 hover:scale-110 transition flex items-center justify-center font-bold text-xl"
-                title="Veure tots els logros"
+                :title="$t('home.see_all')"
               >
                 +
               </button>
@@ -109,9 +109,9 @@
             class="bg-white rounded-2xl shadow-lg p-4 flex items-center justify-center cursor-pointer transition"
             :class="classeIconaRuleta"
             @click="obrirModalRuleta"
-            title="Ruleta diària"
+            :title="$t('home.roulette_daily')"
           >
-            <span class="text-sm font-bold">RULETA</span>
+            <span class="text-sm font-bold">{{ $t('home.roulette') }}</span>
           </div>
         </div>
 
@@ -126,15 +126,15 @@
               <div class="flex items-center justify-between w-full mb-4">
                 <div>
                   <h2 class="text-lg font-bold text-gray-800">
-                    EL TEU MONSTRE
+                    {{ $t('home.monster_title') }}
                   </h2>
-                  <p class="text-xs text-gray-500">Lv 1</p>
+                  <p class="text-xs text-gray-500">{{ $t('home.level') }} 1</p>
                 </div>
                 <div class="text-right">
-                  <p class="text-2xl font-bold">Ratxa: {{ ratxa }}</p>
-                  <p class="text-xs font-bold text-yellow-600 mb-1">Ratxa Màxima: {{ ratxaMaxima }}</p>
-                  <p class="text-sm text-green-600">XP Total: {{ xpTotal }}</p>
-                  <p class="text-sm text-amber-600">Monedes: {{ monedes }}</p>
+                  <p class="text-2xl font-bold">{{ $t('home.streak') }}: {{ ratxa }}</p>
+                  <p class="text-xs font-bold text-yellow-600 mb-1">{{ $t('home.max_streak') }}: {{ ratxaMaxima }}</p>
+                  <p class="text-sm text-green-600">{{ $t('home.xp_total') }}: {{ xpTotal }}</p>
+                  <p class="text-sm text-amber-600">{{ $t('home.coins') }}: {{ monedes }}</p>
                 </div>
               </div>
 
@@ -156,7 +156,7 @@
                 </div>
               </div>
               <p class="text-center text-gray-600 text-sm mt-4">
-                ¡Ho estàs fent genial!
+                {{ $t('home.monster_subtitle') }}
               </p>
             </div>
           </div>
@@ -166,11 +166,11 @@
         <div class="col-span-3 space-y-6">
           <!-- Capçalera Hàbits -->
           <div class="flex items-center justify-between">
-            <h2 class="text-lg font-bold text-gray-800">HÀBITS</h2>
+            <h2 class="text-lg font-bold text-gray-800">{{ $t('home.habits_title') }}</h2>
             <NuxtLink
               to="/habits"
               class="text-blue-500 text-xs font-semibold hover:underline"
-              >VEURE TOT</NuxtLink
+              >{{ $t('home.see_all') }}</NuxtLink
             >
           </div>
 
@@ -195,7 +195,7 @@
               v-if="estaCarregantHabits"
               class="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded text-center"
             >
-              <span>Carregant hàbits...</span>
+              <span>{{ $t('home.loading_habits') }}</span>
             </div>
 
             <!-- Estat buit -->
@@ -203,7 +203,7 @@
               v-else-if="habitsDelDia.length === 0"
               class="bg-gray-50 border border-gray-200 text-gray-600 px-4 py-3 rounded text-center"
             >
-              <span>No hi ha hàbits disponibles</span>
+              <span>{{ $t('home.no_habits') }}</span>
             </div>
 
             <!-- Llista d'hàbits -->
@@ -225,7 +225,7 @@
                     v-if="habitCompletatAvui(hàbit.id)"
                     class="text-xs text-green-600 font-semibold"
                   >
-                    ✓ Completat
+                    ✓ {{ $t('home.completed') }}
                   </p>
                 </div>
                 <button
@@ -233,8 +233,8 @@
                   :disabled="comvprovarSiSestaProcessant(hàbit.id)"
                   class="px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed min-w-[110px]"
                 >
-                  <span v-if="comvprovarSiSestaProcessant(hàbit.id)">...</span>
-                  <span v-else>Progrés</span>
+                  <span v-if="comvprovarSiSestaProcessant(hàbit.id)">{{ $t('home.loading') }}</span>
+                  <span v-else>{{ $t('home.progress') }}</span>
                 </button>
               </div>
             </template>
@@ -275,8 +275,8 @@
         </button>
 
         <div class="flex flex-col items-center gap-4">
-          <h2 class="text-lg font-bold text-gray-800">Ruleta diària</h2>
-          <p class="text-xs text-gray-500">Fes click a la ruleta per tirar</p>
+          <h2 class="text-lg font-bold text-gray-800">{{ $t('home.roulette_daily') }}</h2>
+          <p class="text-xs text-gray-500">{{ $t('home.roulette_spin_text') }}</p>
 
           <div class="relative">
             <div class="roulette-pointer"></div>
@@ -298,7 +298,7 @@
           </div>
 
           <p v-if="!canSpinRoulette" class="text-xs text-gray-400">
-            Ruleta desactivada fins demà.
+            {{ $t('home.roulette_not_available') }}
           </p>
         </div>
       </div>
@@ -316,8 +316,8 @@
               🏆
             </div>
             <div>
-              <h2 class="text-xl font-bold text-gray-800">Tots els Logros</h2>
-              <p class="text-xs text-gray-500">Descobreix nous reptes i medalles</p>
+              <h2 class="text-xl font-bold text-gray-800">{{ $t('home.achievements_modal_title') }}</h2>
+              <p class="text-xs text-gray-500">{{ $t('home.achievements_modal_subtitle') }}</p>
             </div>
           </div>
           <button @click="tancarModalLogros" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-600">
@@ -329,13 +329,13 @@
         <div class="p-8 overflow-y-auto bg-gray-50/50 flex-1">
           <div v-if="logroStore.loading" class="flex flex-col items-center justify-center py-20 gap-4">
             <div class="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
-            <p class="text-gray-500 font-medium">Carregant la teva vitrina...</p>
+            <p class="text-gray-500 font-medium">{{ $t('home.loading_achievements') }}</p>
           </div>
 
           <div v-else-if="logrosFiltrats.length === 0" class="text-center py-20 text-gray-400">
             <p class="text-4xl mb-4">🏜️</p>
-            <p class="font-medium text-lg">Encara no hi ha logros disponibles.</p>
-            <p class="text-sm">Torna més tard per veure noves missions!</p>
+            <p class="font-medium text-lg">{{ $t('home.no_achievements') }}</p>
+            <p class="text-sm">{{ $t('home.check_back_later') }}</p>
           </div>
 
           <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -354,7 +354,7 @@
                   {{ logro.obtingut ? '🏅' : '🔒' }}
                 </div>
                 <div v-if="logro.obtingut" class="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider">
-                  Desbloquejat
+                  {{ $t('home.unlocked') }}
                 </div>
               </div>
 
@@ -364,7 +364,7 @@
 
               <!-- Progress (Simulat si ho requereix el tipus de logro) -->
               <div class="mt-auto pt-4 border-t border-gray-50 flex items-center justify-between">
-                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{{ logro.tipus || 'Especial' }}</span>
+                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{{ logro.tipus || $t('home.special') }}</span>
                 <span v-if="logro.data_obtencio" class="text-[10px] text-gray-400">{{ logro.data_obtencio }}</span>
               </div>
 
@@ -1092,20 +1092,20 @@ export default {
       var monedes = this.habitSeleccionat && this.habitSeleccionat.recompensaMonedes ? this.habitSeleccionat.recompensaMonedes : 2;
       var monedesActuals = this.monedes || 0;
       var monedesDespres = monedesActuals - monedes;
-      var textMonedes = "Se't restarien " + xp + " XP i " + monedes + " monedes.";
+      var textMonedes = this.$t('home.confirm_undo_subtext', { xp: xp, monedes: monedes });
       if (monedesDespres < 0) {
-        textMonedes = textMonedes + " El teu saldo de monedes quedaria en " + monedesDespres + ".";
+        textMonedes += " " + this.$t('home.confirm_undo_balance', { monedes: monedesDespres });
       }
 
       var executarAlerta = function () {
         if (typeof window !== "undefined" && window.Swal) {
           window.Swal.fire({
-            title: "Desfer la completació?",
-            html: "<p>Si restes ara, l'hàbit deixarà d'estar completat i perdras la recompensa obtinguda.</p><p class=\"mt-2 font-semibold\">" + textMonedes + "</p><p class=\"mt-2 text-sm text-gray-500\">N'estàs segur que vols continuar?</p>",
+            title: this.$t('home.confirm_undo_title'),
+            html: "<p>" + this.$t('home.confirm_undo_text') + "</p><p class=\"mt-2 font-semibold\">" + textMonedes + "</p><p class=\"mt-2 text-sm text-gray-500\">" + this.$t('home.confirm_undo_footer') + "</p>",
             icon: "warning",
             showCancelButton: true,
-            confirmButtonText: "Confirmar",
-            cancelButtonText: "Cancel·lar",
+            confirmButtonText: this.$t('home.confirm'),
+            cancelButtonText: this.$t('home.cancel'),
             confirmButtonColor: "#dc2626",
             cancelButtonColor: "#374151",
             customClass: {
@@ -1145,8 +1145,8 @@ export default {
       var mostrarAlerta = function () {
         if (typeof window !== "undefined" && window.Swal) {
           window.Swal.fire({
-            title: "Nivel aumentado!",
-            text: "Has subido al nivel " + nivell + ". Has conseguido +" + bonusMonedes + " monedas.",
+            title: this.$t('home.level_up_title'),
+            text: this.$t('home.level_up_text', { nivell: nivell, bonus: bonusMonedes }),
             icon: "success"
           });
         }

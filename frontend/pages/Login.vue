@@ -4,7 +4,10 @@
       <div class="grid grid-cols-2 gap-12 items-center">
         <!-- Esquerra: Targeta de login -->
         <div class="bg-white rounded-xl p-8 shadow-md" style="max-width: 420px">
-          <div class="flex flex-col items-center gap-4">
+          <div class="flex flex-col items-center gap-4 relative">
+            <div class="absolute top-0 right-0">
+              <LanguageSwitcher />
+            </div>
             <div
               class="w-20 h-20 rounded-full bg-green-500/10 flex items-center justify-center"
             >
@@ -16,7 +19,7 @@
             </div>
             <h2 class="text-2xl font-semibold text-gray-800">Loopy Master</h2>
             <p class="text-sm text-gray-500 text-center">
-              Domina els teus hàbits, puja de nivell.
+              {{ $t('dominate_habits') }}
             </p>
           </div>
 
@@ -29,7 +32,7 @@
             </div>
             <div>
               <label class="block text-xs font-medium text-gray-600 mb-2"
-                >EMAIL</label
+                >{{ $t('email') }}</label
               >
               <input
                 v-model="formulari.email"
@@ -40,7 +43,7 @@
             </div>
             <div>
               <label class="block text-xs font-medium text-gray-600 mb-2"
-                >CONTRASSENYA</label
+                >{{ $t('password') }}</label
               >
               <input
                 v-model="formulari.contrasenya"
@@ -57,7 +60,7 @@
                 @click="ferLogin"
                 class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 rounded-lg disabled:opacity-50"
               >
-                LOGIN
+                {{ $t('login') }}
               </button>
             </div>
 
@@ -67,13 +70,13 @@
                   type="button"
                   class="w-full bg-white border border-gray-200 text-gray-700 font-medium py-3 rounded-lg hover:bg-gray-50"
                 >
-                  REGISTRAR-SE
+                  {{ $t('register') }}
                 </button>
               </NuxtLink>
             </div>
 
             <div class="text-center text-xs text-green-600 mt-3 cursor-pointer">
-              Has oblidat la teva contrasenya?
+              {{ $t('forgot_password') }}
             </div>
           </form>
         </div>
@@ -85,13 +88,13 @@
             <div
               class="col-span-1 bg-white rounded-xl p-4 shadow-sm flex flex-col items-center"
             >
-              <div class="text-sm font-medium mt-3">El teu Company</div>
-              <div class="text-xs text-gray-400">Nivell 5 · Guardià</div>
+              <div class="text-sm font-medium mt-3">{{ $t('preview.your_companion') }}</div>
+              <div class="text-xs text-gray-400">{{ $t('preview.level_guardian') }}</div>
             </div>
             <div
               class="col-span-1 bg-white rounded-xl p-3 shadow-sm flex flex-col justify-between"
             >
-              <div class="text-xs text-gray-400">Progrés Diari</div>
+              <div class="text-xs text-gray-400">{{ $t('preview.daily_progress') }}</div>
               <div
                 class="w-full bg-gray-100 rounded-full h-3 mt-3 overflow-hidden"
               >
@@ -113,7 +116,7 @@
               <div>
                 <div class="text-lg font-semibold uppercase">ElTeuMonstre</div>
                 <div class="text-sm text-gray-400">
-                  Nivell 5 · Guardià dels Boscos
+                  {{ $t('preview.level_guardian') }}s
                 </div>
               </div>
               <div class="ml-auto text-sm text-gray-500">⭐ 42</div>
@@ -125,8 +128,8 @@
               class="col-span-1 bg-blue-50 rounded-xl p-6 shadow-sm flex items-center justify-center"
             >
               <div class="text-center">
-                <div class="text-sm text-gray-500">Beure Aigua</div>
-                <div class="text-xs text-gray-400">2 / 4 · Salut</div>
+                <div class="text-sm text-gray-500">{{ $t('preview.water_habit') }}</div>
+                <div class="text-xs text-gray-400">2 / 4 · {{ $t('preview.health_category') }}</div>
               </div>
             </div>
             <div class="col-span-1"></div>
@@ -134,8 +137,8 @@
               class="col-span-1 bg-yellow-50 rounded-xl p-6 shadow-sm flex items-center justify-center"
             >
               <div class="text-center">
-                <div class="text-sm text-gray-700">Diari</div>
-                <div class="text-xs text-gray-400">Completat · Creativitat</div>
+                <div class="text-sm text-gray-700">{{ $t('preview.diary_habit') }}</div>
+                <div class="text-xs text-gray-400">{{ $t('preview.completed_creativity') }}</div>
               </div>
             </div>
           </div>
@@ -170,7 +173,7 @@ export default {
       var contrasenya = self.formulari.contrasenya || "";
 
       if (!email || !contrasenya) {
-        self.errorMissatge = "Introduïu email i contrasenya.";
+        self.errorMissatge = this.$t('error_missing_fields');
         return;
       }
 
@@ -191,7 +194,7 @@ export default {
             if (nuxtApp.$updateSocketAuth) nuxtApp.$updateSocketAuth();
             await navigateTo("/admin");
           } catch (errAdmin) {
-            self.errorMissatge = errAdmin.message || "Credencials incorrectes";
+            self.errorMissatge = errAdmin.message || this.$t('error_credentials');
           }
         }
       } finally {

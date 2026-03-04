@@ -1,19 +1,19 @@
 <template>
   <div class="min-h-screen bg-gray-50 p-6">
     <div class="max-w-7xl mx-auto">
-      <h1 class="text-3xl font-bold text-gray-800 mb-8">Gestió de Plantilles</h1>
+      <h1 class="text-3xl font-bold text-gray-800 mb-8">{{ $t('templates.title') }}</h1>
 
       <div class="flex flex-col md:flex-row justify-between items-center mb-6">
         <!-- Dropdown per filtrar plantilles -->
         <div class="mb-4 md:mb-0">
-          <label for="filterTemplates" class="sr-only">Filtrar Plantilles</label>
+          <label for="filterTemplates" class="sr-only">{{ $t('templates.filter_label') }}</label>
           <select
             id="filterTemplates"
             v-model="selectedFilter"
             class="block w-full md:w-auto p-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
           >
-            <option value="all">Totes les Plantilles</option>
-            <option value="my">Les Meves Plantilles</option>
+            <option value="all">{{ $t('templates.filter_all') }}</option>
+            <option value="my">{{ $t('templates.filter_my') }}</option>
           </select>
         </div>
 
@@ -24,21 +24,21 @@
           <span
             class="bg-white text-green-600 rounded-full w-5 h-5 flex items-center justify-center text-xs"
             >+</span>
-          Crear Nova Plantilla
+          {{ $t('templates.create_new') }}
         </button>
       </div>
 
       <div v-if="plantillaStore.loading" class="text-center py-10">
-        <p class="text-gray-500">Carregant plantilles...</p>
+        <p class="text-gray-500">{{ $t('templates.loading') }}</p>
       </div>
 
       <div v-else-if="plantillaStore.error" class="text-center py-10 text-red-500">
-        <p>Error: {{ plantillaStore.error }}</p>
+        <p>{{ $t('templates.error_prefix') }}{{ plantillaStore.error }}</p>
       </div>
 
       <div v-else-if="plantillaStore.plantilles.length === 0" class="text-center py-10 text-gray-400">
-        <p>No hi ha plantilles disponibles.</p>
-        <p class="text-sm">Crea la primera plantilla!</p>
+        <p>{{ $t('templates.no_templates') }}</p>
+        <p class="text-sm">{{ $t('templates.create_first') }}</p>
       </div>
 
       <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -49,7 +49,7 @@
         >
           <div>
             <h2 class="text-xl font-bold text-gray-800 mb-2">{{ plantilla.titol }}</h2>
-            <p class="text-sm text-gray-600 mb-4">Categoria: {{ plantilla.categoria }}</p>
+            <p class="text-sm text-gray-600 mb-4">{{ $t('habits.category') }}: {{ plantilla.categoria }}</p>
             <span
               :class="{
                 'bg-green-100 text-green-800': plantilla.esPublica,
@@ -57,7 +57,7 @@
               }"
               class="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-medium"
             >
-              {{ plantilla.esPublica ? 'Pública' : 'Privada' }}
+              {{ plantilla.esPublica ? $t('templates.public') : $t('templates.private') }}
             </span>
           </div>
           <div class="mt-4 flex justify-end gap-3">
@@ -66,14 +66,14 @@
               @click="editarPlantilla(plantilla.id)"
               class="text-sm text-blue-600 hover:text-blue-700 font-semibold px-3 py-1 rounded border border-blue-200 hover:border-blue-300 transition-colors"
             >
-              Editar
+              {{ $t('templates.edit') }}
             </button>
             <button
               v-if="plantilla.creadorId === gameStore.userId"
               @click="eliminarPlantilla(plantilla.id)"
               class="text-sm text-red-600 hover:text-red-700 font-semibold px-3 py-1 rounded border border-red-200 hover:border-red-300 transition-colors"
             >
-              Eliminar
+              {{ $t('templates.delete') }}
             </button>
             <button
               @click="obrirModalExportarHabits(plantilla)"
@@ -102,7 +102,7 @@
           </button>
 
           <h2 class="2xl font-bold text-gray-800 mb-6">
-            {{ modoEdicio ? "Editar Plantilla" : "Crear Nova Plantilla" }}
+            {{ modoEdicio ? $t('templates.edit_title') : $t('templates.create_title') }}
           </h2>
 
           <div class="space-y-6">
@@ -111,13 +111,13 @@
               <label
                 class="block text-sm font-medium text-gray-700 mb-2"
                 for="titol"
-                >Nom de la Plantilla</label
+                >{{ $t('templates.name_label') }}</label
               >
               <input
                 id="titol"
                 v-model="form.titol"
                 type="text"
-                placeholder="Nom de la plantilla"
+                :placeholder="$t('templates.name_placeholder')"
                 class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white transition-all"
               />
             </div>
@@ -127,13 +127,13 @@
               <label
                 class="block text-sm font-medium text-gray-700 mb-2"
                 for="categoria"
-                >Categoria</label
+                >{{ $t('habits.category') }}</label
               >
               <input
                 id="categoria"
                 v-model="form.categoria"
                 type="text"
-                placeholder="Ex: Productivitat, Salut, Esport..."
+                :placeholder="$t('templates.category_placeholder')"
                 class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white transition-all"
               />
             </div>
@@ -147,27 +147,27 @@
                 class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
               />
               <label for="esPublica" class="ml-2 block text-sm text-gray-900"
-                >Plantilla pública</label
+                >{{ $t('templates.public_checkbox') }}</label
               >
             </div>
 
             <!-- Selecció d'Hàbits -->
             <div>
-              <h3 class="text-lg font-bold text-gray-800 mb-4">Selecciona Hàbits</h3>
+              <h3 class="text-lg font-bold text-gray-800 mb-4">{{ $t('templates.select_habits') }}</h3>
               <div v-if="habitStore.loading" class="text-center py-4">
-                <p class="text-gray-500">Carregant hàbits...</p>
+                <p class="text-gray-500">{{ $t('home.loading_habits') }}</p>
               </div>
               <div
                 v-else-if="habitStore.error"
                 class="text-center py-4 text-red-500"
               >
-                <p>Error: {{ habitStore.error }}</p>
+                <p>{{ $t('templates.error_prefix') }}{{ habitStore.error }}</p>
               </div>
               <div
                 v-else-if="habitStore.habits.length === 0"
                 class="text-center py-4 text-gray-400"
               >
-                <p>No hi ha hàbits disponibles per seleccionar.</p>
+                <p>{{ $t('templates.no_habits_to_select') }}</p>
               </div>
               <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-60 overflow-y-auto pr-2">
                 <div
@@ -202,14 +202,14 @@
                 @click="tancar"
                 class="px-6 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-100 transition-colors"
               >
-                Cancel·lar
+                {{ $t('habits.cancel') }}
               </button>
               <button
                 @click="guardarPlantilla"
                 class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-lg transition-all transform active:scale-95"
               >
-                <template v-if="modoEdicio">Actualitzar</template>
-                <template v-else>Crear Plantilla</template>
+                <template v-if="modoEdicio">{{ $t('templates.update_button') }}</template>
+                <template v-else>{{ $t('templates.create_button') }}</template>
               </button>
             </div>
           </div>
@@ -233,15 +233,15 @@
         </button>
 
         <h2 class="2xl font-bold text-gray-800 mb-6">
-          Exportar Hàbits de Plantilla: {{ plantillaAExportar ? plantillaAExportar.titol : '' }}
+          {{ $t('templates.export_title', { titol: plantillaAExportar ? plantillaAExportar.titol : '' }) }}
         </h2>
 
         <div class="space-y-6">
           <!-- Selecció d'Hàbits per exportar -->
           <div>
-            <h3 class="text-lg font-bold text-gray-800 mb-4">Selecciona els hàbits a exportar</h3>
+            <h3 class="text-lg font-bold text-gray-800 mb-4">{{ $t('templates.export_select_habits') }}</h3>
             <div v-if="!plantillaAExportar || !plantillaAExportar.habits || plantillaAExportar.habits.length === 0" class="text-center py-4 text-gray-400">
-              <p>Aquesta plantilla no conté hàbits.</p>
+              <p>{{ $t('templates.export_no_habits') }}</p>
             </div>
             <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-60 overflow-y-auto pr-2">
               <div
@@ -276,13 +276,13 @@
               @click="tancarModalExportar"
               class="px-6 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-100 transition-colors"
             >
-              Cancel·lar
+              {{ $t('habits.cancel') }}
             </button>
             <button
               @click="confirmarExportacioHabits"
               class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-lg transition-all transform active:scale-95"
             >
-              Exportar Hàbits
+              {{ $t('templates.export_button') }}
             </button>
           </div>
         </div>
@@ -438,11 +438,11 @@ export default {
       var self = this;
       // A. Comprovar que el socket estigui disponible.
       if (!self.socket) {
-        alert("Socket no disponible per eliminar la plantilla.");
+        alert(this.$t('templates.alert_socket_unavailable'));
         return;
       }
       // B. Confirmar l'eliminació amb l'usuari.
-      if (confirm("Estàs segur que vols eliminar aquesta plantilla?")) {
+      if (confirm(this.$t('templates.confirm_delete'))) {
         // C. Emitir l'acció de DELETE via socket.
         self.socket.emit("plantilla_action", {
           action: "DELETE",
@@ -558,19 +558,19 @@ export default {
       // A. Validacions del formulari.
       if (!self.form.titol) {
         console.log('Validation failed: Title is empty.');
-        alert("El nom de la plantilla és obligatori.");
+        alert(this.$t('templates.alert_name_required'));
         return;
       }
       if (self.form.habitsSeleccionats.length === 0) {
         console.log('Validation failed: No habits selected.');
-        alert("Has de seleccionar al menys un hàbit per crear la plantilla.");
+        alert(this.$t('templates.alert_habit_required'));
         return;
       }
 
       // B. Comprovar que el socket estigui disponible.
       if (!self.socket) {
         console.log('Validation failed: Socket not available.');
-        alert("Socket no disponible per crear la plantilla.");
+        alert(this.$t('templates.alert_socket_unavailable'));
         return;
       }
 
@@ -617,7 +617,7 @@ export default {
       // A. Comprovar si l'acció ha estat exitosa.
       if (!payload || payload.success !== true) {
         alert(
-          payload.message || "Error al processar la acción de la plantilla"
+          payload.message || this.$t('templates.error_processing')
         );
         return;
       }
@@ -626,15 +626,15 @@ export default {
 
       // B. Executar la funció corresponent segons l'acció realitzada.
       if (payload.action === "CREATE") {
-        alert("Plantilla creada amb èxit!");
+        alert(this.$t('templates.alert_created'));
         self.tancar();
         self.carregarPlantilles();
       } else if (payload.action === "UPDATE") {
-        alert("Plantilla actualitzada amb èxit!");
+        alert(this.$t('templates.alert_updated'));
         self.tancar();
         self.carregarPlantilles();
       } else if (payload.action === "DELETE") {
-        alert("Plantilla eliminada amb èxit!");
+        alert(this.$t('templates.alert_deleted'));
         self.carregarPlantilles();
       } else if (payload.action === "EXPORT_HABITS") {
           // After habits are exported, show the confirmation to create a new template
@@ -694,7 +694,7 @@ export default {
       var i;
 
       if (!plantilla || self.habitsAExportarSeleccionats.length === 0) {
-        alert("Si us plau, selecciona al menys un hàbit per exportar.");
+        alert(this.$t('templates.export_error_no_selection'));
         return;
       }
 
@@ -705,9 +705,10 @@ export default {
         }
       }
 
-      var missatgeConfirmacio = "Vols exportar els hàbits següents de la plantilla '" + plantilla.titol + "':\n\n";
-      missatgeConfirmacio += habitsConfirmacio.join(", ") + "\n\n";
-      missatgeConfirmacio += "Aquests hàbits s'afegiran als teus hàbits actuals.";
+      var missatgeConfirmacio = this.$t('templates.export_confirm_msg', { 
+        titol: plantilla.titol, 
+        habits: habitsConfirmacio.join(", ") 
+      });
 
       if (confirm(missatgeConfirmacio)) {
         self.exportarHabitsSeleccionats();
@@ -722,12 +723,12 @@ export default {
       var plantilla = self.plantillaAExportar;
 
       if (!self.socket) {
-        alert("Socket no disponible per exportar els hàbits.");
+        alert(this.$t('templates.export_error_socket'));
         return;
       }
 
       if (!plantilla || self.habitsAExportarSeleccionats.length === 0) {
-        alert("Error: No hi ha plantilla o hàbits seleccionats per exportar.");
+        alert(this.$t('templates.export_error_no_data'));
         return;
       }
 
@@ -753,7 +754,7 @@ export default {
 
         // Ensure payload has the necessary data
         if (!payload.exported_habits || !Array.isArray(payload.exported_habits)) {
-            alert("S'han exportat els hàbits amb èxit, però no s'ha pogut obtenir la informació per a la nova plantilla.");
+            alert(this.$t('templates.export_success_error_info'));
             self.$router.push('/home'); // Assuming home is where user habits are displayed
             return;
         }
@@ -769,16 +770,17 @@ export default {
         }
 
         var confirmSaveAsNewTemplate = confirm(
-            "Els hàbits han estat exportats amb èxit! Vols guardar-los com una nova plantilla personal amb els següents hàbits:\n\n" +
-            exportedHabitNames.join(", ") + "\n\n" +
-            "Aquesta nova plantilla es crearà amb el títol 'Plantilla Exportada de " + self.plantillaAExportar.titol + "'."
+            this.$t('templates.export_confirm_save_template', {
+                habits: exportedHabitNames.join(", "),
+                titol: this.$t('templates.export_template_title_prefix') + self.plantillaAExportar.titol
+            })
         );
 
         if (confirmSaveAsNewTemplate) {
             self.socket.emit("habit_action", {
                 action: "CREATE", // Reusing CREATE action for the new user template
                 plantilla_data: {
-                    titol: "Plantilla Exportada de " + self.plantillaAExportar.titol,
+                    titol: this.$t('templates.export_template_title_prefix') + self.plantillaAExportar.titol,
                     categoria: "Personal", // Default category for exported templates
                     es_publica: false, // Exported templates are private by default
                     habits_ids: self.habitsAExportarSeleccionats,
@@ -787,9 +789,9 @@ export default {
                 // Add a flag to indicate this is a follow-up creation from export, if needed by backend
                 is_exported_template: true
             });
-            alert("La nova plantilla personal s'està creant.");
+            alert(this.$t('templates.export_creating_template'));
         } else {
-            alert("Els hàbits han estat exportats. No s'ha creat una nova plantilla personal.");
+            alert(this.$t('templates.export_no_template_created'));
         }
 
         self.$router.push('/home');

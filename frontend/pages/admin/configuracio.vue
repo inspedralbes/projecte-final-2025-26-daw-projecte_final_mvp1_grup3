@@ -11,8 +11,7 @@ import { ref } from 'vue';
 var runtimeConfig = useRuntimeConfig();
 
 // Configuració via API
-var { data: configData, refresh: refreshConfig } = useFetch('/api/admin/configuracio', {
-  baseURL: runtimeConfig.public.apiUrl,
+var { data: configData, refresh: refreshConfig } = useAuthFetch('/api/admin/configuracio', {
   key: 'admin_config'
 });
 
@@ -38,6 +37,7 @@ async function guardarConfiguracio() {
     var res = await $fetch('/api/admin/configuracio', {
       method: 'PUT',
       baseURL: runtimeConfig.public.apiUrl,
+      headers: useAuthStore().getAuthHeaders(),
       body: config.value
     });
     
@@ -56,7 +56,8 @@ async function netejarCache() {
     try {
       var res = await $fetch('/api/admin/configuracio/netejar-cache', {
         method: 'POST',
-        baseURL: runtimeConfig.public.apiUrl
+        baseURL: runtimeConfig.public.apiUrl,
+        headers: useAuthStore().getAuthHeaders()
       });
       
       if (res.success) {

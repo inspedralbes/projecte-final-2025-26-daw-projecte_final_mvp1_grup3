@@ -357,10 +357,10 @@ class LogroService
      * C. Afegeix el camp 'desbloquejat' a cadascun.
      * D. Retorna la col·lecció de models.
      *
-     * @param int $usuariId (Per defecte 1)
+     * @param int $usuariId
      * @return \Illuminate\Database\Eloquent\Collection
      */
-    public function llistarTotsElsLogros(int $usuariId = 1)
+    public function llistarTotsElsLogros(int $usuariId)
     {
         // A. Cerca a la taula 'usuaris_logros' per saber què té l'usuari
         $logrosDesbloquejats = DB::table('usuaris_logros')

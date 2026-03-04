@@ -14,7 +14,7 @@ class Categoria extends Model
      *
      * @var string
      */
-    protected $table = 'CATEGORIES';
+    protected $table = 'preguntes_registre';
 
     /**
      * Indica si el model ha de tenir timestamps.

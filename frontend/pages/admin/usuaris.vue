@@ -13,10 +13,9 @@ var config = useRuntimeConfig();
 
 // Usuaris via API (Paginació desactivada per ara o simple)
 var perPage = ref(50);
-var { data: usuarisData, refresh: refreshUsuaris } = useFetch(function() {
+var { data: usuarisData, refresh: refreshUsuaris } = useAuthFetch(function() {
   return '/api/admin/usuaris/tots/1/' + perPage.value + '/false/none';
 }, {
-  baseURL: config.public.apiUrl,
   key: 'admin_users_list'
 });
 

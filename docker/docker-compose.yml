@@ -19,9 +19,10 @@ services:
       - ../database/insert.sql:/docker-entrypoint-initdb.d/02-insert.sql:ro
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-loopy} -d ${POSTGRES_DB:-loopy_db}" ]
-      interval: 5s
-      timeout: 5s
-      retries: 5
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
 
   redis:
     image: redis:7.2.4-alpine
@@ -77,7 +78,7 @@ services:
       REDIS_READ_TIMEOUT: 60
       REDIS_READ_WRITE_TIMEOUT: 60
       REDIS_PREFIX: ""
-      JWT_SECRET: ${JWT_SECRET:-shared-secret-change-in-production}
+      JWT_SECRET: ${JWT_SECRET:-4b2e95c71827e0f29601e4566112841c47b7fe53eab506fb3884be7e8735c623}
       CACHE_DRIVER: redis
       SESSION_DRIVER: redis
       QUEUE_CONNECTION: redis
@@ -117,7 +118,7 @@ services:
       REDIS_READ_TIMEOUT: 60
       REDIS_READ_WRITE_TIMEOUT: 60
       REDIS_PREFIX: ""
-      JWT_SECRET: ${JWT_SECRET:-shared-secret-change-in-production}
+      JWT_SECRET: ${JWT_SECRET:-4b2e95c71827e0f29601e4566112841c47b7fe53eab506fb3884be7e8735c623}
     volumes:
       - ../backend-laravel:/var/www
       - ../database:/var/database:ro
@@ -162,6 +163,121 @@ services:
         condition: service_healthy
     command: [ "php", "artisan", "admin:redis-worker" ]
 
+  backend-laravel-plantilla-worker:
+    # New service for plantilla worker
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.laravel
+    container_name: loopy-laravel-plantilla-worker
+    restart: unless-stopped
+    working_dir: /var/www
+    entrypoint: []
+    environment:
+      APP_NAME: Loopy
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_KEY: ${APP_KEY:-base64:AAAAAAAAAAAAAAAAAAAAAA==}
+      APP_URL: http://localhost:8000
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${POSTGRES_DB:-loopy_db}
+      DB_USERNAME: ${POSTGRES_USER:-loopy}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-loopy_secret}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_CLIENT: phpredis
+      REDIS_READ_TIMEOUT: 60
+      REDIS_READ_WRITE_TIMEOUT: 60
+      REDIS_PREFIX: ""
+      JWT_SECRET: ${JWT_SECRET:-4b2e95c71827e0f29601e4566112841c47b7fe53eab506fb3884be7e8735c623}
+    volumes:
+      - ../backend-laravel:/var/www
+      - ../database:/var/database:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: [ "php", "artisan", "plantilla:redis-worker" ] # Runs the new plantilla worker
+
+  backend-laravel-roulette-worker:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.laravel
+    container_name: loopy-laravel-roulette-worker
+    restart: unless-stopped
+    working_dir: /var/www
+    entrypoint: []
+    environment:
+      APP_NAME: Loopy
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_KEY: ${APP_KEY:-base64:AAAAAAAAAAAAAAAAAAAAAA==}
+      APP_URL: http://localhost:8000
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${POSTGRES_DB:-loopy_db}
+      DB_USERNAME: ${POSTGRES_USER:-loopy}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-loopy_secret}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_CLIENT: predis
+      REDIS_READ_TIMEOUT: 60
+      REDIS_READ_WRITE_TIMEOUT: 60
+      REDIS_PREFIX: ""
+      JWT_SECRET: ${JWT_SECRET:-4b2e95c71827e0f29601e4566112841c47b7fe53eab506fb3884be7e8735c623}
+    volumes:
+      - ../backend-laravel:/var/www
+      - ../database:/var/database:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: [ "php", "artisan", "roulette:redis-worker" ]
+
+  backend-laravel-scheduler:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.laravel
+    container_name: loopy-laravel-scheduler
+    restart: unless-stopped
+    working_dir: /var/www
+    entrypoint: []
+    environment:
+      APP_NAME: Loopy
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_KEY: ${APP_KEY:-base64:AAAAAAAAAAAAAAAAAAAAAA==}
+      APP_URL: http://localhost:8000
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${POSTGRES_DB:-loopy_db}
+      DB_USERNAME: ${POSTGRES_USER:-loopy}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-loopy_secret}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_CLIENT: predis
+      REDIS_READ_TIMEOUT: 60
+      REDIS_READ_WRITE_TIMEOUT: 60
+      REDIS_PREFIX: ""
+      JWT_SECRET: ${JWT_SECRET:-4b2e95c71827e0f29601e4566112841c47b7fe53eab506fb3884be7e8735c623}
+      CACHE_DRIVER: redis
+      SESSION_DRIVER: redis
+      QUEUE_CONNECTION: redis
+    volumes:
+      - ../backend-laravel:/var/www
+      - ../database:/var/database:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: [ "php", "artisan", "schedule:work" ]
+
   backend-node:
     build:
       context: ../backend-node
@@ -176,7 +292,7 @@ services:
       PORT: 3001
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      JWT_SECRET: ${JWT_SECRET:-shared-secret-change-in-production}
+      JWT_SECRET: ${JWT_SECRET:-4b2e95c71827e0f29601e4566112841c47b7fe53eab506fb3884be7e8735c623}
       LARAVEL_URL: http://backend-laravel:8000
     volumes:
       - ../backend-node:/app

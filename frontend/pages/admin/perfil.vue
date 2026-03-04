@@ -11,8 +11,7 @@ import { ref } from 'vue';
 var config = useRuntimeConfig();
 
 // Perfil via API
-var { data: adminData, refresh: refreshAdmin } = useFetch('/api/admin/profile', {
-  baseURL: config.public.apiUrl,
+var { data: adminData, refresh: refreshAdmin } = useAuthFetch('/api/admin/perfil', {
   key: 'admin_profile'
 });
 
@@ -58,19 +57,25 @@ function tancaPopup() {
 }
 
 async function guardarCanvis() {
-  var url = popupObert.value === 'editar_perfil' ? '/api/admin/profile' : '/api/admin/profile/password';
+  var authStore = useAuthStore();
+  var url = popupObert.value === 'editar_perfil' ? '/api/admin/perfil' : '/api/admin/perfil/password';
   var body = {};
   
   if (popupObert.value === 'editar_perfil') {
     body = { nom: formulari.value.nom, email: formulari.value.email };
   } else {
-    body = { current_password: formulari.value.passVella, new_password: formulari.value.passNova };
+    body = {
+      contrasenya_actual: formulari.value.passVella,
+      contrasenya_nova: formulari.value.passNova,
+      contrasenya_nova_confirmation: formulari.value.passNova
+    };
   }
 
   try {
     var res = await $fetch(url, {
-      method: 'PUT',
+      method: popupObert.value === 'editar_perfil' ? 'PUT' : 'PATCH',
       baseURL: config.public.apiUrl,
+      headers: authStore.getAuthHeaders(),
       body: body
     });
     

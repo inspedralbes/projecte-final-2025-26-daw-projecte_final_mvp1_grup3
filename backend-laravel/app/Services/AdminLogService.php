@@ -39,9 +39,9 @@ class AdminLogService
         ?array $despres = null,
         ?string $ip = null
     ): void {
-        // A. Validar i normalitzar paràmetres
+        // A. Validar paràmetres
         if ($administradorId < 1) {
-            $administradorId = 1;
+            throw new \InvalidArgumentException('administrador_id ha de ser >= 1');
         }
 
         // B. Crear el registre a la base de dades

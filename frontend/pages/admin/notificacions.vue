@@ -12,8 +12,7 @@ var { $socket } = useNuxtApp();
 var config = useRuntimeConfig();
 
 // Historial via API
-var { data: notificacionsData, refresh: refreshNotificacions } = useFetch('/api/admin/notificacions/1/20', {
-  baseURL: config.public.apiUrl,
+var { data: notificacionsData, refresh: refreshNotificacions } = useAuthFetch('/api/admin/notificacions/1/20/-', {
   key: 'admin_notifications_list'
 });
 

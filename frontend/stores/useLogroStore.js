@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import { authFetch } from '~/utils/authFetch.js';
 
 /**
  * Store per a la gestió dels logros i medalles.
@@ -19,8 +20,6 @@ export var useLogroStore = defineStore('logro', {
          */
         carregarLogros: async function () {
             var self = this;
-            var runtimeConfig;
-            var apiUrl;
             var resposta;
             var dades;
 
@@ -28,12 +27,8 @@ export var useLogroStore = defineStore('logro', {
             self.error = null;
 
             try {
-                runtimeConfig = useRuntimeConfig();
-                apiUrl = runtimeConfig.public.apiUrl;
-
-                // A. Petició fetch clàssica
-                resposta = await fetch(apiUrl + '/api/logros');
-
+                // A. Petició fetch amb cookies i refresh automàtic
+                resposta = await authFetch('/api/logros', {});
                 if (!resposta.ok) {
                     throw new Error('Error al carregar els logros');
                 }

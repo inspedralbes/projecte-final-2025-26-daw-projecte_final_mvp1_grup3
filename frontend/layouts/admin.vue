@@ -11,12 +11,19 @@
         <!-- Navegació Principal -->
         <div class="mb-4">
           <p class="text-[9px] font-black text-gray-300 uppercase tracking-[0.2em] px-4 mb-2">Principal</p>
-          <NuxtLink v-for="item in menuPrincipal" :key="item.ruta" :to="item.ruta"
-            class="flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold text-xs uppercase tracking-widest text-gray-400 hover:bg-gray-50 hover:text-gray-900 group"
-            active-class="bg-gray-900 !text-white shadow-lg shadow-gray-200">
-            <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
-            {{ item.nom }}
-          </NuxtLink>
+          <template v-for="item in menuPrincipal" :key="item.nom">
+            <NuxtLink v-if="item.ruta" :to="item.ruta"
+              class="flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold text-xs uppercase tracking-widest text-gray-400 hover:bg-gray-50 hover:text-gray-900 group"
+              active-class="bg-gray-900 !text-white shadow-lg shadow-gray-200">
+              <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
+              {{ item.nom }}
+            </NuxtLink>
+            <div v-else
+              class="flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest text-gray-300 cursor-not-allowed opacity-50">
+              <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
+              {{ item.nom }}
+            </div>
+          </template>
         </div>
 
         <!-- Gestió CRUD -->
@@ -44,10 +51,10 @@
 
       <!-- Footer SideBar -->
       <div class="p-6 border-t border-gray-100 bg-gray-50/50">
-        <NuxtLink to="/Login" class="flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-black text-red-500 hover:bg-red-50 transition-all uppercase tracking-widest">
+        <button type="button" @click="sortir" class="flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-black text-red-500 hover:bg-red-50 transition-all uppercase tracking-widest w-full text-left">
           <div class="w-2 h-2 rounded-full bg-red-400"></div>
           Sortir
-        </NuxtLink>
+        </button>
       </div>
     </aside>
 
@@ -63,14 +70,24 @@
 <script setup>
 /**
  * Layout d'Administració (Desktop).
- * Segueix les regles ES5 de l'AgentNuxt.md.
  */
 import { computed } from 'vue';
 
 var route = useRoute();
 
+function sortir() {
+  var nuxtApp = useNuxtApp();
+  useAuthStore().logout().then(function () {
+    if (nuxtApp.$socket) {
+      nuxtApp.$socket.disconnect();
+    }
+    navigateTo('/login');
+  });
+}
+
 var menuPrincipal = [
   { nom: 'Dashboard', ruta: '/admin' },
+  { nom: 'Fòrum (Pròximament)', ruta: null },
   { nom: 'Notificacions', ruta: '/admin/notificacions' }
 ];
 
@@ -84,8 +101,7 @@ var menuGestio = [
 
 var menuSistema = [
   { nom: 'Perfil', ruta: '/admin/perfil' },
-  { nom: 'Configuració', ruta: '/admin/configuracio' },
-  { nom: 'Foro (Mod)', ruta: '/admin/foro' }
+  { nom: 'Configuració', ruta: '/admin/configuracio' }
 ];
 </script>
 

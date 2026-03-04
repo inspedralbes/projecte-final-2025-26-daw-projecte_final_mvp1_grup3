@@ -8,6 +8,8 @@ Garantir que tot el codi Javascript escrit sigui compatible amb la filosofia del
 ## 2. Regles de Sintaxi (ES5 + Async)
 Aquestes regles són **NO NEGOCIABLES**:
 
+- SEMPRE en Català!!
+
 - **Variables**:
     - Ús EXCLUSIU de `var`.
     - PROHIBIT `const`.

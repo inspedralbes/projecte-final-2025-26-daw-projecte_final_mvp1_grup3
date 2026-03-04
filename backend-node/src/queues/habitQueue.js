@@ -47,11 +47,12 @@ async function pushToLaravel(action, userId, data) {
     action: action,
     user_id: userId,
     habit_id: data.habit_id || null,
-    habit_data: data.habit_data || null
+    habit_data: data.habit_data || null,
+    plantilla_id: data.plantilla_id || null,
+    selected_habits: data.selected_habits || null,
+    valor: data.valor,
+    data: data.data
   };
-  if (action === 'TOGGLE' && data.data) {
-    payloadObj.data = data.data;
-  }
   var payload = JSON.stringify(payloadObj);
 
   console.log('Pushing to Redis (' + action + ') for user ' + userId);

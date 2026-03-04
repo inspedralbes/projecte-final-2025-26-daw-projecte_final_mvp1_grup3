@@ -24,7 +24,13 @@
             </p>
           </div>
 
-          <form class="mt-6 space-y-4">
+          <form class="mt-6 space-y-4" @submit.prevent>
+            <div
+              v-if="errorMissatge"
+              class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded text-sm"
+            >
+              {{ errorMissatge }}
+            </div>
             <div>
               <label class="block text-xs font-medium text-gray-600 mb-2"
                 >NOM</label
@@ -73,8 +79,9 @@
             <div class="pt-2">
               <button
                 type="button"
+                :disabled="estaCarregant"
                 @click="registrarUsuari"
-                class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 rounded-lg"
+                class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 rounded-lg disabled:opacity-50"
               >
                 REGISTRAR-SE
               </button>
@@ -95,55 +102,66 @@
 
         <!-- Dreta: Test de preguntes -->
         <div class="grid grid-cols-2 gap-4 h-full">
-          <!-- Pas 1: Pregunta Maestra -->
-          <template v-if="categoriaSeleccionada === null">
+          <!-- Pas 1: Introducció al Quiz Dinàmic -->
+          <template v-if="!quizIniciat && !quizFinalitzat">
             <div
-              class="col-span-2 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 shadow-sm flex flex-col items-center justify-center"
+              class="col-span-2 bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-8 shadow-sm flex flex-col items-center justify-center text-center"
             >
-              <div class="text-xs font-bold text-gray-600 text-center">
-                En quina àrea et vols centrar?
+              <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 shadow-sm">
+                <span class="text-3xl">✨</span>
               </div>
+              <h3 class="text-lg font-bold text-gray-800 mb-2">Descobreix el teu camí</h3>
+              <p class="text-sm text-gray-600 mb-6">
+                Respon aquestes 16 preguntes i t'assignarem automàticament la millor categoria d'hàbits per a tu.
+              </p>
+              <button
+                @click="iniciarOnboarding"
+                class="bg-green-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors shadow-lg"
+              >
+                COMENÇAR EL TEST
+              </button>
             </div>
+          </template>
+
+          <!-- Pas 2: Preguntes Seqüencials -->
+          <template v-else-if="quizIniciat && !quizFinalitzat">
             <div
-              class="bg-white rounded-xl p-2 shadow-sm flex items-center justify-center cursor-pointer hover:bg-blue-50"
-              @click="seleccionarCategoria('gym')"
+              class="col-span-2 bg-white rounded-2xl p-8 shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center min-h-[300px]"
             >
               <div class="text-xs font-medium text-gray-700">
-                💪 Activitat física
+                Activitat física
               </div>
             </div>
             <div
               class="bg-white rounded-xl p-2 shadow-sm flex items-center justify-center cursor-pointer hover:bg-green-50"
               @click="seleccionarCategoria('nutrition')"
             >
-              <div class="text-xs font-medium text-gray-700">
-                🥗 Alimentació
-              </div>
+              <div class="text-xs font-medium text-gray-700">Alimentació</div>
             </div>
             <div
               class="bg-white rounded-xl p-2 shadow-sm flex items-center justify-center cursor-pointer hover:bg-yellow-50"
               @click="seleccionarCategoria('study')"
             >
-              <div class="text-xs font-medium text-gray-700">📚 Estudi</div>
+              <div class="text-xs font-medium text-gray-700">Estudi</div>
             </div>
             <div
               class="bg-white rounded-xl p-2 shadow-sm flex items-center justify-center cursor-pointer hover:bg-purple-50"
               @click="seleccionarCategoria('reading')"
             >
-              <div class="text-xs font-medium text-gray-700">📖 Lectura</div>
+              <div class="text-xs font-medium text-gray-700">Lectura</div>
             </div>
             <div
               class="bg-white rounded-xl p-2 shadow-sm flex items-center justify-center cursor-pointer hover:bg-pink-50"
               @click="seleccionarCategoria('wellness')"
             >
-              <div class="text-xs font-medium text-gray-700">🧘 Benestar</div>
+              <div class="text-xs font-medium text-gray-700">Benestar</div>
             </div>
             <div
               class="bg-white rounded-xl p-2 shadow-sm flex items-center justify-center cursor-pointer hover:bg-red-50"
               @click="seleccionarCategoria('smoking')"
             >
               <div class="text-xs font-medium text-gray-700">
-                🚭 Vida sense Fum
+                Vida sense Fum
               </div>
             </div>
             <div
@@ -151,26 +169,24 @@
               @click="seleccionarCategoria('cleaning')"
             >
               <div class="text-xs font-medium text-gray-700">
-                🏠 Neteja Express
+                Neteja Express
               </div>
             </div>
             <div
               class="bg-white rounded-xl p-2 shadow-sm flex items-center justify-center cursor-pointer hover:bg-gray-50"
               @click="seleccionarCategoria('hobby')"
             >
-              <div class="text-xs font-medium text-gray-700">🎨 Modelisme</div>
+              <div class="text-xs font-medium text-gray-700">Modelisme</div>
             </div>
           </template>
 
-          <!-- Pas 2: Preguntes de Profundització -->
-          <template v-else>
+          <!-- Pas 3: Resultat -->
+          <template v-else-if="quizFinalitzat">
             <div
-              v-for="(pregunta, index) in obtenirPreguntesActuals()"
-              :key="pregunta.id"
-              class="bg-white rounded-xl p-3 shadow-sm flex flex-col items-center justify-center overflow-hidden"
+              class="col-span-2 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-xl p-8 shadow-sm flex flex-col items-center justify-center text-center"
             >
-              <div class="text-xs font-bold text-gray-600 text-center mb-2">
-                Pregunta {{ index + 1 }}/{{ llistaPreguntes.length }}
+              <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 shadow-sm">
+                <span class="text-3xl">🎯</span>
               </div>
               <div class="text-xs text-gray-700 text-center leading-tight mb-3">
                 {{ pregunta.pregunta }}
@@ -185,24 +201,14 @@
                   <button
                     type="button"
                     @click="respondre(pregunta.id, 'forza')"
-                    :class="[
-                      'px-3 py-1 text-xs rounded-md',
-                      respostes[pregunta.id] === 'forza'
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-gray-200',
-                    ]"
+                    :class="obtenirClasseBoto(pregunta.id, 'forza')"
                   >
                     Força
                   </button>
                   <button
                     type="button"
                     @click="respondre(pregunta.id, 'massa_muscular')"
-                    :class="[
-                      'px-3 py-1 text-xs rounded-md',
-                      respostes[pregunta.id] === 'massa_muscular'
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-gray-200',
-                    ]"
+                    :class="obtenirClasseBoto(pregunta.id, 'massa_muscular')"
                   >
                     Massa Muscular
                   </button>
@@ -217,24 +223,14 @@
                   <button
                     type="button"
                     @click="respondre(pregunta.id, 'ansietat')"
-                    :class="[
-                      'px-3 py-1 text-xs rounded-md',
-                      respostes[pregunta.id] === 'ansietat'
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-gray-200',
-                    ]"
+                    :class="obtenirClasseBoto(pregunta.id, 'ansietat')"
                   >
                     Per Ansietat
                   </button>
                   <button
                     type="button"
                     @click="respondre(pregunta.id, 'compromis')"
-                    :class="[
-                      'px-3 py-1 text-xs rounded-md',
-                      respostes[pregunta.id] === 'compromis'
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-gray-200',
-                    ]"
+                    :class="obtenirClasseBoto(pregunta.id, 'compromis')"
                   >
                     Per Compromís
                   </button>
@@ -243,44 +239,28 @@
                   <button
                     type="button"
                     @click="respondre(pregunta.id, 'si')"
-                    :class="[
-                      'px-3 py-1 text-xs rounded-md',
-                      respostes[pregunta.id] === 'si'
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-gray-200',
-                    ]"
+                    :class="obtenirClasseBoto(pregunta.id, 'si')"
                   >
                     Sí
                   </button>
                   <button
                     type="button"
                     @click="respondre(pregunta.id, 'no')"
-                    :class="[
-                      'px-3 py-1 text-xs rounded-md',
-                      respostes[pregunta.id] === 'no'
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-gray-200',
-                    ]"
+                    :class="obtenirClasseBoto(pregunta.id, 'no')"
                   >
                     No
                   </button>
                 </template>
               </div>
-            </div>
-            <div class="col-span-full mt-2 grid grid-cols-2 gap-2">
+
+              <p class="text-xs text-gray-500 mb-6 px-4">
+                Basant-nos en les teves respostes, aquesta és la millor àrea per començar. Pots canviar-la més endavant si vols.
+              </p>
               <button
-                type="button"
-                @click="seleccionarCategoria(null)"
-                class="w-full bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium py-2 rounded-lg text-xs"
+                @click="quizFinalitzat = false; quizIniciat = false; indexPregunta = 0"
+                class="text-indigo-600 font-bold text-xs hover:underline"
               >
-                TORNAR
-              </button>
-              <button
-                type="button"
-                @click="finalitzarTest"
-                class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 rounded-lg text-xs"
-              >
-                FINALITZAR
+                REPETIR TEST
               </button>
             </div>
           </template>
@@ -290,12 +270,15 @@
   </div>
 </template>
 
+<script setup>
+definePageMeta({ layout: false });
+</script>
+
 <script>
 /**
- * Configuració de la pàgina de Registre.
- * Segueix les normes de l'Agent Javascript (ES5 Estricte).
+ * Pàgina de Registre amb Onboarding interactiu.
+ * Refactoritzada per utilitzar l'API d'opcions correctament.
  */
-definePageMeta({ layout: false });
 
 export default {
   /**
@@ -303,14 +286,19 @@ export default {
    */
   data: function () {
     return {
+      quizIniciat: false,
+      quizFinalitzat: false,
+      indexPregunta: 0,
       categoriaSeleccionada: null,
       llistaPreguntes: [],
       respostes: {},
+      errorMissatge: "",
+      estaCarregant: false,
       formulari: {
         nom: "",
         email: "",
         contrasenya: "",
-        confirmacio: ""
+        confirmacio: "",
       },
       mapaCategories: {
         gym: 1,
@@ -325,7 +313,42 @@ export default {
     };
   },
 
+  computed: {
+    /**
+     * Retorna la pregunta actual segons l'índex.
+     */
+    pregunta: function () {
+      if (this.llistaPreguntes && this.llistaPreguntes.length > 0) {
+        return this.llistaPreguntes[this.indexPregunta];
+      }
+      return { id: 0, pregunta: "" };
+    },
+  },
+
   methods: {
+    /**
+     * Inicia el flux d'onboarding carregant les preguntes dinàmiques.
+     */
+    iniciarOnboarding: async function () {
+      var self = this;
+      self.estaCarregant = true;
+      try {
+        var base = (self.$config.public.apiUrl || "").replace(/\/$/, "");
+        var resposta = await fetch(base + "/api/onboarding/questions");
+        var dades = await resposta.json();
+
+        if (dades && dades.success) {
+          self.llistaPreguntes = dades.preguntes;
+          self.quizIniciat = true;
+          self.indexPregunta = 0;
+        }
+      } catch (err) {
+        console.error("Error en iniciar onboarding:", err);
+      } finally {
+        self.estaCarregant = false;
+      }
+    },
+
     /**
      * Selecciona una categoria i carrega les preguntes des de l'API Laravel.
      */
@@ -348,9 +371,11 @@ export default {
           if (base.endsWith("/")) {
             base = base.slice(0, -1);
           }
-          
+
           // C. Cridar a l'API via fetch (GET)
-          resposta = await fetch(base + "/api/preguntes-registre/" + idCategoria);
+          resposta = await fetch(
+            base + "/api/preguntes-registre/" + idCategoria,
+          );
           dades = await resposta.json();
 
           if (dades && dades.preguntes) {
@@ -374,10 +399,15 @@ export default {
     },
 
     /**
-     * Desa la resposta d'una pregunta específica.
+     * Desa la resposta d'una pregunta específica i avança.
      */
     respondre: function (preguntaId, resposta) {
       this.respostes[preguntaId] = resposta;
+      if (this.indexPregunta < this.llistaPreguntes.length - 1) {
+        this.indexPregunta++;
+      } else {
+        this.quizFinalitzat = true;
+      }
     },
 
     /**
@@ -392,7 +422,9 @@ export default {
       console.log("Respostes a enviar:", textRespostes);
 
       // B. Alerta de finalització
-      alert("Test finalitzat! Revisa la consola per veure les teves respostes.");
+      alert(
+        "Test finalitzat! Revisa la consola per veure les teves respostes.",
+      );
 
       // C. Reset de l'estat local
       self.categoriaSeleccionada = null;
@@ -401,26 +433,151 @@ export default {
     },
 
     /**
-     * Acció per registrar un usuari.
+     * Mostra SweetAlert confirmant que el compte s'ha creat correctament.
+     * En clicar OK, redirigeix a HomePage i actualitza el socket.
      */
-    registrarUsuari: function () {
-        var self = this;
-        console.log("Intentant registre...");
-        
-        // A. Validar camps
-        if (!self.formulari.nom || !self.formulari.email || !self.formulari.contrasenya) {
-            alert("Si us plau, omple tots els camps.");
-            return;
+    mostrarAlertaCompteCreat: function () {
+      var self = this;
+      var mostrarAlerta = function () {
+        if (typeof window !== "undefined" && window.Swal) {
+          window.Swal.fire({
+            title: "Compte creat correctament",
+            text: "Benvingut a Loopy! El teu compte s'ha creat amb èxit.",
+            icon: "success",
+            confirmButtonText: "OK",
+          }).then(function (result) {
+            if (result.isConfirmed) {
+              var nuxtApp = useNuxtApp();
+              if (nuxtApp.$updateSocketAuth) nuxtApp.$updateSocketAuth();
+              navigateTo("/home");
+            }
+          });
+        } else {
+          navigateTo("/home");
         }
-        
-        if (self.formulari.contrasenya !== self.formulari.confirmacio) {
-            alert("Les contrasenyes no coincideixen.");
-            return;
+      };
+
+      if (typeof window !== "undefined" && window.Swal) {
+        mostrarAlerta();
+      } else if (typeof document !== "undefined") {
+        var script = document.createElement("script");
+        script.src =
+          "https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js";
+        script.onload = mostrarAlerta;
+        document.head.appendChild(script);
+      } else {
+        navigateTo("/home");
+      }
+    },
+
+    /**
+     * Extreu el missatge d'error de la resposta de l'API.
+     * Evita Object.values, flat i ternaris (AgentJavascript).
+     */
+    extraureMissatgeError: function (dades) {
+      var missatge = "Error en el registre";
+      if (dades.message) {
+        return String(dades.message);
+      }
+      if (dades.errors && typeof dades.errors === "object") {
+        var parts = [];
+        var claus = Object.keys(dades.errors);
+        for (var i = 0; i < claus.length; i++) {
+          var val = dades.errors[claus[i]];
+          if (Array.isArray(val)) {
+            for (var j = 0; j < val.length; j++) {
+              parts.push(val[j]);
+            }
+          } else {
+            parts.push(String(val));
+          }
+        }
+        if (parts.length > 0) {
+          return parts.join(" ");
+        }
+      }
+      return missatge;
+    },
+
+    /**
+     * Retorna la classe CSS del botó de resposta segons si està seleccionat.
+     * Evita ternaris al template (AgentJavascript).
+     */
+    obtenirClasseBoto: function (preguntaId, valor) {
+      if (this.respostes[preguntaId] === valor) {
+        return "px-3 py-1 text-xs rounded-md bg-blue-500 text-white";
+      }
+      return "px-3 py-1 text-xs rounded-md bg-gray-200";
+    },
+
+    /**
+     * Acció per registrar un usuari. POST /api/auth/register
+     */
+    registrarUsuari: async function () {
+      var self = this;
+
+      if (
+        !self.formulari.nom ||
+        !self.formulari.email ||
+        !self.formulari.contrasenya
+      ) {
+        self.errorMissatge = "Si us plau, omple tots els camps.";
+        return;
+      }
+
+      if (self.formulari.contrasenya !== self.formulari.confirmacio) {
+        self.errorMissatge = "Les contrasenyes no coincideixen.";
+        return;
+      }
+
+      if (self.formulari.contrasenya.length < 6) {
+        self.errorMissatge = "La contrasenya ha de tenir almenys 6 caràcters.";
+        return;
+      }
+
+      self.errorMissatge = "";
+      self.estaCarregant = true;
+
+      try {
+        var config = useRuntimeConfig();
+        var base = (config.public.apiUrl || "").replace(/\/$/, "");
+        var resposta = await fetch(base + "/api/auth/register", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({
+            nom: self.formulari.nom,
+            email: self.formulari.email,
+            contrasenya: self.formulari.contrasenya,
+            contrasenya_confirmation: self.formulari.confirmacio,
+          }),
+        });
+        var dades = await resposta.json();
+
+        if (!resposta.ok) {
+          self.errorMissatge = self.extraureMissatgeError(dades);
+          return;
         }
 
-        // B. Processar registre (simulació)
-        alert("Registre en desenvolupament");
-    }
+        var authStore = useAuthStore();
+        authStore.aplicarSessio({
+          token: dades.token,
+          user: dades.user,
+          role: "user"
+        });
+        self.mostrarAlertaCompteCreat();
+      } catch (err) {
+        if (err.message) {
+          self.errorMissatge = err.message;
+        } else {
+          self.errorMissatge = "Error de connexió";
+        }
+      } finally {
+        self.estaCarregant = false;
+      }
+    },
   },
 };
 </script>

@@ -12,8 +12,7 @@ var { $socket } = useNuxtApp();
 var config = useRuntimeConfig();
 
 // Estadístiques reals via API
-var { data: statsData, refresh: refreshStats } = useFetch('/api/admin/dashboard', {
-  baseURL: config.public.apiUrl,
+var { data: statsData, refresh: refreshStats } = useAuthFetch('/api/admin/dashboard', {
   key: 'admin_stats'
 });
 
@@ -25,9 +24,7 @@ var stats = computed(function() {
 });
 
 // Rankings reals via API
-var { data: rankingsData } = useFetch('/api/admin/rankings/mensual', {
-  baseURL: config.public.apiUrl
-});
+var { data: rankingsData } = useAuthFetch('/api/admin/rankings/mensual');
 
 var rankings = computed(function() {
   if (rankingsData.value && rankingsData.value.success) {
@@ -42,9 +39,7 @@ var usuarisLlista = ref([]);
 var carregantLlista = ref(false);
 
 // Usuaris recents via API
-var { data: usuarisData } = useFetch('/api/admin/usuaris/tots/1/4/false/none', {
-  baseURL: config.public.apiUrl
-});
+var { data: usuarisData } = useAuthFetch('/api/admin/usuaris/tots/1/4/false/none');
 
 var usuaris = computed(function() {
   if (usuarisData.value && usuarisData.value.success) {
@@ -85,7 +80,7 @@ var titolPopup = computed(function() {
 // 3. LIFECYCLE
 onMounted(function() {
   if ($socket) {
-    $socket.emit('admin_join', { admin_id: 1 });
+    $socket.emit('admin_join', {});
     
     $socket.on('admin:connected_users', function(llista) {
       usuarisRealTime.value = llista;
@@ -102,7 +97,8 @@ function obrePopup(nom) {
   if (nom === 'usuaris_totals') {
     carregantLlista.value = true;
     $fetch('/api/admin/usuaris/tots/1/50/0/-', {
-      baseURL: config.public.apiUrl
+      baseURL: config.public.apiUrl,
+      headers: useAuthStore().getAuthHeaders()
     }).then(function(res) {
       if (res.success) usuarisLlista.value = res.data.data;
       carregantLlista.value = false;

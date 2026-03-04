@@ -77,6 +77,50 @@
               <p class="text-sm">Encara no has obtingut cap logro</p>
             </div>
           </div>
+
+          <!-- HISTORIAL DIARI -->
+          <div class="bg-white rounded-2xl shadow-lg p-6 w-full">
+            <h2 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-6">Historial Diari</h2>
+
+            <div v-if="loadingLogs" class="space-y-3">
+              <div class="h-4 bg-gray-200 rounded w-full animate-pulse"></div>
+              <div class="h-4 bg-gray-200 rounded w-3/4 animate-pulse"></div>
+              <div class="h-4 bg-gray-200 rounded w-2/3 animate-pulse"></div>
+            </div>
+
+            <div v-else-if="errorLogs" class="text-sm text-red-500">
+              {{ errorLogs }}
+            </div>
+
+            <div v-else-if="logs.length === 0" class="text-sm text-gray-400">
+              Encara no hi ha registres diaris.
+            </div>
+
+            <div v-else class="space-y-3">
+              <div
+                v-for="(log, idx) in logs"
+                :key="log.dia + '-' + log.habit_id + '-' + idx"
+                class="border border-gray-100 rounded-xl p-3 flex flex-col gap-1"
+              >
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-gray-500">{{ log.dia }}</span>
+                  <span
+                    class="text-[10px] font-bold px-2 py-1 rounded-full"
+                    :class="log.completado ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'"
+                  >
+                    {{ log.completado ? 'Completat' : 'Incomplet' }}
+                  </span>
+                </div>
+                <div class="text-sm font-semibold text-gray-800">{{ log.titol }}</div>
+                <div class="text-xs text-gray-500">
+                  {{ log.progreso_diario }}/{{ log.objectiu_vegades }} {{ log.unitat || 'vegades' }}
+                </div>
+                <div class="text-xs text-gray-500">
+                  XP: {{ log.xp_ganada }} · Monedes: {{ log.monedes_ganadas }}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Columna Dreta: Mascota -->
@@ -87,9 +131,12 @@
                 <h2 class="text-lg font-bold text-gray-800 uppercase tracking-tight">La teva Mascota</h2>
                 <p class="text-sm text-gray-500">Estat actual: Feliç</p>
               </div>
-              <div class="text-right flex-shrink-0">
+              <div class="text-right flex-shrink-0 flex flex-col items-end gap-2">
                 <div class="inline-flex items-center gap-2 bg-orange-100 px-4 py-2 rounded-full border border-orange-200 shadow-sm">
                   <span class="text-orange-600 font-bold text-sm tracking-wide">RATXA: {{ user ? user.ratxa_actual : 0 }}</span>
+                </div>
+                <div class="inline-flex items-center gap-2 bg-yellow-100 px-3 py-1 rounded-full border border-yellow-200 shadow-sm">
+                  <span class="text-yellow-700 font-bold text-xs tracking-wide" title="Rècord Personal">Ratxa Màxima: {{ user ? user.ratxa_maxima : 0 }}</span>
                 </div>
               </div>
             </div>
@@ -118,12 +165,17 @@
 // A. Imports (Seguint AgentNuxt.md: auto-imports preferibles)
 import bosqueImg from "~/assets/img/Bosque.png";
 import mascotaImg from "~/assets/img/Mascota.png";
+import { useAuthStore } from "~/stores/useAuthStore";
 
 // Estat reactiu amb variables VAR (ES5 segons AgentNuxt.md)
 var config = useRuntimeConfig();
+var authStore = useAuthStore();
 var user = ref(null);
 var loading = ref(true);
 var error = ref(null);
+var logs = ref([]);
+var loadingLogs = ref(true);
+var errorLogs = ref(null);
 
 // Recursos estàtics
 var imatgeMascota = mascotaImg;
@@ -156,21 +208,63 @@ function carregarPerfil() {
   baseUrl = config.public.apiUrl;
   fullUrl = baseUrl.endsWith('/') ? baseUrl + 'api/user/profile' : baseUrl + '/api/user/profile';
 
-  $fetch(fullUrl)
+  $fetch(fullUrl, {
+    headers: authStore.getAuthHeaders()
+  })
     .then(function(dades) {
       user.value = dades;
       loading.value = false;
     })
     .catch(function(err) {
+      if (err.status === 401) {
+        authStore.logout();
+        navigateTo('/login');
+        return;
+      }
       console.error("Error al carregar perfil:", err);
       error.value = "Error al carregar la informació del perfil.";
       loading.value = false;
     });
 }
 
+/**
+ * Carrega logs diaris des de l'API.
+ */
+function carregarLogs() {
+  var baseUrl, fullUrl;
+  loadingLogs.value = true;
+  errorLogs.value = null;
+
+  baseUrl = config.public.apiUrl;
+  fullUrl = baseUrl.endsWith('/') ? baseUrl + 'api/habits/logs' : baseUrl + '/api/habits/logs';
+
+  $fetch(fullUrl, {
+    headers: authStore.getAuthHeaders()
+  })
+    .then(function(dades) {
+      if (Array.isArray(dades)) {
+        logs.value = dades;
+      } else {
+        logs.value = [];
+      }
+      loadingLogs.value = false;
+    })
+    .catch(function(err) {
+      if (err.status === 401) {
+        authStore.logout();
+        navigateTo('/login');
+        return;
+      }
+      console.error("Error al carregar logs:", err);
+      errorLogs.value = "Error al carregar l'historial diari.";
+      loadingLogs.value = false;
+    });
+}
+
 // Inicialització quan el component estigui muntat
 onMounted(function() {
   carregarPerfil();
+  carregarLogs();
 });
 </script>
 

@@ -6,6 +6,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 
 //================================ PROPIETATS / ATRIBUTS ==========
 
@@ -13,9 +14,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * Model Administrador.
  * Correspon a la taula ADMINISTRADORS definida a database/init.sql.
  * Administradors del sistema amb accés exclusiu.
- * Sense auth per ara: accés via botó a la UI.
+ * Implementa JWTSubject per autenticació JWT.
  */
-class Administrador extends Model
+class Administrador extends Model implements JWTSubject
 {
     protected $table = 'administradors';
 
@@ -39,6 +40,22 @@ class Administrador extends Model
     }
 
     //================================ MÈTODES / FUNCIONS ===========
+
+    /**
+     * Identificador per al JWT (subject claim).
+     */
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+
+    /**
+     * Claims personalitzats per al JWT.
+     */
+    public function getJWTCustomClaims(): array
+    {
+        return ['role' => 'admin', 'admin_id' => $this->getKey()];
+    }
 
     //================================ RELACIONS ELOQUENT ===========
 

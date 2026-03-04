@@ -2,23 +2,23 @@
   <header class="w-full p-3">
     <nav class="w-full flex items-center justify-between px-4">
       
-      <NuxtLink to="/" class="brand">
+      <NuxtLink to="/home" class="brand"> 
         <img :src="logo" alt="Loopy logo" class="logo-img"/>
         <span class="app-name">Loopy</span>
       </NuxtLink>
 
       <ul class="flex-1 flex items-center justify-center space-x-6 list-none m-0 p-0">
         <li>
-          <NuxtLink to="/" class="nav-link">Home</NuxtLink>
+          <NuxtLink to="/home" class="nav-link">Home</NuxtLink> 
         </li>
         <li>
           <NuxtLink to="/habits" class="nav-link">Crear</NuxtLink>
         </li>
         <li>
-          <NuxtLink to="/catalogo" class="nav-link">Catálogo</NuxtLink>
+          <NuxtLink to="/plantilles" class="nav-link">Catàleg</NuxtLink>
         </li>
         <li>
-          <NuxtLink to="/foro" class="nav-link">Foro</NuxtLink>
+          <a href="javascript:void(0)" class="nav-link opacity-50 cursor-not-allowed" title="Pròximament">Fòrum</a>
         </li>
         <li>
           <NuxtLink to="/perfil" class="nav-link">Perfil</NuxtLink>

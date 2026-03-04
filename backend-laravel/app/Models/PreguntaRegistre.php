@@ -14,7 +14,7 @@ class PreguntaRegistre extends Model
      *
      * @var string
      */
-    protected $table = 'PREGUNTES_REGISTRE';
+    protected $table = 'preguntes_registre';
 
     /**
      * Indica si el model ha de tenir timestamps.

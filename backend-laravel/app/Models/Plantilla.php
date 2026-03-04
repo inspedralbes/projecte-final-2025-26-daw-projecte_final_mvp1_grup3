@@ -6,7 +6,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 //================================ PROPIETATS / ATRIBUTS ==========
 
@@ -17,10 +17,22 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Plantilla extends Model
 {
+    /**
+     * Taula associada al model.
+     * @var string
+     */
     protected $table = 'plantilles';
 
+    /**
+     * Indica si el model ha de tenir timestamps automàtics.
+     * @var bool
+     */
     public $timestamps = false;
 
+    /**
+     * Atributs assignables de forma massiva.
+     * @var array
+     */
     protected $fillable = [
         'creador_id',
         'titol',
@@ -28,6 +40,11 @@ class Plantilla extends Model
         'es_publica',
     ];
 
+    /**
+     * Defineix el càsting d'atributs.
+     *
+     * @return array
+     */
     protected function casts(): array
     {
         return [
@@ -38,7 +55,9 @@ class Plantilla extends Model
     //================================ MÈTODES / FUNCIONS ===========
 
     /**
-     * Usuari creador de la plantilla.
+     * Defineix la relació amb l'usuari creador de la plantilla.
+     *
+     * @return BelongsTo
      */
     public function creador(): BelongsTo
     {
@@ -46,10 +65,17 @@ class Plantilla extends Model
     }
 
     /**
-     * Hàbits basats en aquesta plantilla.
+     * Defineix la relació amb els hàbits associats a la plantilla.
+     *
+     * @return BelongsToMany
      */
-    public function habits(): HasMany
+    public function habits(): BelongsToMany
     {
-        return $this->hasMany(Habit::class, 'plantilla_id');
+        return $this->belongsToMany(
+            Habit::class,
+            'plantilla_habit',
+            'plantilla_id',
+            'habit_id'
+        );
     }
 }

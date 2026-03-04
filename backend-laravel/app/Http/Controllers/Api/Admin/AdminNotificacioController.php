@@ -27,8 +27,10 @@ class AdminNotificacioController extends Controller
      */
     public function index(Request $request, int $page = 1, int $perPage = 20, $llegida = '-'): JsonResponse
     {
-        // A. Admin per defecte id 1
-        $administradorId = 1;
+        $administradorId = $request->admin_id;
+        if (!$administradorId) {
+            return response()->json(['error' => 'No autoritzat'], 401);
+        }
 
         if ($perPage < 1) {
             $perPage = 20;
@@ -66,9 +68,12 @@ class AdminNotificacioController extends Controller
     /**
      * Marca una notificació com a llegida.
      */
-    public function marcarLlegida(int $id): JsonResponse
+    public function marcarLlegida(Request $request, int $id): JsonResponse
     {
-        $administradorId = 1;
+        $administradorId = $request->admin_id;
+        if (!$administradorId) {
+            return response()->json(['error' => 'No autoritzat'], 401);
+        }
 
         $notificacio = AdminNotificacio::where('id', $id)
             ->where('administrador_id', $administradorId)

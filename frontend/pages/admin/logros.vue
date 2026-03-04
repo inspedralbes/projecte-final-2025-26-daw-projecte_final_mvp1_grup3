@@ -12,8 +12,7 @@ var { $socket } = useNuxtApp();
 var config = useRuntimeConfig();
 
 // Logros via API
-var { data: logrosData, refresh: refreshLogros } = useFetch('/api/admin/logros/1/50', {
-  baseURL: config.public.apiUrl,
+var { data: logrosData, refresh: refreshLogros } = useAuthFetch('/api/admin/logros/1/50', {
   key: 'admin_logros_list'
 });
 

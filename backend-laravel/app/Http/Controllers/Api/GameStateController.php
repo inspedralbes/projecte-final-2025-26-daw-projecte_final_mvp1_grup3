@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Services\GamificationService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 //================================ PROPIETATS / ATRIBUTS ==========
 
@@ -33,15 +34,14 @@ class GameStateController extends Controller
     }
 
     /**
-     * Retorna l'estat de gamificació de l'usuari per defecte (id 1).
-     *
-     * A. Definir usuari per defecte.
-     * B. Obtenir estat de gamificació des del servei.
-     * C. Retornar resposta JSON (xp_total, ratxa_actual, ratxa_maxima, monedes, missio_diaria, missio_completada).
+     * Retorna l'estat de gamificació de l'usuari autenticat.
      */
-    public function show(): JsonResponse
+    public function show(Request $request): JsonResponse
     {
-        $usuariId = 1;
+        $usuariId = $request->user_id;
+        if (!$usuariId) {
+            return response()->json(['message' => 'No autoritzat'], 401);
+        }
 
         try {
             // A. Obtenir estat de gamificació des del servei
@@ -60,6 +60,9 @@ class GameStateController extends Controller
                 'error' => 'Error carregant estat del joc',
                 'usuari_id' => $usuariId,
                 'xp_total' => 0,
+                'nivell' => 1,
+                'xp_actual_nivel' => 0,
+                'xp_objetivo_nivel' => 1000,
                 'ratxa_actual' => 0,
                 'ratxa_maxima' => 0,
                 'monedes' => 0,

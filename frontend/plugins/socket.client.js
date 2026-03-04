@@ -8,9 +8,11 @@ import { io } from 'socket.io-client';
 export default defineNuxtPlugin(function (nuxtApp) {
     var config = useRuntimeConfig();
     var socketUrl = config.public.socketUrl || 'http://localhost:3001';
+    var authStore = useAuthStore();
 
     var socket = io(socketUrl, {
-        autoConnect: true,
+        auth: { token: authStore.token || '' },
+        autoConnect: false,
         transports: ['websocket']
     });
 
@@ -24,10 +26,27 @@ export default defineNuxtPlugin(function (nuxtApp) {
         console.error('[Socket] Error de connexió:', err.message);
     });
 
-    // Injectem al context de Nuxt
+    // Permet reconnectar amb el token actual (després del login)
+    function updateSocketAuth() {
+        var authStore = useAuthStore();
+        socket.auth = { token: authStore.token || '' };
+        socket.disconnect();
+        if (authStore.token && authStore.isAuthenticated) {
+            socket.connect();
+        }
+    }
+
+    if (typeof window !== 'undefined') {
+        socket.auth = { token: authStore.token || '' };
+        if (authStore.token && authStore.isAuthenticated) {
+            socket.connect();
+        }
+    }
+
     return {
         provide: {
-            socket: socket
+            socket: socket,
+            updateSocketAuth: updateSocketAuth
         }
     };
 });

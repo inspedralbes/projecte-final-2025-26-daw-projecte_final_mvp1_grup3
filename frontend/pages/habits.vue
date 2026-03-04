@@ -45,6 +45,48 @@
                 ></textarea>
               </div>
 
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label
+                    class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
+                    >Objectiu diari</label
+                  >
+                  <input
+                    v-model.number="formulari.objectiuVegades"
+                    type="number"
+                    min="1"
+                    class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white transition-all"
+                  />
+                </div>
+                <div>
+                  <label
+                    class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
+                    >Unitat</label
+                  >
+                  <input
+                    v-model="formulari.unitat"
+                    type="text"
+                    placeholder="vegades, minuts, km..."
+                    class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white transition-all"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label
+                  class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
+                  >Dificultat</label
+                >
+                <select
+                  v-model="formulari.dificultat"
+                  class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white transition-all"
+                >
+                  <option value="facil">Fàcil</option>
+                  <option value="media">Mitja</option>
+                  <option value="dificil">Difícil</option>
+                </select>
+              </div>
+
               <!-- Sección de Icona Ràpida eliminada para automatización -->
             </div>
           </div>
@@ -67,12 +109,16 @@
                 type="button"
                 @click="seleccionarCategoria(cat.id)"
                 :class="[
-                   'p-4 rounded-xl flex flex-col items-center justify-center gap-2 transition-all',
-                   formulari.categoria === cat.id ? 'ring-2 ring-green-500 bg-green-50' : 'bg-white border border-gray-200 hover:border-green-300'
+                  'p-4 rounded-xl flex flex-col items-center justify-center gap-2 transition-all',
+                  formulari.categoria === cat.id
+                    ? 'ring-2 ring-green-500 bg-green-50'
+                    : 'bg-white border border-gray-200 hover:border-green-300',
                 ]"
               >
                 <span class="text-2xl">{{ cat.icona }}</span>
-                <span class="text-sm font-medium text-gray-700">{{ cat.nom }}</span>
+                <span class="text-sm font-medium text-gray-700">{{
+                  cat.nom
+                }}</span>
               </button>
             </div>
           </div>
@@ -103,7 +149,9 @@
                       @click="formulari.frequencia = freq"
                       :class="[
                         'flex-1 py-1.5 text-sm font-medium rounded-md transition-all',
-                        formulari.frequencia === freq ? 'bg-white shadow-sm text-gray-800' : 'text-gray-500 hover:text-gray-700'
+                        formulari.frequencia === freq
+                          ? 'bg-white shadow-sm text-gray-800'
+                          : 'text-gray-500 hover:text-gray-700',
                       ]"
                     >
                       {{ freq }}
@@ -124,7 +172,9 @@
                       @click="alternarDia(index)"
                       :class="[
                         'w-8 h-8 rounded-full text-xs font-bold flex items-center justify-center transition-colors',
-                        comprovarSiDiaSeleccionat(index) ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                        comprovarSiDiaSeleccionat(index)
+                          ? 'bg-green-600 text-white'
+                          : 'bg-gray-200 text-gray-600 hover:bg-gray-300',
                       ]"
                     >
                       {{ dia }}
@@ -170,7 +220,9 @@
                   :style="{ backgroundColor: color }"
                   :class="[
                     'w-10 h-10 rounded-full transition-transform hover:scale-110 focus:outline-none ring-2 ring-offset-2',
-                    formulari.color === color ? 'ring-gray-400' : 'ring-transparent'
+                    formulari.color === color
+                      ? 'ring-gray-400'
+                      : 'ring-transparent',
                   ]"
                 ></button>
               </div>
@@ -243,7 +295,9 @@
                   </h3>
                   <p class="text-xs text-gray-500">
                     {{ obtenirNomCategoria(hàbit.categoriaId) }}
-                    <span v-if="hàbit.recordatori">• {{ hàbit.recordatori }}</span>
+                    <span v-if="hàbit.recordatori"
+                      >• {{ hàbit.recordatori }}</span
+                    >
                   </p>
                 </div>
                 <button
@@ -268,18 +322,34 @@
     </div>
 
     <!-- Edit Habit Modal -->
-    <div v-if="esObertModalEdicio" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="tancarModalEdicio"></div>
-      
-      <div class="bg-white rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl relative animate-in fade-in zoom-in duration-200">
-        <div class="p-6 border-b border-gray-100 flex items-center justify-between">
+    <div
+      v-if="esObertModalEdicio"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4"
+    >
+      <div
+        class="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        @click="tancarModalEdicio"
+      ></div>
+
+      <div
+        class="bg-white rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl relative animate-in fade-in zoom-in duration-200"
+      >
+        <div
+          class="p-6 border-b border-gray-100 flex items-center justify-between"
+        >
           <div class="flex items-center gap-3">
-            <div :style="{ backgroundColor: formulariEdicio.color }" class="w-10 h-10 rounded-xl flex items-center justify-center text-xl text-white">
+            <div
+              :style="{ backgroundColor: formulariEdicio.color }"
+              class="w-10 h-10 rounded-xl flex items-center justify-center text-xl text-white"
+            >
               {{ formulariEdicio.icona }}
             </div>
             <h2 class="text-xl font-bold text-gray-800">Editar Hàbit</h2>
           </div>
-          <button @click="tancarModalEdicio" class="text-gray-400 hover:text-gray-600">
+          <button
+            @click="tancarModalEdicio"
+            class="text-gray-400 hover:text-gray-600"
+          >
             <span class="text-2xl">×</span>
           </button>
         </div>
@@ -287,67 +357,170 @@
         <div class="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
           <!-- Name -->
           <div>
-            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Nom de l'hàbit</label>
-            <input v-model="formulariEdicio.nom" type="text" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500" />
+            <label
+              class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
+              >Nom de l'hàbit</label
+            >
+            <input
+              v-model="formulariEdicio.nom"
+              type="text"
+              class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label
+                class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
+                >Objectiu diari</label
+              >
+              <input
+                v-model.number="formulariEdicio.objectiuVegades"
+                type="number"
+                min="1"
+                class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500"
+              />
+            </div>
+            <div>
+              <label
+                class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
+                >Unitat</label
+              >
+              <input
+                v-model="formulariEdicio.unitat"
+                type="text"
+                placeholder="vegades, minuts, km..."
+                class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label
+              class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
+              >Dificultat</label
+            >
+            <select
+              v-model="formulariEdicio.dificultat"
+              class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm"
+            >
+              <option value="facil">Fàcil</option>
+              <option value="media">Mitja</option>
+              <option value="dificil">Difícil</option>
+            </select>
           </div>
 
           <!-- Icon Selection eliminado para automatización -->
 
           <!-- Category -->
           <div>
-             <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Categoria</label>
-             <div class="grid grid-cols-2 gap-3">
-               <button v-for="cat in categories" :key="cat.id" @click="seleccionarCategoriaEdicio(cat.id)"
-                 :class="formulariEdicio.categoria === cat.id ? 'ring-2 ring-green-500 bg-green-50' : 'bg-white border border-gray-200'"
-                 class="p-3 rounded-xl flex items-center gap-3 transition-all">
-                 <span>{{ cat.icona }}</span>
-                 <span class="text-sm font-medium">{{ cat.nom }}</span>
-               </button>
-             </div>
+            <label
+              class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
+              >Categoria</label
+            >
+            <div class="grid grid-cols-2 gap-3">
+              <button
+                v-for="cat in categories"
+                :key="cat.id"
+                @click="seleccionarCategoriaEdicio(cat.id)"
+                :class="
+                  formulariEdicio.categoria === cat.id
+                    ? 'ring-2 ring-green-500 bg-green-50'
+                    : 'bg-white border border-gray-200'
+                "
+                class="p-3 rounded-xl flex items-center gap-3 transition-all"
+              >
+                <span>{{ cat.icona }}</span>
+                <span class="text-sm font-medium">{{ cat.nom }}</span>
+              </button>
+            </div>
           </div>
 
           <!-- Frequency & Days -->
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Freqüència</label>
-              <select v-model="formulariEdicio.frequencia" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm">
-                <option v-for="freq in frequencies" :key="freq">{{ freq }}</option>
+              <label
+                class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
+                >Freqüència</label
+              >
+              <select
+                v-model="formulariEdicio.frequencia"
+                class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm"
+              >
+                <option v-for="freq in frequencies" :key="freq">
+                  {{ freq }}
+                </option>
               </select>
             </div>
             <div>
-              <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Recordatori</label>
-              <input v-model="formulariEdicio.recordatori" type="time" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+              <label
+                class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
+                >Recordatori</label
+              >
+              <input
+                v-model="formulariEdicio.recordatori"
+                type="time"
+                class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm"
+              />
             </div>
           </div>
 
           <div>
-             <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Dies Objectiu</label>
-             <div class="flex justify-between">
-               <button v-for="(dia, index) in diesSetmana" :key="dia" @click="alternarDiaEdicio(index)"
-                 :class="formulariEdicio.diesSeleccionats.indexOf(index) !== -1 ? 'bg-green-600 text-white' : 'bg-gray-200'"
-                 class="w-8 h-8 rounded-full text-xs font-bold flex items-center justify-center transition-colors">
-                 {{ dia }}
-               </button>
-             </div>
+            <label
+              class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
+              >Dies Objectiu</label
+            >
+            <div class="flex justify-between">
+              <button
+                v-for="(dia, index) in diesSetmana"
+                :key="dia"
+                @click="alternarDiaEdicio(index)"
+                :class="
+                  formulariEdicio.diesSeleccionats.indexOf(index) !== -1
+                    ? 'bg-green-600 text-white'
+                    : 'bg-gray-200'
+                "
+                class="w-8 h-8 rounded-full text-xs font-bold flex items-center justify-center transition-colors"
+              >
+                {{ dia }}
+              </button>
+            </div>
           </div>
 
           <!-- Color Selection -->
           <div>
-            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Color</label>
+            <label
+              class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
+              >Color</label
+            >
             <div class="flex gap-3">
-              <button v-for="color in colors" :key="color" @click="formulariEdicio.color = color"
+              <button
+                v-for="color in colors"
+                :key="color"
+                @click="formulariEdicio.color = color"
                 :style="{ backgroundColor: color }"
-                :class="formulariEdicio.color === color ? 'ring-2 ring-gray-400' : 'ring-transparent'"
-                class="w-8 h-8 rounded-full transition-transform hover:scale-110 ring-offset-2"></button>
+                :class="
+                  formulariEdicio.color === color
+                    ? 'ring-2 ring-gray-400'
+                    : 'ring-transparent'
+                "
+                class="w-8 h-8 rounded-full transition-transform hover:scale-110 ring-offset-2"
+              ></button>
             </div>
           </div>
         </div>
 
         <div class="p-6 bg-gray-50 border-t border-gray-100 flex gap-3">
-          <button @click="tancarModalEdicio" class="flex-1 px-4 py-3 bg-white border border-gray-200 text-gray-600 font-bold rounded-xl hover:bg-gray-100 transition-colors">
+          <button
+            @click="tancarModalEdicio"
+            class="flex-1 px-4 py-3 bg-white border border-gray-200 text-gray-600 font-bold rounded-xl hover:bg-gray-100 transition-colors"
+          >
             Cancel·lar
           </button>
-          <button @click="actualitzarHabit" class="flex-1 px-4 py-3 bg-green-700 text-white font-bold rounded-xl hover:bg-green-800 shadow-lg shadow-green-700/20 transition-all">
+          <button
+            @click="actualitzarHabit"
+            class="flex-1 px-4 py-3 bg-green-700 text-white font-bold rounded-xl hover:bg-green-800 shadow-lg shadow-green-700/20 transition-all"
+          >
             Guardar Canvis
           </button>
         </div>
@@ -357,7 +530,6 @@
 </template>
 
 <script>
-import { io } from "socket.io-client";
 import { useHabitStore } from "../stores/useHabitStore";
 
 /**
@@ -382,6 +554,9 @@ export default {
         recordatori: "08:00",
         diesSeleccionats: [0, 1, 2, 3, 4], // Dilluns a Divendres per defecte
         color: "#10B981",
+        objectiuVegades: 1,
+        unitat: "vegades",
+        dificultat: "facil",
       },
       esObertModalEdicio: false,
       idHabitEdicio: null,
@@ -394,6 +569,9 @@ export default {
         recordatori: "08:00",
         diesSeleccionats: [],
         color: "#10B981",
+        objectiuVegades: 1,
+        unitat: "vegades",
+        dificultat: "facil",
       },
       categories: [
         { id: 1, nom: "Activitat física", icona: "🏃" },
@@ -416,8 +594,8 @@ export default {
    */
   computed: {
     habitStore: function () {
-        return useHabitStore();
-    }
+      return useHabitStore();
+    },
   },
 
   /**
@@ -432,9 +610,7 @@ export default {
    * Neteja.
    */
   beforeUnmount: function () {
-    if (this.socket) {
-      this.socket.disconnect();
-    }
+    // El socket global es gestionat pel plugin, no el tanquem aquí
   },
 
   methods: {
@@ -443,19 +619,19 @@ export default {
      */
     inicialitzarSocket: function () {
       var self = this;
-      var socketConfig = useSocketConfig();
-      var socketUrl = socketConfig.socketUrl;
+      var nuxtApp = useNuxtApp();
 
       if (self.socket) {
         return;
       }
 
-      self.socket = io(socketUrl, {
-        reconnection: true,
-        reconnectionDelay: 1000,
-        reconnectionDelayMax: 5000,
-        reconnectionAttempts: 5,
-      });
+      // Utilitzem la instància global injectada pel plugin
+      self.socket = nuxtApp.$socket;
+
+      if (!self.socket) {
+        console.error("❌ Socket global no disponible");
+        return;
+      }
 
       self.socket.on("connect", function () {
         console.log("✅ Socket conectat:", self.socket.id);
@@ -485,13 +661,13 @@ export default {
      * Obté el nom de la categoria a partir del seu ID.
      */
     obtenirNomCategoria: function (id) {
-       var i;
-       for (i = 0; i < this.categories.length; i++) {
-         if (this.categories[i].id === id) {
-           return this.categories[i].nom;
-         }
-       }
-       return "Sense categoria";
+      var i;
+      for (i = 0; i < this.categories.length; i++) {
+        if (this.categories[i].id === id) {
+          return this.categories[i].nom;
+        }
+      }
+      return "Sense categoria";
     },
 
     /**
@@ -539,7 +715,7 @@ export default {
      * Comprova si un dia està seleccionat.
      */
     comprovarSiDiaSeleccionat: function (index) {
-        return this.formulari.diesSeleccionats.indexOf(index) !== -1;
+      return this.formulari.diesSeleccionats.indexOf(index) !== -1;
     },
 
     /**
@@ -548,7 +724,7 @@ export default {
     construirDadesHabit: function () {
       var self = this;
       var frequencia = "diaria";
-      var dies = [];
+      var booleans = [];
       var i;
 
       if (self.formulari.frequencia === "Setmanal") {
@@ -557,16 +733,17 @@ export default {
         frequencia = "mensual";
       }
 
-      for (i = 0; i < self.formulari.diesSeleccionats.length; i++) {
-        dies.push(self.formulari.diesSeleccionats[i] + 1);
+      for (i = 0; i < 7; i++) {
+        booleans.push(self.formulari.diesSeleccionats.indexOf(i) !== -1);
       }
 
       return {
         titol: self.formulari.nom,
-        dificultat: "facil",
+        dificultat: self.formulari.dificultat || "facil",
         frequencia_tipus: frequencia,
-        dies_setmana: dies.join(","),
-        objectiu_vegades: 1,
+        dies_setmana: booleans,
+        objectiu_vegades: self.formulari.objectiuVegades || 1,
+        unitat: self.formulari.unitat || "vegades",
         categoria_id: self.formulari.categoria,
         icona: self.formulari.icona,
         color: self.formulari.color,
@@ -638,11 +815,18 @@ export default {
         return;
       }
 
+      if (pàrrega.action !== "CREATE" && pàrrega.action !== "UPDATE" && pàrrega.action !== "DELETE") {
+        return;
+      }
+
       if (pàrrega.action === "CREATE" || pàrrega.action === "UPDATE") {
         if (pàrrega.habit) {
           mapejat = self.habitStore.mapejarHabitDesDeApi(pàrrega.habit);
           self.habitStore.guardarOActualitzarHabit(mapejat);
           self.netejarFormulari();
+          if (pàrrega.action === "CREATE") {
+            self.mostrarAlertaHabitCreat();
+          }
         }
       } else if (pàrrega.action === "DELETE") {
         if (pàrrega.habit && pàrrega.habit.id) {
@@ -661,6 +845,33 @@ export default {
       this.formulari.categoria = "";
       this.formulari.frequencia = "Diari";
       this.formulari.recordatori = "08:00";
+      this.formulari.objectiuVegades = 1;
+      this.formulari.unitat = "vegades";
+      this.formulari.dificultat = "facil";
+    },
+
+    /**
+     * Mostra SweetAlert quan es crea un hàbit.
+     */
+    mostrarAlertaHabitCreat: function () {
+      var mostrarAlerta = function () {
+        if (typeof window !== "undefined" && window.Swal) {
+          window.Swal.fire({
+            title: "Hábito creado",
+            text: "El hábito se ha creado correctamente.",
+            icon: "success"
+          });
+        }
+      };
+
+      if (typeof window !== "undefined" && window.Swal) {
+        mostrarAlerta();
+      } else if (typeof document !== "undefined") {
+        var script = document.createElement("script");
+        script.src = "https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js";
+        script.onload = mostrarAlerta;
+        document.head.appendChild(script);
+      }
     },
 
     /**
@@ -675,9 +886,19 @@ export default {
       this.formulariEdicio.frequencia = hàbit.frequencia;
       this.formulariEdicio.recordatori = hàbit.recordatori || "08:00";
       this.formulariEdicio.color = hàbit.color || "#10B981";
+      this.formulariEdicio.objectiuVegades = hàbit.objectiuVegades || 1;
+      this.formulariEdicio.unitat = hàbit.unitat || "vegades";
+      this.formulariEdicio.dificultat = hàbit.dificultat || "facil";
 
-      // Reconstruir dies seleccionats (simulat de moment, hauria de venir de l'api mapejat)
-      this.formulariEdicio.diesSeleccionats = [0, 1, 2, 3, 4];
+      // Reconstruir dies seleccionats a partir del boolean array
+      this.formulariEdicio.diesSeleccionats = [];
+      if (Array.isArray(hàbit.diesSetmana)) {
+        for (var i = 0; i < hàbit.diesSetmana.length; i++) {
+          if (hàbit.diesSetmana[i]) {
+            this.formulariEdicio.diesSeleccionats.push(i);
+          }
+        }
+      }
       this.esObertModalEdicio = true;
     },
 
@@ -723,20 +944,21 @@ export default {
         frequencia = "mensual";
       }
 
-      var dies = [];
-      for (var i = 0; i < self.formulariEdicio.diesSeleccionats.length; i++) {
-        dies.push(self.formulariEdicio.diesSeleccionats[i] + 1);
+      var booleans = [];
+      for (var i = 0; i < 7; i++) {
+        booleans.push(self.formulariEdicio.diesSeleccionats.indexOf(i) !== -1);
       }
 
       var dadesActualitzades = {
         titol: self.formulariEdicio.nom,
-        dificultat: "facil",
+        dificultat: self.formulariEdicio.dificultat || "facil",
         frequencia_tipus: frequencia,
-        dies_setmana: dies.join(","),
-        objectiu_vegades: 1,
+        dies_setmana: booleans,
+        objectiu_vegades: self.formulariEdicio.objectiuVegades || 1,
+        unitat: self.formulariEdicio.unitat || "vegades",
         icona: self.formulariEdicio.icona,
         color: self.formulariEdicio.color,
-        categoria_id: self.formulariEdicio.categoria
+        categoria_id: self.formulariEdicio.categoria,
       };
 
       self.estaCarregant = true;

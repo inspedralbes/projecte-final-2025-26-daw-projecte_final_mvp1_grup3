@@ -31,19 +31,16 @@ export default defineNuxtPlugin(function (nuxtApp) {
         var authStore = useAuthStore();
         socket.auth = { token: authStore.token || '' };
         socket.disconnect();
-        socket.connect();
+        if (authStore.token && authStore.isAuthenticated) {
+            socket.connect();
+        }
     }
 
-    // Intentar refrescar sessió abans de connectar el socket
     if (typeof window !== 'undefined') {
-        authStore.refrescarSessio()
-            .then(function () {
-                socket.auth = { token: authStore.token || '' };
-                socket.connect();
-            })
-            .catch(function () {
-                socket.connect();
-            });
+        socket.auth = { token: authStore.token || '' };
+        if (authStore.token && authStore.isAuthenticated) {
+            socket.connect();
+        }
     }
 
     return {

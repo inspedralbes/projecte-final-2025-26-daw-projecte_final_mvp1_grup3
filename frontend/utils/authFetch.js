@@ -50,12 +50,10 @@ async function intentarRefresh(authStore, base) {
   // A. Construir URL de refresh
   var url = base + '/api/auth/refresh';
   try {
-    // B. Fer la petició de refresh amb cookies
+    // B. Fer la petició de refresh (token en header si hi ha, o cookies)
     var resposta = await fetch(url, {
       method: 'POST',
-      headers: {
-        Accept: 'application/json'
-      },
+      headers: authStore.getAuthHeaders(),
       credentials: 'include'
     });
     // C. Si falla, fer logout

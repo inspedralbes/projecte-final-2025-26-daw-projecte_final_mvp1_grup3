@@ -26,9 +26,34 @@ export var useAuthStore = defineStore('auth', {
 
   actions: {
     /**
-     * Carrega estat des de cookies (client i SSR).
+     * Carrega estat des de localStorage (client) o cookies (SSR).
+     * localStorage permet que el token sobrevisqui al refresh sense depèncer de cookies cross-origin.
      */
     loadFromStorage: function () {
+      if (typeof window !== 'undefined') {
+        var token = localStorage.getItem('loopy_token');
+        var userStr = localStorage.getItem('loopy_user');
+        var adminStr = localStorage.getItem('loopy_admin');
+        var roleStored = localStorage.getItem('loopy_role');
+        if (token && roleStored) {
+          this.token = token;
+          this.role = roleStored;
+          this.isAuthenticated = true;
+          if (userStr) {
+            try {
+              this.user = JSON.parse(userStr);
+              this.admin = null;
+            } catch (e) {}
+          }
+          if (adminStr) {
+            try {
+              this.admin = JSON.parse(adminStr);
+              this.user = null;
+            } catch (e) {}
+          }
+          return;
+        }
+      }
       var roleCookie = useCookie('loopy_role');
       if (!roleCookie || !roleCookie.value) {
         return;
@@ -108,6 +133,12 @@ export var useAuthStore = defineStore('auth', {
       this.admin = null;
       this.role = null;
       this.isAuthenticated = false;
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('loopy_token');
+        localStorage.removeItem('loopy_user');
+        localStorage.removeItem('loopy_admin');
+        localStorage.removeItem('loopy_role');
+      }
     },
 
     /**
@@ -122,7 +153,7 @@ export var useAuthStore = defineStore('auth', {
     },
 
     /**
-     * Aplica la sessió des d'una resposta d'auth.
+     * Aplica la sessió des d'una resposta d'auth i persisteix a localStorage.
      */
     aplicarSessio: function (dades) {
       if (!dades) {
@@ -143,6 +174,22 @@ export var useAuthStore = defineStore('auth', {
         this.user = null;
       }
       this.isAuthenticated = true;
+      if (typeof window !== 'undefined') {
+        if (this.token) {
+          localStorage.setItem('loopy_token', this.token);
+        }
+        if (this.role) {
+          localStorage.setItem('loopy_role', this.role);
+        }
+        if (this.user) {
+          localStorage.setItem('loopy_user', JSON.stringify(this.user));
+          localStorage.removeItem('loopy_admin');
+        }
+        if (this.admin) {
+          localStorage.setItem('loopy_admin', JSON.stringify(this.admin));
+          localStorage.removeItem('loopy_user');
+        }
+      }
     },
 
     /**
@@ -152,12 +199,14 @@ export var useAuthStore = defineStore('auth', {
       var config = useRuntimeConfig();
       var base = (config.public.apiUrl || '').replace(/\/$/, '');
       var url = base + '/api/auth/refresh';
+      var headers = { Accept: 'application/json' };
+      if (this.token) {
+        headers['Authorization'] = 'Bearer ' + this.token;
+      }
       try {
         var resposta = await fetch(url, {
           method: 'POST',
-          headers: {
-            Accept: 'application/json'
-          },
+          headers: headers,
           credentials: 'include'
         });
         if (!resposta.ok) {

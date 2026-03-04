@@ -7,7 +7,14 @@ var XP_BASE = 10;
 var XP_PER_DIFICULTAT = {
   facil: 100,
   mitja: 250,
+  media: 250,
   dificil: 400,
+};
+var MONEDES_PER_DIFICULTAT = {
+  facil: 2,
+  mitja: 5,
+  media: 5,
+  dificil: 10,
 };
 
 /**
@@ -86,7 +93,7 @@ export var useGameStore = defineStore("game", {
      * Actualitza la ratxa localment.
      */
     actualitzarRatxa: function (novaRatxa) {
-      this.racha = novaRatxa;
+      this.ratxa = novaRatxa;
     },
 
     /**
@@ -94,6 +101,29 @@ export var useGameStore = defineStore("game", {
      */
     actualitzarXP: function (xp) {
       this.xpTotal = xp;
+    },
+
+    /**
+     * Actualitza l'estat del joc des del payload xp_update rebut per socket
+     * (habit completat, ruleta, etc.).
+     * @param {Object} dades - { xp_total, ratxa_actual, ratxa_maxima, monedes }
+     */
+    actualitzarDesDeXpUpdate: function (dades) {
+      if (!dades) {
+        return;
+      }
+      if (dades.xp_total !== undefined) {
+        this.xpTotal = dades.xp_total;
+      }
+      if (dades.ratxa_actual !== undefined) {
+        this.ratxa = dades.ratxa_actual;
+      }
+      if (dades.ratxa_maxima !== undefined) {
+        this.ratxaMaxima = dades.ratxa_maxima;
+      }
+      if (dades.monedes !== undefined) {
+        this.monedes = dades.monedes;
+      }
     },
 
     /**
@@ -157,7 +187,6 @@ export var useGameStore = defineStore("game", {
 
         if (!resposta.ok) {
           throw new Error("Error en obtenir hàbits");
-          throw new Error("Error en obtenir hàbits");
         }
 
         dadesBrutes = await resposta.json();
@@ -186,6 +215,7 @@ export var useGameStore = defineStore("game", {
             completat: !!h.completat,
             diesSetmana: diesSetmana,
             recompensaXP: XP_PER_DIFICULTAT[h.dificultat] || XP_BASE,
+            recompensaMonedes: MONEDES_PER_DIFICULTAT[h.dificultat] || 2,
             dificultat: h.dificultat,
             objectiuVegades: h.objectiu_vegades || 1,
             unitat: h.unitat || "",

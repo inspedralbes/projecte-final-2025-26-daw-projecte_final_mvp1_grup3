@@ -2,9 +2,10 @@
  * Middleware global: usuari no autenticat no pot accedir a cap ruta
  * excepte /Login, /registre, /error/* i / (que redirigeix a Login).
  * Comprova rol per restringir accés a /admin (només admin) i a rutes usuari (només user).
+ * Carrega token/user des de localStorage (persisteix tras F5).
  */
 export default defineNuxtRouteMiddleware(function (to, from) {
-  // A. Carregar estat d'autenticació des de cookies
+  // A. Carregar estat d'autenticació des de localStorage (client) o cookies (SSR)
   var authStore = useAuthStore();
   authStore.loadFromStorage();
   var roleCookie = useCookie("loopy_role");
@@ -14,7 +15,7 @@ export default defineNuxtRouteMiddleware(function (to, from) {
   }
 
   var path = to.path || "";
-  var rutasPubliques = ["/login", "/registre", "/"];
+  var rutasPubliques = ["/login", "/Login", "/registre", "/"];
   var esPublica = false;
   // B. Comprovar si la ruta actual és pública
   for (var i = 0; i < rutasPubliques.length; i++) {
@@ -46,8 +47,12 @@ export default defineNuxtRouteMiddleware(function (to, from) {
   }
 
   // E. Rutes protegides: exigeix token vàlid
+  // A SSR no tenim localStorage; permetre navegació i deixar que el client carregui l'auth
   if (!role) {
-    return navigateTo("/login?redirect=" + encodeURIComponent(path));
+    if (typeof window !== "undefined") {
+      return navigateTo("/login?redirect=" + encodeURIComponent(path));
+    }
+    return;
   }
 
   // F. Comprovar rol: admin només a /admin, user només a rutes no-admin

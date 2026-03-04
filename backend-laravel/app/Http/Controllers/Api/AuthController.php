@@ -104,12 +104,27 @@ class AuthController extends Controller
 
     /**
      * Refresh de token. Retorna nou token i dades bàsiques.
+     * Llegeix el token del header Authorization o de la cookie loopy_token (per refresh tras F5).
      */
     public function refresh(Request $request): JsonResponse
     {
-        // A. Refrescar token i gestionar errors
+        // A. Obtenir token: header Bearer o cookie (necesari quan el frontend fa refresh i perd el token en memòria)
+        $token = null;
+        $authHeader = $request->header('Authorization');
+        if (is_string($authHeader) && str_starts_with($authHeader, 'Bearer ')) {
+            $token = substr($authHeader, 7);
+        }
+        if ($token === null || $token === '') {
+            $cookieNom = (string) config('jwt.cookie', 'loopy_token');
+            $token = $request->cookie($cookieNom);
+        }
+        if ($token === null || $token === '') {
+            return response()->json(['message' => 'Token invàlid o expirat'], 401);
+        }
+
+        // B. Refrescar token i gestionar errors
         try {
-            $nouToken = JWTAuth::parseToken()->refresh();
+            $nouToken = JWTAuth::setToken($token)->refresh();
         } catch (JWTException $e) {
             return response()->json(['message' => 'Token invàlid o expirat'], 401);
         }

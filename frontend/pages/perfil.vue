@@ -1,7 +1,7 @@
 <template>
   <div class="w-full bg-gradient-to-b from-gray-50 to-gray-100">
     <div class="max-w-7xl mx-auto w-full">
-      <h1 class="text-2xl font-bold text-gray-800 mb-8 px-2">Perfil d'Usuari</h1>
+      <h1 class="text-2xl font-bold text-gray-800 mb-8 px-2">{{ $t('perfil.title') }}</h1>
 
       <!-- Bento Grid Container -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-6 w-full pb-10">
@@ -11,7 +11,7 @@
           
           <!-- DADES PERFIL -->
           <div class="bg-white rounded-2xl shadow-lg p-6 border-t-4 border-blue-500 w-full">
-            <h2 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-6">Dades del Perfil</h2>
+            <h2 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-6">{{ $t('perfil.data_title') }}</h2>
             
             <div v-if="loading" class="animate-pulse space-y-4">
               <div class="h-4 bg-gray-200 rounded w-3/4"></div>
@@ -31,18 +31,18 @@
 
               <div class="grid grid-cols-2 gap-4">
                 <div class="bg-blue-50 p-4 rounded-xl text-center">
-                  <p class="text-xs text-blue-600 font-bold uppercase">Nivell</p>
+                  <p class="text-xs text-blue-600 font-bold uppercase">{{ $t('home.level') }}</p>
                   <p class="text-2xl font-black text-blue-800">{{ user.nivell }}</p>
                 </div>
                 <div class="bg-purple-50 p-4 rounded-xl text-center">
-                  <p class="text-xs text-purple-600 font-bold uppercase">Monedes</p>
+                  <p class="text-xs text-purple-600 font-bold uppercase">{{ $t('home.coins') }}</p>
                   <p class="text-2xl font-black text-purple-800">{{ user.monedes }}</p>
                 </div>
               </div>
 
               <div class="space-y-2">
                 <div class="flex justify-between text-xs font-bold text-gray-600">
-                  <span>EXPERIÈNCIA DEL NIVELL</span>
+                  <span>{{ $t('perfil.experience') }}</span>
                   <span>{{ user.xp_total % 1000 }} / 1000 XP</span>
                 </div>
                 <div class="w-full h-3 bg-gray-100 rounded-full overflow-hidden border border-gray-200">
@@ -54,7 +54,7 @@
 
           <!-- LOGROS -->
           <div class="bg-white rounded-2xl shadow-lg p-6 min-h-[300px] w-full">
-            <h2 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-6">Logros i Medalles</h2>
+            <h2 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-6">{{ $t('perfil.achievements') }}</h2>
             
             <div v-if="loading" class="grid grid-cols-4 gap-4">
               <div v-for="i in 4" :key="i" class="w-12 h-12 bg-gray-100 rounded-full animate-pulse"></div>
@@ -63,7 +63,7 @@
             <div v-else-if="user && user.logros && user.logros.length > 0" class="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-4 xl:grid-cols-5 gap-4">
               <div v-for="logro in user.logros" :key="logro.id" class="group relative flex flex-col items-center">
                 <div class="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-[10px] font-bold text-orange-600 shadow-sm group-hover:scale-110 transition-transform cursor-pointer border border-orange-200">
-                  LOGRO
+                  {{ $t('home.special').toUpperCase() }}
                 </div>
                 <!-- Tooltip simple -->
                 <div class="absolute bottom-full mb-2 hidden group-hover:block bg-gray-800 text-white text-[10px] py-1 px-2 rounded whitespace-nowrap z-20">
@@ -73,14 +73,14 @@
             </div>
 
             <div v-else class="flex flex-col items-center justify-center h-48 text-gray-400">
-              <div class="text-xs font-bold uppercase mb-2 border border-gray-200 px-3 py-1 rounded">Bloquejat</div>
-              <p class="text-sm">Encara no has obtingut cap logro</p>
+              <div class="text-xs font-bold uppercase mb-2 border border-gray-200 px-3 py-1 rounded">{{ $t('perfil.blocked') }}</div>
+              <p class="text-sm">{{ $t('perfil.no_achievements') }}</p>
             </div>
           </div>
 
           <!-- HISTORIAL DIARI -->
           <div class="bg-white rounded-2xl shadow-lg p-6 w-full">
-            <h2 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-6">Historial Diari</h2>
+            <h2 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-6">{{ $t('perfil.history') }}</h2>
 
             <div v-if="loadingLogs" class="space-y-3">
               <div class="h-4 bg-gray-200 rounded w-full animate-pulse"></div>
@@ -93,7 +93,7 @@
             </div>
 
             <div v-else-if="logs.length === 0" class="text-sm text-gray-400">
-              Encara no hi ha registres diaris.
+              {{ $t('perfil.no_history') }}
             </div>
 
             <div v-else class="space-y-3">
@@ -108,15 +108,15 @@
                     class="text-[10px] font-bold px-2 py-1 rounded-full"
                     :class="log.completado ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'"
                   >
-                    {{ log.completado ? 'Completat' : 'Incomplet' }}
+                    {{ log.completado ? $t('perfil.completat') : $t('perfil.incomplet') }}
                   </span>
                 </div>
                 <div class="text-sm font-semibold text-gray-800">{{ log.titol }}</div>
                 <div class="text-xs text-gray-500">
-                  {{ log.progreso_diario }}/{{ log.objectiu_vegades }} {{ log.unitat || 'vegades' }}
+                  {{ log.progreso_diario }}/{{ log.objectiu_vegades }} {{ log.unitat || $t('habits.placeholder_unit').split(',')[0].trim() }}
                 </div>
                 <div class="text-xs text-gray-500">
-                  XP: {{ log.xp_ganada }} · Monedes: {{ log.monedes_ganadas }}
+                  XP: {{ log.xp_ganada }} · {{ $t('home.coins') }}: {{ log.monedes_ganadas }}
                 </div>
               </div>
             </div>
@@ -128,15 +128,15 @@
           <div class="bg-white rounded-2xl shadow-lg p-8 h-full flex flex-col w-full">
             <div class="flex justify-between items-start mb-8">
               <div>
-                <h2 class="text-lg font-bold text-gray-800 uppercase tracking-tight">La teva Mascota</h2>
-                <p class="text-sm text-gray-500">Estat actual: Feliç</p>
+                <h2 class="text-lg font-bold text-gray-800 uppercase tracking-tight">{{ $t('perfil.pet_title') }}</h2>
+                <p class="text-sm text-gray-500">{{ $t('perfil.happy') }}</p>
               </div>
               <div class="text-right flex-shrink-0 flex flex-col items-end gap-2">
                 <div class="inline-flex items-center gap-2 bg-orange-100 px-4 py-2 rounded-full border border-orange-200 shadow-sm">
-                  <span class="text-orange-600 font-bold text-sm tracking-wide">RATXA: {{ user ? user.ratxa_actual : 0 }}</span>
+                  <span class="text-orange-600 font-bold text-sm tracking-wide">{{ $t('home.streak').toUpperCase() }}: {{ user ? user.ratxa_actual : 0 }}</span>
                 </div>
                 <div class="inline-flex items-center gap-2 bg-yellow-100 px-3 py-1 rounded-full border border-yellow-200 shadow-sm">
-                  <span class="text-yellow-700 font-bold text-xs tracking-wide" title="Rècord Personal">Ratxa Màxima: {{ user ? user.ratxa_maxima : 0 }}</span>
+                  <span class="text-yellow-700 font-bold text-xs tracking-wide" :title="$t('perfil.personal_record')">{{ $t('home.max_streak') }}: {{ user ? user.ratxa_maxima : 0 }}</span>
                 </div>
               </div>
             </div>
@@ -151,7 +151,7 @@
             </div>
 
             <div class="mt-8 text-center">
-              <p class="text-gray-600 italic text-sm">"¡Ho estàs fent genial! Continua així per cuidar el teu company."</p>
+              <p class="text-gray-600 italic text-sm">{{ $t('perfil.pet_subtitle') }}</p>
             </div>
           </div>
         </div>
@@ -169,6 +169,7 @@ import { useAuthStore } from "~/stores/useAuthStore";
 
 // Estat reactiu amb variables VAR (ES5 segons AgentNuxt.md)
 var config = useRuntimeConfig();
+var { t } = useI18n();
 var authStore = useAuthStore();
 var user = ref(null);
 var loading = ref(true);
@@ -222,7 +223,7 @@ function carregarPerfil() {
         return;
       }
       console.error("Error al carregar perfil:", err);
-      error.value = "Error al carregar la informació del perfil.";
+      error.value = t('perfil.error_profile');
       loading.value = false;
     });
 }
@@ -256,7 +257,7 @@ function carregarLogs() {
         return;
       }
       console.error("Error al carregar logs:", err);
-      errorLogs.value = "Error al carregar l'historial diari.";
+      errorLogs.value = t('perfil.error_history');
       loadingLogs.value = false;
     });
 }

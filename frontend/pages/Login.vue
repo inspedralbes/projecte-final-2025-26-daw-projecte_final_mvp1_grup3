@@ -88,13 +88,13 @@
             <div
               class="col-span-1 bg-white rounded-xl p-4 shadow-sm flex flex-col items-center"
             >
-              <div class="text-sm font-medium mt-3">El teu Company</div>
-              <div class="text-xs text-gray-400">Nivell 5 · Guardià</div>
+              <div class="text-sm font-medium mt-3">{{ $t('preview.your_companion') }}</div>
+              <div class="text-xs text-gray-400">{{ $t('preview.level_guardian') }}</div>
             </div>
             <div
               class="col-span-1 bg-white rounded-xl p-3 shadow-sm flex flex-col justify-between"
             >
-              <div class="text-xs text-gray-400">Progrés Diari</div>
+              <div class="text-xs text-gray-400">{{ $t('preview.daily_progress') }}</div>
               <div
                 class="w-full bg-gray-100 rounded-full h-3 mt-3 overflow-hidden"
               >
@@ -116,7 +116,7 @@
               <div>
                 <div class="text-lg font-semibold uppercase">ElTeuMonstre</div>
                 <div class="text-sm text-gray-400">
-                  Nivell 5 · Guardià dels Boscos
+                  {{ $t('preview.level_guardian') }}s
                 </div>
               </div>
               <div class="ml-auto text-sm text-gray-500">⭐ 42</div>
@@ -128,8 +128,8 @@
               class="col-span-1 bg-blue-50 rounded-xl p-6 shadow-sm flex items-center justify-center"
             >
               <div class="text-center">
-                <div class="text-sm text-gray-500">Beure Aigua</div>
-                <div class="text-xs text-gray-400">2 / 4 · Salut</div>
+                <div class="text-sm text-gray-500">{{ $t('preview.water_habit') }}</div>
+                <div class="text-xs text-gray-400">2 / 4 · {{ $t('preview.health_category') }}</div>
               </div>
             </div>
             <div class="col-span-1"></div>
@@ -137,8 +137,8 @@
               class="col-span-1 bg-yellow-50 rounded-xl p-6 shadow-sm flex items-center justify-center"
             >
               <div class="text-center">
-                <div class="text-sm text-gray-700">Diari</div>
-                <div class="text-xs text-gray-400">Completat · Creativitat</div>
+                <div class="text-sm text-gray-700">{{ $t('preview.diary_habit') }}</div>
+                <div class="text-xs text-gray-400">{{ $t('preview.completed_creativity') }}</div>
               </div>
             </div>
           </div>
@@ -173,7 +173,7 @@ export default {
       var contrasenya = self.formulari.contrasenya || "";
 
       if (!email || !contrasenya) {
-        self.errorMissatge = "Introduïu email i contrasenya.";
+        self.errorMissatge = this.$t('error_missing_fields');
         return;
       }
 
@@ -194,7 +194,7 @@ export default {
             if (nuxtApp.$updateSocketAuth) nuxtApp.$updateSocketAuth();
             await navigateTo("/admin");
           } catch (errAdmin) {
-            self.errorMissatge = errAdmin.message || "Credencials incorrectes";
+            self.errorMissatge = errAdmin.message || this.$t('error_credentials');
           }
         }
       } finally {

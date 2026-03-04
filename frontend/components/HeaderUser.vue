@@ -9,28 +9,29 @@
 
       <ul class="flex-1 flex items-center justify-center space-x-6 list-none m-0 p-0">
         <li>
-          <NuxtLink to="/home" class="nav-link">Home</NuxtLink> 
+          <NuxtLink to="/home" class="nav-link">{{ $t('nav.home') }}</NuxtLink> 
         </li>
         <li>
-          <NuxtLink to="/habits" class="nav-link">Crear</NuxtLink>
+          <NuxtLink to="/habits" class="nav-link">{{ $t('nav.create') }}</NuxtLink>
         </li>
         <li>
-          <NuxtLink to="/plantilles" class="nav-link">Catàleg</NuxtLink>
+          <NuxtLink to="/plantilles" class="nav-link">{{ $t('nav.catalog') }}</NuxtLink>
         </li>
         <li>
-          <a href="javascript:void(0)" class="nav-link opacity-50 cursor-not-allowed" title="Pròximament">Fòrum</a>
+          <a href="javascript:void(0)" class="nav-link opacity-50 cursor-not-allowed" :title="$t('nav.soon')">{{ $t('nav.forum') }}</a>
         </li>
         <li>
-          <NuxtLink to="/perfil" class="nav-link">Perfil</NuxtLink>
+          <NuxtLink to="/perfil" class="nav-link">{{ $t('nav.profile') }}</NuxtLink>
         </li>
       </ul>
-
+      <LanguageSwitcher />
     </nav>
   </header>
 </template>
 
 <script setup>
 import logo from '~/assets/img/LogoLoopy.png'
+import LanguageSwitcher from './LanguageSwitcher.vue'
 </script>
 
 <style scoped>

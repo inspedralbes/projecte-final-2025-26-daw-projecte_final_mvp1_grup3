@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-gray-50 p-6">
     <div class="max-w-7xl mx-auto">
-      <h1 class="text-3xl font-bold text-gray-800 mb-8">Crear Hàbit</h1>
+      <h1 class="text-3xl font-bold text-gray-800 mb-8">{{ $t('habits.title') }}</h1>
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Esquerra: Seccions del formulari -->
@@ -12,10 +12,10 @@
           >
             <div class="flex items-center gap-3 mb-4">
               <div class="bg-green-100 p-2 rounded-lg">
-                <span class="text-xl">Detalls</span>
+                <span class="text-xl">{{ $t('habits.details') }}</span>
               </div>
               <h2 class="text-lg font-bold text-gray-800">
-                Detalls de l'Hàbit
+                {{ $t('habits.details') }}
               </h2>
             </div>
 
@@ -23,12 +23,12 @@
               <div>
                 <label
                   class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
-                  >Nom de l'hàbit</label
+                  >{{ $t('habits.habit_name') }}</label
                 >
                 <input
                   v-model="formulari.nom"
                   type="text"
-                  placeholder="Ex: Beure 2L d'aigua, Llegir 30 min..."
+                  :placeholder="$t('habits.placeholder_name')"
                   class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white transition-all"
                 />
               </div>
@@ -36,11 +36,11 @@
               <div>
                 <label
                   class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
-                  >Motivació (Opcional)</label
+                  >{{ $t('habits.motivation') }}</label
                 >
                 <textarea
                   v-model="formulari.motivacio"
-                  placeholder="Per què vols començar aquest hàbit?"
+                  :placeholder="$t('habits.motivation_placeholder')"
                   class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white transition-all resize-none h-24"
                 ></textarea>
               </div>
@@ -49,7 +49,7 @@
                 <div>
                   <label
                     class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
-                    >Objectiu diari</label
+                    >{{ $t('habits.daily_goal') }}</label
                   >
                   <input
                     v-model.number="formulari.objectiuVegades"
@@ -61,12 +61,12 @@
                 <div>
                   <label
                     class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
-                    >Unitat</label
+                    >{{ $t('habits.unit') }}</label
                   >
                   <input
                     v-model="formulari.unitat"
                     type="text"
-                    placeholder="vegades, minuts, km..."
+                    :placeholder="$t('habits.placeholder_unit')"
                     class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white transition-all"
                   />
                 </div>
@@ -75,15 +75,15 @@
               <div>
                 <label
                   class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
-                  >Dificultat</label
+                  >{{ $t('habits.difficulty') }}</label
                 >
                 <select
                   v-model="formulari.dificultat"
                   class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white transition-all"
                 >
-                  <option value="facil">Fàcil</option>
-                  <option value="media">Mitja</option>
-                  <option value="dificil">Difícil</option>
+                  <option value="facil">{{ $t('habits.facil') }}</option>
+                  <option value="media">{{ $t('habits.media') }}</option>
+                  <option value="dificil">{{ $t('habits.dificil') }}</option>
                 </select>
               </div>
 
@@ -97,9 +97,9 @@
           >
             <div class="flex items-center gap-3 mb-4">
               <div class="bg-orange-100 p-2 rounded-lg">
-                <span class="text-xl">Categoria</span>
+                <span class="text-xl">{{ $t('habits.category') }}</span>
               </div>
-              <h2 class="text-lg font-bold text-gray-800">Categoria</h2>
+              <h2 class="text-lg font-bold text-gray-800">{{ $t('habits.category') }}</h2>
             </div>
 
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -117,7 +117,7 @@
               >
                 <span class="text-2xl">{{ cat.icona }}</span>
                 <span class="text-sm font-medium text-gray-700">{{
-                  cat.nom
+                  $t('habits.categories.' + cat.key)
                 }}</span>
               </button>
             </div>
@@ -130,16 +130,16 @@
             >
               <div class="flex items-center gap-3 mb-4">
                 <div class="bg-blue-100 p-2 rounded-lg">
-                  <span class="text-xl">Planificació</span>
+                  <span class="text-xl">{{ $t('habits.planning') }}</span>
                 </div>
-                <h2 class="text-lg font-bold text-gray-800">Planificació</h2>
+                <h2 class="text-lg font-bold text-gray-800">{{ $t('habits.planning') }}</h2>
               </div>
 
               <div class="space-y-4">
                 <div>
                   <label
                     class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
-                    >Freqüència</label
+                    >{{ $t('habits.frequency') }}</label
                   >
                   <div class="flex bg-gray-100 rounded-lg p-1">
                     <button
@@ -154,7 +154,7 @@
                           : 'text-gray-500 hover:text-gray-700',
                       ]"
                     >
-                      {{ freq }}
+                      {{ $t('habits.frequencies.' + freq.toLowerCase()) }}
                     </button>
                   </div>
                 </div>
@@ -162,7 +162,7 @@
                 <div>
                   <label
                     class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
-                    >Dies Objectiu</label
+                    >{{ $t('habits.target_days') }}</label
                   >
                   <div class="flex justify-between">
                     <button
@@ -177,7 +177,7 @@
                           : 'bg-gray-200 text-gray-600 hover:bg-gray-300',
                       ]"
                     >
-                      {{ dia }}
+                      {{ $t('habits.days.' + dia.toLowerCase()) }}
                     </button>
                   </div>
                 </div>
@@ -185,7 +185,7 @@
                 <div>
                   <label
                     class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
-                    >Recordatori</label
+                    >{{ $t('habits.reminder') }}</label
                   >
                   <input
                     v-model="formulari.recordatori"
@@ -202,13 +202,13 @@
             >
               <div class="flex items-center gap-3 mb-4">
                 <div class="bg-purple-100 p-2 rounded-lg">
-                  <span class="text-xl">Estil</span>
+                  <span class="text-xl">{{ $t('habits.style') }}</span>
                 </div>
-                <h2 class="text-lg font-bold text-gray-800">Personalitzar</h2>
+                <h2 class="text-lg font-bold text-gray-800">{{ $t('habits.customize') }}</h2>
               </div>
 
               <p class="text-sm text-gray-500 mb-4">
-                Tria l'estil visual del teu hàbit.
+                {{ $t('habits.style_description') }}
               </p>
 
               <div class="flex gap-3 mb-6">
@@ -254,7 +254,7 @@
               class="bg-white text-green-700 rounded-full w-5 h-5 flex items-center justify-center text-xs"
               >V</span
             >
-            Crear Hàbit
+            {{ $t('habits.create_button') }}
           </button>
         </div>
 
@@ -264,16 +264,16 @@
             class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 h-full"
           >
             <div class="flex items-center gap-3 mb-6">
-              <span class="text-xl text-gray-400">Hàbits</span>
-              <h2 class="text-lg font-bold text-gray-800">Els Meus Hàbits</h2>
+              <span class="text-xl text-gray-400">{{ $t('home.habits_title') }}</span>
+              <h2 class="text-lg font-bold text-gray-800">{{ $t('habits.my_habits') }}</h2>
             </div>
 
             <div
               v-if="habitStore.habits.length === 0"
               class="text-center py-10 text-gray-400"
             >
-              <p>Encara no tens hàbits.</p>
-              <p class="text-sm">Afegeix-ne un de nou!</p>
+              <p>{{ $t('habits.no_habits_yet') }}</p>
+              <p class="text-sm">{{ $t('habits.add_new') }}</p>
             </div>
 
             <div v-else class="space-y-4">
@@ -304,7 +304,7 @@
                   class="text-xs text-red-600 hover:text-red-700 font-semibold px-2 py-1 rounded border border-red-200 hover:border-red-300 transition-colors"
                   @click.stop="eliminarHabit(hàbit.id)"
                 >
-                  Borrar
+                  {{ $t('habits.delete') }}
                 </button>
               </div>
             </div>
@@ -313,7 +313,7 @@
               <button
                 class="text-sm text-gray-400 hover:text-green-600 transition-colors border-dashed border border-gray-300 rounded-full px-4 py-2 w-full"
               >
-                + Hàbit ràpid
+                {{ $t('habits.quick_habit') }}
               </button>
             </div>
           </div>
@@ -344,7 +344,7 @@
             >
               {{ formulariEdicio.icona }}
             </div>
-            <h2 class="text-xl font-bold text-gray-800">Editar Hàbit</h2>
+            <h2 class="text-xl font-bold text-gray-800">{{ $t('habits.edit_title') }}</h2>
           </div>
           <button
             @click="tancarModalEdicio"
@@ -359,7 +359,7 @@
           <div>
             <label
               class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
-              >Nom de l'hàbit</label
+              >{{ $t('habits.habit_name') }}</label
             >
             <input
               v-model="formulariEdicio.nom"
@@ -372,7 +372,7 @@
             <div>
               <label
                 class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
-                >Objectiu diari</label
+                >{{ $t('habits.daily_goal') }}</label
               >
               <input
                 v-model.number="formulariEdicio.objectiuVegades"
@@ -384,7 +384,7 @@
             <div>
               <label
                 class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
-                >Unitat</label
+                >{{ $t('habits.unit') }}</label
               >
               <input
                 v-model="formulariEdicio.unitat"
@@ -398,15 +398,15 @@
           <div>
             <label
               class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
-              >Dificultat</label
+              >{{ $t('habits.difficulty') }}</label
             >
             <select
               v-model="formulariEdicio.dificultat"
               class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm"
             >
-              <option value="facil">Fàcil</option>
-              <option value="media">Mitja</option>
-              <option value="dificil">Difícil</option>
+              <option value="facil">{{ $t('habits.facil') }}</option>
+              <option value="media">{{ $t('habits.media') }}</option>
+              <option value="dificil">{{ $t('habits.dificil') }}</option>
             </select>
           </div>
 
@@ -416,7 +416,7 @@
           <div>
             <label
               class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
-              >Categoria</label
+              >{{ $t('habits.category') }}</label
             >
             <div class="grid grid-cols-2 gap-3">
               <button
@@ -431,7 +431,7 @@
                 class="p-3 rounded-xl flex items-center gap-3 transition-all"
               >
                 <span>{{ cat.icona }}</span>
-                <span class="text-sm font-medium">{{ cat.nom }}</span>
+                <span class="text-sm font-medium">{{ $t('habits.categories.' + cat.key) }}</span>
               </button>
             </div>
           </div>
@@ -441,21 +441,21 @@
             <div>
               <label
                 class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
-                >Freqüència</label
+                >{{ $t('habits.frequency') }}</label
               >
               <select
                 v-model="formulariEdicio.frequencia"
                 class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm"
               >
-                <option v-for="freq in frequencies" :key="freq">
-                  {{ freq }}
+                <option v-for="freq in frequencies" :key="freq" :value="freq">
+                  {{ $t('habits.frequencies.' + freq.toLowerCase()) }}
                 </option>
               </select>
             </div>
             <div>
               <label
                 class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
-                >Recordatori</label
+                >{{ $t('habits.reminder') }}</label
               >
               <input
                 v-model="formulariEdicio.recordatori"
@@ -468,7 +468,7 @@
           <div>
             <label
               class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
-              >Dies Objectiu</label
+              >{{ $t('habits.target_days') }}</label
             >
             <div class="flex justify-between">
               <button
@@ -482,7 +482,7 @@
                 "
                 class="w-8 h-8 rounded-full text-xs font-bold flex items-center justify-center transition-colors"
               >
-                {{ dia }}
+                {{ $t('habits.days.' + dia.toLowerCase()) }}
               </button>
             </div>
           </div>
@@ -491,7 +491,7 @@
           <div>
             <label
               class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
-              >Color</label
+              >{{ $t('habits.color') }}</label
             >
             <div class="flex gap-3">
               <button
@@ -515,13 +515,13 @@
             @click="tancarModalEdicio"
             class="flex-1 px-4 py-3 bg-white border border-gray-200 text-gray-600 font-bold rounded-xl hover:bg-gray-100 transition-colors"
           >
-            Cancel·lar
+            {{ $t('habits.cancel') }}
           </button>
           <button
             @click="actualitzarHabit"
             class="flex-1 px-4 py-3 bg-green-700 text-white font-bold rounded-xl hover:bg-green-800 shadow-lg shadow-green-700/20 transition-all"
           >
-            Guardar Canvis
+            {{ $t('habits.save_changes') }}
           </button>
         </div>
       </div>
@@ -574,14 +574,14 @@ export default {
         dificultat: "facil",
       },
       categories: [
-        { id: 1, nom: "Activitat física", icona: "🏃" },
-        { id: 2, nom: "Alimentació", icona: "🥗" },
-        { id: 3, nom: "Estudi", icona: "📚" },
-        { id: 4, nom: "Lectura", icona: "📖" },
-        { id: 5, nom: "Benestar", icona: "🧘" },
-        { id: 6, nom: "Millora d'hàbits", icona: "✨" },
-        { id: 7, nom: "Llar", icona: "🏠" },
-        { id: 8, nom: "Hobby", icona: "🎨" },
+        { id: 1, key: "physical", icona: "🏃" },
+        { id: 2, key: "food", icona: "🥗" },
+        { id: 3, key: "study", icona: "📚" },
+        { id: 4, key: "reading", icona: "📖" },
+        { id: 5, key: "wellness", icona: "🧘" },
+        { id: 6, key: "improvement", icona: "✨" },
+        { id: 7, key: "home", icona: "🏠" },
+        { id: 8, key: "hobby", icona: "🎨" },
       ],
       frequencies: ["Diari", "Setmanal", "Mensual"],
       diesSetmana: ["L", "M", "X", "J", "V", "S", "D"],

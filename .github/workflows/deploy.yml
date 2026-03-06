@@ -29,7 +29,7 @@ jobs:
           echo "${{ secrets.ENV_BACKEND }}" > backend-laravel/.env
 
           # 4. Reconstruir i aixecar contenidors (especificant el fitxer compose)
-          docker-compose -f docker/docker-compose.yml up -d --build
+          docker compose -f docker/docker-compose.yml up -d --build
 
           # 5. Esperar que la BD estigui llesta i executar manteniment
           sleep 10

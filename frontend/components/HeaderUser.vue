@@ -25,6 +25,12 @@
         </li>
       </ul>
       <LanguageSwitcher />
+      <button @click="handleLogout" class="logout-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+        </svg>
+      </button>
+      
     </nav>
   </header>
 </template>
@@ -32,6 +38,14 @@
 <script setup>
 import logo from '~/assets/img/LogoLoopy.png'
 import LanguageSwitcher from './LanguageSwitcher.vue'
+import { useAuthStore } from '~/stores/useAuthStore'
+
+const authStore = useAuthStore()
+
+const handleLogout = async () => {
+  await authStore.logout()
+  await navigateTo('/Login')
+}
 </script>
 
 <style scoped>
@@ -79,5 +93,24 @@ nav a {
 .app-name {
   font-size: 1.25rem;
   font-weight: 700;
+}
+
+.logout-btn {
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  margin-right: 1rem;
+  color: #4b5563; /* gray-600 */
+  cursor: pointer;
+  border-radius: 0.375rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.logout-btn:hover {
+  background-color: #f3f4f6; /* gray-100 */
+  color: #dc2626; /* red-600 */
 }
 </style>

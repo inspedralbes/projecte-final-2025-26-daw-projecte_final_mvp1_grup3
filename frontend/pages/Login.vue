@@ -23,7 +23,7 @@
             </p>
           </div>
 
-          <form class="mt-6 space-y-4" @submit.prevent>
+          <form class="mt-6 space-y-4" @submit.prevent="ferLogin">
             <div
               v-if="errorMissatge"
               class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded text-sm"
@@ -55,9 +55,8 @@
 
             <div class="pt-2">
               <button
-                type="button"
+                type="submit"
                 :disabled="estaCarregant"
-                @click="ferLogin"
                 class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 rounded-lg disabled:opacity-50"
               >
                 {{ $t('login') }}

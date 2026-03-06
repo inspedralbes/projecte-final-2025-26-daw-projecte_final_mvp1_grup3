@@ -17,6 +17,16 @@ use Illuminate\Http\Request;
  */
 class UserController extends Controller
 {
+    protected $logroService;
+
+    /**
+     * Constructor per injectar serveis.
+     */
+    public function __construct(\App\Services\LogroService $logroService)
+    {
+        $this->logroService = $logroService;
+    }
+
     //================================ MÈTODES / FUNCIONS ===========
 
     /**
@@ -24,24 +34,37 @@ class UserController extends Controller
      */
     public function profile(Request $request): JsonResponse
     {
+        // A. Recuperació de l'identificador d'usuari des del request
         $usuariId = $request->user_id;
+
         if (!$usuariId) {
             return response()->json(['message' => 'No autoritzat'], 401);
         }
 
-        // B. Cercar usuari i carregar relacions
+        // B. Comprovar i atorgar logros pendents (ex: Primer Encuentro)
+        $this->logroService->comprovarLogros($usuariId);
+
+        // C. Cercar usuari i carregar relacions de logros
         $usuari = User::with('logros')->find($usuariId);
 
         if (!$usuari) {
             return response()->json(['error' => 'Usuari no trobat'], 404);
         }
 
-        // C. Obtenir ratxa actual
+        // D. Obtenir dades de la ratxa actual
         $ratxa = Ratxa::where('usuari_id', $usuariId)->first();
-        $ratxaActual = $ratxa ? (int) $ratxa->ratxa_actual : 0;
-        $ratxaMaxima = $ratxa ? (int) $ratxa->ratxa_maxima : 0;
+        
+        $ratxaActual = 0;
+        if ($ratxa) {
+            $ratxaActual = (int) $ratxa->ratxa_actual;
+        }
 
-        // D. Retornar resposta JSON
+        $ratxaMaxima = 0;
+        if ($ratxa) {
+            $ratxaMaxima = (int) $ratxa->ratxa_maxima;
+        }
+
+        // E. Retornar resposta JSON amb el format requerit pel frontend
         return response()->json([
             'id' => $usuari->id,
             'nom' => $usuari->nom,

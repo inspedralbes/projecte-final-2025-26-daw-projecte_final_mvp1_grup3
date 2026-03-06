@@ -18,26 +18,24 @@ jobs:
         username: ${{ secrets.SERVER_USER }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
-          cd /var/www/loopy
+          # 1. Anar a la carpeta real del projecte
+          cd /root/projecte-final-2025-26-daw-projecte_final_mvp1_grup3
+
+          # 2. Actualitzar el codi
           git pull origin main
 
-          # Crear l'arxiu .env de l'arrel a partir de secrets
+          # 3. Crear els fitxers .env des dels secrets de GitHub
           echo "${{ secrets.ENV_ARREL }}" > .env
-
-          # Crear l'arxiu .env dins de backend-laravel a partir de secrets
           echo "${{ secrets.ENV_BACKEND }}" > backend-laravel/.env
 
-          # Reconstruir imatges i aixecar contenidors
-          docker-compose -f docker/docker-compose.yml build
-          docker-compose -f docker/docker-compose.yml up -d
+          # 4. Reconstruir i aixecar contenidors (especificant el fitxer compose)
+          docker-compose -f docker/docker-compose.yml up -d --build
 
-          # Esperar uns segons perquè la BD i els contenidors estiguin completament llestos abans de migrar
+          # 5. Esperar que la BD estigui llesta i executar manteniment
           sleep 10
-
-          # Executar migracions de Laravel al contenidor adient i caché
           docker exec loopy-laravel php artisan migrate --force
           docker exec loopy-laravel php artisan config:cache
           docker exec loopy-laravel php artisan route:cache
 
-          # Neteja d'imatges òrfenes per no omplir el disc del servidor
+          # 6. Neteja per no omplir el disc
           docker image prune -f

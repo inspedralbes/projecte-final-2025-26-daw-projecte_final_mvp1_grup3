@@ -31,6 +31,9 @@ jobs:
           docker-compose -f docker/docker-compose.yml build
           docker-compose -f docker/docker-compose.yml up -d
 
+          # Esperar uns segons perquè la BD i els contenidors estiguin completament llestos abans de migrar
+          sleep 10
+
           # Executar migracions de Laravel al contenidor adient i caché
           docker exec loopy-laravel php artisan migrate --force
           docker exec loopy-laravel php artisan config:cache

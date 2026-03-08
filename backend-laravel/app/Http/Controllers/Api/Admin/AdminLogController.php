@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Admin;
 //================================ NAMESPACES / IMPORTS ============
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Admin\AdminLogResource;
 use App\Models\AdminLog;
 use Illuminate\Http\JsonResponse;
 
@@ -63,30 +64,11 @@ class AdminLogController extends Controller
         $query->orderByDesc('created_at');
         $paginator = $query->paginate($perPage, ['*'], 'page', $page);
 
-        $data = [];
-        foreach ($paginator->getCollection() as $log) {
-            $createdAtStr = null;
-            if ($log->created_at !== null) {
-                $createdAtStr = $log->created_at->toIso8601String();
-            }
-            $adminNom = 'Admin';
-            if ($log->administrador !== null && $log->administrador->nom !== null) {
-                $adminNom = $log->administrador->nom;
-            }
-            $data[] = [
-                'id' => $log->id,
-                'created_at' => $createdAtStr,
-                'administrador_nom' => $adminNom,
-                'accio' => $log->accio,
-                'detall' => $log->detall,
-                'abans' => $log->abans,
-                'despres' => $log->despres,
-                'ip' => $log->ip,
-            ];
-        }
+        $data = AdminLogResource::collection($paginator->getCollection())->resolve(request());
+        $dataArray = $data['data'] ?? $data;
 
         return response()->json([
-            'data' => $data,
+            'data' => $dataArray,
             'meta' => [
                 'current_page' => $paginator->currentPage(),
                 'total' => $paginator->total(),

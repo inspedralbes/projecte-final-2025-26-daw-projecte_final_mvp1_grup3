@@ -4,10 +4,10 @@ namespace App\Console\Commands;
 
 //================================ NAMESPACES / IMPORTS ============
 
-use App\Services\AdminActionService;
-use App\Services\HabitService;
-use App\Services\PlantillaService;
-use App\Services\RouletteService;
+use App\Console\Commands\QueueHandlers\AdminQueueHandler;
+use App\Console\Commands\QueueHandlers\HabitQueueHandler;
+use App\Console\Commands\QueueHandlers\PlantillaQueueHandler;
+use App\Console\Commands\QueueHandlers\RouletteQueueHandler;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Redis;
 /**
  * Worker únic que processa totes les cues Redis.
  * Escolta habits_queue, plantilles_queue, admin_queue i roulette_queue
- * mitjançant BRPOP multillista i despatxa al servei corresponent.
+ * mitjançant BRPOP multillista i delega als QueueHandlers corresponents.
  */
 class UnifiedRedisWorker extends Command
 {
@@ -35,40 +35,7 @@ class UnifiedRedisWorker extends Command
      */
     private const TIMEOUT_BRPOP = 30;
 
-    /**
-     * @var HabitService
-     */
-    protected HabitService $habitService;
-
-    /**
-     * @var PlantillaService
-     */
-    protected PlantillaService $plantillaService;
-
-    /**
-     * @var AdminActionService
-     */
-    protected AdminActionService $adminActionService;
-
-    /**
-     * @var RouletteService
-     */
-    protected RouletteService $rouletteService;
-
     //================================ MÈTODES / FUNCIONS ===========
-
-    public function __construct(
-        HabitService $habitService,
-        PlantillaService $plantillaService,
-        AdminActionService $adminActionService,
-        RouletteService $rouletteService
-    ) {
-        parent::__construct();
-        $this->habitService = $habitService;
-        $this->plantillaService = $plantillaService;
-        $this->adminActionService = $adminActionService;
-        $this->rouletteService = $rouletteService;
-    }
 
     /**
      * Executa el comandament: bucle infinit amb BRPOP multillista.
@@ -125,21 +92,23 @@ class UnifiedRedisWorker extends Command
     }
 
     /**
-     * Despatxa el missatge al servei corresponent segons la cua.
+     * Despatxa el missatge al handler corresponent segons la cua.
      *
      * @param  string  $nomCua
      * @param  array<string, mixed>  $dades
      */
     private function despatxarSegonsCua(string $nomCua, array $dades): void
     {
-        if ($nomCua === 'habits_queue') {
-            $this->habitService->processarAccioHabit($dades);
-        } elseif ($nomCua === 'plantilles_queue') {
-            $this->plantillaService->processarAccioPlantilla($dades);
-        } elseif ($nomCua === 'admin_queue') {
-            $this->adminActionService->processarAccio($dades);
-        } elseif ($nomCua === 'roulette_queue') {
-            $this->rouletteService->processarTirada($dades);
+        $handler = match ($nomCua) {
+            'habits_queue' => app(HabitQueueHandler::class),
+            'plantilles_queue' => app(PlantillaQueueHandler::class),
+            'admin_queue' => app(AdminQueueHandler::class),
+            'roulette_queue' => app(RouletteQueueHandler::class),
+            default => null,
+        };
+
+        if ($handler !== null) {
+            $handler->handle($dades);
         } else {
             Log::warning('UnifiedRedisWorker: cua desconeguda', ['cua' => $nomCua]);
         }

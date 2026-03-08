@@ -322,6 +322,11 @@ export var useGameStore = defineStore("game", {
           return null;
         }
 
+        /* Laravel pot retornar les dades dins d'un wrapper "data" */
+        if (dades.data && typeof dades.data === "object") {
+          dades = dades.data;
+        }
+
         gs = dades.game_state || {};
         if (gs.xp_total !== undefined) self.xpTotal = gs.xp_total;
         if (gs.nivell !== undefined) self.nivell = gs.nivell;

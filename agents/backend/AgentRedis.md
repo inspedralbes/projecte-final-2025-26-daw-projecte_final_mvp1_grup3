@@ -6,11 +6,11 @@ Aquest document defineix el comportament i les normes de programació de l'agent
 L'agent és el garant del tancament del cicle de dades en l'arquitectura de microserveis, seguint aquests dos camins:
 
 - **Camí d'Anada (Node.js -> Laravel)**:
-    - Implementació de cues de treball utilitzant `LPUSH` (costat productor a Node.js) i `BRPOP` (costat consumidor bloquejant a Laravel).
-    - La clau de referència per a aquest flux és `habits_queue`.
+    - Implementació de cues de treball utilitzant `LPUSH` (costat productor a Node.js) i `BRPOP` multillista (costat consumidor bloquejant a Laravel).
+    - Cues: `habits_queue`, `plantilles_queue`, `admin_queue`, `roulette_queue`. Cada handler Node envia a la cua corresponent segons el domini.
 - **Camí de Tornada (Laravel -> Node.js)**:
     - Implementació de notificacions en temps real mitjançant el sistema **Pub/Sub**.
-    - La comunicació es realitza a través del canal `feedback_channel`.
+    - La comunicació es realitza a través del canal `feedback_channel`. Laravel publica; Node subscriu i delega en emitters (userFeedbackEmitter, adminFeedbackEmitter) per reemetre via Socket.io.
 
 ## 2. Restriccions Tècniques de Codi
 L'integritat del flux de dades depèn del compliment estricte de les següents normes:
@@ -57,11 +57,21 @@ Cada operació de Redis ha d'explicar-se detalladament dins de la funció mitjan
 ## 4. Responsabilitats Específiques
 
 - **Dins de Node.js**:
-    - Gestionar `src/queues/habitQueue.js` per a l'enviament de tasques.
-    - Gestionar `src/subscribers/feedbackSubscriber.js` per escoltar el feedback.
+    - Gestionar `src/queues/` (habitQueue, plantillaQueue, adminQueue, rouletteQueue) per a l'enviament de tasques.
+    - Gestionar `src/subscribers/feedbackSubscriber.js` per escoltar el feedback. El subscriber delega en `emitters/userFeedbackEmitter.js` i `emitters/adminFeedbackEmitter.js`.
 - **Dins de Laravel**:
-    - Gestionar `app/Console/Commands/RedisWorker.php` per al consum de la cua.
+    - Gestionar `app/Console/Commands/UnifiedRedisWorker.php` per al consum de les cues (BRPOP multillista).
+    - Gestionar `app/Console/Commands/QueueHandlers/` (HabitQueueHandler, PlantillaQueueHandler, AdminQueueHandler, RouletteQueueHandler). Cada handler crida el Service corresponent.
     - Gestionar `app/Services/RedisFeedbackService.php` per a la publicació al canal Pub/Sub.
+
+## 4bis. Esquema de Refactorització (Cues i Handlers)
+
+| Cola Redis        | Handler Node (envia LPUSH) | QueueHandler Laravel | Service            |
+|-------------------|----------------------------|----------------------|--------------------|
+| habits_queue      | habitHandlers.js           | HabitQueueHandler    | HabitService       |
+| plantilles_queue  | plantillaHandlers.js       | PlantillaQueueHandler| PlantillaService   |
+| admin_queue       | adminHandlers.js           | AdminQueueHandler    | AdminActionService |
+| roulette_queue    | rouletteHandlers.js        | RouletteQueueHandler | RouletteService    |
 
 ## 5. Exemple de Patró de Codi (Referència)
 

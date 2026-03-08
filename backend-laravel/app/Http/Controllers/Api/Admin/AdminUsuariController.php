@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Admin;
 //================================ NAMESPACES / IMPORTS ============
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Admin\AdminUsuariResource;
 use App\Models\Administrador;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -67,16 +68,19 @@ class AdminUsuariController extends Controller
 
         $paginator = $query->orderBy('id')->paginate($perPage, ['*'], 'page', $page);
 
+        $items = AdminUsuariResource::collection($paginator->items())->resolve(request());
+        $dataArray = $items['data'] ?? $items;
+
         return response()->json([
             'success' => true,
             'data' => [
-                'data' => $paginator->items(),
+                'data' => $dataArray,
                 'meta' => [
                     'current_page' => $paginator->currentPage(),
                     'total' => $paginator->total(),
                     'per_page' => $paginator->perPage(),
                 ],
-            ]
+            ],
         ]);
     }
 
@@ -129,6 +133,9 @@ class AdminUsuariController extends Controller
             $request->ip()
         );
 
-        return response()->json(['success' => true, 'data' => $usuari]);
+        return response()->json([
+            'success' => true,
+            'data' => (new AdminUsuariResource($usuari))->resolve(request()),
+        ]);
     }
 }

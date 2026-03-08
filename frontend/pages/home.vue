@@ -386,6 +386,9 @@
 <script>
 import { useGameStore } from "~/stores/gameStore.js";
 import { useLogroStore } from "~/stores/useLogroStore.js";
+import { useAuthStore } from "~/stores/useAuthStore.js";
+
+definePageMeta({ ssr: false });
 import HabitProgressModal from "~/components/home/HabitProgressModal.vue";
 import StreakBrokenModal from "~/components/home/StreakBrokenModal.vue";
 import bosqueImg from "~/assets/img/Bosque.png";
@@ -454,6 +457,10 @@ export default {
    * Propietats computades.
    */
   computed: {
+    user: function () {
+      var authStore = useAuthStore();
+      return authStore.user;
+    },
     gameStore: function () {
       return useGameStore();
     },
@@ -608,28 +615,32 @@ export default {
    */
   mounted: function () {
     var self = this;
-    
-    // A. Assignar usuari des de l'authStore
+    var authStore = useAuthStore();
+
+    // A. Carregar auth des de localStorage (assegura token disponible abans de la primera petició)
+    authStore.loadFromStorage();
+
+    // B. Assignar usuari des de l'authStore
     self.gameStore.sincronitzarUsuariId();
 
-    // B. Carregar dades inicials des del endpoint consolidat /api/user/home
+    // C. Carregar dades inicials des del endpoint consolidat /api/user/home
     self.estaCarregantHabits = true;
     self.gameStore.carregarDadesHome()
       .then(function (dades) {
         if (dades && Array.isArray(dades.logros)) {
           self.logroStore.setLogros(dades.logros);
         }
-        console.log("✅ Dades home carregades correctament");
       })
       .catch(function (error) {
         console.error("❌ Error carregant dades home:", error);
         self.errorMissatge = "Error al carregar la informació del servidor.";
+        return self.carregarDadesFallback();
       })
       .finally(function () {
         self.estaCarregantHabits = false;
       });
 
-    // C. Conectar Sockets
+    // D. Conectar Sockets
     self.inicialitzarSocket();
   },
 
@@ -641,6 +652,23 @@ export default {
   },
 
   methods: {
+    /**
+     * Fallback: carrega dades per endpoints separats quan /api/user/home falla o retorna buit.
+     */
+    carregarDadesFallback: function () {
+      var self = this;
+      var gameStore = self.gameStore;
+      var logroStore = self.logroStore;
+      return Promise.all([
+        gameStore.obtenirHabitos().catch(function () { return []; }),
+        gameStore.obtenirEstatJoc().catch(function () { return null; }),
+        gameStore.obtenirProgresHabits().catch(function () { return {}; }),
+        logroStore.carregarLogros().catch(function () { return []; })
+      ]).then(function () {
+        console.log("✅ Dades home carregades via fallback");
+      });
+    },
+
     /**
      * Retorna l'índex del dia actual (0 = Dilluns ... 6 = Diumenge).
      */

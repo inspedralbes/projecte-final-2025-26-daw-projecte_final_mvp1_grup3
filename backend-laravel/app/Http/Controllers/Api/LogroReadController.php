@@ -14,12 +14,22 @@ use Illuminate\Http\Request;
 
 /**
  * Controlador API per la llista de logros i medalles.
- * Utilitza el LogroService per obtenir les dades.
+ *
+ * Operacions:
+ *   - READ: index (tots els logros)
  */
-class LogroController extends Controller
+class LogroReadController extends Controller
 {
-    protected $logroService;
+    /**
+     * Servei de logros.
+     *
+     * @var LogroService
+     */
+    protected LogroService $logroService;
 
+    /**
+     * Constructor. Injecció del servei.
+     */
     public function __construct(LogroService $logroService)
     {
         $this->logroService = $logroService;
@@ -28,14 +38,7 @@ class LogroController extends Controller
     //================================ MÈTODES / FUNCIONS ===========
 
     /**
-     * Llista tots els logros i medalles disponibles.
-     *
-     * A. Crida al servei per obtenir la col·lecció de logros.
-     * B. Transforma la col·lecció utilitzant LogroResource.
-     * C. Retorna la resposta JSON.
-     *
-     * @param  Request  $request
-     * @return JsonResponse
+     * READ. Llista tots els logros i medalles disponibles.
      */
     public function index(Request $request): JsonResponse
     {
@@ -43,7 +46,9 @@ class LogroController extends Controller
         if (!$usuariId) {
             return response()->json(['message' => 'No autoritzat'], 401);
         }
+
         $logros = $this->logroService->llistarTotsElsLogros($usuariId);
+
         return LogroResource::collection($logros)->toResponse($request);
     }
 }

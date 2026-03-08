@@ -7,6 +7,8 @@ namespace App\Services;
 use App\Http\Resources\HabitResource;
 use App\Http\Resources\LogroResource;
 use App\Models\Habit;
+use App\Services\GamificationService;
+use App\Services\LogroService;
 use App\Models\RegistreActivitat;
 use App\Models\UsuariHabit;
 use Carbon\Carbon;

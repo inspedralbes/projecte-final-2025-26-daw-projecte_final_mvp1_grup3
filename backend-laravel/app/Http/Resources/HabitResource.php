@@ -47,7 +47,6 @@ class HabitResource extends JsonResource
             'dificultat' => $this->dificultat,
             'frequencia_tipus' => $this->frequencia_tipus,
             'dies_setmana' => $this->parseDiesSetmana($this->dies_setmana),
-            'dies_setmana' => $this->parseDiesSetmana($this->dies_setmana),
             'objectiu_vegades' => $this->objectiu_vegades,
             'unitat' => $this->unitat,
             'icona' => $this->icona,

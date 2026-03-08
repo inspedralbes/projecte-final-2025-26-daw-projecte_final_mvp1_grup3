@@ -55,7 +55,22 @@ L'agent ha de gestionar els següents esdeveniments per permetre la comunicació
 3. `new_ice_candidate`: Gestionar l'intercanvi de candidats de xarxa.
 
 ### Reemissió de Redis Bridge:
-Quan es rep un missatge des del canal `feedback_channel` de Redis, l'agent ha d'identificar el destinatari (usuari) i emetre la dada corresponent via socket per actualitzar la interfície de l'usuari en temps real.
+Quan es rep un missatge des del canal `feedback_channel` de Redis, el `feedbackSubscriber` delega en `userFeedbackEmitter` (si `payload.user_id`) o `adminFeedbackEmitter` (si `payload.admin_id`). Cada emitter emet a la sala corresponent: `io.to('user_' + userId)` o `io.to('admin_' + adminId)`.
+
+## 5bis. Esquema de Refactorització (Handlers per Rol i Salas)
+
+Cal respectar aquesta estructura de sockets:
+
+### Handlers separats per rol
+- **handlers/user/**: Subdivisió per domini (habitHandlers, plantillaHandlers, rouletteHandlers, userRegisterHandler).
+- **handlers/admin/**: adminHandlers, adminConnectedHandler.
+
+### Salas (rooms)
+- Usuaris: `socket.join("user_" + userId)` per enviar feedback només a l’usuari corresponent.
+- Admins: `socket.join("admin_" + adminId)` per enviar feedback només a l’admin corresponent.
+
+### socketHandler.js com a orquestador
+- No conté la lògica d’esdeveniments. Registra els handlers i cada handler rep `(io, socket)` per afegir els seus listeners.
 
 ## 6. Idioma i Nomenclatura
 - **Idioma**: Tot el codi (variables, funcions) i els comentaris han d'estar en **català**.

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Admin;
 //================================ NAMESPACES / IMPORTS ============
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Admin\AdminPerfilResource;
 use App\Models\Administrador;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -36,12 +37,7 @@ class AdminPerfilController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => [
-                'id' => $admin->id,
-                'nom' => $admin->nom,
-                'email' => $admin->email,
-                'created_at' => $admin->data_creacio?->toIso8601String(),
-            ]
+            'data' => (new AdminPerfilResource($admin))->resolve(request()),
         ]);
     }
 
@@ -74,11 +70,7 @@ class AdminPerfilController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => [
-                'id' => $admin->id,
-                'nom' => $admin->nom,
-                'email' => $admin->email,
-            ]
+            'data' => (new AdminPerfilResource($admin))->resolve(request()),
         ]);
     }
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Admin;
 //================================ NAMESPACES / IMPORTS ============
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Admin\AdminMissioResource;
 use App\Models\MissioDiaria;
 use Illuminate\Http\JsonResponse;
 
@@ -33,16 +34,19 @@ class AdminMissioController extends Controller
         $paginator = MissioDiaria::orderBy('id')
             ->paginate($perPage, ['*'], 'page', $page);
 
+        $items = AdminMissioResource::collection($paginator->items())->resolve(request());
+        $dataArray = $items['data'] ?? $items;
+
         return response()->json([
             'success' => true,
             'data' => [
-                'data' => $paginator->items(),
+                'data' => $dataArray,
                 'meta' => [
                     'current_page' => $paginator->currentPage(),
                     'total' => $paginator->total(),
                     'per_page' => $paginator->perPage(),
                 ],
-            ]
+            ],
         ]);
     }
 }

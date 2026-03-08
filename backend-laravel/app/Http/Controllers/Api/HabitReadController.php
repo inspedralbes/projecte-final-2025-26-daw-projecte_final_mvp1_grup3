@@ -5,24 +5,47 @@ namespace App\Http\Controllers\Api;
 //================================ NAMESPACES / IMPORTS ============
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\HabitProgressLogResource;
+use App\Http\Resources\HabitProgressTodayResource;
 use App\Http\Resources\HabitResource;
 use App\Models\Habit;
 use App\Models\UsuariHabit;
+use App\Services\HabitService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 //================================ PROPIETATS / ATRIBUTS ==========
 
 /**
- * Controlador API per la lectura d'hàbits.
- * Només mètodes GET (index, show). Creació i actualització via Redis.
+ * Controlador API per la lectura d'hàbits de l'usuari.
+ *
+ * Operacions:
+ *   - READ: index, show, indexAll, progress, logs (GET)
+ *   - CREATE/UPDATE/DELETE: via Socket.io → Redis → Worker (no en aquest controller)
+ *
+ * @see HabitQueueHandler Per operacions CUD
  */
-class HabitController extends Controller
+class HabitReadController extends Controller
 {
+    /**
+     * Servei d'hàbits.
+     *
+     * @var HabitService
+     */
+    protected HabitService $habitService;
+
     //================================ MÈTODES / FUNCIONS ===========
 
     /**
-     * Llista els hàbits de l'usuari autenticat.
+     * Constructor. Injecció del servei.
+     */
+    public function __construct(HabitService $habitService)
+    {
+        $this->habitService = $habitService;
+    }
+
+    /**
+     * READ. Llista els hàbits del dia de l'usuari autenticat.
      * Inclou hàbits propis i assignats via USUARIS_HABITS.
      */
     public function index(Request $request): JsonResponse
@@ -46,7 +69,7 @@ class HabitController extends Controller
     }
 
     /**
-     * Retorna un únic hàbit per ID.
+     * READ. Retorna un únic hàbit per ID.
      * Verifica que l'hàbit pertanyi a l'usuari (propietari o assignat).
      */
     public function show(Request $request, int $id): JsonResponse
@@ -76,7 +99,7 @@ class HabitController extends Controller
     }
 
     /**
-     * Llista tots els hàbits (sense filtrar per dies).
+     * READ. Llista tots els hàbits sense filtrar per dies.
      */
     public function indexAll(Request $request): JsonResponse
     {
@@ -91,5 +114,35 @@ class HabitController extends Controller
             ->get();
 
         return HabitResource::collection($habits)->toResponse($request);
+    }
+
+    /**
+     * READ. Retorna el progrés d'avui per a tots els hàbits de l'usuari.
+     */
+    public function progress(Request $request): JsonResponse
+    {
+        $usuariId = $request->user_id;
+        if (!$usuariId) {
+            return response()->json(['message' => 'No autoritzat'], 401);
+        }
+
+        $resultat = $this->habitService->obtenirProgresAvui($usuariId);
+
+        return (new HabitProgressTodayResource($resultat))->toResponse($request);
+    }
+
+    /**
+     * READ. Retorna logs diaris agregats per hàbit.
+     */
+    public function logs(Request $request): JsonResponse
+    {
+        $usuariId = $request->user_id;
+        if (!$usuariId) {
+            return response()->json(['message' => 'No autoritzat'], 401);
+        }
+
+        $resultat = $this->habitService->obtenirLogsHistorics($usuariId);
+
+        return (new HabitProgressLogResource($resultat))->toResponse($request);
     }
 }

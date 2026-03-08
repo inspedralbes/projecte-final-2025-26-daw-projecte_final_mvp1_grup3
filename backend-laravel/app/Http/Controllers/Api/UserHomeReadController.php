@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 //================================ NAMESPACES / IMPORTS ============
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\UserHomeResource;
 use App\Services\HomeDataService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -13,14 +14,16 @@ use Illuminate\Http\Request;
 
 /**
  * Controlador API per la pantalla home de l'usuari.
- * Retorna totes les dades consolidades (game_state, habits, progress, logros).
+ *
+ * Operacions:
+ *   - READ: index (dades consolidades: game_state, habits, progress, logros)
  */
-class UserHomeController extends Controller
+class UserHomeReadController extends Controller
 {
     //================================ MÈTODES / FUNCIONS ===========
 
     /**
-     * Retorna les dades consolidades per a la home.
+     * READ. Retorna les dades consolidades per a la home.
      */
     public function index(Request $request): JsonResponse
     {
@@ -32,9 +35,6 @@ class UserHomeController extends Controller
         $homeDataService = app(HomeDataService::class);
         $dades = $homeDataService->obtenirDadesHome($usuariId, $request);
 
-        return response()->json($dades, 200, [
-            'Content-Type' => 'application/json',
-            'Cache-Control' => 'no-cache',
-        ]);
+        return (new UserHomeResource($dades))->toResponse($request)->header('Cache-Control', 'no-cache');
     }
 }

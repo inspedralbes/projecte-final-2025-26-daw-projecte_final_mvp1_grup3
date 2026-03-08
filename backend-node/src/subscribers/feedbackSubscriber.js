@@ -1,43 +1,39 @@
-'use strict';
+"use strict";
 
 //==============================================================================
 //================================ IMPORTS =====================================
 //==============================================================================
 
-/**
- * Subscriptor de Redis per rebre el feedback de Laravel.
- */
-var redis = require('redis');
+var redis = require("redis");
+var userFeedbackEmitter = require("./emitters/userFeedbackEmitter");
+var adminFeedbackEmitter = require("./emitters/adminFeedbackEmitter");
 
 //==============================================================================
 //================================ VARIABLES ===================================
 //==============================================================================
 
 var subscriber = null;
-var feedbackChannel = 'feedback_channel';
+var feedbackChannel = "feedback_channel";
 
 //==============================================================================
 //================================ FUNCIONS ====================================
 //==============================================================================
 
 /**
- * Inicialitza la subscripció i connecta amb Socket.io.
- */
-/**
  * Inicialitza la subscripció de Redis i reemet per Socket.io.
- * Pas A: Crear client Redis i connectar.
- * Pas B: Subscriure el canal de feedback.
- * Pas C: Emitir events segons el payload.
+ * Delega a userFeedbackEmitter o adminFeedbackEmitter segons payload.
+ *
+ * @param {object} io - Instància Socket.io
  */
 async function init(io) {
   if (subscriber) {
     return;
   }
 
-  var host = process.env.REDIS_HOST || '127.0.0.1';
-  var port = parseInt(process.env.REDIS_PORT || '6379', 10);
+  var host = process.env.REDIS_HOST || "127.0.0.1";
+  var port = parseInt(process.env.REDIS_PORT || "6379", 10);
 
-  console.log('feedbackSubscriber: Attempting to connect to Redis at host:', host, 'port:', port); // Debug log
+  console.log("feedbackSubscriber: Attempting to connect to Redis at host:", host, "port:", port);
 
   subscriber = redis.createClient({
     socket: {
@@ -46,8 +42,8 @@ async function init(io) {
     }
   });
 
-  subscriber.on('error', function (err) {
-    console.error('Error Redis Subscriber:', err);
+  subscriber.on("error", function (err) {
+    console.error("Error Redis Subscriber:", err);
   });
 
   await subscriber.connect();
@@ -58,66 +54,12 @@ async function init(io) {
       payload = JSON.parse(message);
 
       if (payload.admin_id !== undefined) {
-        var adminId = payload.admin_id;
-        io.to('admin_' + adminId).emit('admin_action_confirmed', {
-          admin_id: adminId,
-          entity: payload.entity,
-          action: payload.action,
-          success: payload.success,
-          data: payload.data
-        });
-        console.log('Admin feedback enviat a admin_' + adminId);
-      } else {
-        var userId = payload.user_id;
-        var type = payload.type; // Get type from payload
-        var action = payload.action;
-
-        // 0. Event específic: ratxa trencada
-        if (payload.event === 'streak_broken') {
-          io.to('user_' + userId).emit('streak_broken', payload);
-          console.log('Streak broken enviat a la sala user_' + userId);
-          return;
-        }
-
-        // 1. Enviem l'actualització d'XP si Laravel la inclou
-        if (payload.xp_update) {
-          io.to('user_' + userId).emit('update_xp', payload.xp_update);
-        }
-
-        // 1a. Si hi ha level_up, emetre event
-        if (payload.level_up) {
-          io.to('user_' + userId).emit('level_up', payload.level_up);
-        }
-
-        // 1b. Si s'ha completat una missió diària, emetre mission_completed
-        if (payload.mission_completed) {
-          io.to('user_' + userId).emit('mission_completed', payload.mission_completed);
-        }
-
-        // 1c. Resultat de ruleta
-        if (payload.roulette_result) {
-          io.to('user_' + userId).emit('roulette_result', payload.roulette_result);
-        }
-
-        // 2. Confirmem l'acció del CRUD al front per tancar el cicle
-        // Fem servir "to('user_' + userId)" per a que només li arribi a qui toca
-        if (payload.action === 'PARTIAL_XP') {
-          return;
-        }
-        if (type !== 'ROULETTE') {
-          var eventName;
-          if (type === 'PLANTILLA') {
-            eventName = 'plantilla_action_confirmed';
-          } else {
-            eventName = 'habit_action_confirmed';
-          }
-          io.to('user_' + userId).emit(eventName, payload);
-        }
-
-        console.log('Feedback enviat a la sala user_' + userId + ' per l acció ' + action);
+        adminFeedbackEmitter.emit(io, payload);
+      } else if (payload.user_id !== undefined) {
+        userFeedbackEmitter.emit(io, payload);
       }
     } catch (e) {
-      console.error('Error parsejant feedback de Redis:', e);
+      console.error("Error parsejant feedback de Redis:", e);
     }
   });
 }

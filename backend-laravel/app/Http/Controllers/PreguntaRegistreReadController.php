@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 //================================ NAMESPACES / IMPORTS ============
 
+use App\Http\Resources\PreguntaRegistreResource;
 use App\Services\PreguntaRegistreService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -12,9 +13,11 @@ use Illuminate\Http\Request;
 
 /**
  * Controlador API per les preguntes de registre.
- * Retorna les preguntes segons la categoria seleccionada.
+ *
+ * Operacions:
+ *   - READ: index (preguntes per categoria_id)
  */
-class PreguntaRegistreController extends Controller
+class PreguntaRegistreReadController extends Controller
 {
     /**
      * Servei de preguntes de registre.
@@ -34,19 +37,10 @@ class PreguntaRegistreController extends Controller
     }
 
     /**
-     * Obté totes les preguntes d'una categoria.
-     *
-     * A. Valida que categoria_id del path sigui vàlid.
-     * B. Delega al servei per obtenir les preguntes.
-     * C. Retorna la resposta JSON amb les preguntes.
-     *
-     * @param  Request  $request
-     * @param  int  $categoria_id  ID de la categoria (paràmetre de ruta)
-     * @return JsonResponse
+     * READ. Obté totes les preguntes d'una categoria.
      */
     public function index(Request $request, int $categoria_id): JsonResponse
     {
-        // A. Validar que l'ID sigui positiu
         if ($categoria_id <= 0) {
             return response()->json([
                 'success' => false,
@@ -55,13 +49,11 @@ class PreguntaRegistreController extends Controller
         }
 
         try {
-            // B. Obtenir preguntes mitjançant el servei
             $preguntes = $this->preguntaRegistreService->obtenirPreguntesPerCategoria($categoria_id);
 
-            // C. Retornar resposta JSON
             return response()->json([
                 'success' => true,
-                'preguntes' => $preguntes,
+                'preguntes' => PreguntaRegistreResource::collection($preguntes)->resolve($request)['data'] ?? [],
             ]);
         } catch (\InvalidArgumentException $e) {
             return response()->json([

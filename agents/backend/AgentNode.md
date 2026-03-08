@@ -57,11 +57,32 @@ Totes les funcions han d'incloure:
 ## 5. Lògica de Comunicació (Redis & Socket)
 
 ### Pont de Redis (Bridge):
-- **Sortida**: Utilitzar `LPUSH` per enviar tasques a la cua `habits_queue` de Laravel.
-- **Entrada**: Utilitzar `SUBSCRIBE` al canal `feedback_channel` per rebre les confirmacions del backend de Laravel i retransmetre-les via Socket.io.
+- **Sortida**: Utilitzar `LPUSH` per enviar tasques a les cues `habits_queue`, `plantilles_queue`, `admin_queue`, `roulette_queue` segons el domini.
+- **Entrada**: Utilitzar `SUBSCRIBE` al canal `feedback_channel` per rebre les confirmacions del backend de Laravel. El `feedbackSubscriber` delega en emitters (`userFeedbackEmitter`, `adminFeedbackEmitter`) per reemetre via Socket.io.
 
 ### Seguretat:
 Abans de permetre qualsevol *handshake* de socket o senyalització WebRTC, s'ha de realitzar una validació local del token JWT utilitzant la clau secreta compartida `JWT_SECRET`.
+
+## 5bis. Esquema de Refactorització (Estructura Objectiu)
+
+Cal respectar aquesta estructura en totes les tasques de Node:
+
+### Handlers per rol i subdivisió per domini
+- **handlers/user/**: Un fitxer per àrea (subdivisió obligatòria):
+  - `habitHandlers.js`: esdeveniments `habit_action`, `habit_completed`, `habit_progress`, `habit_complete` → `habits_queue`
+  - `plantillaHandlers.js`: esdeveniment `plantilla_action` → `plantilles_queue`
+  - `rouletteHandlers.js`: esdeveniment `roulette_spin` → `roulette_queue`
+  - `userRegisterHandler.js`: esdeveniment `user_register` (sense cua; actualitza `usuarisConnectats`)
+- **handlers/admin/**:
+  - `adminHandlers.js`: `admin_join`, `admin_action` → `admin_queue`
+  - `adminConnectedHandler.js`: `admin:request_connected` (retorna llistat usuaris connectats)
+
+### socketHandler.js
+- Actua com a **orquestador**: registra els listeners de tots els handlers de `handlers/user/*` i `handlers/admin/*`.
+- Cada handler rep `(io, socket)` i registra els seus esdeveniments.
+
+### shared/usuarisConnectats.js
+- Map `userId → { nom, email, connected_at, socketId }`. Compartit entre `userRegisterHandler` i `adminConnectedHandler`.
 
 ## 6. Exemple d'estil (Referència)
 ```javascript
@@ -78,11 +99,11 @@ async function enviarTascaHabit(dadesHabit) {
     var resultat = await redisClient.lpush("habits_queue", cadenaDades);
     return resultat;
 }
+```
 
 ### Skills Disponibles
 - **auditorEstilES5Estricte** (Principal)
 - **generadorDocumentacioTecnica** (Secundària)
-```
 
 ## ✅ Regla GET/CUD
 - **GET**: sempre via `fetch` contra l'API de Laravel (rutes a `backend-laravel/routes/api.php`).

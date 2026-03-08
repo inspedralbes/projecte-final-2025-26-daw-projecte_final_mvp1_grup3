@@ -4,217 +4,33 @@
 //================================ IMPORTS =====================================
 //==============================================================================
 
-/**
- * Gestor d'esdeveniments de Socket.io.
- */
-var habitQueue = require("./queues/habitQueue");
-var plantillaQueue = require("./queues/plantillaQueue");
-var adminQueue = require("./queues/adminQueue");
-var rouletteQueue = require("./queues/rouletteQueue");
-
-//==============================================================================
-//================================ VARIABLES ===================================
-//==============================================================================
-
-/**
- * Map: userId -> { nom, email, connected_at, socketId }
- * Per llistar usuaris connectats a l'admin.
- */
-var usuarisConnectats = {};
+var habitHandlers = require("./handlers/user/habitHandlers");
+var plantillaHandlers = require("./handlers/user/plantillaHandlers");
+var rouletteHandlers = require("./handlers/user/rouletteHandlers");
+var userRegisterHandler = require("./handlers/user/userRegisterHandler");
+var adminHandlers = require("./handlers/admin/adminHandlers");
+var adminConnectedHandler = require("./handlers/admin/adminConnectedHandler");
 
 //==============================================================================
 //================================ FUNCIONS ====================================
 //==============================================================================
 
 /**
- * Defineix la lògica de recepció de missatges dels clients.
- */
-/**
  * Inicialitza la gestió d'esdeveniments de sockets.
- * Pas A: Escoltar connexions.
- * Pas B: Registrar listeners d'usuari i admin.
- * Pas C: Enviar missatges a Redis segons l'acció.
+ * Orquestra el registre de tots els handlers per usuari i admin.
+ *
+ * @param {object} io - Instància Socket.io
  */
 function init(io) {
   io.on("connection", function (socket) {
     console.log("Client connectat:", socket.id);
 
-    socket.on("habit_action", async function (payload) {
-      try {
-        var userId = socket.decoded_token && socket.decoded_token.user_id;
-        if (!userId) {
-          console.warn("habit_action: usuari no autenticat");
-          return;
-        }
-        socket.join("user_" + userId);
-        await habitQueue.pushToLaravel(payload.action, userId, payload);
-      } catch (error) {
-        console.error("Error gestionant habit_action:", error);
-      }
-    });
-
-    socket.on("plantilla_action", async function (payload) {
-      try {
-        var userId;
-        if (socket.decoded_token && socket.decoded_token.user_id) {
-          userId = socket.decoded_token.user_id;
-        } else {
-          userId = 1; // Default to user 1 in dev mode
-        }
-        socket.join("user_" + userId);
-        await plantillaQueue.pushToLaravel(payload.action, userId, payload);
-      } catch (error) {
-        console.error("Error gestionant plantilla_action:", error);
-      }
-    });
-
-    // Escolta quan el frontend comunica un hàbit completat
-    socket.on("habit_completed", async function (data) {
-      try {
-        var userId = socket.decoded_token && socket.decoded_token.user_id;
-        if (!userId) {
-          console.warn("habit_completed: usuari no autenticat");
-          return;
-        }
-        socket.join("user_" + userId);
-        var payload = { habit_id: data.habit_id, data: data.data };
-        await habitQueue.pushToLaravel("TOGGLE", userId, payload);
-      } catch (error) {
-        console.error("Error gestionant habit_completed:", error);
-      }
-    });
-
-    // Increment/decrement de progrés
-    socket.on("habit_progress", async function (data) {
-      try {
-        var userId = socket.decoded_token && socket.decoded_token.user_id;
-        if (!userId) {
-          console.warn("habit_progress: usuari no autenticat");
-          return;
-        }
-        socket.join("user_" + userId);
-        var payload = { habit_id: data.habit_id, valor: data.valor };
-        await habitQueue.pushToLaravel("PROGRESS", userId, payload);
-      } catch (error) {
-        console.error("Error gestionant habit_progress:", error);
-      }
-    });
-
-    // Confirmació de completar hàbit
-    socket.on("habit_complete", async function (data) {
-      try {
-        var userId = socket.decoded_token && socket.decoded_token.user_id;
-        if (!userId) {
-          console.warn("habit_complete: usuari no autenticat");
-          return;
-        }
-        socket.join("user_" + userId);
-        var payload = { habit_id: data.habit_id, data: data.data };
-        await habitQueue.pushToLaravel("COMPLETE", userId, payload);
-      } catch (error) {
-        console.error("Error gestionant habit_complete:", error);
-      }
-    });
-
-    socket.on("roulette_spin", async function (data) {
-      try {
-        // A. Validar usuari autenticat
-        var usuariId = socket.decoded_token && socket.decoded_token.user_id;
-        if (!usuariId) {
-          console.warn("roulette_spin: usuari no autenticat");
-          return;
-        }
-        // B. Assignar sala d'usuari
-        socket.join("user_" + usuariId);
-        // C. Enviar a la cua de Redis
-        await rouletteQueue.enviarALaravel(usuariId, data || {});
-      } catch (error) {
-        console.error("Error gestionant roulette_spin:", error);
-      }
-    });
-
-    socket.on("admin_join", function (payload) {
-      var adminId = socket.decoded_token && socket.decoded_token.admin_id;
-      var role = socket.decoded_token && socket.decoded_token.role;
-      if (role !== "admin" || !adminId) {
-        console.warn("admin_join: token no vàlid per admin");
-        return;
-      }
-      socket.adminId = adminId;
-      socket.join("admin_" + adminId);
-      console.log("Admin " + adminId + " units a la sala admin_" + adminId);
-    });
-
-    socket.on("admin_action", async function (payload) {
-      try {
-        var adminId = socket.decoded_token && socket.decoded_token.admin_id;
-        var role = socket.decoded_token && socket.decoded_token.role;
-        if (role !== "admin" || !adminId) {
-          console.warn("admin_action: token no vàlid per admin");
-          return;
-        }
-        socket.join("admin_" + adminId);
-        await adminQueue.pushToLaravel(
-          payload.action || "CREATE",
-          adminId,
-          payload.entity || "plantilla",
-          payload.data || {},
-        );
-      } catch (error) {
-        console.error("Error gestionant admin_action:", error);
-      }
-    });
-
-    socket.on("admin:request_connected", function () {
-      var llista = [];
-      for (var userId in usuarisConnectats) {
-        if (usuarisConnectats.hasOwnProperty(userId)) {
-          var u = usuarisConnectats[userId];
-          llista.push({
-            user_id: userId,
-            nom: u.nom || "",
-            email: u.email || "",
-            connected_at: u.connected_at || null,
-          });
-        }
-      }
-      socket.emit("admin:connected_users", llista);
-    });
-
-    socket.on("user_register", function (data) {
-      var userId;
-      if (socket.decoded_token && socket.decoded_token.user_id) {
-        userId = String(socket.decoded_token.user_id);
-      } else {
-        userId = String(socket.id);
-      }
-      var nom;
-      var email;
-      if (data && data.nom) {
-        nom = data.nom;
-      } else {
-        nom = "Usuari";
-      }
-      if (data && data.email) {
-        email = data.email;
-      } else {
-        email = "";
-      }
-      usuarisConnectats[userId] = {
-        nom: nom,
-        email: email,
-        connected_at: new Date().toISOString(),
-        socketId: socket.id,
-      };
-      socket.userId = userId;
-    });
-
-    socket.on("disconnect", function () {
-      if (socket.userId && usuarisConnectats[socket.userId]) {
-        delete usuarisConnectats[socket.userId];
-      }
-      console.log("Client desconnectat:", socket.id);
-    });
+    habitHandlers.register(io, socket);
+    plantillaHandlers.register(io, socket);
+    rouletteHandlers.register(io, socket);
+    userRegisterHandler.register(io, socket);
+    adminHandlers.register(io, socket);
+    adminConnectedHandler.register(io, socket);
   });
 }
 
@@ -223,5 +39,5 @@ function init(io) {
 //==============================================================================
 
 module.exports = {
-  init: init,
+  init: init
 };

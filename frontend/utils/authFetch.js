@@ -41,7 +41,9 @@ export async function authFetch(url, options) {
     return resposta;
   }
 
-  // F. Reintentar la petició original
+  // F. Reintentar la petició original amb headers actualitzats (token nou)
+  headers = Object.assign({}, authStore.getAuthHeaders(), opts.headers || {});
+  fetchOpts = Object.assign({}, opts, { headers: headers, credentials: 'include' });
   resposta = await fetch(fullUrl, fetchOpts);
   return resposta;
 }

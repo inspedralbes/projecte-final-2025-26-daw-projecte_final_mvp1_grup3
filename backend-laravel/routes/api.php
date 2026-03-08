@@ -1,86 +1,13 @@
 <?php
 
-use App\Http\Controllers\Api\Admin\AdminAuthController;
-use App\Http\Controllers\Api\Admin\AdminConfiguracioController;
-use App\Http\Controllers\Api\Admin\AdminDashboardController;
-use App\Http\Controllers\Api\Admin\AdminHabitController;
-use App\Http\Controllers\Api\Admin\AdminLogController;
-use App\Http\Controllers\Api\Admin\AdminLogroController;
-use App\Http\Controllers\Api\Admin\AdminMissioController;
-use App\Http\Controllers\Api\Admin\AdminNotificacioController;
-use App\Http\Controllers\Api\Admin\AdminPerfilController;
-use App\Http\Controllers\Api\Admin\AdminPlantillaController;
-use App\Http\Controllers\Api\Admin\AdminRankingController;
-use App\Http\Controllers\Api\Admin\AdminReportController;
-use App\Http\Controllers\Api\Admin\AdminUsuariController;
-use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\GameStateController;
-use App\Http\Controllers\Api\HabitController;
-use App\Http\Controllers\Api\HabitProgressController;
-use App\Http\Controllers\Api\LogroController;
-use App\Http\Controllers\Api\PlantillaController;
-use App\Http\Controllers\Api\UserController;
-use App\Http\Controllers\Api\UserHomeController;
-use App\Http\Controllers\PreguntaRegistreController;
-use Illuminate\Support\Facades\Route;
-
 /*
 |--------------------------------------------------------------------------
-| Rutes públiques (sense autenticació)
+| API Routes
 |--------------------------------------------------------------------------
+| Rutes agrupades per domini: auth, user, admin
+|
 */
 
-Route::post('/auth/login', [AuthController::class, 'login']);
-Route::post('/admin/auth/login', [AdminAuthController::class, 'login']);
-Route::post('/auth/register', [AuthController::class, 'register']);
-Route::post('/auth/refresh', [AuthController::class, 'refresh']);
-Route::post('/auth/logout', [AuthController::class, 'logout']);
-Route::get('/onboarding/questions', [\App\Http\Controllers\Api\OnboardingController::class, 'questions']);
-Route::get('/preguntes-registre/{categoria_id}', [PreguntaRegistreController::class, 'index']);
-
-/*
-|--------------------------------------------------------------------------
-| Rutes usuari (middleware ensure.user)
-|--------------------------------------------------------------------------
-*/
-
-Route::middleware('ensure.user')->group(function () {
-    Route::get('/habits', [HabitController::class, 'index']);
-    Route::get('/habits/all', [HabitController::class, 'indexAll']);
-    Route::get('/habits/{id}', [HabitController::class, 'show']);
-    Route::get('/habits/progress', [HabitProgressController::class, 'today']);
-    Route::get('/habits/logs', [HabitProgressController::class, 'logs']);
-    Route::get('/plantilles', [PlantillaController::class, 'index']);
-    Route::get('/plantilles/{id}', [PlantillaController::class, 'show']);
-    Route::get('/game-state', [GameStateController::class, 'show']);
-    Route::get('/user/home', [UserHomeController::class, 'index']);
-    Route::get('/logros', [LogroController::class, 'index']);
-    Route::get('/user/profile', [UserController::class, 'profile']);
-});
-
-/*
-|--------------------------------------------------------------------------
-| Rutes admin (middleware ensure.admin)
-|--------------------------------------------------------------------------
-*/
-
-Route::prefix('admin')->middleware('ensure.admin')->group(function () {
-    Route::get('/dashboard', [AdminDashboardController::class, 'index']);
-    Route::get('/notificacions/{page}/{per_page}/{llegida}', [AdminNotificacioController::class, 'index']);
-    Route::patch('/notificacions/{id}', [AdminNotificacioController::class, 'marcarLlegida']);
-    Route::get('/logs/{page}/{per_page}/{data_desde}/{data_fins}/{administrador_id}/{accio}/{cerca}', [AdminLogController::class, 'index']);
-    Route::get('/rankings/{periodo}', [AdminRankingController::class, 'index']);
-    Route::get('/usuaris/{tipus}/{page}/{per_page}/{prohibit}/{cerca}', [AdminUsuariController::class, 'index']);
-    Route::patch('/usuaris/{id}/prohibir', [AdminUsuariController::class, 'prohibir']);
-    Route::get('/plantilles/{page}/{per_page}', [AdminPlantillaController::class, 'index']);
-    Route::get('/habits/{page}/{per_page}', [AdminHabitController::class, 'index']);
-    Route::get('/logros/{page}/{per_page}', [AdminLogroController::class, 'index']);
-    Route::get('/missions/{page}/{per_page}', [AdminMissioController::class, 'index']);
-    Route::get('/reports/{page}/{per_page}', [AdminReportController::class, 'index']);
-    Route::get('/perfil', [AdminPerfilController::class, 'show']);
-    Route::get('/profile', [AdminPerfilController::class, 'show']); // Àlies per al frontend
-    Route::put('/perfil', [AdminPerfilController::class, 'update']);
-    Route::patch('/perfil/password', [AdminPerfilController::class, 'canviarPassword']);
-    Route::get('/configuracio', [AdminConfiguracioController::class, 'show']);
-    Route::put('/configuracio', [AdminConfiguracioController::class, 'update']);
-});
+require __DIR__ . '/api/auth.php';
+require __DIR__ . '/api/user.php';
+require __DIR__ . '/api/admin.php';

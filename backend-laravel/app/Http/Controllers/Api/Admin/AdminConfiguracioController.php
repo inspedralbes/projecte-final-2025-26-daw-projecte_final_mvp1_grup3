@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Admin;
 //================================ NAMESPACES / IMPORTS ============
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Admin\AdminConfiguracioResource;
 use App\Models\AdminConfiguracio;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -32,7 +33,7 @@ class AdminConfiguracioController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $resultat
+            'data' => (new AdminConfiguracioResource($resultat))->resolve(request()),
         ]);
     }
 

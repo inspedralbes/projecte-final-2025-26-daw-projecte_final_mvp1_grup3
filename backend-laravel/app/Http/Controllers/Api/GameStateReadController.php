@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 //================================ NAMESPACES / IMPORTS ============
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\GameStateResource;
 use App\Services\GamificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -13,8 +14,11 @@ use Illuminate\Http\Request;
 
 /**
  * Controlador API per l'estat de gamificació.
+ *
+ * Operacions:
+ *   - READ: show (XP, nivell, ratxa, monedes, missió)
  */
-class GameStateController extends Controller
+class GameStateReadController extends Controller
 {
     /**
      * Servei de gamificació.
@@ -26,7 +30,7 @@ class GameStateController extends Controller
     //================================ MÈTODES / FUNCIONS ===========
 
     /**
-     * Constructor. Injecció del servei de gamificació.
+     * Constructor. Injecció del servei.
      */
     public function __construct(GamificationService $gamificationService)
     {
@@ -34,7 +38,7 @@ class GameStateController extends Controller
     }
 
     /**
-     * Retorna l'estat de gamificació de l'usuari autenticat.
+     * READ. Retorna l'estat de gamificació de l'usuari autenticat.
      */
     public function show(Request $request): JsonResponse
     {
@@ -44,20 +48,13 @@ class GameStateController extends Controller
         }
 
         try {
-            // A. Obtenir estat de gamificació des del servei
             $estat = $this->gamificationService->obtenirEstatGamificacio($usuariId);
 
-            // B. Retornar resposta JSON amb headers
-            return response()->json($estat, 200, [
-                'Content-Type' => 'application/json',
-                'Cache-Control' => 'no-cache',
-            ]);
+            return (new GameStateResource($estat))->toResponse($request)->setStatusCode(200)->header('Cache-Control', 'no-cache');
         } catch (\Throwable $e) {
             report($e);
 
-            // C. En cas d'excepció, retornar valors per defecte per no trencar el frontend
-            return response()->json([
-                'error' => 'Error carregant estat del joc',
+            $estatError = [
                 'usuari_id' => $usuariId,
                 'xp_total' => 0,
                 'nivell' => 1,
@@ -68,7 +65,9 @@ class GameStateController extends Controller
                 'monedes' => 0,
                 'missio_diaria' => null,
                 'missio_completada' => false,
-            ], 200);
+            ];
+
+            return (new GameStateResource($estatError))->toResponse($request)->setStatusCode(200)->header('Cache-Control', 'no-cache');
         }
     }
 }

@@ -8,7 +8,7 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-// Redis worker: ejecutar en un proceso aparte con php artisan habits:redis-worker
+// Redis worker unificat: php artisan redis:unified-worker (o via Docker backend-laravel-redis-worker)
 
 // Reset diari de ratxes (Europe/Madrid) a les 00:00
 Schedule::command('ratxes:reset-diary')

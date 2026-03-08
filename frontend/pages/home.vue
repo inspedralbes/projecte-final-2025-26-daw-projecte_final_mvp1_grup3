@@ -592,24 +592,22 @@ export default {
     // A. Assignar usuari des de l'authStore
     self.gameStore.sincronitzarUsuariId();
 
-    // B. Carregar dades inicials de l'hàbit i estat
+    // B. Carregar dades inicials des del endpoint consolidat /api/user/home
     self.estaCarregantHabits = true;
-    Promise.all([
-      self.gameStore.obtenirHabitos(),
-      self.gameStore.obtenirProgresHabits(),
-      self.gameStore.obtenirEstatJoc(),
-      self.logroStore.carregarLogros()
-    ])
-    .then(function() {
-        console.log("✅ Dades carregades correctament (Incloent Logros)");
-    })
-    .catch(function(error) {
-        console.error("❌ Error carregant dades:", error);
+    self.gameStore.carregarDadesHome()
+      .then(function (dades) {
+        if (dades && Array.isArray(dades.logros)) {
+          self.logroStore.setLogros(dades.logros);
+        }
+        console.log("✅ Dades home carregades correctament");
+      })
+      .catch(function (error) {
+        console.error("❌ Error carregant dades home:", error);
         self.errorMissatge = "Error al carregar la informació del servidor.";
-    })
-    .finally(function() {
+      })
+      .finally(function () {
         self.estaCarregantHabits = false;
-    });
+      });
 
     // C. Conectar Sockets
     self.inicialitzarSocket();

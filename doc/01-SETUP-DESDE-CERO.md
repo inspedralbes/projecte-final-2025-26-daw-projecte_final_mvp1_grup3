@@ -177,17 +177,17 @@ Esto actualiza el `.env` dentro del contenedor. Si tu `.env` está montado desde
 
 ---
 
-## 8. (Opcional) Worker Redis: cola hábitos → feedback al frontend
+## 8. (Opcional) Worker Redis: cues → feedback al frontend
 
-Para que Laravel **consuma la cola de hábitos** (lista Redis `habits_queue`) y envíe feedback al frontend por el canal Redis `feedback_channel`, hay que ejecutar el comando **worker** en un proceso aparte.
+Per a que Laravel **consumeixi totes les cues Redis** (habits_queue, plantilles_queue, admin_queue, roulette_queue) i enviï feedback al frontend pel canal Redis `feedback_channel`, cal executar el comandament **worker unificat** en un procés apart.
 
-Abre **otra terminal**, ve a la carpeta `docker` y ejecuta:
+Amb Docker, el worker s'inicia automàticament amb el servei `backend-laravel-redis-worker`. Per a execució manual (desenvolupament sense Docker):
 
 ```bash
-docker compose exec backend-laravel php artisan habits:redis-worker
+docker compose exec backend-laravel php artisan redis:unified-worker
 ```
 
-Este proceso queda escuchando indefinidamente. Para dejarlo en segundo plano en producción se usaría un gestor de procesos (supervisor, systemd, etc.). Para desarrollo, con dejarlo en una terminal es suficiente.
+Aquest procés queda escoltant indefinidament. Per a producció s'utilitzaria un gestor de processos (supervisor, systemd, etc.).
 
 ---
 
@@ -199,7 +199,7 @@ Este proceso queda escuchando indefinidamente. Para dejarlo en segundo plano en 
 - [ ] Has ejecutado `cd docker` y luego `docker compose up -d --build`.
 - [ ] Has ejecutado `docker compose exec backend-laravel php artisan migrate`.
 - [ ] (Opcional) Has generado `APP_KEY` con `php artisan key:generate`.
-- [ ] (Opcional) Tienes en marcha el worker con `php artisan habits:redis-worker`.
+- [ ] (Opcional) Tens en marxa el worker amb `php artisan redis:unified-worker` (o automàticament amb Docker).
 
 Frontend: **http://localhost:3000**  
 Laravel: **http://localhost:8000**  

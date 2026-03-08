@@ -1129,24 +1129,57 @@ class HabitService
     /**
      * Exporta hàbits d'una plantilla cap a un usuari.
      * Crea l'hàbit a la taula HABITS i la relació a USUARIS_HABITS per a la persistència.
+     * Filtra els hàbits que ja existeixen per a l'usuari (mateix títol).
+     *
+     * @param  int  $usuariId
+     * @param  int  $plantillaId
+     * @param  array<int>  $hàbitsSeleccionats
+     * @return array<string, mixed>
      */
     public function exportarHabitsDePlantilla(int $usuariId, int $plantillaId, array $hàbitsSeleccionats): array
     {
         try {
+            // A. Preparació inicial de dades
             $nousHabits = [];
 
-            DB::transaction(function () use ($usuariId, $hàbitsSeleccionats, &$nousHabits) {
+            // B. Recuperació d'hàbits existents per a l'usuari
+            // Obtenim els IDs dels hàbits assignats via pivot
+            $habitIdsAssignats = UsuariHabit::where('usuari_id', $usuariId)->pluck('habit_id');
+
+            // Recuperem els títols de tots els hàbits de l'usuari (propietari o assignat)
+            $titolsExistents = Habit::where('usuari_id', $usuariId)
+                ->orWhereIn('id', $habitIdsAssignats)
+                ->pluck('titol')
+                ->toArray();
+
+            // Normalitzem els títols per a una comparació més robusta (minúscules)
+            $titolsNormalitzats = [];
+            foreach ($titolsExistents as $titol) {
+                // Afegim cada títol en minúscules a la llista de control
+                $titolsNormalitzats[] = strtolower(trim((string) $titol));
+            }
+
+            // C. Processament de l'exportació dins d'una transacció
+            DB::transaction(function () use ($usuariId, $hàbitsSeleccionats, $titolsNormalitzats, &$nousHabits) {
                 // 1. Recuperar els hàbits originals de la plantilla
                 $originals = Habit::whereIn('id', $hàbitsSeleccionats)->get();
 
                 foreach ($originals as $original) {
                     /** @var Habit $original */
-                    // 2. Duplicar l'hàbit a la taula HABITS
+                    $titolNou = strtolower(trim((string) $original->titol));
+
+                    // 2. Comprovar si l'hàbit ja existeix per títol
+                    // Si el títol ja és a la llista de l'usuari, el saltem per evitar duplicats
+                    if (in_array($titolNou, $titolsNormalitzats)) {
+                        continue;
+                    }
+
+                    // 3. Duplicar l'hàbit a la taula HABITS
                     $nou = $original->replicate();
                     $nou->usuari_id = $usuariId;
                     $nou->save();
 
-                    // 3. Crear la relació a USUARIS_HABITS (pivot) per a la persistència funcional
+                    // 4. Crear la relació a USUARIS_HABITS (pivot) per a la persistència funcional
                     UsuariHabit::create([
                         'usuari_id' => $usuariId,
                         'habit_id' => $nou->id,

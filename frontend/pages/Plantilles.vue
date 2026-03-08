@@ -358,7 +358,13 @@ export default {
   },
   // Hook de cicle de vida: s'executa abans que el component sigui desmuntat.
   beforeUnmount: function () {
-    // El socket global es gestionat pel plugin, no el tanquem aquí
+    var self = this;
+    // A. Netejar els listeners del socket per evitar duplicitat i fuites de memòria.
+    if (self.socket) {
+      console.log("Netejant listeners de socket a Plantilles...");
+      self.socket.off("plantilla_action_confirmed");
+      self.socket.off("habit_action_confirmed");
+    }
   },
   // Mètodes del component.
   methods: {
@@ -438,18 +444,33 @@ export default {
       var self = this;
       // A. Comprovar que el socket estigui disponible.
       if (!self.socket) {
-        alert(this.$t('templates.alert_socket_unavailable'));
+        self.$swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: this.$t('templates.alert_socket_unavailable')
+        });
         return;
       }
       // B. Confirmar l'eliminació amb l'usuari.
-      if (confirm(this.$t('templates.confirm_delete'))) {
-        // C. Emitir l'acció de DELETE via socket.
-        self.socket.emit("plantilla_action", {
-          action: "DELETE",
-          plantilla_id: id,
-          user_id: self.gameStore.userId // Enviar l'ID de l'usuari per a la validació al backend.
-        });
-      }
+      self.$swal.fire({
+        title: this.$t('templates.confirm_delete'),
+        text: "Aquesta acció no es pot desfer.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, esborra-la',
+        cancelButtonText: 'Cancel·la'
+      }).then(function (result) {
+        if (result.isConfirmed) {
+          // C. Emitir l'acció de DELETE via socket.
+          self.socket.emit("plantilla_action", {
+            action: "DELETE",
+            plantilla_id: id,
+            user_id: self.gameStore.userId
+          });
+        }
+      });
     },
 
     /**
@@ -558,19 +579,31 @@ export default {
       // A. Validacions del formulari.
       if (!self.form.titol) {
         console.log('Validation failed: Title is empty.');
-        alert(this.$t('templates.alert_name_required'));
+        self.$swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: this.$t('templates.alert_name_required')
+        });
         return;
       }
       if (self.form.habitsSeleccionats.length === 0) {
         console.log('Validation failed: No habits selected.');
-        alert(this.$t('templates.alert_habit_required'));
+        self.$swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: this.$t('templates.alert_habit_required')
+        });
         return;
       }
-
+  
       // B. Comprovar que el socket estigui disponible.
       if (!self.socket) {
         console.log('Validation failed: Socket not available.');
-        alert(this.$t('templates.alert_socket_unavailable'));
+        self.$swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: this.$t('templates.alert_socket_unavailable')
+        });
         return;
       }
 
@@ -616,9 +649,11 @@ export default {
 
       // A. Comprovar si l'acció ha estat exitosa.
       if (!payload || payload.success !== true) {
-        alert(
-          payload.message || this.$t('templates.error_processing')
-        );
+        self.$swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: payload.message || this.$t('templates.error_processing')
+        });
         return;
       }
 
@@ -626,15 +661,27 @@ export default {
 
       // B. Executar la funció corresponent segons l'acció realitzada.
       if (payload.action === "CREATE") {
-        alert(this.$t('templates.alert_created'));
+        self.$swal.fire({
+          icon: 'success',
+          title: 'Creat!',
+          text: this.$t('templates.alert_created')
+        });
         self.tancar();
         self.carregarPlantilles();
       } else if (payload.action === "UPDATE") {
-        alert(this.$t('templates.alert_updated'));
+        self.$swal.fire({
+          icon: 'success',
+          title: 'Actualitzat!',
+          text: this.$t('templates.alert_updated')
+        });
         self.tancar();
         self.carregarPlantilles();
       } else if (payload.action === "DELETE") {
-        alert(this.$t('templates.alert_deleted'));
+        self.$swal.fire({
+          icon: 'success',
+          title: 'Eliminat!',
+          text: this.$t('templates.alert_deleted')
+        });
         self.carregarPlantilles();
       } else if (payload.action === "EXPORT_HABITS") {
           // After habits are exported, show the confirmation to create a new template
@@ -694,7 +741,11 @@ export default {
       var i;
 
       if (!plantilla || self.habitsAExportarSeleccionats.length === 0) {
-        alert(this.$t('templates.export_error_no_selection'));
+        self.$swal.fire({
+          icon: 'warning',
+          title: 'Atenció',
+          text: this.$t('templates.export_error_no_selection')
+        });
         return;
       }
 
@@ -710,9 +761,18 @@ export default {
         habits: habitsConfirmacio.join(", ") 
       });
 
-      if (confirm(missatgeConfirmacio)) {
-        self.exportarHabitsSeleccionats();
-      }
+      self.$swal.fire({
+        title: 'Confirmar exportació',
+        text: missatgeConfirmacio,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Exporta',
+        cancelButtonText: 'Cancel·la'
+      }).then(function (result) {
+        if (result.isConfirmed) {
+          self.exportarHabitsSeleccionats();
+        }
+      });
     },
 
     /**
@@ -723,12 +783,20 @@ export default {
       var plantilla = self.plantillaAExportar;
 
       if (!self.socket) {
-        alert(this.$t('templates.export_error_socket'));
+        self.$swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: this.$t('templates.export_error_socket')
+        });
         return;
       }
 
       if (!plantilla || self.habitsAExportarSeleccionats.length === 0) {
-        alert(this.$t('templates.export_error_no_data'));
+        self.$swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: this.$t('templates.export_error_no_data')
+        });
         return;
       }
 
@@ -754,7 +822,11 @@ export default {
 
         // Ensure payload has the necessary data
         if (!payload.exported_habits || !Array.isArray(payload.exported_habits)) {
-            alert(this.$t('templates.export_success_error_info'));
+            self.$swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: this.$t('templates.export_success_error_info')
+            });
             self.$router.push('/home'); // Assuming home is where user habits are displayed
             return;
         }
@@ -769,30 +841,47 @@ export default {
             exportedHabitNames.push(payload.exported_habits[i].nom || payload.exported_habits[i].titol);
         }
 
-        var confirmSaveAsNewTemplate = confirm(
-            this.$t('templates.export_confirm_save_template', {
+        self.$swal.fire({
+            title: 'Nova plantilla?',
+            text: this.$t('templates.export_confirm_save_template', {
                 habits: exportedHabitNames.join(", "),
                 titol: this.$t('templates.export_template_title_prefix') + self.plantillaAExportar.titol
-            })
-        );
-
-        if (confirmSaveAsNewTemplate) {
-            self.socket.emit("habit_action", {
-                action: "CREATE", // Reusing CREATE action for the new user template
-                plantilla_data: {
-                    titol: this.$t('templates.export_template_title_prefix') + self.plantillaAExportar.titol,
-                    categoria: "Personal", // Default category for exported templates
-                    es_publica: false, // Exported templates are private by default
-                    habits_ids: self.habitsAExportarSeleccionats,
-                },
-                user_id: self.gameStore.userId,
-                // Add a flag to indicate this is a follow-up creation from export, if needed by backend
-                is_exported_template: true
-            });
-            alert(this.$t('templates.export_creating_template'));
-        } else {
-            alert(this.$t('templates.export_no_template_created'));
-        }
+            }),
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, crea-la',
+            cancelButtonText: 'No, gràcies'
+        }).then(function (result) {
+            if (result.isConfirmed) {
+                self.socket.emit("habit_action", {
+                    action: "CREATE", // Reusing CREATE action for the new user template
+                    plantilla_data: {
+                        titol: self.$t('templates.export_template_title_prefix') + self.plantillaAExportar.titol,
+                        categoria: "Personal", // Default category for exported templates
+                        es_publica: false, // Exported templates are private by default
+                        habits_ids: self.habitsAExportarSeleccionats,
+                    },
+                    user_id: self.gameStore.userId,
+                    // Add a flag to indicate this is a follow-up creation from export, if needed by backend
+                    is_exported_template: true
+                });
+                self.$swal.fire({
+                    icon: 'info',
+                    title: 'Processant...',
+                    text: self.$t('templates.export_creating_template'),
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            } else {
+                self.$swal.fire({
+                    icon: 'info',
+                    title: 'Info',
+                    text: self.$t('templates.export_no_template_created'),
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            }
+        });
 
         self.$router.push('/home');
     },

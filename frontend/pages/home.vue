@@ -298,7 +298,7 @@
           </div>
 
           <p v-if="!canSpinRoulette" class="text-xs text-gray-400">
-            Ruleta desactivada fins demà.
+            Ruleta desactibada fins demà.
           </p>
         </div>
       </div>

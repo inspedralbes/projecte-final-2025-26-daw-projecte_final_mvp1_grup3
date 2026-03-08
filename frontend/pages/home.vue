@@ -499,7 +499,18 @@ export default {
    * Neteja abans de destruir el component.
    */
   beforeUnmount: function () {
-    // El socket global es gestionat pel plugin, no el tanquem aquí
+    var self = this;
+    // A. Netejar els listeners del socket per evitar duplicitat i fuites de memòria.
+    if (self.socket) {
+      console.log("Netejant listeners de socket a Home...");
+      self.socket.off("connect");
+      self.socket.off("update_xp");
+      self.socket.off("habit_action_confirmed");
+      self.socket.off("streak_broken");
+      self.socket.off("level_up");
+      self.socket.off("roulette_result");
+      self.gameStore.desregistrarListenerMissionCompletada(self.socket);
+    }
   },
 
   methods: {
@@ -646,9 +657,11 @@ export default {
      * Mostra alert genèrica.
      */
     mostrarAvis: function (text) {
-      if (typeof window !== "undefined" && window.alert) {
-        window.alert(text);
-      }
+      this.$swal.fire({
+        icon: 'info',
+        title: 'Atenció',
+        text: text
+      });
     },
     /**
      * Inicialitza la conexió de sockets.
@@ -913,49 +926,22 @@ export default {
      * Mostra SweetAlert per la ruleta.
      */
     mostrarAlertaRuleta: function (titol, text, icona) {
-      var mostrarAlerta = function () {
-        if (typeof window !== "undefined" && window.Swal) {
-          window.Swal.fire({
-            title: titol,
-            text: text,
-            icon: icona || "success"
-          });
-        }
-      };
-
-      if (typeof window !== "undefined" && window.Swal) {
-        mostrarAlerta();
-      } else if (typeof document !== "undefined") {
-        var script = document.createElement("script");
-        script.src = "https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js";
-        script.onload = mostrarAlerta;
-        document.head.appendChild(script);
-      }
+      this.$swal.fire({
+        title: titol,
+        text: text,
+        icon: icona || "success"
+      });
     },
 
     /**
      * Mostra SweetAlert quan es completa un hàbit.
      */
     mostrarAlertaHabitCompletat: function () {
-      var self = this;
-      var mostrarAlerta = function () {
-        if (typeof window !== "undefined" && window.Swal) {
-          window.Swal.fire({
-            title: self.$t('home.habit_completed_title'),
-            text: self.$t('home.habit_completed_text'),
-            icon: "success"
-          });
-        }
-      };
-
-      if (typeof window !== "undefined" && window.Swal) {
-        mostrarAlerta();
-      } else if (typeof document !== "undefined") {
-        var script = document.createElement("script");
-        script.src = "https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js";
-        script.onload = mostrarAlerta;
-        document.head.appendChild(script);
-      }
+      this.$swal.fire({
+        title: this.$t('home.habit_completed_title'),
+        text: this.$t('home.habit_completed_text'),
+        icon: "success"
+      });
     },
 
     /**
@@ -975,96 +961,43 @@ export default {
         textMonedes += " " + this.$t('home.confirm_undo_balance', { monedes: monedesDespres });
       }
 
-      var executarAlerta = function () {
-        if (typeof window !== "undefined" && window.Swal) {
-          window.Swal.fire({
-            title: self.$t('home.confirm_undo_title'),
-            html: "<p>" + self.$t('home.confirm_undo_text') + "</p><p class=\"mt-2 font-semibold\">" + textMonedes + "</p><p class=\"mt-2 text-sm text-gray-500\">" + self.$t('home.confirm_undo_footer') + "</p>",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonText: self.$t('home.confirm'),
-            cancelButtonText: self.$t('home.cancel'),
-            confirmButtonColor: "#dc2626",
-            cancelButtonColor: "#374151",
-            customClass: {
-              popup: "swal-restar-habit-popup",
-              actions: "swal-restar-habit-actions",
-              confirmButton: "swal-restar-habit-confirm",
-              cancelButton: "swal-restar-habit-cancel"
-            },
-            buttonsStyling: true
-          }).then(function (result) {
-            if (result && result.isConfirmed && typeof callbackOnConfirm === "function") {
-              var habitId = self.habitSeleccionat && self.habitSeleccionat.id;
-              var nouProgress = self.progresModal - 1;
-              self.actualitzarProgresLocal(habitId, nouProgress, false);
-              callbackOnConfirm();
-            }
-          });
+      this.$swal.fire({
+        title: self.$t('home.confirm_undo_title'),
+        html: "<p>" + self.$t('home.confirm_undo_text') + "</p><p class=\"mt-2 font-semibold\">" + textMonedes + "</p><p class=\"mt-2 text-sm text-gray-500\">" + self.$t('home.confirm_undo_footer') + "</p>",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: self.$t('home.confirm'),
+        cancelButtonText: self.$t('home.cancel'),
+        buttonsStyling: true
+      }).then(function (result) {
+        if (result && result.isConfirmed && typeof callbackOnConfirm === "function") {
+          var habitId = self.habitSeleccionat && self.habitSeleccionat.id;
+          var nouProgress = self.progresModal - 1;
+          self.actualitzarProgresLocal(habitId, nouProgress, false);
+          callbackOnConfirm();
         }
-      };
-
-      if (typeof window !== "undefined" && window.Swal) {
-        executarAlerta();
-      } else if (typeof document !== "undefined") {
-        var script = document.createElement("script");
-        script.src = "https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js";
-        script.onload = executarAlerta;
-        document.head.appendChild(script);
-      }
+      });
     },
-
     /**
      * Mostra SweetAlert quan es puja de nivell.
      */
     mostrarAlertaLevelUp: function (data) {
-      var self = this;
-      var nivell = data && data.nivell ? data.nivell : this.nivell;
-      var bonusMonedes = data && data.bonus_monedes ? data.bonus_monedes : 10;
-      var mostrarAlerta = function () {
-        if (typeof window !== "undefined" && window.Swal) {
-          window.Swal.fire({
-            title: self.$t('home.level_up_title'),
-            text: self.$t('home.level_up_text', { nivell: nivell, bonus: bonusMonedes }),
-            icon: "success"
-          });
-        }
-      };
-
-      if (typeof window !== "undefined" && window.Swal) {
-        mostrarAlerta();
-      } else if (typeof document !== "undefined") {
-        var script = document.createElement("script");
-        script.src = "https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js";
-        script.onload = mostrarAlerta;
-        document.head.appendChild(script);
-      }
+      this.$swal.fire({
+        title: this.$t('home.level_up_title'),
+        text: this.$t('home.level_up_text', { nivell: data && data.nivell ? data.nivell : this.nivell, bonus: data && data.bonus_monedes ? data.bonus_monedes : 10 }),
+        icon: "success"
+      });
     },
 
     /**
      * Mostra SweetAlert quan la missió diària s'ha completat.
-     * Carrega SweetAlert2 des del CDN si encara no és disponible.
      */
     mostrarAlertaMissioCompletada: function () {
-      var self = this;
-      var mostrarAlerta = function () {
-        if (typeof window !== "undefined" && window.Swal) {
-          window.Swal.fire({
-            title: self.$t('home.mission_completed_title'),
-            text: self.$t('home.mission_completed_text'),
-            icon: "success"
-          });
-        }
-      };
-
-      if (typeof window !== "undefined" && window.Swal) {
-        mostrarAlerta();
-      } else if (typeof document !== "undefined") {
-        var script = document.createElement("script");
-        script.src = "https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js";
-        script.onload = mostrarAlerta;
-        document.head.appendChild(script);
-      }
+      this.$swal.fire({
+        title: this.$t('home.mission_completed_title'),
+        text: this.$t('home.mission_completed_text'),
+        icon: "success"
+      });
     },
 
     /**

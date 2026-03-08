@@ -135,7 +135,6 @@ export var useGameStore = defineStore("game", {
 
     /**
      * Registra un listener per a l'event de missió completada.
-     * Registra un listener per a l'event de missió completada.
      */
     registrarListenerMissionCompletada: function (socket, callback) {
       if (socket) {
@@ -149,6 +148,14 @@ export var useGameStore = defineStore("game", {
     },
 
     /**
+     * Elimina el listener de missió completada.
+     */
+    desregistrarListenerMissionCompletada: function (socket) {
+      if (socket) {
+        socket.off("mission_completed");
+      }
+    },
+    /**
      * Obté els hàbits des de l'API de Laravel.
      */
     obtenirHabitos: async function () {
@@ -157,6 +164,9 @@ export var useGameStore = defineStore("game", {
       var resposta;
       var dadesBrutes;
       var llistaHabits;
+      var h;
+      var mapejats = [];
+      var i;
 
       try {
         url = self.construirUrlApi("/api/habits");

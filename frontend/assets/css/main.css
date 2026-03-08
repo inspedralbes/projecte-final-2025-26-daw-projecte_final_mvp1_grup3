@@ -28,11 +28,11 @@
 
 /* Specific button colors to match UI theme */
 .swal2-confirm {
-    background-color: #d33;
-    /* Default Warning Red */
+    background-color: #28a745;
+    /* Default Success Green */
 }
 
 .swal2-cancel {
     background-color: #d33;
-    /* User requested Red for Cancel */
+    /* Default Warning/Cancel Red */
 }

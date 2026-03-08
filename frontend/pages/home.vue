@@ -1089,14 +1089,6 @@ export default {
         showCancelButton: true,
         confirmButtonText: self.$t('home.confirm'),
         cancelButtonText: self.$t('home.cancel'),
-        confirmButtonColor: "#dc2626",
-        cancelButtonColor: "#374151",
-        customClass: {
-          popup: "swal-restar-habit-popup",
-          actions: "swal-restar-habit-actions",
-          confirmButton: "swal-restar-habit-confirm",
-          cancelButton: "swal-restar-habit-cancel"
-        },
         buttonsStyling: true
       }).then(function (result) {
         if (result && result.isConfirmed && typeof callbackOnConfirm === "function") {

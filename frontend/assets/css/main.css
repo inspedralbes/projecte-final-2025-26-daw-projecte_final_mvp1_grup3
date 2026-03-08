@@ -3,3 +3,34 @@
 @tailwind utilities;
 
 /* Estilos personalizados */
+
+/* 
+  SweetAlert2 Button Visibility Fix 
+  Tailwind Preflight resets button backgrounds to transparent.
+  These rules ensure they are always visible and look premium.
+*/
+.swal2-styled {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transition: all 0.2s ease-in-out !important;
+  font-weight: 600 !important;
+  border-radius: 0.5rem !important;
+}
+
+.swal2-styled:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.swal2-styled:active {
+  transform: translateY(0);
+}
+
+/* Specific button colors to match Template design */
+.swal2-confirm {
+  background-color: #d33 !important; /* Warning Red */
+}
+
+.swal2-cancel {
+  background-color: #3085d6 !important; /* Nice Blue */
+}

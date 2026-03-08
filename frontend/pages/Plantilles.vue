@@ -457,8 +457,6 @@ export default {
         text: "Aquesta acció no es pot desfer.",
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
         confirmButtonText: 'Sí, esborra-la',
         cancelButtonText: 'Cancel·la'
       }).then(function (result) {

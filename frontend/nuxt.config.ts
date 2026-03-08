@@ -24,4 +24,15 @@ export default defineNuxtConfig({
       apiUrl: process.env.API_URL || 'http://localhost:8000',
     },
   },
+  experimental: {
+    // Si un chunk falla (perquè l'usuari navega a una ruta i l'arxiu JS o CSS ja no existeix desprès del desplegament)
+    // Forçarà el navegador a recarregar la pàgina
+    emitRouteChunkError: 'automatic',
+  },
+  routeRules: {
+    // Desactivar la memòria cau per la pàgina HTML principal (evita carregar arxius de configuració vells)
+    '/**': { headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' } },
+    // Els assets _nuxt/ porten hash, aquests es poden guardar a la memòria cau durant un any sencer
+    '/_nuxt/**': { headers: { 'Cache-Control': 'public, max-age=31536000, immutable' } },
+  },
 })

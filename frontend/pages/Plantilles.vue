@@ -765,7 +765,9 @@ export default {
         icon: 'question',
         showCancelButton: true,
         confirmButtonText: 'Exporta',
-        cancelButtonText: 'Cancel·la'
+        cancelButtonText: 'Cancel·la',
+        confirmButtonColor: '#28a745',
+        cancelButtonColor: '#d33'
       }).then(function (result) {
         if (result.isConfirmed) {
           self.exportarHabitsSeleccionats();
@@ -848,7 +850,9 @@ export default {
             icon: 'question',
             showCancelButton: true,
             confirmButtonText: 'Sí, crea-la',
-            cancelButtonText: 'No, gràcies'
+            cancelButtonText: 'No, gràcies',
+            confirmButtonColor: '#28a745',
+            cancelButtonColor: '#d33'
         }).then(function (result) {
             if (result.isConfirmed) {
                 self.socket.emit("habit_action", {

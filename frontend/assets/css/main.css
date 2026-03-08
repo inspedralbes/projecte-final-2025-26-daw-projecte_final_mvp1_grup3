@@ -10,27 +10,29 @@
   These rules ensure they are always visible and look premium.
 */
 .swal2-styled {
-  opacity: 1 !important;
-  visibility: visible !important;
-  transition: all 0.2s ease-in-out !important;
-  font-weight: 600 !important;
-  border-radius: 0.5rem !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    transition: all 0.2s ease-in-out !important;
+    font-weight: 600 !important;
+    border-radius: 0.5rem !important;
 }
 
 .swal2-styled:hover {
-  filter: brightness(1.1);
-  transform: translateY(-1px);
+    filter: brightness(1.1);
+    transform: translateY(-1px);
 }
 
 .swal2-styled:active {
-  transform: translateY(0);
+    transform: translateY(0);
 }
 
-/* Specific button colors to match Template design */
+/* Specific button colors to match UI theme */
 .swal2-confirm {
-  background-color: #d33 !important; /* Warning Red */
+    background-color: #d33;
+    /* Default Warning Red */
 }
 
 .swal2-cancel {
-  background-color: #3085d6 !important; /* Nice Blue */
+    background-color: #d33;
+    /* User requested Red for Cancel */
 }

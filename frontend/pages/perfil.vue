@@ -213,7 +213,8 @@ function carregarPerfil() {
     headers: authStore.getAuthHeaders()
   })
     .then(function(dades) {
-      user.value = dades;
+      var usuariData = dades.data || dades;
+      user.value = usuariData;
       loading.value = false;
     })
     .catch(function(err) {
@@ -243,8 +244,9 @@ function carregarLogs() {
     headers: authStore.getAuthHeaders()
   })
     .then(function(dades) {
-      if (Array.isArray(dades)) {
-        logs.value = dades;
+      var logsData = dades.data || dades;
+      if (Array.isArray(logsData)) {
+        logs.value = logsData;
       } else {
         logs.value = [];
       }

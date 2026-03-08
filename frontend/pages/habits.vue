@@ -505,6 +505,7 @@
 
 <script>
 import { useHabitStore } from "../stores/useHabitStore";
+import { mapHabitFromApi } from "~/utils/mappers/apiMappers.js";
 
 /**
  * Pàgina de gestió d'hàbits. Permet crear, visualitzar i eliminar hàbits.
@@ -815,7 +816,7 @@ export default {
 
       if (pàrrega.action === "CREATE" || pàrrega.action === "UPDATE") {
         if (pàrrega.habit) {
-          mapejat = self.habitStore.mapejarHabitDesDeApi(pàrrega.habit);
+          mapejat = mapHabitFromApi(pàrrega.habit);
           self.habitStore.guardarOActualitzarHabit(mapejat);
           self.netejarFormulari();
           if (pàrrega.action === "CREATE") {

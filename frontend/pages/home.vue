@@ -5,114 +5,19 @@
       <div class="grid grid-cols-12 gap-6">
         <!-- COSTAT ESQUERRE: Missions i Perfil -->
         <div class="col-span-3 space-y-6">
-          <!-- Targeta Missions Diàries -->
-          <div
-            class="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-orange-400"
-          >
-            <div class="flex items-center gap-2 mb-4">
-              <div
-                class="w-6 h-6 bg-orange-400 rounded-full flex items-center justify-center"
-              >
-                <span class="text-white text-sm">✓</span>
-              </div>
-              <h2
-                class="text-sm font-bold text-gray-800 uppercase tracking-wide"
-              >
-                {{ $t('home.daily_missions') }}
-              </h2>
-            </div>
-
-            <div class="space-y-3">
-              <div class="bg-gray-50 rounded-lg p-3">
-                <p class="text-gray-700 font-semibold text-sm">
-                  <template v-if="missioDiaria && missioDiaria.titol">
-                    {{ missioDiaria.titol }}
-                  </template>
-                  <template v-else>
-                    {{ $t('home.loading') }}
-                  </template>
-                </p>
-                <p class="text-2xl font-bold text-orange-500">
-                  <template v-if="missioCompletada">1/1</template>
-                  <template v-else>0/1</template>
-                </p>
-              </div>
-            </div>
-
-            <!-- Divisor -->
+          <div class="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-orange-400">
+            <UserHomeHomeMissionCard :missio-diaria="missioDiaria" :missio-completada="missioCompletada" />
             <div class="h-px bg-gray-200 my-4"></div>
-
-            <!-- Perfil Usuari -->
-            <div class="text-center">
-              <div
-                class="w-16 h-16 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 mx-auto mb-3 flex items-center justify-center"
-              >
-                <span class="text-3xl"></span>
-              </div>
-              <h3 class="font-bold text-gray-800 text-sm">{{ user ? user.nom : $t('home.user_name') }}</h3>
-              <p class="text-xs text-gray-500 mb-2">{{ $t('home.user_tag') }}</p>
-              <div
-                class="flex justify-center items-center gap-1 text-xs text-gray-600"
-              >
-                <span>{{ $t('home.level') }} {{ nivell }}</span>
-                <div class="w-20 h-1 bg-gray-200 rounded-full overflow-hidden">
-                  <div
-                    class="h-1 bg-blue-500"
-                    :style="{ width: percentatgeNivell + '%' }"
-                  ></div>
-                </div>
-                <span class="text-[10px] text-gray-500">
-                  {{ xpActualNivel }}/{{ xpObjetivoNivel }}
-                </span>
-              </div>
-            </div>
+            <UserHomeHomeProfileCard
+              :user="user"
+              :nivell="nivell"
+              :xp-actual-nivel="xpActualNivel"
+              :xp-objetivo-nivel="xpObjetivoNivel"
+              :percentatge-nivell="percentatgeNivell"
+            />
           </div>
-
-          <!-- Targeta Últims Assoliments -->
-          <div class="bg-white rounded-2xl shadow-lg p-6">
-            <h3
-              class="text-xs font-bold text-gray-800 uppercase tracking-wide mb-4"
-            >
-              {{ $t('home.latest_achievements') }}
-            </h3>
-            <div class="flex justify-around items-center relative group min-h-[48px]">
-              <template v-if="ultimsLogros.length > 0">
-                <div
-                  v-for="logro in ultimsLogros"
-                  :key="logro.id"
-                  class="w-12 h-12 rounded-full flex items-center justify-center text-lg hover:scale-110 transition shadow-inner"
-                  :class="logro.obtingut ? 'bg-orange-100' : 'bg-gray-100 opacity-40'"
-                  :title="logro.nom"
-                >
-                  {{ logro.obtingut ? '🏅' : '🔒' }}
-                </div>
-              </template>
-              <template v-else>
-                <div class="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center text-xs text-gray-300 border border-dashed border-gray-200">?</div>
-                <div class="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center text-xs text-gray-300 border border-dashed border-gray-200">?</div>
-                <div class="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center text-xs text-gray-300 border border-dashed border-gray-200">?</div>
-              </template>
-              
-              <!-- Botó per veure tots els logros -->
-              <button 
-                @click="obrirModalLogros"
-                class="absolute -right-2 -bottom-2 w-8 h-8 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 hover:scale-110 transition flex items-center justify-center font-bold text-xl"
-                :title="$t('home.see_all')"
-              >
-                +
-              </button>
-            </div>
-          </div>
-
-          <!-- Icona Ruleta Diària -->
-          <div
-            class="bg-white rounded-2xl shadow-lg p-4 flex items-center justify-center cursor-pointer transition"
-            :class="classeIconaRuleta"
-            @click="obrirModalRuleta"
-            :title="$t('home.roulette_daily')"
-          >
-            <span class="text-sm font-bold">{{ $t('home.roulette') }}</span>
-          </div>
+          <UserHomeHomeLogrosCard :ultims-logros="ultimsLogros" @obrir-modal-logros="obrirModalLogros" />
+          <UserHomeHomeRouletteSection :classe-icona-ruleta="classeIconaRuleta" @obrir-modal-ruleta="obrirModalRuleta" />
         </div>
 
         <!-- CENTRE: El teu Monstre -->
@@ -130,12 +35,7 @@
                   </h2>
                   <p class="text-xs text-gray-500">{{ $t('home.level') }} 1</p>
                 </div>
-                <div class="text-right">
-                  <p class="text-2xl font-bold">{{ $t('home.streak') }}: {{ ratxa }}</p>
-                  <p class="text-xs font-bold text-yellow-600 mb-1">{{ $t('home.max_streak') }}: {{ ratxaMaxima }}</p>
-                  <p class="text-sm text-green-600">{{ $t('home.xp_total') }}: {{ xpTotal }}</p>
-                  <p class="text-sm text-amber-600">{{ $t('home.coins') }}: {{ monedes }}</p>
-                </div>
+                <UserHomeHomeStreakSection :ratxa="ratxa" :ratxa-maxima="ratxaMaxima" :xp-total="xpTotal" :monedes="monedes" />
               </div>
 
               <!-- Imatge Monstre -->
@@ -164,81 +64,16 @@
 
         <!-- COSTAT DRET: Hàbits -->
         <div class="col-span-3 space-y-6">
-          <!-- Capçalera Hàbits -->
-          <div class="flex items-center justify-between">
-            <h2 class="text-lg font-bold text-gray-800">{{ $t('home.habits_title') }}</h2>
-            <NuxtLink
-              to="/habits"
-              class="text-blue-500 text-xs font-semibold hover:underline"
-              >{{ $t('home.see_all') }}</NuxtLink
-            >
-          </div>
-
-          <!-- Llista d'Hàbits -->
-          <div class="space-y-3">
-            <!-- Missatge d'error -->
-            <div
-              v-if="errorMissatge"
-              class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
-            >
-              <span class="block sm:inline">{{ errorMissatge }}</span>
-              <button
-                @click="errorMissatge = ''"
-                class="absolute top-0 bottom-0 right-0 px-4 py-3"
-              >
-                ✕
-              </button>
-            </div>
-
-            <!-- Estat de càrrega -->
-            <div
-              v-if="estaCarregantHabits"
-              class="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded text-center"
-            >
-              <span>{{ $t('home.loading_habits') }}</span>
-            </div>
-
-            <!-- Estat buit -->
-            <div
-              v-else-if="habitsDelDia.length === 0"
-              class="bg-gray-50 border border-gray-200 text-gray-600 px-4 py-3 rounded text-center"
-            >
-              <span>{{ $t('home.no_habits') }}</span>
-            </div>
-
-            <!-- Llista d'hàbits -->
-            <template v-else>
-              <div
-                v-for="hàbit in habitsDelDia"
-                :key="hàbit.id"
-                class="bg-white rounded-lg p-4 shadow flex items-center justify-between transition-all hover:shadow-md"
-              >
-                <div class="flex-1 mr-3">
-                  <p class="font-semibold text-gray-800">{{ hàbit.nom }}</p>
-                  <p class="text-xs text-gray-500 truncate">
-                    {{ hàbit.descripcio }} • +{{ hàbit.recompensaXP }} XP
-                  </p>
-                  <p class="text-xs text-blue-600 font-semibold">
-                    {{ obtenirProgres(hàbit.id) }}/{{ hàbit.objectiuVegades || 1 }}
-                  </p>
-                  <p
-                    v-if="habitCompletatAvui(hàbit.id)"
-                    class="text-xs text-green-600 font-semibold"
-                  >
-                    ✓ {{ $t('home.completed') }}
-                  </p>
-                </div>
-                <button
-                  @click="obrirModalHabit(hàbit)"
-                  :disabled="comvprovarSiSestaProcessant(hàbit.id)"
-                  class="px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed min-w-[110px]"
-                >
-                  <span v-if="comvprovarSiSestaProcessant(hàbit.id)">{{ $t('home.loading') }}</span>
-                  <span v-else>{{ $t('home.progress') }}</span>
-                </button>
-              </div>
-            </template>
-          </div>
+          <UserHomeHomeHabitsSection
+            :habits="habitsDelDia"
+            :esta-carregant="estaCarregantHabits"
+            :error-missatge="errorMissatge"
+            :obtenir-progres="obtenirProgres"
+            :habit-completat-avui="habitCompletatAvui"
+            :esta-processant="comvprovarSiSestaProcessant"
+            @netejar-error="errorMissatge = ''"
+            @obrir-modal-habit="obrirModalHabit"
+          />
         </div>
       </div>
     </div>
@@ -385,12 +220,19 @@
 
 <script>
 import { useGameStore } from "~/stores/gameStore.js";
+import { useHabitStore } from "~/stores/useHabitStore.js";
 import { useLogroStore } from "~/stores/useLogroStore.js";
 import { useAuthStore } from "~/stores/useAuthStore.js";
 
 definePageMeta({ ssr: false });
 import HabitProgressModal from "~/components/home/HabitProgressModal.vue";
 import StreakBrokenModal from "~/components/home/StreakBrokenModal.vue";
+import UserHomeHomeMissionCard from "~/components/user/home/HomeMissionCard.vue";
+import UserHomeHomeProfileCard from "~/components/user/home/HomeProfileCard.vue";
+import UserHomeHomeLogrosCard from "~/components/user/home/HomeLogrosCard.vue";
+import UserHomeHomeRouletteSection from "~/components/user/home/HomeRouletteSection.vue";
+import UserHomeHomeStreakSection from "~/components/user/home/HomeStreakSection.vue";
+import UserHomeHomeHabitsSection from "~/components/user/home/HomeHabitsSection.vue";
 import bosqueImg from "~/assets/img/Bosque.png";
 import mascotaImg from "~/assets/img/Mascota.png";
 
@@ -401,7 +243,13 @@ import mascotaImg from "~/assets/img/Mascota.png";
 export default {
   components: {
     HabitProgressModal: HabitProgressModal,
-    StreakBrokenModal: StreakBrokenModal
+    StreakBrokenModal: StreakBrokenModal,
+    UserHomeHomeMissionCard: UserHomeHomeMissionCard,
+    UserHomeHomeProfileCard: UserHomeHomeProfileCard,
+    UserHomeHomeLogrosCard: UserHomeHomeLogrosCard,
+    UserHomeHomeRouletteSection: UserHomeHomeRouletteSection,
+    UserHomeHomeStreakSection: UserHomeHomeStreakSection,
+    UserHomeHomeHabitsSection: UserHomeHomeHabitsSection
   },
   /**
    * Configuració de l'estat local.
@@ -464,6 +312,9 @@ export default {
     gameStore: function () {
       return useGameStore();
     },
+    habitStore: function () {
+      return useHabitStore();
+    },
     ratxa: function () {
       return this.gameStore.ratxa;
     },
@@ -496,7 +347,7 @@ export default {
       return Math.round(percent);
     },
     habits: function () {
-      return this.gameStore.habits;
+      return this.habitStore.habits || [];
     },
     habitsDelDia: function () {
       var llista = this.habits || [];

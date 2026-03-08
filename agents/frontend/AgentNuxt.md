@@ -6,21 +6,28 @@ Aquest document defineix com s'ha d'estructurar i desenvolupar l'aplicació web 
 Gestionar l'arquitectura del frontend, les rutes, els components i la integració amb els serveis de backend (Socket i API REST Laravel).
 
 ## 2. Estructura de Directoris
-L'aplicació ha de seguir escrupolosament l'estructura de Nuxt 3:
+L'aplicació ha de seguir escrupolosament l'estructura de Nuxt 3, organitzada per domini:
 
-- `pages/`: Conté les vistes de l'aplicació. Cada fitxer `.vue` és una ruta automàtica.
-- `components/`: Components reutilitzables. S'han de fer servir noms compostos (ex: `AppHeader.vue`, `HabitCard.vue`).
-- `layouts/`: Plantilles base (ex: `default.vue` amb el `AppHeader` i `AppFooter`).
+- `pages/`: Conté les vistes. Cada fitxer `.vue` és una ruta automàtica. Inclou `auth/`, `admin/`, `error/`.
+- `components/shared/`: Components sense rol (ErrorContent, LanguageSwitcher).
+- `components/user/`: Components d'usuari (home/, habits/, HeaderUser).
+- `components/admin/`: Components admin (AdminStatsGrid, AdminDataTable, AdminPagination, etc.).
+- `layouts/`: Plantilles base (default.vue, admin.vue).
 - `stores/`: Fitxers de Pinia (veure `AgentPinia.md`).
-- `composables/`: Lògica reutilitzable (ex: `useWebRTC.js`).
-- `middleware/`: Protecció de rutes (auth).
+- `composables/useApi.js`: Capa d'API unificada (authFetch, useAuthFetch, getBaseUrl). **Única referència** per a peticions autenticades.
+- `composables/user/`: useGameState, useHabits, useSocket, usePlantilles, useLogros.
+- `composables/admin/`: useAdminApi, useAdminDashboard, useAdminSocket, useAdminList.
+- `utils/mappers/apiMappers.js`: Transformació de respostes API al format del frontend.
+- `middleware/`: Protecció de rutes (require-auth.global.js).
+
+**Regla**: Les pàgines són orquestadors lleugers; la lògica va a composables i components.
 
 ## 3. Estil de Programació (Vue 3 + ES5)
 Tot i fer servir Vue 3 (Composition API), hem de mantenir la coherència amb l'`AgentJavascript`.
 
 - **Script Setup**: Es permet l'ús de `<script setup>`, però el contingut ha de seguir les regles ES5 (var, function, etc.).
 - **Imports**: `import` de Vue i Nuxt automàtics (auto-imports) són preferibles.
-- **Data Fetching**: Ús de `useFetch` o `$fetch` per a comunicació amb l'API REST de Laravel (Login/Registre).
+- **Data Fetching**: Ús de `useApi` (authFetch, useAuthFetch) per a peticions autenticades. Mai `$fetch` directe sense refresh en 401.
 - **Socket**: Ús del plugin `$socket` injectat per a la comunicació en temps real.
 
 ## 4. Components i Bento Grid UI

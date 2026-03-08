@@ -81,7 +81,7 @@ function sortir() {
     if (nuxtApp.$socket) {
       nuxtApp.$socket.disconnect();
     }
-    navigateTo('/login');
+    navigateTo('/auth/login');
   });
 }
 

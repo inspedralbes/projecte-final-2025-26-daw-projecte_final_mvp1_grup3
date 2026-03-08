@@ -12,7 +12,7 @@ Mantenir una connexió persistent amb el servidor de Node.js, gestionar l'autent
   - `auth: { token: "Bearer " + tokenJWT }`
 
 ## 3. Gestió d'Esdeveniments
-Tots els listeners s'han de definir dins de components o composables (`useWebRTC`, `useSocket`), respectant les regles de l'`AgentJavascript`.
+Tots els listeners s'han de definir dins de components o composables. Per a l'usuari: `composables/user/useSocket.js`. Per a admin: `composables/admin/useAdminSocket.js` (admin_join, admin:request_connected, admin_action).
 
 ### Esdeveniments Principals:
 1.  `connect`: Connexió establerta.
@@ -34,29 +34,28 @@ La lògica de WebRTC és complexa i ha de seguir passos estrictes:
 ## 5. Exemple d'Ús (Composable style ES5)
 
 ```javascript
-// composables/useSocketLogic.js
+// composables/user/useSocket.js
 
-export function useSocketLogic() {
-    var socket = useNuxtApp().$socket;
+export function useSocket() {
+    var socket = useNuxtApp().$socket || null;
     
-    function iniciarEscolta() {
-        // A. Validar connexió
-        if (!socket) return;
-        
-        // B. Definir listeners
-        socket.on('update_xp', function(dades) {
-            console.log("Rebuda nova XP:", dades.xp);
-            // Actualitzar Pinia (veure AgentPinia)
-        });
+    function enviarProgresHabit(idHabit, delta) {
+        if (socket) socket.emit("habit_progress", { habit_id: idHabit, valor: delta });
     }
     
-    function enviarSalutacio() {
-        socket.emit('test_event', { missatge: "Hola Backend" });
+    function confirmarHabit(idHabit) {
+        if (socket) socket.emit("habit_complete", { habit_id: idHabit, data: new Date().toISOString() });
     }
     
-    return { iniciarEscolta, enviarSalutacio };
+    function registrarListener(event, callback) {
+        if (socket && typeof callback === "function") socket.on(event, callback);
+    }
+    
+    return { socket, enviarProgresHabit, confirmarHabit, registrarListener };
 }
 ```
+
+Per a esdeveniments d'admin: usar `composables/admin/useAdminSocket.js` (adminJoin, requestConnected, onConnectedUsers, emitAction).
 
 ## ✅ Regla GET/CUD
 - **GET**: sempre via `fetch` contra l'API de Laravel (rutes a `backend-laravel/routes/api.php`).

@@ -166,6 +166,7 @@
 import bosqueImg from "~/assets/img/Bosque.png";
 import mascotaImg from "~/assets/img/Mascota.png";
 import { useAuthStore } from "~/stores/useAuthStore";
+import { authFetch, getBaseUrl } from "~/composables/useApi.js";
 
 // Estat reactiu amb variables VAR (ES5 segons AgentNuxt.md)
 var config = useRuntimeConfig();
@@ -201,27 +202,30 @@ var xpPercent = computed(function() {
 
 /**
  * Funció clàssica per carregar el perfil des de l'API.
+ * Usa authFetch (via useApi) per refresh automàtic en 401.
  */
 function carregarPerfil() {
-  var baseUrl, fullUrl;
+  var fullUrl;
   loading.value = true;
-  
-  baseUrl = config.public.apiUrl;
-  fullUrl = baseUrl.endsWith('/') ? baseUrl + 'api/user/profile' : baseUrl + '/api/user/profile';
+  fullUrl = getBaseUrl() + '/api/user/profile';
 
-  $fetch(fullUrl, {
-    headers: authStore.getAuthHeaders()
-  })
+  authFetch(fullUrl, { mode: 'cors' })
+    .then(function(resposta) {
+      if (!resposta.ok) {
+        if (resposta.status === 401) {
+          authStore.logout();
+          navigateTo('/auth/login');
+          return;
+        }
+        throw new Error('Error en carregar perfil');
+      }
+      return resposta.json();
+    })
     .then(function(dades) {
       user.value = dades;
       loading.value = false;
     })
     .catch(function(err) {
-      if (err.status === 401) {
-        authStore.logout();
-        navigateTo('/login');
-        return;
-      }
       console.error("Error al carregar perfil:", err);
       error.value = t('perfil.error_profile');
       loading.value = false;
@@ -230,18 +234,26 @@ function carregarPerfil() {
 
 /**
  * Carrega logs diaris des de l'API.
+ * Usa authFetch (via useApi) per refresh automàtic en 401.
  */
 function carregarLogs() {
-  var baseUrl, fullUrl;
+  var fullUrl;
   loadingLogs.value = true;
   errorLogs.value = null;
+  fullUrl = getBaseUrl() + '/api/habits/logs';
 
-  baseUrl = config.public.apiUrl;
-  fullUrl = baseUrl.endsWith('/') ? baseUrl + 'api/habits/logs' : baseUrl + '/api/habits/logs';
-
-  $fetch(fullUrl, {
-    headers: authStore.getAuthHeaders()
-  })
+  authFetch(fullUrl, { mode: 'cors' })
+    .then(function(resposta) {
+      if (!resposta.ok) {
+        if (resposta.status === 401) {
+          authStore.logout();
+          navigateTo('/auth/login');
+          return;
+        }
+        throw new Error('Error en carregar logs');
+      }
+      return resposta.json();
+    })
     .then(function(dades) {
       if (Array.isArray(dades)) {
         logs.value = dades;
@@ -251,11 +263,6 @@ function carregarLogs() {
       loadingLogs.value = false;
     })
     .catch(function(err) {
-      if (err.status === 401) {
-        authStore.logout();
-        navigateTo('/login');
-        return;
-      }
       console.error("Error al carregar logs:", err);
       errorLogs.value = t('perfil.error_history');
       loadingLogs.value = false;

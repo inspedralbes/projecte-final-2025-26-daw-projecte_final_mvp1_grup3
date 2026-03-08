@@ -39,27 +39,3 @@ jobs:
 
           # 6. Neteja per no omplir el disc
           docker image prune -f
-
-          script: |
-          cd /root/projecte-final-2025-26-daw-projecte_final_mvp1_grup3
-          
-          # 1. Forçar l'obertura de ports des de dins (per si el firewall de la màquina està actiu)
-          # Fem servir 'allow' per SSH, Web i Sockets
-          sudo ufw allow 22/tcp
-          sudo ufw allow 3000/tcp
-          sudo ufw allow 8000/tcp
-          sudo ufw allow 3001/tcp
-          sudo ufw --force enable
-          
-          # 2. Aturar-ho tot i netejar volums/imatges per evitar el "pantallasso blanc" per cache
-          docker compose -f docker/docker-compose.yml down
-          
-          # 3. Tornar a aixecar des de zero
-          docker compose -f docker/docker-compose.yml up -d --build
-          
-          # 4. Debug: Treure els logs de Nuxt i guardar-los en un fitxer que puguem llegir si cal
-          docker logs loopy-nuxt > /root/last_nuxt_logs.txt
-          
-          # 5. Executar migracions
-          sleep 5
-          docker exec loopy-laravel php artisan migrate --force

@@ -32,7 +32,7 @@
 2. Des de la carpeta `docker`: `docker compose up -d --build`.
 3. Frontend: http://localhost:3000 | Node: http://localhost:3001 | Laravel: http://localhost:8000.
 4. Migracions: `docker compose exec backend-laravel php artisan migrate`.
-5. Worker Redis (opcional): `docker compose exec backend-laravel php artisan habits:redis-worker`.
+5. Worker Redis (opcional): s'inicia automàticament amb Docker; manual: `php artisan redis:unified-worker`.
 
 Detall a `docker/README.md`.
 

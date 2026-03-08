@@ -295,6 +295,81 @@ export var useGameStore = defineStore("game", {
     },
 
     /**
+     * Carrega totes les dades de la home des del endpoint consolidat /api/user/home.
+     * Centralitza game_state, habits, progress i logros en una sola petició.
+     */
+    carregarDadesHome: async function () {
+      var self = this;
+      var url;
+      var resposta;
+      var dades;
+      var gs;
+      var h;
+      var hp;
+      var mapejats = [];
+      var mapaProgress = {};
+      var i;
+
+      try {
+        url = self.construirUrlApi("/api/user/home");
+        resposta = await authFetch(url, { mode: "cors" });
+        if (!resposta.ok) {
+          throw new Error("Error en carregar dades home");
+        }
+        dades = await resposta.json();
+
+        if (!dades) {
+          return null;
+        }
+
+        gs = dades.game_state || {};
+        if (gs.xp_total !== undefined) self.xpTotal = gs.xp_total;
+        if (gs.nivell !== undefined) self.nivell = gs.nivell;
+        if (gs.xp_actual_nivel !== undefined) self.xpActualNivel = gs.xp_actual_nivel;
+        if (gs.xp_objetivo_nivel !== undefined) self.xpObjetivoNivel = gs.xp_objetivo_nivel;
+        if (gs.ratxa_actual !== undefined) self.ratxa = gs.ratxa_actual;
+        if (gs.ratxa_maxima !== undefined) self.ratxaMaxima = gs.ratxa_maxima;
+        if (gs.monedes !== undefined) self.monedes = gs.monedes;
+        if (gs.can_spin_roulette !== undefined) self.canSpinRoulette = !!gs.can_spin_roulette;
+        if (gs.ruleta_ultima_tirada !== undefined) self.ruletaUltimaTirada = gs.ruleta_ultima_tirada;
+        if (gs.missio_diaria !== undefined) self.missioDiaria = gs.missio_diaria;
+        if (gs.missio_completada !== undefined) self.missioCompletada = gs.missio_completada;
+
+        h = dades.habits || [];
+        for (i = 0; i < h.length; i++) {
+          var diesSetmana = Array.isArray(h[i].dies_setmana) ? h[i].dies_setmana : [];
+          mapejats.push({
+            id: h[i].id,
+            nom: h[i].titol || "Sense nom",
+            descripcio: (h[i].frequencia_tipus || "") + " - Dificultat: " + (h[i].dificultat || ""),
+            completat: !!h[i].completat,
+            diesSetmana: diesSetmana,
+            recompensaXP: XP_PER_DIFICULTAT[h[i].dificultat] || XP_BASE,
+            recompensaMonedes: MONEDES_PER_DIFICULTAT[h[i].dificultat] || 2,
+            dificultat: h[i].dificultat,
+            objectiuVegades: h[i].objectiu_vegades || 1,
+            unitat: h[i].unitat || "",
+          });
+        }
+        self.habits = mapejats;
+
+        hp = dades.habit_progress || [];
+        for (i = 0; i < hp.length; i++) {
+          mapaProgress[hp[i].habit_id] = {
+            progress: hp[i].progress || 0,
+            completed_today: !!hp[i].completed_today,
+          };
+        }
+        self.habitProgress = mapaProgress;
+
+        return dades;
+      } catch (error) {
+        console.error("Error carregant dades home:", error);
+        return null;
+      }
+    },
+
+    /**
      * Carrega el progrés d'avui per a tots els hàbits.
      */
     obtenirProgresHabits: async function () {

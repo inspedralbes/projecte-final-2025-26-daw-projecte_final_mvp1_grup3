@@ -20,6 +20,7 @@ use App\Http\Controllers\Api\HabitProgressController;
 use App\Http\Controllers\Api\LogroController;
 use App\Http\Controllers\Api\PlantillaController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\UserHomeController;
 use App\Http\Controllers\PreguntaRegistreController;
 use Illuminate\Support\Facades\Route;
 
@@ -52,6 +53,7 @@ Route::middleware('ensure.user')->group(function () {
     Route::get('/plantilles', [PlantillaController::class, 'index']);
     Route::get('/plantilles/{id}', [PlantillaController::class, 'show']);
     Route::get('/game-state', [GameStateController::class, 'show']);
+    Route::get('/user/home', [UserHomeController::class, 'index']);
     Route::get('/logros', [LogroController::class, 'index']);
     Route::get('/user/profile', [UserController::class, 'profile']);
 });

@@ -27,4 +27,4 @@ alwaysApply: false
 
 ## Regles
 - Lògica sempre a **Services**, mai als Controllers.
-- Redis: `RedisWorker.php` fa BRPOP a `habits_queue`; publica a `feedback_channel`.
+- Redis: `UnifiedRedisWorker.php` fa BRPOP multillista a totes les cues; publica a `feedback_channel`.

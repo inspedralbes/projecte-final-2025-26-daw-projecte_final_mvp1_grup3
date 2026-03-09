@@ -1,5 +1,5 @@
 <template>
-  <div class="login-container relative w-full min-h-screen pb-12 overflow-y-auto">
+  <div class="relative w-full min-h-screen pb-12 overflow-y-auto">
     <!-- Navbar / Header Base -->
     <div class="w-full p-6 flex justify-between items-center z-20">
       <div class="flex items-center gap-4">

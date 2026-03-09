@@ -1,7 +1,7 @@
 <template>
-  <div class="min-h-screen bg-gray-50 flex">
+  <div class="global-app-container flex">
     <!-- Sidebar Fix -->
-    <aside class="w-64 bg-white border-r border-gray-200 flex flex-col fixed h-full shadow-sm z-20">
+    <aside class="w-64 bg-white/90 backdrop-blur-md border-r border-gray-200 flex flex-col fixed h-full shadow-sm z-20">
       <div class="p-8 border-b border-gray-100 flex items-center gap-3">
         <div class="w-10 h-10 bg-gray-900 rounded-xl flex items-center justify-center font-black text-white text-xl shadow-lg">L</div>
         <h1 class="font-black text-lg text-gray-900 uppercase tracking-tighter leading-none">Loopy Admin</h1>
@@ -59,8 +59,8 @@
     </aside>
 
     <!-- Contingut Principal -->
-    <main class="flex-1 ml-64 min-h-screen">
-      <div class="p-10">
+    <main class="flex-1 ml-64 min-h-screen bg-transparent">
+      <div class="p-10 relative z-10">
         <slot />
       </div>
     </main>

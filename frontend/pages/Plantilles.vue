@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-50 p-6">
+  <div class="min-h-screen bg-transparent p-6">
     <div class="max-w-7xl mx-auto">
       <h1 class="text-3xl font-bold text-gray-800 mb-8">{{ $t('templates.title') }}</h1>
 
@@ -856,8 +856,8 @@ export default {
             cancelButtonColor: '#d33'
         }).then(function (result) {
             if (result.isConfirmed) {
-                self.socket.emit("habit_action", {
-                    action: "CREATE", // Reusing CREATE action for the new user template
+                self.socket.emit("plantilla_action", {
+                    action: "CREATE", // Creating a new template from exported habits
                     plantilla_data: {
                         titol: self.$t('templates.export_template_title_prefix') + self.plantillaAExportar.titol,
                         categoria: "Personal", // Default category for exported templates

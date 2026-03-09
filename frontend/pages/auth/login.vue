@@ -1,5 +1,5 @@
 <template>
-  <div class="login-container">
+  <div class="global-app-container login-container">
     <div class="login-lang-switch">
       <LanguageSwitcher />
     </div>
@@ -11,8 +11,8 @@
           <span class="login-logo-text">Loopy</span>
           <img src="@/assets/img/LogoLoopy.png" alt="Loopy Logo" class="login-logo-image" />
         </div>
-        <h1 class="login-title">Benvingut/da!</h1>
-        <p class="login-subtitle">Entra al bucle de bons hàbits.</p>
+        <h1 class="login-title">{{ $t('login_welcome') }}</h1>
+        <p class="login-subtitle">{{ $t('login_subtitle') }}</p>
       </div>
 
       <form class="login-form" @submit.prevent="ferLogin">
@@ -30,18 +30,18 @@
 
         <div class="pt-4">
           <button type="submit" :disabled="estaCarregant" class="login-btn-primary">
-            ENTRAR A LOOPY
+            {{ $t('login_button') }}
           </button>
         </div>
 
         <div class="login-divider">
-          <span class="login-divider-text">O continua amb</span>
+          <span class="login-divider-text">{{ $t('login_continue_with') }}</span>
         </div>
 
         <div>
           <NuxtLink to="/auth/registre" class="block w-full">
             <button type="button" class="login-btn-outline">
-              REGISTRAR-SE
+              {{ $t('register_button') }}
             </button>
           </NuxtLink>
         </div>
@@ -56,48 +56,48 @@
           <div class="bento-card-col">
             <div class="bento-card bento-card-small">
               <div class="bento-icon text-red-500">🏆</div>
-              <h3 class="bento-title">Crecimiento</h3>
-              <p class="bento-desc">Tus hábitos te definen.</p>
+              <h3 class="bento-title">{{ $t('preview.growth') }}</h3>
+              <p class="bento-desc">{{ $t('preview.growth_desc') }}</p>
             </div>
             <div class="bento-card bento-card-small">
               <div class="bento-icon text-blue-500">🔲</div>
-              <h3 class="bento-title">Plantillas</h3>
-              <p class="bento-desc">Inspiración para empezar.</p>
+              <h3 class="bento-title">{{ $t('preview.templates') }}</h3>
+              <p class="bento-desc">{{ $t('preview.templates_desc') }}</p>
             </div>
           </div>
           
           <div class="bento-card-col-mid">
             <div class="bento-card bento-card-small">
               <div class="bento-icon text-yellow-400">🔥</div>
-              <h3 class="bento-title">Rachas</h3>
-              <p class="bento-desc">Mantén el fuego.</p>
+              <h3 class="bento-title">{{ $t('preview.streaks') }}</h3>
+              <p class="bento-desc">{{ $t('preview.streaks_desc') }}</p>
             </div>
             <div class="bento-card bento-card-small">
               <div class="bento-icon text-orange-500">💬</div>
-              <h3 class="bento-title">Comunidad</h3>
-              <p class="bento-desc">Comparte tus logros.</p>
+              <h3 class="bento-title">{{ $t('preview.community') }}</h3>
+              <p class="bento-desc">{{ $t('preview.community_desc') }}</p>
             </div>
           </div>
 
           <div class="bento-card-col">
              <div class="bento-card bento-card-tall">
               <div class="bento-icon text-purple-600">📈</div>
-              <h3 class="bento-title">Estadísticas</h3>
-              <p class="bento-desc">Mide tu progreso.</p>
+              <h3 class="bento-title">{{ $t('preview.stats') }}</h3>
+              <p class="bento-desc">{{ $t('preview.stats_desc') }}</p>
             </div>
              <div class="bento-card bento-card-tall">
               <div class="bento-icon text-teal-600">🎯</div>
-              <h3 class="bento-title">Retos</h3>
-              <p class="bento-desc">Supera tus límites.</p>
+              <h3 class="bento-title">{{ $t('preview.challenges') }}</h3>
+              <p class="bento-desc">{{ $t('preview.challenges_desc') }}</p>
             </div>
           </div>
         </div>
 
         <div class="bento-banner">
-           <div class="bento-banner-content">
-              <h2 class="bento-banner-title">Tu Compañero</h2>
-              <p class="bento-banner-subtitle">Hazlo evolucionar con cada tarea completada.</p>
-           </div>
+          <div class="bento-banner-content">
+            <h2 class="bento-banner-title">{{ $t('preview.your_companion') }}</h2>
+            <p class="bento-banner-subtitle">{{ $t('preview.companion_desc') }}</p>
+          </div>
            <div class="bento-banner-ghost-wrap">
               <svg viewBox="0 0 100 100" class="bento-banner-ghost-svg">
                  <path d="M 20 50 C 20 20, 80 20, 80 50 L 80 95 C 80 95, 75 90, 70 95 C 65 100, 60 90, 50 95 C 40 100, 35 90, 30 95 C 25 100, 20 95, 20 95 Z" />

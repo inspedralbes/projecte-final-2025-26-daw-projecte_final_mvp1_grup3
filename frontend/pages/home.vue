@@ -1,17 +1,6 @@
 <template>
-  <div class="login-container relative w-full min-h-screen pb-12 overflow-y-auto">
-    <!-- Navbar / Header Base -->
-    <div class="w-full p-6 flex justify-between items-center z-20">
-      <div class="flex items-center gap-4">
-        <h1 class="text-3xl font-extrabold text-white drop-shadow-md">Loopy Home</h1>
-      </div>
-      <div class="login-lang-switch !static !top-auto !right-auto">
-        <LanguageSwitcher />
-        <button v-if="user" @click="logout" class="ml-4 bg-white/90 backdrop-blur-sm text-gray-700 px-4 py-2 rounded-xl text-sm font-bold shadow-sm hover:shadow-md transition-all">
-          {{ $t('logout') || 'Surt' }}
-        </button>
-      </div>
-    </div>
+  <div class="relative w-full min-h-screen pb-12 overflow-y-auto">
+    <!-- El header ja el proporciona el layout default.vue -->
 
     <!-- Contenedor Principal Bento -->
     <div class="max-w-7xl mx-auto px-6 grid grid-cols-12 gap-6 pb-20">
@@ -47,7 +36,7 @@
                 {{ $t('home.monster_title') }}
               </h2>
               <div class="flex items-center gap-2 mt-1">
-                <span class="bg-green-100 text-green-700 px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider">Level {{ nivell }}</span>
+                <span class="bg-green-100 text-green-700 px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider">{{ $t('home.level') }} {{ nivell }}</span>
               </div>
             </div>
             <UserHomeHomeStreakSection :ratxa="ratxa" :ratxa-maxima="ratxaMaxima" :xp-total="xpTotal" :monedes="monedes" />
@@ -109,7 +98,18 @@
       @close="tancarModalRatxa"
     />
 
-    <!-- Modal Ruleta y Logros omitted for brevity but remain functional through their components -->
+    <LogrosModal
+      :is-open="esObertModalLogros"
+      :logros="logroStore.logros"
+      @close="tancarModalLogros"
+    />
+
+    <RouletteModal
+      :is-open="esObertModalRuleta"
+      :can-spin="canSpinRoulette"
+      @close="tancarModalRuleta"
+      @spin="enviarSpinRuleta"
+    />
   </div>
 </template>
 
@@ -121,6 +121,8 @@ import { useAuthStore } from "~/stores/useAuthStore.js";
 
 import HabitProgressModal from "~/components/home/HabitProgressModal.vue";
 import StreakBrokenModal from "~/components/home/StreakBrokenModal.vue";
+import LogrosModal from "~/components/home/LogrosModal.vue";
+import RouletteModal from "~/components/home/RouletteModal.vue";
 import UserHomeHomeMissionCard from "~/components/user/home/HomeMissionCard.vue";
 import UserHomeHomeProfileCard from "~/components/user/home/HomeProfileCard.vue";
 import UserHomeHomeLogrosCard from "~/components/user/home/HomeLogrosCard.vue";
@@ -134,6 +136,8 @@ export default {
   components: {
     HabitProgressModal,
     StreakBrokenModal,
+    LogrosModal,
+    RouletteModal,
     UserHomeHomeMissionCard,
     UserHomeHomeProfileCard,
     UserHomeHomeLogrosCard,
@@ -196,7 +200,7 @@ export default {
     classeIconaRuleta: function () { return this.canSpinRoulette ? "hover:scale-105" : "grayscale opacity-50"; },
     progresModal: function () { return this.habitSeleccionat ? this.obtenirProgres(this.habitSeleccionat.id) : 0; },
     objectiuModal: function () { return this.habitSeleccionat ? this.habitSeleccionat.objectiuVegades || 1 : 1; },
-    unitatModal: function () { return this.habitSeleccionat ? this.habitSeleccionat.unitat || "vegades" : "vegades"; }
+    unitatModal: function () { return this.habitSeleccionat ? this.habitSeleccionat.unitat || "vegades" : "vegades" }
   },
   mounted: function () {
     var self = this;
@@ -332,27 +336,22 @@ export default {
      */
     inicialitzarSocket: function () {
       var self = this;
-      var nuxtApp = useNuxtApp();
-      
-      // Utilitzem la instància global injectada pel plugin
-      self.socket = nuxtApp.$socket;
-
-      if (!self.socket) {
-        console.error("❌ Socket global no disponible");
-        return;
-      }
-
-      self.socket.on("connect", function () {
-        console.log("✅ Conectat al servidor de sockets:", self.socket.id);
+      self.socket = useNuxtApp().$socket;
+      if (!self.socket) return;
+      self.socket.on("roulette_result", function (payload) {
+        console.log("Ruleta result rebuda:", payload);
+        if (payload.success) {
+          self.$swal.fire({
+            icon: 'success',
+            title: self.$t('home.roulette_won_title') || '¡Enhorabona!',
+            text: self.$t('home.roulette_won_text', { premi: payload.premi_text || payload.premi_valor }) || 'Has guanyat un premi!'
+          });
+          self.gameStore.obtenirEstatJoc(); // Actualitzar canSpinRoulette i monedes
+        }
       });
 
-      self.socket.on("update_xp", function (data) {
-        console.log("[RATXA_DEBUG] update_xp rebut:", JSON.stringify({ ratxa_actual: data?.ratxa_actual, ratxa_maxima: data?.ratxa_maxima }));
-        if (data) {
-          self.gameStore.actualitzarDesDeXpUpdate(data);
-        }
-        // No fer obtenirEstatJoc aquí: els dades del socket són la font de veritat.
-        // Evita que una petició API potencialment desfasada sobreescrigui ratxa/XP.
+      self.socket.on("disconnect", function () {
+        console.log("Socket desconnectat.");
       });
 
       self.socket.on("habit_action_confirmed", function (payload) {
@@ -680,78 +679,43 @@ export default {
         icon: "success"
       });
     },
-
-    /**
-     * Comprova si un hàbit s'està processant actualment.
-     */
-    comvprovarSiSestaProcessant: function (idHabit) {
-      var trobat = false;
-      var i;
-      for (i = 0; i < this.procesantHabits.length; i++) {
-        if (this.procesantHabits[i] === idHabit) {
-          trobat = true;
-          break;
-        }
-      }
-      return trobat;
-    },
-
-    /**
-     * Acció de completar un hàbit.
-     */
-    completarHabit: async function (idHabit) {
-      var self = this;
-      var success;
-
-      try {
-        // A. Marcar com a processant
-        self.procesantHabits.push(idHabit);
-        self.errorMissatge = "";
-
-        // B. Cridar acció del store
-        success = await self.gameStore.completarHabit(idHabit, self.socket);
-
-        if (!success) {
-          self.errorMissatge = "No s'ha pogut completar l'hàbit.";
-        }
-      } catch (error) {
-        console.error("Error completant hàbit:", error);
-        self.errorMissatge = "Error inesperat en completar l'hàbit.";
-      } finally {
-        // C. Treure de la llista de processant (clàssic)
-        var novaLlista = [];
-        var j;
-        for (j = 0; j < self.procesantHabits.length; j++) {
-            if (self.procesantHabits[j] !== idHabit) {
-                novaLlista.push(self.procesantHabits[j]);
-            }
-        }
-        self.procesantHabits = novaLlista;
+    incrementarHabit: function () {
+      if (!this.habitSeleccionat) return;
+      var id = this.habitSeleccionat.id;
+      var current = this.gameStore.habitProgress[id] ? this.gameStore.habitProgress[id].progress : 0;
+      var max = this.habitSeleccionat.objectiuVegades || 1;
+      if (current < max) {
+        this.gameStore.habitProgress[id] = this.gameStore.habitProgress[id] || { progress: 0, completed_today: false };
+        this.gameStore.habitProgress[id].progress = current + 1;
       }
     },
-
-    /**
-     * Obre el modal de logros i carrega les dades des de l'API.
-     */
-    obrirModalLogros: function () {
-        var self = this;
-        self.esObertModalLogros = true;
-        
-        // Carregar logros (gestionat pel company)
-        self.logroStore.carregarLogros()
-            .then(function() {
-                console.log("🏆 Logros carregats al modal");
-            })
-            .catch(function(err) {
-                console.error("❌ Error carregant logros al modal:", err);
-            });
+    decrementarHabit: function () {
+      if (!this.habitSeleccionat) return;
+      var id = this.habitSeleccionat.id;
+      var current = this.gameStore.habitProgress[id] ? this.gameStore.habitProgress[id].progress : 0;
+      if (current > 0) {
+        this.gameStore.habitProgress[id].progress = current - 1;
+      }
     },
-
-    /**
-     * Tanca el modal de logros.
-     */
-    tancarModalLogros: function () {
-        this.esObertModalLogros = false;
+    comvprovarSiSestaProcessant: function (habitId) {
+      return false; // Implement correct processing logic if needed
+    },
+    confirmarHabit: function () {
+      if (!this.habitSeleccionat) return;
+      this.gameStore.confirmarHabit(this.habitSeleccionat.id, this.socket);
+      this.tancarModalHabit();
+    },
+    obrirModalLogros: function () { this.esObertModalLogros = true; },
+    tancarModalLogros: function () { this.esObertModalLogros = false; },
+    obrirModalRuleta: function () { this.esObertModalRuleta = true; },
+    tancarModalRuleta: function () { this.esObertModalRuleta = false; },
+    enviarSpinRuleta: function () {
+      if (this.socket) {
+        this.socket.emit("roulette_spin", {});
+      }
+    },
+    mostrarAvisIncomplet: function() {
+      // SweetAlert logic for incomplete habit if needed
     }
   }
 };

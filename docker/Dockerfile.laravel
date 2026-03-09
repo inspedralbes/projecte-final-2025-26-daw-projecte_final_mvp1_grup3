@@ -23,8 +23,10 @@ COPY backend-laravel /var/www
 COPY docker/entrypoint-laravel.sh /entrypoint.sh
 RUN sed 's/\r$//' /entrypoint.sh > /tmp/ep && mv /tmp/ep /entrypoint.sh && chmod +x /entrypoint.sh
 
-# Laravel requiere bootstrap/cache existente y escribible para package:discover
-RUN mkdir -p /var/www/bootstrap/cache && chmod -R 775 /var/www/bootstrap/cache
+# Laravel requiere bootstrap/cache y storage existentes y escribibles
+RUN mkdir -p /var/www/bootstrap/cache /var/www/storage/logs /var/www/storage/framework/sessions /var/www/storage/framework/views /var/www/storage/framework/cache
+RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache && \
+    chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 
 # Borrar cache generado con dev-deps para que package:discover regenere solo con prod
 RUN rm -f /var/www/bootstrap/cache/packages.php /var/www/bootstrap/cache/services.php

@@ -23,6 +23,10 @@ fi
 
 # Borrar cache con dev-deps y regenerar (vendor en Docker solo tiene prod; packages.php del host puede tener collision)
 rm -f bootstrap/cache/packages.php bootstrap/cache/services.php
+# Asegurar permisos en tiempo de ejecución
+chown -R www-data:www-data storage bootstrap/cache
+chmod -R 775 storage bootstrap/cache
+
 php artisan package:discover --ansi
 
 echo "Iniciando PHP-FPM..."

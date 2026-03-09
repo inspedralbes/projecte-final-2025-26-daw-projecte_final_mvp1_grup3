@@ -8,15 +8,15 @@ services:
     container_name: loopy-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-loopy}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-loopy_secret}
-      POSTGRES_DB: ${POSTGRES_DB:-loopy_db}
+      POSTGRES_USER: ${DB_USERNAME:-loopy}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-loopy_secret}
+      POSTGRES_DB: ${DB_DATABASE:-loopy_db}
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ../database/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
       - ../database/insert.sql:/docker-entrypoint-initdb.d/02-insert.sql:ro
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-loopy} -d ${POSTGRES_DB:-loopy_db}" ]
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USERNAME:-loopy} -d ${DB_DATABASE:-loopy_db}" ]
       interval: 10s
       timeout: 10s
       retries: 10

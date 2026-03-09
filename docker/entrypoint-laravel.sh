@@ -25,5 +25,5 @@ fi
 rm -f bootstrap/cache/packages.php bootstrap/cache/services.php
 php artisan package:discover --ansi
 
-echo "Iniciando servidor de Laravel..."
-exec php artisan serve --host=0.0.0.0 --port=8000
+echo "Iniciando PHP-FPM..."
+exec php-fpm

@@ -1,5 +1,5 @@
 # Laravel 11.0.0 sobre PHP 8.3.3
-FROM php:8.3.3-cli-alpine
+FROM php:8.3.3-fpm-alpine
 
 RUN apk add --no-cache \
     git \
@@ -34,5 +34,5 @@ RUN composer install --no-interaction --optimize-autoloader --no-dev && \
     if [ ! -f .env ]; then cp .env.example .env; fi && \
     php artisan key:generate --no-interaction
 
-EXPOSE 8000
+EXPOSE 9000
 ENTRYPOINT ["/entrypoint.sh"]

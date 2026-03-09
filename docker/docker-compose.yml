@@ -296,6 +296,9 @@ services:
     build:
       context: ../frontend
       dockerfile: ../docker/Dockerfile.nuxt
+      args:
+        API_URL: ${API_URL:-http://localhost:8000}
+        SOCKET_URL: ${SOCKET_URL:-http://localhost:3001}
     container_name: loopy-nuxt
     restart: unless-stopped
     working_dir: /app

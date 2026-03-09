@@ -11,6 +11,14 @@ RUN npm install --legacy-peer-deps
 RUN npm install -D tailwindcss@3.3.6 postcss@8 autoprefixer@10
 
 COPY . .
+
+ARG API_URL
+ARG SOCKET_URL
+ENV API_URL=$API_URL
+ENV SOCKET_URL=$SOCKET_URL
+ENV NUXT_PUBLIC_API_URL=$API_URL
+ENV NUXT_PUBLIC_SOCKET_URL=$SOCKET_URL
+
 RUN npm run build
 
 RUN mkdir -p .output/server/chunks/public && \

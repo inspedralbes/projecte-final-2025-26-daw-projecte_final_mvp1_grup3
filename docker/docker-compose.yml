@@ -11,8 +11,6 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-loopy}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-loopy_secret}
       POSTGRES_DB: ${POSTGRES_DB:-loopy_db}
-    ports:
-      - "${POSTGRES_PORT:-5433}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ../database/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
@@ -28,8 +26,6 @@ services:
     image: redis:7.2.4-alpine
     container_name: loopy-redis
     restart: unless-stopped
-    ports:
-      - "${REDIS_PORT:-6380}:6379"
     volumes:
       - redis_data:/data
     healthcheck:
@@ -38,19 +34,6 @@ services:
       timeout: 3s
       retries: 5
 
-  adminer:
-    image: adminer:4.8.1
-    container_name: loopy-adminer
-    restart: unless-stopped
-    ports:
-      - "8080:8080"
-    environment:
-      ADMINER_DEFAULT_SERVER: postgres
-    depends_on:
-      postgres:
-        condition: service_healthy
-    # En el navegador: http://localhost:8080 → Sistema: PostgreSQL, Servidor: postgres, Usuario/BD según .env
-
   backend-laravel:
     build:
       context: ..
@@ -58,30 +41,11 @@ services:
     container_name: loopy-laravel
     restart: unless-stopped
     working_dir: /var/www
-    ports:
-      - "8000:8000"
+    env_file:
+      - ../.env
     environment:
-      APP_NAME: Loopy
       APP_ENV: production
       APP_DEBUG: "false"
-      APP_KEY: ${APP_KEY:-base64:AAAAAAAAAAAAAAAAAAAAAA==}
-      APP_URL: http://localhost:8000
-      DB_CONNECTION: pgsql
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_DATABASE: ${POSTGRES_DB:-loopy_db}
-      DB_USERNAME: ${POSTGRES_USER:-loopy}
-      DB_PASSWORD: ${POSTGRES_PASSWORD:-loopy_secret}
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      REDIS_CLIENT: predis
-      REDIS_READ_TIMEOUT: 60
-      REDIS_READ_WRITE_TIMEOUT: 60
-      REDIS_PREFIX: ""
-      JWT_SECRET: ${JWT_SECRET:-4b2e95c71827e0f29601e4566112841c47b7fe53eab506fb3884be7e8735c623}
-      CACHE_DRIVER: redis
-      SESSION_DRIVER: redis
-      QUEUE_CONNECTION: redis
     volumes:
       - ../database:/var/database:ro
     depends_on:
@@ -89,7 +53,22 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    command: php artisan serve --host=0.0.0.0 --port=8000
+
+  nginx:
+    image: nginx:alpine
+    container_name: loopy-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80" # Puerto estándar para Certbot validation & redirects HTTP -> HTTPS
+      - "443:443" # HTTPS
+    volumes:
+      - ../backend-laravel:/var/www
+      - ./default.conf:/etc/nginx/conf.d/default.conf
+      # RUTAS PARA LEER LOS CERTIFICADOS DESDE EL HOST AL DOCKER (Solo lectura):
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - ./certbot/www:/var/www/certbot:ro
+    depends_on:
+      - backend-laravel
 
   backend-laravel-worker:
     build:
@@ -99,25 +78,11 @@ services:
     restart: unless-stopped
     working_dir: /var/www
     entrypoint: []
+    env_file:
+      - ../.env
     environment:
-      APP_NAME: Loopy
       APP_ENV: production
       APP_DEBUG: "false"
-      APP_KEY: ${APP_KEY:-base64:AAAAAAAAAAAAAAAAAAAAAA==}
-      APP_URL: http://localhost:8000
-      DB_CONNECTION: pgsql
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_DATABASE: ${POSTGRES_DB:-loopy_db}
-      DB_USERNAME: ${POSTGRES_USER:-loopy}
-      DB_PASSWORD: ${POSTGRES_PASSWORD:-loopy_secret}
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      REDIS_CLIENT: predis
-      REDIS_READ_TIMEOUT: 60
-      REDIS_READ_WRITE_TIMEOUT: 60
-      REDIS_PREFIX: ""
-      JWT_SECRET: ${JWT_SECRET:-4b2e95c71827e0f29601e4566112841c47b7fe53eab506fb3884be7e8735c623}
     volumes:
       - ../database:/var/database:ro
     depends_on:
@@ -135,22 +100,11 @@ services:
     restart: unless-stopped
     working_dir: /var/www
     entrypoint: []
+    env_file:
+      - ../.env
     environment:
-      APP_NAME: Loopy
       APP_ENV: production
       APP_DEBUG: "false"
-      APP_KEY: ${APP_KEY:-base64:AAAAAAAAAAAAAAAAAAAAAA==}
-      APP_URL: http://localhost:8000
-      DB_CONNECTION: pgsql
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_DATABASE: ${POSTGRES_DB:-loopy_db}
-      DB_USERNAME: ${POSTGRES_USER:-loopy}
-      DB_PASSWORD: ${POSTGRES_PASSWORD:-loopy_secret}
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      REDIS_CLIENT: predis
-      REDIS_PREFIX: ""
     volumes:
       - ../database:/var/database:ro
     depends_on:
@@ -169,25 +123,12 @@ services:
     restart: unless-stopped
     working_dir: /var/www
     entrypoint: []
+    env_file:
+      - ../.env
     environment:
-      APP_NAME: Loopy
       APP_ENV: production
       APP_DEBUG: "false"
-      APP_KEY: ${APP_KEY:-base64:AAAAAAAAAAAAAAAAAAAAAA==}
-      APP_URL: http://localhost:8000
-      DB_CONNECTION: pgsql
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_DATABASE: ${POSTGRES_DB:-loopy_db}
-      DB_USERNAME: ${POSTGRES_USER:-loopy}
-      DB_PASSWORD: ${POSTGRES_PASSWORD:-loopy_secret}
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
       REDIS_CLIENT: phpredis
-      REDIS_READ_TIMEOUT: 60
-      REDIS_READ_WRITE_TIMEOUT: 60
-      REDIS_PREFIX: ""
-      JWT_SECRET: ${JWT_SECRET:-4b2e95c71827e0f29601e4566112841c47b7fe53eab506fb3884be7e8735c623}
     volumes:
       - ../database:/var/database:ro
     depends_on:
@@ -205,25 +146,11 @@ services:
     restart: unless-stopped
     working_dir: /var/www
     entrypoint: []
+    env_file:
+      - ../.env
     environment:
-      APP_NAME: Loopy
       APP_ENV: production
       APP_DEBUG: "false"
-      APP_KEY: ${APP_KEY:-base64:AAAAAAAAAAAAAAAAAAAAAA==}
-      APP_URL: http://localhost:8000
-      DB_CONNECTION: pgsql
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_DATABASE: ${POSTGRES_DB:-loopy_db}
-      DB_USERNAME: ${POSTGRES_USER:-loopy}
-      DB_PASSWORD: ${POSTGRES_PASSWORD:-loopy_secret}
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      REDIS_CLIENT: predis
-      REDIS_READ_TIMEOUT: 60
-      REDIS_READ_WRITE_TIMEOUT: 60
-      REDIS_PREFIX: ""
-      JWT_SECRET: ${JWT_SECRET:-4b2e95c71827e0f29601e4566112841c47b7fe53eab506fb3884be7e8735c623}
     volumes:
       - ../database:/var/database:ro
     depends_on:
@@ -241,28 +168,11 @@ services:
     restart: unless-stopped
     working_dir: /var/www
     entrypoint: []
+    env_file:
+      - ../.env
     environment:
-      APP_NAME: Loopy
       APP_ENV: production
       APP_DEBUG: "false"
-      APP_KEY: ${APP_KEY:-base64:AAAAAAAAAAAAAAAAAAAAAA==}
-      APP_URL: http://localhost:8000
-      DB_CONNECTION: pgsql
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_DATABASE: ${POSTGRES_DB:-loopy_db}
-      DB_USERNAME: ${POSTGRES_USER:-loopy}
-      DB_PASSWORD: ${POSTGRES_PASSWORD:-loopy_secret}
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      REDIS_CLIENT: predis
-      REDIS_READ_TIMEOUT: 60
-      REDIS_READ_WRITE_TIMEOUT: 60
-      REDIS_PREFIX: ""
-      JWT_SECRET: ${JWT_SECRET:-4b2e95c71827e0f29601e4566112841c47b7fe53eab506fb3884be7e8735c623}
-      CACHE_DRIVER: redis
-      SESSION_DRIVER: redis
-      QUEUE_CONNECTION: redis
     volumes:
       - ../database:/var/database:ro
     depends_on:
@@ -281,12 +191,11 @@ services:
     working_dir: /app
     ports:
       - "3001:3001"
+    env_file:
+      - ../.env
     environment:
       NODE_ENV: production
       PORT: 3001
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      JWT_SECRET: ${JWT_SECRET:-4b2e95c71827e0f29601e4566112841c47b7fe53eab506fb3884be7e8735c623}
       LARAVEL_URL: http://backend-laravel:8000
     depends_on:
       redis:
@@ -304,12 +213,12 @@ services:
     working_dir: /app
     ports:
       - "3000:3000"
+    env_file:
+      - ../.env
     environment:
       NODE_ENV: production
       NUXT_HOST: 0.0.0.0
       NUXT_PORT: 3000
-      SOCKET_URL: ${SOCKET_URL:-http://localhost:3001}
-      API_URL: ${API_URL:-http://localhost:8000}
       NUXT_PUBLIC_SOCKET_URL: ${SOCKET_URL:-http://localhost:3001}
       NUXT_PUBLIC_API_URL: ${API_URL:-http://localhost:8000}
       NITRO_PORT: 3000

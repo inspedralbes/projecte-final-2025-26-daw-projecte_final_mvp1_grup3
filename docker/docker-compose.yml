@@ -49,6 +49,7 @@ services:
       APP_DEBUG: "false"
     volumes:
       - ../backend-laravel:/var/www
+      - /var/www/vendor
       - ../database:/var/database:ro
     depends_on:
       postgres:

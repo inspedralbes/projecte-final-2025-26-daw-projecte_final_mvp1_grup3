@@ -14,7 +14,7 @@
                 ∞
               </div>
             </div>
-            <h2 class="text-2xl font-semibold text-gray-800">Loopy Master</h2>
+            <h2 class="text-2xl font-semibold text-gray-800">Loopy Master hola</h2>
             <p class="text-sm text-gray-500 text-center">
               Domina els teus hàbits, puja de nivell.
             </p>

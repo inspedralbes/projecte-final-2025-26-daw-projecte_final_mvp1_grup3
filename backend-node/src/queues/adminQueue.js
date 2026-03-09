@@ -23,7 +23,7 @@ async function getClient() {
       host: host,
       port: port
     },
-    password: process.env.REDIS_PASSWORD || undefined
+    password: process.env.REDIS_PASSWORD || 'loopy_secret'
   });
 
   client.on('error', function (err) {

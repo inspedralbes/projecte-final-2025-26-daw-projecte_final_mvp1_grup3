@@ -44,7 +44,7 @@ async function init(io) {
       host: host,
       port: port
     },
-    password: process.env.REDIS_PASSWORD || undefined
+    password: process.env.REDIS_PASSWORD || 'loopy_secret'
   });
 
   subscriber.on('error', function (err) {

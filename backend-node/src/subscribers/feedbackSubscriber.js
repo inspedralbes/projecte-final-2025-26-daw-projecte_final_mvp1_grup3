@@ -43,7 +43,8 @@ async function init(io) {
     socket: {
       host: host,
       port: port
-    }
+    },
+    password: process.env.REDIS_PASSWORD || undefined
   });
 
   subscriber.on('error', function (err) {

@@ -37,7 +37,8 @@ async function obtenirClient() {
     socket: {
       host: host,
       port: port
-    }
+    },
+    password: process.env.REDIS_PASSWORD || undefined
   });
 
   client.on('error', function (err) {

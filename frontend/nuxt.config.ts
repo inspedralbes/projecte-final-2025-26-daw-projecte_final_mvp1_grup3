@@ -7,9 +7,11 @@ export default defineNuxtConfig({
     '@nuxtjs/i18n',
   ],
   i18n: {
-    lazy: true,
+    lazy: false,
     langDir: 'lang',
     defaultLocale: 'ca',
+    preload: ['ca', 'es', 'en'],
+    strictMessage: false,
     strategy: 'no_prefix',
     locales: [
       { code: 'ca', iso: 'ca-ES', file: 'ca.json', name: 'Català' },

@@ -168,23 +168,25 @@ var xpPercent = computed(function() {
   return (user.value.xp_total % 1000) / 10;
 });
 
-function carregarPerfil() {
-  loading.value = true;
-  authFetch(getBaseUrl() + '/api/user/profile')
-    .then(function(r) { return r.json(); })
-    .then(function(d) { user.value = d.data || d; loading.value = false; });
-}
-
-function carregarLogs() {
-  loadingLogs.value = true;
-  authFetch(getBaseUrl() + '/api/habits/logs')
-    .then(function(r) { return r.json(); })
-    .then(function(d) { logs.value = d.data || d || []; loadingLogs.value = false; });
-}
-
 onMounted(function() {
-  carregarPerfil();
-  carregarLogs();
+  loading.value = true;
+  loadingLogs.value = true;
+  var profilePromise = authFetch(getBaseUrl() + '/api/user/profile')
+    .then(function(r) { return r.json(); })
+    .then(function(d) { user.value = d.data || d; });
+  var logsPromise = authFetch(getBaseUrl() + '/api/habits/logs')
+    .then(function(r) { return r.json(); })
+    .then(function(d) { logs.value = d.data || d || []; });
+  Promise.all([profilePromise, logsPromise])
+    .then(function() {
+      loading.value = false;
+      loadingLogs.value = false;
+    })
+    .catch(function(err) {
+      console.error("Error carregant perfil:", err);
+      loading.value = false;
+      loadingLogs.value = false;
+    });
 });
 </script>
 

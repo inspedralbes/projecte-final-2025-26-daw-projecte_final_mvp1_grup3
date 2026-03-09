@@ -148,6 +148,7 @@ export default {
   data: function () {
     return {
       socket: null,
+      procesantHabits: [],
       estaCarregantHabits: false,
       errorMissatge: "",
       imatgeMascota: mascotaImg,
@@ -157,6 +158,7 @@ export default {
       esObertModalRatxa: false,
       ratxaAnteriorModal: 0,
       habitSeleccionat: null,
+      ruletaProcessant: false,
       estilFons: {
         backgroundImage: "url(" + bosqueImg + ")",
         backgroundSize: "cover",
@@ -252,13 +254,28 @@ export default {
     },
 
     /**
-     * Incrementa el progrés de l'hàbit seleccionat.
+     * Actualitza el progrés local al store (per feedback immediat a la UI).
+     */
+    actualitzarProgresLocal: function (habitId, progress, completedToday) {
+      if (!habitId) return;
+      var mapa = this.gameStore.habitProgress || {};
+      mapa[habitId] = { progress: progress, completed_today: !!completedToday };
+      this.gameStore.habitProgress = Object.assign({}, mapa);
+    },
+
+    /**
+     * Incrementa el progrés de l'hàbit seleccionat. Actualització optimista + enviar al backend.
      */
     incrementarHabit: function () {
-      if (!this.habitSeleccionat || !this.socket) {
-        return;
+      if (!this.habitSeleccionat) return;
+      var id = this.habitSeleccionat.id;
+      var current = this.obtenirProgres(id);
+      var max = this.habitSeleccionat.objectiuVegades || 1;
+      if (current >= max) return;
+      this.actualitzarProgresLocal(id, current + 1, false);
+      if (this.socket && this.socket.connected) {
+        this.gameStore.enviarProgresHabit(id, 1, this.socket);
       }
-      this.gameStore.enviarProgresHabit(this.habitSeleccionat.id, 1, this.socket);
     },
 
     /**
@@ -266,19 +283,32 @@ export default {
      * Si restar faria que l'hàbit deixi d'estar completat, mostra avís amb SweetAlert.
      */
     decrementarHabit: function () {
-      if (!this.habitSeleccionat || !this.socket) {
-        return;
-      }
+      if (!this.habitSeleccionat) return;
+      var id = this.habitSeleccionat.id;
       var progressActual = this.progresModal;
       var objectiu = this.objectiuModal;
-      var completatAvui = this.habitCompletatAvui(this.habitSeleccionat.id);
+      var completatAvui = this.habitCompletatAvui(id);
       if (completatAvui && (progressActual - 1) < objectiu) {
         this.mostrarAlertaRestarHabitCompletat(function () {
-          this.gameStore.enviarProgresHabit(this.habitSeleccionat.id, -1, this.socket);
+          this.actualitzarProgresLocal(id, progressActual - 1, false);
+          if (this.socket && this.socket.connected) {
+            this.gameStore.enviarProgresHabit(id, -1, this.socket);
+          }
         }.bind(this));
         return;
       }
-      this.gameStore.enviarProgresHabit(this.habitSeleccionat.id, -1, this.socket);
+      if (progressActual <= 0) return;
+      this.actualitzarProgresLocal(id, progressActual - 1, false);
+      if (this.socket && this.socket.connected) {
+        this.gameStore.enviarProgresHabit(id, -1, this.socket);
+      }
+    },
+
+    /**
+     * Comprova si un hàbit s'està processant actualment.
+     */
+    comvprovarSiSestaProcessant: function (idHabit) {
+      return this.procesantHabits.indexOf(idHabit) >= 0;
     },
 
     /**
@@ -287,27 +317,35 @@ export default {
      */
     confirmarHabit: async function () {
       var self = this;
-      if (!this.habitSeleccionat) {
-        return;
-      }
+      if (!this.habitSeleccionat) return;
       var habitId = this.habitSeleccionat.id;
       var objectiu = this.objectiuModal || 1;
       var usedApi = !this.socket || !this.socket.connected;
-      var resultat = this.gameStore.completarHabit(habitId, this.socket);
-      this.tancarModalHabit();
-      if (resultat && typeof resultat.then === "function") {
-        var ok = await resultat;
-        if (ok && usedApi) {
-          self.actualitzarProgresLocal(habitId, objectiu, true);
-          self.mostrarAlertaHabitCompletat();
+      self.procesantHabits.push(habitId);
+      self.errorMissatge = "";
+      var success = false;
+      try {
+        var resultat = self.gameStore.completarHabit(habitId, self.socket);
+        self.tancarModalHabit();
+        if (resultat && typeof resultat.then === "function") {
+          success = await resultat;
+          if (success && usedApi) {
+            self.actualitzarProgresLocal(habitId, objectiu, true);
+            self.mostrarAlertaHabitCompletat();
+          }
+          if (usedApi) {
+            self.gameStore.obtenirProgresHabits().then(function (mapa) {
+              if (mapa) self.gameStore.habitProgress = mapa;
+            }).catch(function () {});
+          }
+        } else if (resultat === true) {
+          success = true;
         }
-        if (usedApi) {
-          self.gameStore.obtenirProgresHabits().then(function (mapa) {
-            if (mapa) {
-              self.gameStore.habitProgress = mapa;
-            }
-          }).catch(function () {});
-        }
+      } catch (err) {
+        console.error("Error completant hàbit:", err);
+        self.errorMissatge = "Error inesperat en completar l'hàbit.";
+      } finally {
+        self.procesantHabits = self.procesantHabits.filter(function (id) { return id !== habitId; });
       }
       setTimeout(function () {
         self.gameStore.obtenirEstatJoc();
@@ -338,22 +376,6 @@ export default {
       var self = this;
       self.socket = useNuxtApp().$socket;
       if (!self.socket) return;
-      self.socket.on("roulette_result", function (payload) {
-        console.log("Ruleta result rebuda:", payload);
-        if (payload.success) {
-          self.$swal.fire({
-            icon: 'success',
-            title: self.$t('home.roulette_won_title') || '¡Enhorabona!',
-            text: self.$t('home.roulette_won_text', { premi: payload.premi_text || payload.premi_valor }) || 'Has guanyat un premi!'
-          });
-          self.gameStore.obtenirEstatJoc(); // Actualitzar canSpinRoulette i monedes
-        }
-      });
-
-      self.socket.on("disconnect", function () {
-        console.log("Socket desconnectat.");
-      });
-
       self.socket.on("habit_action_confirmed", function (payload) {
         if (!payload || payload.success !== true) {
           if (payload && payload.message) {
@@ -585,21 +607,25 @@ export default {
     gestionarResultatRuleta: function (data) {
       var self = this;
       self.aturarSpinRuleta();
-      if (!data) {
-        self.ruletaProcessant = false;
-        return;
-      }
+      self.ruletaProcessant = false;
+      if (!data) return;
       if (data.error) {
-        self.ruletaProcessant = false;
         self.mostrarAlertaRuleta("Ruleta", data.error, "error");
         return;
       }
-
       self.gameStore.canSpinRoulette = false;
       if (data.ruleta_ultima_tirada !== undefined) {
         self.gameStore.ruletaUltimaTirada = data.ruleta_ultima_tirada;
       }
-      self.ruletaProcessant = false;
+      self.gameStore.obtenirEstatJoc();
+      var premiLabel = data.label || data.premi_text || data.premi_valor || "";
+      if (premiLabel) {
+        self.$swal.fire({
+          icon: "success",
+          title: self.$t("home.roulette_won_title") || "Enhorabona!",
+          text: self.$t("home.roulette_won_text", { premi: premiLabel }) || "Has rebut " + premiLabel + "!"
+        });
+      }
     },
 
     /**
@@ -679,43 +705,29 @@ export default {
         icon: "success"
       });
     },
-    incrementarHabit: function () {
-      if (!this.habitSeleccionat) return;
-      var id = this.habitSeleccionat.id;
-      var current = this.gameStore.habitProgress[id] ? this.gameStore.habitProgress[id].progress : 0;
-      var max = this.habitSeleccionat.objectiuVegades || 1;
-      if (current < max) {
-        this.gameStore.habitProgress[id] = this.gameStore.habitProgress[id] || { progress: 0, completed_today: false };
-        this.gameStore.habitProgress[id].progress = current + 1;
-      }
+    obrirModalLogros: function () {
+      var self = this;
+      self.esObertModalLogros = true;
+      self.logroStore.carregarLogros().then(function () {
+        console.log("Logros carregats al modal");
+      }).catch(function (err) {
+        console.error("Error carregant logros al modal:", err);
+      });
     },
-    decrementarHabit: function () {
-      if (!this.habitSeleccionat) return;
-      var id = this.habitSeleccionat.id;
-      var current = this.gameStore.habitProgress[id] ? this.gameStore.habitProgress[id].progress : 0;
-      if (current > 0) {
-        this.gameStore.habitProgress[id].progress = current - 1;
-      }
-    },
-    comvprovarSiSestaProcessant: function (habitId) {
-      return false; // Implement correct processing logic if needed
-    },
-    confirmarHabit: function () {
-      if (!this.habitSeleccionat) return;
-      this.gameStore.confirmarHabit(this.habitSeleccionat.id, this.socket);
-      this.tancarModalHabit();
-    },
-    obrirModalLogros: function () { this.esObertModalLogros = true; },
     tancarModalLogros: function () { this.esObertModalLogros = false; },
-    obrirModalRuleta: function () { this.esObertModalRuleta = true; },
-    tancarModalRuleta: function () { this.esObertModalRuleta = false; },
+    obrirModalRuleta: function () {
+      if (!this.canSpinRoulette) return;
+      this.esObertModalRuleta = true;
+    },
+    tancarModalRuleta: function () {
+      this.esObertModalRuleta = false;
+      this.aturarSpinRuleta();
+      this.ruletaProcessant = false;
+    },
     enviarSpinRuleta: function () {
       if (this.socket) {
         this.socket.emit("roulette_spin", {});
       }
-    },
-    mostrarAvisIncomplet: function() {
-      // SweetAlert logic for incomplete habit if needed
     }
   }
 };

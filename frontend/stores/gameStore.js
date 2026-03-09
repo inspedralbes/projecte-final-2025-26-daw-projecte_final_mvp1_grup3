@@ -145,7 +145,7 @@ export var useGameStore = defineStore("game", {
     /**
      * Actualitza l'estat del joc des del payload xp_update rebut per socket
      * (habit completat, ruleta, etc.).
-     * @param {Object} dades - { xp_total, ratxa_actual, ratxa_maxima, monedes }
+     * @param {Object} dades - { xp_total, ratxa_actual, ratxa_maxima, monedes, nivell, xp_actual_nivel, xp_objetivo_nivel }
      */
     actualitzarDesDeXpUpdate: function (dades) {
       if (!dades) {
@@ -162,6 +162,15 @@ export var useGameStore = defineStore("game", {
       }
       if (dades.monedes !== undefined) {
         this.monedes = dades.monedes;
+      }
+      if (dades.nivell !== undefined) {
+        this.nivell = dades.nivell;
+      }
+      if (dades.xp_actual_nivel !== undefined) {
+        this.xpActualNivel = dades.xp_actual_nivel;
+      }
+      if (dades.xp_objetivo_nivel !== undefined) {
+        this.xpObjetivoNivel = dades.xp_objetivo_nivel;
       }
     },
 

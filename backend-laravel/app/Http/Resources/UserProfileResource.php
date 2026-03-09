@@ -47,6 +47,8 @@ class UserProfileResource extends JsonResource
             'email' => $this->resource->email,
             'nivell' => (int) $this->resource->nivell,
             'xp_total' => (int) $this->resource->xp_total,
+            'xp_actual_nivel' => (int) ($this->resource->xp_actual_nivel ?? 0),
+            'xp_objetivo_nivel' => (int) ($this->resource->xp_objetivo_nivel ?? 1000),
             'monedes' => (int) $this->resource->monedes,
             'ratxa_actual' => (int) ($this->resource->ratxa_actual ?? 0),
             'ratxa_maxima' => (int) ($this->resource->ratxa_maxima ?? 0),

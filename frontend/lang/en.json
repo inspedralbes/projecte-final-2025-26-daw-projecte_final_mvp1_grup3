@@ -1,4 +1,4 @@
-﻿{
+{
   "welcome": "Welcome",
   "dominate_habits": "Dominate your habits, dominate your life.",
   "login": "Login",
@@ -19,8 +19,8 @@
   "login_button": "ENTER LOOPY",
   "login_continue_with": "Or continue with",
   "already_have_account": "Already have an account?",
-  "email_placeholder": "your.email@example.com",
-  "password_placeholder_dots": "â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢",
+  "email_placeholder": "your.email{'@'}example.com",
+  "password_placeholder_dots": "••••••••",
   "error_empty_fields": "Please fill in all fields.",
   "error_all_fields_required": "All fields are required",
   "error_password_mismatch": "Passwords do not match.",
@@ -66,12 +66,12 @@
     "stats_desc": "Measure your progress.",
     "challenges": "Challenges",
     "challenges_desc": "Surpass your limits.",
-    "level_guardian": "Level 5 Â· Guardian",
+    "level_guardian": "Level 5 · Guardian",
     "daily_progress": "Daily Progress",
     "water_habit": "Drink Water",
     "health_category": "Health",
     "diary_habit": "Diary",
-    "completed_creativity": "Completed Â· Creativity"
+    "completed_creativity": "Completed · Creativity"
   },
   "nav": {
     "home": "Home",
@@ -126,7 +126,8 @@
     "mission_completed_title": "Mission completed!",
     "mission_completed_text": "You have completed your daily mission! +10 coins and +20 XP",
     "confirm": "Confirm",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "back": "Back"
   },
   "habits": {
     "title": "Create Habit",

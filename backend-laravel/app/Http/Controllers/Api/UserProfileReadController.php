@@ -8,7 +8,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\UserProfileResource;
 use App\Models\Ratxa;
 use App\Models\User;
-use App\Services\LogroService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -22,21 +21,6 @@ use Illuminate\Http\Request;
  */
 class UserProfileReadController extends Controller
 {
-    /**
-     * Servei de logros.
-     *
-     * @var LogroService
-     */
-    protected LogroService $logroService;
-
-    /**
-     * Constructor. Injecció del servei.
-     */
-    public function __construct(LogroService $logroService)
-    {
-        $this->logroService = $logroService;
-    }
-
     //================================ MÈTODES / FUNCIONS ===========
 
     /**
@@ -50,8 +34,8 @@ class UserProfileReadController extends Controller
             return response()->json(['message' => 'No autoritzat'], 401);
         }
 
-        $this->logroService->comprovarLogros($usuariId);
-
+        // comprovarLogros diferit: es crida quan es completa un hàbit (HabitService).
+        // Evita la lentitud de ~20-40 queries SQL en cada càrrega del perfil.
         $usuari = User::with('logros')->find($usuariId);
 
         if (!$usuari) {

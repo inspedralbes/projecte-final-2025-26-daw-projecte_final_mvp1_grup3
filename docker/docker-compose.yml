@@ -88,6 +88,7 @@ services:
       APP_DEBUG: "false"
     volumes:
       - ../backend-laravel:/var/www
+      - /var/www/vendor
       - ../database:/var/database:ro
     depends_on:
       postgres:
@@ -111,6 +112,7 @@ services:
       APP_DEBUG: "false"
     volumes:
       - ../backend-laravel:/var/www
+      - /var/www/vendor
       - ../database:/var/database:ro
     depends_on:
       postgres:
@@ -136,6 +138,7 @@ services:
       REDIS_CLIENT: phpredis
     volumes:
       - ../backend-laravel:/var/www
+      - /var/www/vendor
       - ../database:/var/database:ro
     depends_on:
       postgres:
@@ -159,6 +162,7 @@ services:
       APP_DEBUG: "false"
     volumes:
       - ../backend-laravel:/var/www
+      - /var/www/vendor
       - ../database:/var/database:ro
     depends_on:
       postgres:
@@ -182,6 +186,7 @@ services:
       APP_DEBUG: "false"
     volumes:
       - ../backend-laravel:/var/www
+      - /var/www/vendor
       - ../database:/var/database:ro
     depends_on:
       postgres:
@@ -227,8 +232,8 @@ services:
       NODE_ENV: production
       NUXT_HOST: 0.0.0.0
       NUXT_PORT: 3000
-      NUXT_PUBLIC_SOCKET_URL: ${SOCKET_URL:-http://localhost:3001}
-      NUXT_PUBLIC_API_URL: ${API_URL:-http://localhost:8000}
+      NUXT_PUBLIC_SOCKET_URL: ${SOCKET_URL}
+      NUXT_PUBLIC_API_URL: ${API_URL}
       NITRO_PORT: 3000
     depends_on:
       - backend-node

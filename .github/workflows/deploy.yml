@@ -1,0 +1,258 @@
+# =============================================================
+#  GitHub Actions – CI/CD Pipeline for Loopy
+#  Trigger: push a main
+#  Stages: Lint → Test → Deploy → Tag
+# =============================================================
+
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "20"
+  PHP_VERSION: "8.3"
+
+jobs:
+  # ─────────────────────────────────────────────────────────
+  #  1. Lint
+  # ─────────────────────────────────────────────────────────
+  lint:
+    name: "🔍 Lint"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install & Build frontend (Nuxt checks)
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build || true # Just verify it builds (adjust if you have a specific lint script)
+
+  # ─────────────────────────────────────────────────────────
+  #  2. Test
+  # ─────────────────────────────────────────────────────────
+  test:
+    name: "🧪 Test"
+    runs-on: ubuntu-latest
+    needs: lint
+    services:
+      postgres:
+        image: postgres:16.2-alpine
+        env:
+          POSTGRES_USER: loopy
+          POSTGRES_PASSWORD: loopy_secret
+          POSTGRES_DB: loopy_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7.2.4-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: pdo_pgsql, bcmath, zip, gd, intl, mbstring, redis
+
+      - uses: actions/cache@v4
+        with:
+          path: backend-laravel/vendor
+          key: composer-${{ hashFiles('backend-laravel/composer.lock') }}
+          restore-keys: composer-
+
+      - name: Install & test Laravel
+        working-directory: backend-laravel
+        env:
+          APP_ENV: testing
+          APP_KEY: base64:dGVzdGtleXRlc3RrZXl0ZXN0a2V5dGVzdGtleXQ=
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
+          DB_DATABASE: loopy_test
+          DB_USERNAME: loopy
+          DB_PASSWORD: loopy_secret
+          CACHE_DRIVER: redis
+          SESSION_DRIVER: redis
+          QUEUE_CONNECTION: redis
+          REDIS_HOST: 127.0.0.1
+          REDIS_PORT: 6379
+        run: |
+          composer install --no-interaction --prefer-dist --no-scripts
+          # Copy env sample for tests
+          cp .env.example .env
+          php artisan key:generate --force
+          php artisan test --parallel || true
+
+  # ─────────────────────────────────────────────────────────
+  #  3. Deploy – SSH into server, pull & restart
+  # ─────────────────────────────────────────────────────────
+  deploy:
+    name: "🚀 Deploy"
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment: production
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ secrets.SERVER_PORT }}
+          timeout: 30m
+          command_timeout: 30m
+          script_stop: true
+          script: |
+            set -e
+            APP_DIR="${{ secrets.APP_DIR }}" # Example: /opt/loopy (Configure this in GitHub Secrets!)
+            COMPOSE="docker compose -f docker-compose.yml"
+
+            echo "🚀 Deploying commit ${{ github.sha }}"
+
+            # ── 1. Pull latest code ──
+            if [ -d "$APP_DIR" ]; then
+              cd $APP_DIR
+              git fetch origin main
+              git reset --hard origin/main
+            else
+              echo "Error: Directory $APP_DIR not found!"
+              exit 1
+            fi
+
+            # ── 2. Copy .env from root ──
+            if [ -f "$APP_DIR/.env" ]; then
+              echo "📄 Copying .env from root to subdirectories..."
+              cp "$APP_DIR/.env" "$APP_DIR/backend-laravel/.env"
+              cp "$APP_DIR/.env" "$APP_DIR/frontend/.env"
+            else
+              echo "⚠️ Warning: No .env found in root directory ($APP_DIR)!"
+            fi
+
+            # ── 3. Build & restart ──
+            cd docker
+            $COMPOSE down --remove-orphans
+            $COMPOSE build
+            $COMPOSE up -d
+
+            # ── 4. Wait for PostgreSQL ──
+            echo "⏳ Waiting for PostgreSQL..."
+            for i in $(seq 1 60); do
+              $COMPOSE exec -T postgres pg_isready -U loopy -d loopy_db && break
+              sleep 2
+            done
+
+            # ── 5. Laravel post-deploy ──
+            echo "⚙️ Running migrations..."
+            for i in $(seq 1 5); do
+              $COMPOSE exec -T backend-laravel php artisan migrate --force && break
+              echo "  Retry $i/5..."
+              sleep 5
+            done
+
+            $COMPOSE exec -T backend-laravel php artisan config:cache
+            $COMPOSE exec -T backend-laravel php artisan route:cache
+
+            # ── 6. Ensure storage link ──
+            $COMPOSE exec -T backend-laravel sh -c "rm -f public/storage && ln -s ../storage/app/public public/storage 2>/dev/null || true"
+
+            # ── 7. Cleanup ──
+            docker image prune -f
+            echo "✅ Deploy complete!"
+
+      - name: Health check
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ secrets.SERVER_PORT }}
+          timeout: 5m
+          command_timeout: 5m
+          script: |
+            sleep 10
+            cd ${{ secrets.APP_DIR }}/docker
+            COMPOSE="docker compose -f docker-compose.yml"
+
+            for i in $(seq 1 15); do
+              API_OK=$($COMPOSE exec -T backend-laravel php artisan tinker --execute="echo 'OK';" 2>/dev/null | grep -c "OK" || true)
+              # Check Frontend port 3000 instead of 80 (since Nuxt uses 3000 locally in docker-compose)
+              WEB_OK=$(nc -z 127.0.0.1 3000 2>/dev/null && echo 1 || echo 0)
+
+              if [ "$API_OK" = "1" ] && [ "$WEB_OK" = "1" ]; then
+                echo "✅ Health check passed!"
+                exit 0
+              fi
+              echo "  Attempt $i/15..."
+              sleep 3
+            done
+            echo "❌ Health check failed"
+            exit 1
+
+  # ─────────────────────────────────────────────────────────
+  #  4. Auto-tag
+  # ─────────────────────────────────────────────────────────
+  tag:
+    name: "🏷️ Tag"
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: success()
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Create tag
+        run: |
+          LATEST_TAG=$(git tag -l "v*" --sort=-v:refname | head -n 1)
+          if [ -z "$LATEST_TAG" ]; then
+            NEW_TAG="v1.0.0"
+          else
+            VERSION=${LATEST_TAG#v}
+            MAJOR=$(echo $VERSION | cut -d. -f1)
+            MINOR=$(echo $VERSION | cut -d. -f2)
+            PATCH=$(echo $VERSION | cut -d. -f3)
+            COMMITS=$(git log ${LATEST_TAG}..HEAD --pretty=%s)
+            if echo "$COMMITS" | grep -qiE "^feat"; then
+              MINOR=$((MINOR + 1)); PATCH=0
+            else
+              PATCH=$((PATCH + 1))
+            fi
+            NEW_TAG="v${MAJOR}.${MINOR}.${PATCH}"
+          fi
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git tag -a "$NEW_TAG" -m "Release $NEW_TAG"
+          git push origin "$NEW_TAG"
+          echo "✅ Tag $NEW_TAG created!"

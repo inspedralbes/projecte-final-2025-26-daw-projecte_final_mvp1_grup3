@@ -1,185 +1,161 @@
 <template>
-  <div class="w-full bg-gradient-to-b from-gray-50 to-gray-100">
-    <div class="max-w-7xl mx-auto w-full">
-      <h1 class="text-2xl font-bold text-gray-800 mb-8 px-2">{{ $t('perfil.title') }}</h1>
+  <div class="login-container relative w-full min-h-screen pb-12 overflow-y-auto">
+    <!-- Navbar / Header Base -->
+    <div class="w-full p-6 flex justify-between items-center z-20">
+      <div class="flex items-center gap-4">
+        <NuxtLink to="/home" class="bg-white/90 backdrop-blur-sm text-green-700 w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-xl shadow-sm hover:shadow-md hover:bg-white transition-all hover:-translate-x-1">
+          ←
+        </NuxtLink>
+        <h1 class="text-3xl font-extrabold text-white drop-shadow-md">{{ $t('perfil.title') }}</h1>
+      </div>
+    </div>
 
-      <!-- Bento Grid Container -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-6 w-full pb-10">
+    <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-8 pb-20">
+      
+      <!-- Columna Esquerra: Dades Perfil i Logros -->
+      <div class="col-span-12 lg:col-span-5 space-y-6">
         
-        <!-- Columna Esquerra: Dades Perfil i Logros -->
-        <div class="col-span-1 lg:col-span-5 space-y-6 w-full">
+        <!-- DADES PERFIL -->
+        <div class="bento-card bg-white/95 backdrop-blur-md rounded-3xl p-8 shadow-xl border border-white/50">
+          <div class="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100">
+            <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center text-xl shadow-sm">👤</div>
+            <h2 class="text-xl font-bold text-gray-800 tracking-tight">{{ $t('perfil.data_title') }}</h2>
+          </div>
           
-          <!-- DADES PERFIL -->
-          <div class="bg-white rounded-2xl shadow-lg p-6 border-t-4 border-blue-500 w-full">
-            <h2 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-6">{{ $t('perfil.data_title') }}</h2>
-            
-            <div v-if="loading" class="animate-pulse space-y-4">
-              <div class="h-4 bg-gray-200 rounded w-3/4"></div>
-              <div class="h-4 bg-gray-200 rounded w-1/2"></div>
+          <div v-if="loading" class="animate-pulse space-y-4">
+            <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+            <div class="h-4 bg-gray-200 rounded w-1/2"></div>
+          </div>
+          
+          <div v-else-if="user" class="space-y-6">
+            <div class="flex items-center gap-6">
+              <div class="w-20 h-20 rounded-3xl bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-3xl font-black shadow-lg">
+                {{ user.nom ? user.nom.charAt(0) : 'U' }}
+              </div>
+              <div class="min-w-0">
+                <h3 class="text-2xl font-black text-gray-800 truncate tracking-tight">{{ user.nom }}</h3>
+                <p class="text-sm font-bold text-gray-400">{{ user.email }}</p>
+              </div>
             </div>
-            
-            <div v-else-if="user" class="space-y-6 w-full">
-              <div class="flex items-center gap-4">
-                <div class="w-16 h-16 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-2xl font-bold flex-shrink-0">
-                  {{ user.nom ? user.nom.charAt(0) : 'U' }}
+
+            <div class="grid grid-cols-2 gap-4">
+              <div class="bg-blue-50/50 p-4 rounded-2xl text-center border border-blue-100 shadow-sm">
+                <p class="text-[10px] text-blue-500 font-black uppercase tracking-widest">{{ $t('home.level') }}</p>
+                <p class="text-3xl font-black text-blue-700 mt-1">{{ user.nivell }}</p>
+              </div>
+              <div class="bg-purple-50/50 p-4 rounded-2xl text-center border border-purple-100 shadow-sm">
+                <p class="text-[10px] text-purple-500 font-black uppercase tracking-widest">{{ $t('home.coins') }}</p>
+                <p class="text-3xl font-black text-purple-700 mt-1">{{ user.monedes }}</p>
+              </div>
+            </div>
+
+            <div class="space-y-3">
+              <div class="flex justify-between text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                <span>{{ $t('perfil.experience') }}</span>
+                <span class="text-blue-600">{{ user.xp_total % 1000 }} / 1000 XP</span>
+              </div>
+              <div class="w-full h-4 bg-gray-100 rounded-full overflow-hidden border border-gray-100 shadow-inner">
+                <div class="h-full bg-gradient-to-r from-blue-400 to-blue-600 rounded-full transition-all duration-1000 shadow-sm" :style="{ width: xpPercent + '%' }"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- LOGROS -->
+        <div class="bento-card bg-white/95 backdrop-blur-md rounded-3xl p-8 shadow-xl border border-white/50">
+          <div class="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100">
+            <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center text-xl shadow-sm">🏅</div>
+            <h2 class="text-xl font-bold text-gray-800 tracking-tight">{{ $t('perfil.achievements') }}</h2>
+          </div>
+          
+          <div v-if="user && user.logros && user.logros.length > 0" class="grid grid-cols-5 gap-3">
+            <div v-for="logro in user.logros" :key="logro.id" class="group relative flex flex-col items-center">
+              <div class="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center text-[20px] shadow-sm group-hover:scale-110 transition-all border border-amber-100 cursor-pointer">
+                🏆
+              </div>
+              <div class="absolute bottom-full mb-3 hidden group-hover:block bg-gray-900/95 text-white text-[10px] py-2 px-3 rounded-xl whitespace-nowrap z-20 shadow-xl border border-white/20">
+                <p class="font-bold text-amber-400">{{ logro.nom }}</p>
+                <p class="font-medium text-gray-300">{{ logro.descripcio }}</p>
+              </div>
+            </div>
+          </div>
+
+          <div v-else class="flex flex-col items-center justify-center py-12 text-gray-300">
+            <div class="text-[40px] mb-2 opacity-20">🏆</div>
+            <p class="text-xs font-black uppercase tracking-widest">{{ $t('perfil.no_achievements') }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Columna Dreta: Mascota y Historial -->
+      <div class="col-span-12 lg:col-span-7 space-y-6">
+        <div class="bento-card bg-white/95 backdrop-blur-md rounded-3xl p-8 shadow-2xl border border-white/50 h-auto flex flex-col">
+          <div class="flex justify-between items-start mb-8">
+            <div>
+              <h2 class="text-2xl font-black text-gray-800 tracking-tight uppercase">{{ $t('perfil.pet_title') }}</h2>
+              <p class="text-sm font-bold text-gray-400">{{ $t('perfil.happy') }}</p>
+            </div>
+            <div class="flex gap-3">
+                <div class="bg-orange-50 px-4 py-2 rounded-2xl border border-orange-100 shadow-sm flex flex-col items-center">
+                  <span class="text-[10px] font-black text-orange-400 uppercase tracking-widest">{{ $t('home.streak') }}</span>
+                  <span class="text-xl font-black text-orange-600">{{ user ? user.ratxa_actual : 0 }}</span>
+                </div>
+                <div class="bg-yellow-50 px-4 py-2 rounded-2xl border border-yellow-100 shadow-sm flex flex-col items-center">
+                  <span class="text-[10px] font-black text-yellow-500 uppercase tracking-widest">MAX</span>
+                  <span class="text-xl font-black text-yellow-700">{{ user ? user.ratxa_maxima : 0 }}</span>
+                </div>
+            </div>
+          </div>
+
+          <!-- Àrea Mascota -->
+          <div class="flex-1 rounded-[2.5rem] relative overflow-hidden flex items-center justify-center border-4 border-gray-50 min-h-[400px] shadow-inner" :style="estilFons">
+            <div class="relative z-10 hover:scale-105 transition-all duration-700 animate-float">
+              <img v-if="imatgeMascota" :src="imatgeMascota" alt="Mascota" class="w-64 h-64 lg:w-80 lg:h-80 object-contain drop-shadow-[0_20px_30px_rgba(0,0,0,0.3)]" />
+            </div>
+          </div>
+
+          <div class="mt-8 text-center bg-gray-50/50 py-4 rounded-2xl border border-gray-100">
+            <p class="text-gray-500 font-bold italic text-sm">{{ $t('perfil.pet_subtitle') }}</p>
+          </div>
+        </div>
+
+        <!-- HISTORIAL DIARI (Compact) -->
+        <div class="bento-card bg-white/95 backdrop-blur-md rounded-3xl p-8 shadow-xl border border-white/50">
+            <h2 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-6">{{ $t('perfil.history') }}</h2>
+            <div v-if="loadingLogs" class="space-y-4">
+              <div v-for="i in 3" :key="i" class="h-16 bg-gray-50 rounded-2xl animate-pulse"></div>
+            </div>
+            <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div v-for="(log, idx) in logs.slice(0, 4)" :key="idx" class="p-4 rounded-2xl bg-gray-50/50 border border-gray-100 flex items-center gap-4 transition-all hover:bg-white hover:border-blue-200 group">
+                <div :class="log.completado ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'" class="w-10 h-10 rounded-xl flex items-center justify-center text-lg shadow-sm">
+                  {{ log.completado ? '✓' : '○' }}
                 </div>
                 <div class="min-w-0">
-                  <h3 class="text-xl font-bold text-gray-800 truncate">{{ user.nom }}</h3>
-                  <p class="text-sm text-gray-500 truncate">{{ user.email }}</p>
-                </div>
-              </div>
-
-              <div class="grid grid-cols-2 gap-4">
-                <div class="bg-blue-50 p-4 rounded-xl text-center">
-                  <p class="text-xs text-blue-600 font-bold uppercase">{{ $t('home.level') }}</p>
-                  <p class="text-2xl font-black text-blue-800">{{ user.nivell }}</p>
-                </div>
-                <div class="bg-purple-50 p-4 rounded-xl text-center">
-                  <p class="text-xs text-purple-600 font-bold uppercase">{{ $t('home.coins') }}</p>
-                  <p class="text-2xl font-black text-purple-800">{{ user.monedes }}</p>
-                </div>
-              </div>
-
-              <div class="space-y-2">
-                <div class="flex justify-between text-xs font-bold text-gray-600">
-                  <span>{{ $t('perfil.experience') }}</span>
-                  <span>{{ user.xp_total % 1000 }} / 1000 XP</span>
-                </div>
-                <div class="w-full h-3 bg-gray-100 rounded-full overflow-hidden border border-gray-200">
-                  <div class="h-full bg-blue-500 rounded-full transition-all duration-1000" :style="{ width: xpPercent + '%' }"></div>
+                  <p class="text-sm font-black text-gray-800 truncate">{{ log.titol }}</p>
+                  <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{{ log.dia }}</p>
                 </div>
               </div>
             </div>
-          </div>
-
-          <!-- LOGROS -->
-          <div class="bg-white rounded-2xl shadow-lg p-6 min-h-[300px] w-full">
-            <h2 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-6">{{ $t('perfil.achievements') }}</h2>
-            
-            <div v-if="loading" class="grid grid-cols-4 gap-4">
-              <div v-for="i in 4" :key="i" class="w-12 h-12 bg-gray-100 rounded-full animate-pulse"></div>
-            </div>
-
-            <div v-else-if="user && user.logros && user.logros.length > 0" class="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-4 xl:grid-cols-5 gap-4">
-              <div v-for="logro in user.logros" :key="logro.id" class="group relative flex flex-col items-center">
-                <div class="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-[10px] font-bold text-orange-600 shadow-sm group-hover:scale-110 transition-transform cursor-pointer border border-orange-200">
-                  {{ $t('home.special').toUpperCase() }}
-                </div>
-                <!-- Tooltip simple -->
-                <div class="absolute bottom-full mb-2 hidden group-hover:block bg-gray-800 text-white text-[10px] py-1 px-2 rounded whitespace-nowrap z-20">
-                  {{ logro.nom }}: {{ logro.descripcio }}
-                </div>
-              </div>
-            </div>
-
-            <div v-else class="flex flex-col items-center justify-center h-48 text-gray-400">
-              <div class="text-xs font-bold uppercase mb-2 border border-gray-200 px-3 py-1 rounded">{{ $t('perfil.blocked') }}</div>
-              <p class="text-sm">{{ $t('perfil.no_achievements') }}</p>
-            </div>
-          </div>
-
-          <!-- HISTORIAL DIARI -->
-          <div class="bg-white rounded-2xl shadow-lg p-6 w-full">
-            <h2 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-6">{{ $t('perfil.history') }}</h2>
-
-            <div v-if="loadingLogs" class="space-y-3">
-              <div class="h-4 bg-gray-200 rounded w-full animate-pulse"></div>
-              <div class="h-4 bg-gray-200 rounded w-3/4 animate-pulse"></div>
-              <div class="h-4 bg-gray-200 rounded w-2/3 animate-pulse"></div>
-            </div>
-
-            <div v-else-if="errorLogs" class="text-sm text-red-500">
-              {{ errorLogs }}
-            </div>
-
-            <div v-else-if="logs.length === 0" class="text-sm text-gray-400">
-              {{ $t('perfil.no_history') }}
-            </div>
-
-            <div v-else class="space-y-3">
-              <div
-                v-for="(log, idx) in logs"
-                :key="log.dia + '-' + log.habit_id + '-' + idx"
-                class="border border-gray-100 rounded-xl p-3 flex flex-col gap-1"
-              >
-                <div class="flex items-center justify-between">
-                  <span class="text-xs font-bold text-gray-500">{{ log.dia }}</span>
-                  <span
-                    class="text-[10px] font-bold px-2 py-1 rounded-full"
-                    :class="log.completado ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'"
-                  >
-                    {{ log.completado ? $t('perfil.completat') : $t('perfil.incomplet') }}
-                  </span>
-                </div>
-                <div class="text-sm font-semibold text-gray-800">{{ log.titol }}</div>
-                <div class="text-xs text-gray-500">
-                  {{ log.progreso_diario }}/{{ log.objectiu_vegades }} {{ log.unitat || $t('habits.placeholder_unit').split(',')[0].trim() }}
-                </div>
-                <div class="text-xs text-gray-500">
-                  XP: {{ log.xp_ganada }} · {{ $t('home.coins') }}: {{ log.monedes_ganadas }}
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
-
-        <!-- Columna Dreta: Mascota -->
-        <div class="col-span-1 lg:col-span-7 w-full">
-          <div class="bg-white rounded-2xl shadow-lg p-8 h-full flex flex-col w-full">
-            <div class="flex justify-between items-start mb-8">
-              <div>
-                <h2 class="text-lg font-bold text-gray-800 uppercase tracking-tight">{{ $t('perfil.pet_title') }}</h2>
-                <p class="text-sm text-gray-500">{{ $t('perfil.happy') }}</p>
-              </div>
-              <div class="text-right flex-shrink-0 flex flex-col items-end gap-2">
-                <div class="inline-flex items-center gap-2 bg-orange-100 px-4 py-2 rounded-full border border-orange-200 shadow-sm">
-                  <span class="text-orange-600 font-bold text-sm tracking-wide">{{ $t('home.streak').toUpperCase() }}: {{ user ? user.ratxa_actual : 0 }}</span>
-                </div>
-                <div class="inline-flex items-center gap-2 bg-yellow-100 px-3 py-1 rounded-full border border-yellow-200 shadow-sm">
-                  <span class="text-yellow-700 font-bold text-xs tracking-wide" :title="$t('perfil.personal_record')">{{ $t('home.max_streak') }}: {{ user ? user.ratxa_maxima : 0 }}</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Àrea Mascota -->
-            <div class="flex-1 rounded-3xl relative overflow-hidden flex items-center justify-center border-4 border-gray-50 min-h-[450px] w-full" :style="estilFons">
-              <div class="relative z-10 hover:scale-105 transition-transform duration-500">
-                <img v-if="imatgeMascota" :src="imatgeMascota" alt="Mascota" class="w-72 h-72 lg:w-96 lg:h-96 object-contain drop-shadow-2xl" />
-              </div>
-              <!-- Ombra de la mascota -->
-              <div class="absolute bottom-16 w-40 h-8 bg-black opacity-10 rounded-[100%] blur-md"></div>
-            </div>
-
-            <div class="mt-8 text-center">
-              <p class="text-gray-600 italic text-sm">{{ $t('perfil.pet_subtitle') }}</p>
-            </div>
-          </div>
-        </div>
-
       </div>
+
     </div>
   </div>
 </template>
 
 <script setup>
-// A. Imports (Seguint AgentNuxt.md: auto-imports preferibles)
 import bosqueImg from "~/assets/img/Bosque.png";
 import mascotaImg from "~/assets/img/Mascota.png";
 import { useAuthStore } from "~/stores/useAuthStore";
 import { authFetch, getBaseUrl } from "~/composables/useApi.js";
 
-// Estat reactiu amb variables VAR (ES5 segons AgentNuxt.md)
-var config = useRuntimeConfig();
 var { t } = useI18n();
 var authStore = useAuthStore();
 var user = ref(null);
 var loading = ref(true);
-var error = ref(null);
 var logs = ref([]);
 var loadingLogs = ref(true);
-var errorLogs = ref(null);
 
-// Recursos estàtics
 var imatgeMascota = mascotaImg;
 var estilFons = {
   backgroundImage: "url(" + bosqueImg + ")",
@@ -187,91 +163,25 @@ var estilFons = {
   backgroundPosition: "center",
 };
 
-/**
- * Propietat computada per calcular el percentatge de la barra d'experiència.
- * Suposem 1000 XP per pujar de nivell per a la visualització.
- */
 var xpPercent = computed(function() {
-  if (!user.value || !user.value.xp_total) {
-    return 0;
-  }
-  // Calculem el progrés respecte a un llindar de 1000 XP
-  var progre = (user.value.xp_total % 1000) / 10;
-  return progre;
+  if (!user.value || !user.value.xp_total) return 0;
+  return (user.value.xp_total % 1000) / 10;
 });
 
-/**
- * Funció clàssica per carregar el perfil des de l'API.
- * Usa authFetch (via useApi) per refresh automàtic en 401.
- */
 function carregarPerfil() {
-  var fullUrl;
   loading.value = true;
-  fullUrl = getBaseUrl() + '/api/user/profile';
-
-  authFetch(fullUrl, { mode: 'cors' })
-    .then(function(resposta) {
-      if (!resposta.ok) {
-        if (resposta.status === 401) {
-          authStore.logout();
-          navigateTo('/auth/login');
-          return;
-        }
-        throw new Error('Error en carregar perfil');
-      }
-      return resposta.json();
-    })
-    .then(function(dades) {
-      var usuariData = dades.data || dades;
-      user.value = usuariData;
-      loading.value = false;
-    })
-    .catch(function(err) {
-      console.error("Error al carregar perfil:", err);
-      error.value = t('perfil.error_profile');
-      loading.value = false;
-    });
+  authFetch(getBaseUrl() + '/api/user/profile')
+    .then(function(r) { return r.json(); })
+    .then(function(d) { user.value = d.data || d; loading.value = false; });
 }
 
-/**
- * Carrega logs diaris des de l'API.
- * Usa authFetch (via useApi) per refresh automàtic en 401.
- */
 function carregarLogs() {
-  var fullUrl;
   loadingLogs.value = true;
-  errorLogs.value = null;
-  fullUrl = getBaseUrl() + '/api/habits/logs';
-
-  authFetch(fullUrl, { mode: 'cors' })
-    .then(function(resposta) {
-      if (!resposta.ok) {
-        if (resposta.status === 401) {
-          authStore.logout();
-          navigateTo('/auth/login');
-          return;
-        }
-        throw new Error('Error en carregar logs');
-      }
-      return resposta.json();
-    })
-    .then(function(dades) {
-      var logsData = dades.data || dades;
-      if (Array.isArray(logsData)) {
-        logs.value = logsData;
-      } else {
-        logs.value = [];
-      }
-      loadingLogs.value = false;
-    })
-    .catch(function(err) {
-      console.error("Error al carregar logs:", err);
-      errorLogs.value = t('perfil.error_history');
-      loadingLogs.value = false;
-    });
+  authFetch(getBaseUrl() + '/api/habits/logs')
+    .then(function(r) { return r.json(); })
+    .then(function(d) { logs.value = d.data || d || []; loadingLogs.value = false; });
 }
 
-// Inicialització quan el component estigui muntat
 onMounted(function() {
   carregarPerfil();
   carregarLogs();
@@ -279,13 +189,12 @@ onMounted(function() {
 </script>
 
 <style scoped>
-/* Transicions suaus per elements del bento */
-.grid > div {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+.animate-float {
+  animation: float 6s ease-in-out infinite;
 }
-
-.grid > div:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+  100% { transform: translateY(0px); }
 }
 </style>

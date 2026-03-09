@@ -1,78 +1,111 @@
 <template>
-  <div class="min-h-screen bg-gray-50 py-12 px-8 lg:px-20 flex items-center">
-    <div class="w-full">
-      <div class="grid grid-cols-2 gap-12 items-center">
-        <div class="bg-white rounded-xl p-8 shadow-md" style="max-width: 420px">
-          <div class="flex flex-col items-center gap-4 relative">
-            <div class="absolute top-0 right-0">
-              <LanguageSwitcher />
-            </div>
-            <div class="w-20 h-20 rounded-full bg-green-500/10 flex items-center justify-center">
-              <div class="w-12 h-12 rounded-full bg-green-600 text-white flex items-center justify-center font-semibold">∞</div>
-            </div>
-            <h2 class="text-2xl font-semibold text-gray-800">Loopy Master</h2>
-            <p class="text-sm text-gray-500 text-center">{{ $t('dominate_habits') }}</p>
-          </div>
-          <form class="mt-6 space-y-4" @submit.prevent="ferLogin">
-            <div v-if="errorMissatge" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded text-sm">{{ errorMissatge }}</div>
-            <div>
-              <label class="block text-xs font-medium text-gray-600 mb-2">{{ $t('email') }}</label>
-              <input v-model="formulari.email" type="email" placeholder="alex.martinez@exemple.com" class="w-full px-4 py-3 rounded-lg border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-200" />
-            </div>
-            <div>
-              <label class="block text-xs font-medium text-gray-600 mb-2">{{ $t('password') }}</label>
-              <input v-model="formulari.contrasenya" type="password" placeholder="••••••••" class="w-full px-4 py-3 rounded-lg border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-200" />
-            </div>
-            <div class="pt-2">
-              <button type="submit" :disabled="estaCarregant" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 rounded-lg disabled:opacity-50">{{ $t('login') }}</button>
-            </div>
-            <div class="pt-2">
-              <NuxtLink to="/auth/registre">
-                <button type="button" class="w-full bg-white border border-gray-200 text-gray-700 font-medium py-3 rounded-lg hover:bg-gray-50">{{ $t('register') }}</button>
-              </NuxtLink>
-            </div>
-            <div class="text-center text-xs text-green-600 mt-3 cursor-pointer">{{ $t('forgot_password') }}</div>
-          </form>
+  <div class="login-container">
+    <div class="login-lang-switch">
+      <LanguageSwitcher />
+    </div>
+
+    <!-- ===== COLUMNA IZQUIERDA (Formulario de Login) ===== -->
+    <div class="login-left-col">
+      <div class="login-header">
+        <div class="login-logo">
+          <span class="login-logo-text">Loopy</span>
+          <img src="@/assets/img/LogoLoopy.png" alt="Loopy Logo" class="login-logo-image" />
         </div>
-        <div class="grid grid-rows-3 gap-6 h-full">
-          <div class="grid grid-cols-3 gap-6 items-start">
-            <div class="col-span-1"></div>
-            <div class="col-span-1 bg-white rounded-xl p-4 shadow-sm flex flex-col items-center">
-              <div class="text-sm font-medium mt-3">{{ $t('preview.your_companion') }}</div>
-              <div class="text-xs text-gray-400">{{ $t('preview.level_guardian') }}</div>
+        <h1 class="login-title">Benvingut/da!</h1>
+        <p class="login-subtitle">Entra al bucle de bons hàbits.</p>
+      </div>
+
+      <form class="login-form" @submit.prevent="ferLogin">
+        <div v-if="errorMissatge" class="login-error-msg">
+          {{ errorMissatge }}
+        </div>
+        
+        <div>
+          <input v-model="formulari.email" type="email" :placeholder="$t('email')" class="login-input" />
+        </div>
+
+        <div>
+          <input v-model="formulari.contrasenya" type="password" :placeholder="$t('password')" class="login-input" />
+        </div>
+
+        <div class="pt-4">
+          <button type="submit" :disabled="estaCarregant" class="login-btn-primary">
+            ENTRAR A LOOPY
+          </button>
+        </div>
+
+        <div class="login-divider">
+          <span class="login-divider-text">O continua amb</span>
+        </div>
+
+        <div>
+          <NuxtLink to="/auth/registre" class="block w-full">
+            <button type="button" class="login-btn-outline">
+              REGISTRAR-SE
+            </button>
+          </NuxtLink>
+        </div>
+      </form>
+    </div>
+
+    <!-- ===== COLUMNA DERECHA (Bento Grid) ===== -->
+    <div class="login-right-col">
+      <div class="login-bg-pattern"></div>
+      <div class="login-bento-container">
+        <div class="login-bento-grid">
+          <div class="bento-card-col">
+            <div class="bento-card bento-card-small">
+              <div class="bento-icon text-red-500">🏆</div>
+              <h3 class="bento-title">Crecimiento</h3>
+              <p class="bento-desc">Tus hábitos te definen.</p>
             </div>
-            <div class="col-span-1 bg-white rounded-xl p-3 shadow-sm flex flex-col justify-between">
-              <div class="text-xs text-gray-400">{{ $t('preview.daily_progress') }}</div>
-              <div class="w-full bg-gray-100 rounded-full h-3 mt-3 overflow-hidden">
-                <div class="bg-green-500 h-3 rounded-full" :style="{ width: percentatgeProgres + '%' }"></div>
-              </div>
+            <div class="bento-card bento-card-small">
+              <div class="bento-icon text-blue-500">🔲</div>
+              <h3 class="bento-title">Plantillas</h3>
+              <p class="bento-desc">Inspiración para empezar.</p>
             </div>
           </div>
-          <div class="flex items-center justify-center">
-            <div class="bg-white rounded-xl p-8 shadow-md w-full max-w-xl flex items-center gap-6">
-              <div class="w-24 h-24 rounded-xl bg-amber-50 flex items-center justify-center"></div>
-              <div>
-                <div class="text-lg font-semibold uppercase">ElTeuMonstre</div>
-                <div class="text-sm text-gray-400">{{ $t('preview.level_guardian') }}s</div>
-              </div>
-              <div class="ml-auto text-sm text-gray-500">⭐ 42</div>
+          
+          <div class="bento-card-col-mid">
+            <div class="bento-card bento-card-small">
+              <div class="bento-icon text-yellow-400">🔥</div>
+              <h3 class="bento-title">Rachas</h3>
+              <p class="bento-desc">Mantén el fuego.</p>
+            </div>
+            <div class="bento-card bento-card-small">
+              <div class="bento-icon text-orange-500">💬</div>
+              <h3 class="bento-title">Comunidad</h3>
+              <p class="bento-desc">Comparte tus logros.</p>
             </div>
           </div>
-          <div class="grid grid-cols-3 gap-6 items-end">
-            <div class="col-span-1 bg-blue-50 rounded-xl p-6 shadow-sm flex items-center justify-center">
-              <div class="text-center">
-                <div class="text-sm text-gray-500">{{ $t('preview.water_habit') }}</div>
-                <div class="text-xs text-gray-400">2 / 4 · {{ $t('preview.health_category') }}</div>
-              </div>
+
+          <div class="bento-card-col">
+             <div class="bento-card bento-card-tall">
+              <div class="bento-icon text-purple-600">📈</div>
+              <h3 class="bento-title">Estadísticas</h3>
+              <p class="bento-desc">Mide tu progreso.</p>
             </div>
-            <div class="col-span-1"></div>
-            <div class="col-span-1 bg-yellow-50 rounded-xl p-6 shadow-sm flex items-center justify-center">
-              <div class="text-center">
-                <div class="text-sm text-gray-700">{{ $t('preview.diary_habit') }}</div>
-                <div class="text-xs text-gray-400">{{ $t('preview.completed_creativity') }}</div>
-              </div>
+             <div class="bento-card bento-card-tall">
+              <div class="bento-icon text-teal-600">🎯</div>
+              <h3 class="bento-title">Retos</h3>
+              <p class="bento-desc">Supera tus límites.</p>
             </div>
           </div>
+        </div>
+
+        <div class="bento-banner">
+           <div class="bento-banner-content">
+              <h2 class="bento-banner-title">Tu Compañero</h2>
+              <p class="bento-banner-subtitle">Hazlo evolucionar con cada tarea completada.</p>
+           </div>
+           <div class="bento-banner-ghost-wrap">
+              <svg viewBox="0 0 100 100" class="bento-banner-ghost-svg">
+                 <path d="M 20 50 C 20 20, 80 20, 80 50 L 80 95 C 80 95, 75 90, 70 95 C 65 100, 60 90, 50 95 C 40 100, 35 90, 30 95 C 25 100, 20 95, 20 95 Z" />
+                 <circle cx="40" cy="50" r="5" fill="#fdfdfd" opacity="0.4" />
+                 <circle cx="60" cy="50" r="5" fill="#fdfdfd" opacity="0.4" />
+              </svg>
+           </div>
+           <div class="bento-banner-accent"></div>
         </div>
       </div>
     </div>

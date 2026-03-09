@@ -9,7 +9,7 @@
 
     /* Contenedor Principal */
     .login-container {
-        @apply min-h-screen bg-white flex w-full h-full relative overflow-hidden;
+        @apply min-h-screen bg-transparent flex w-full h-full relative overflow-hidden;
         font-family: 'Fredoka', sans-serif;
     }
 
@@ -19,7 +19,7 @@
 
     /* Lado Izquierdo (Formulario) */
     .login-left-col {
-        @apply w-full lg:w-[40%] flex flex-col justify-center px-8 sm:px-16 lg:px-24 xl:px-32 z-10 bg-white;
+        @apply w-full lg:w-[40%] flex flex-col justify-center px-8 sm:px-16 lg:px-24 xl:px-32 z-10 bg-white/80 backdrop-blur-md lg:bg-white;
     }
 
     .login-header {
@@ -158,6 +158,22 @@
 
     .bento-banner-accent {
         @apply absolute right-0 top-0 h-full w-48 bg-white/5 skew-x-12 translate-x-10 pointer-events-none;
+    }
+
+    /* ==== GLOBAL APP LAYOUT ==== */
+    .global-app-container {
+        @apply min-h-screen bg-cover bg-center bg-fixed relative;
+        background-image: url('../img/fondo_login.png');
+        font-family: 'Fredoka', sans-serif;
+    }
+
+    .global-app-container::before {
+        content: "";
+        @apply absolute inset-0 bg-white/10 backdrop-blur-[2px] pointer-events-none;
+    }
+
+    .global-content-wrapper {
+        @apply relative z-10;
     }
 }
 

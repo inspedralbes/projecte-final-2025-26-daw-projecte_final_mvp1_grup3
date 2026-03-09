@@ -1,5 +1,5 @@
 <template>
-  <div class="login-container">
+  <div class="global-app-container login-container">
     <div class="login-lang-switch">
       <LanguageSwitcher />
     </div>
@@ -25,15 +25,14 @@
         </div>
 
         <div>
-          <input v-model="formulari.email" type="email" placeholder="el.teu.email@exemple.com" class="login-input" />
+          <input v-model="formulari.email" type="email" :placeholder="$t('email_placeholder')" class="login-input" />
         </div>
 
         <div>
-          <input v-model="formulari.contrasenya" type="password" placeholder="••••••••" class="login-input" />
+          <input v-model="formulari.contrasenya" type="password" :placeholder="$t('password_placeholder_dots')" class="login-input" />
         </div>
-
         <div>
-          <input v-model="formulari.confirmacio" type="password" placeholder="••••••••" class="login-input" />
+          <input v-model="formulari.confirmacio" type="password" :placeholder="$t('password_placeholder_dots')" class="login-input" />
         </div>
 
         <div class="pt-4">
@@ -43,7 +42,7 @@
         </div>
 
         <div class="login-divider">
-          <span class="login-divider-text">Ja tens un compte?</span>
+          <span class="login-divider-text">{{ $t('already_have_account') }}</span>
         </div>
 
         <div>
@@ -87,8 +86,8 @@
               <div class="flex items-center gap-4 mb-8 pb-6 border-b border-gray-100">
                 <div class="w-12 h-12 bg-green-100 text-green-600 rounded-2xl flex items-center justify-center text-2xl shadow-sm">🎯</div>
                 <div>
-                  <h3 class="text-2xl font-bold text-gray-800 tracking-tight">Selecciona una categoría</h3>
-                  <p class="text-sm font-medium text-gray-500 mt-1">Descubre tu camino en Loopy</p>
+                  <h3 class="text-2xl font-bold text-gray-800 tracking-tight">{{ $t('quiz.select_category_title') }}</h3>
+                  <p class="text-sm font-medium text-gray-500 mt-1">{{ $t('quiz.select_category_subtitle') }}</p>
                 </div>
               </div>
 
@@ -216,11 +215,11 @@ export default {
     registrarUsuari: async function () {
       var self = this;
       if (!self.formulari.nom || !self.formulari.email || !self.formulari.contrasenya) {
-        self.errorMissatge = "Tots els camps són obligatoris";
+        self.errorMissatge = this.$t('error_all_fields_required');
         return;
       }
       if (self.formulari.contrasenya !== self.formulari.confirmacio) {
-        self.errorMissatge = "Les contrasenyes no coincideixen";
+        self.errorMissatge = this.$t('error_password_mismatch');
         return;
       }
       self.errorMissatge = "";
@@ -240,14 +239,14 @@ export default {
         });
         var dades = await resposta.json();
         if (!resposta.ok) {
-          self.errorMissatge = dades.message || "Error al registre";
+          self.errorMissatge = dades.message || this.$t('error_registration_generic');
           return;
         }
         var authStore = useAuthStore();
         authStore.aplicarSessio({ token: dades.token, user: dades.user, role: "user" });
         navigateTo("/home");
       } catch (err) {
-        self.errorMissatge = "Error de conexió";
+        self.errorMissatge = this.$t('error_connection');
       } finally {
         self.estaCarregant = false;
       }

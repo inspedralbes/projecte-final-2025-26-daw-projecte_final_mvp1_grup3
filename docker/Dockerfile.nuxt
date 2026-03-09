@@ -13,5 +13,8 @@ RUN npm install -D tailwindcss@3.3.6 postcss@8 autoprefixer@10
 COPY . .
 RUN npm run build
 
+RUN mkdir -p .output/server/chunks/public && \
+    ln -s /app/.output/public/_nuxt /app/.output/server/chunks/public/_nuxt
+
 EXPOSE 3000
 CMD ["node", ".output/server/index.mjs"]

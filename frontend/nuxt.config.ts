@@ -29,9 +29,13 @@ export default defineNuxtConfig({
     // Forçarà el navegador a recarregar la pàgina
     emitRouteChunkError: 'automatic',
   },
+  app: {
+    baseURL: '/',
+    buildAssetsDir: '/_nuxt/',
+  },
   routeRules: {
     // Desactivar la memòria cau per la pàgina HTML principal (evita carregar arxius de configuració vells)
-    '/**': { headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' } },
+    '/**': { isr: false, headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' } },
     // Els assets _nuxt/ porten hash, aquests es poden guardar a la memòria cau durant un any sencer
     '/_nuxt/**': { headers: { 'Cache-Control': 'public, max-age=31536000, immutable' } },
   },

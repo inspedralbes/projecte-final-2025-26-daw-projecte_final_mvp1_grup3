@@ -1,6 +1,165 @@
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+    /* ==== LOGIN PAGE ==== */
+
+    /* Contenedor Principal */
+    .login-container {
+        @apply min-h-screen bg-white flex w-full h-full relative overflow-hidden;
+        font-family: 'Fredoka', sans-serif;
+    }
+
+    .login-lang-switch {
+        @apply absolute top-6 right-6 z-50;
+    }
+
+    /* Lado Izquierdo (Formulario) */
+    .login-left-col {
+        @apply w-full lg:w-[40%] flex flex-col justify-center px-8 sm:px-16 lg:px-24 xl:px-32 z-10 bg-white;
+    }
+
+    .login-header {
+        @apply mb-10 w-full max-w-sm mx-auto;
+    }
+
+    .login-logo {
+        @apply flex flex-col items-center justify-center gap-3 mb-10 text-center w-full;
+    }
+
+    .login-logo-image {
+        @apply w-36 h-36 md:w-44 md:h-44 object-cover rounded-full bg-white shadow-sm border border-gray-100;
+    }
+
+    .login-logo-text {
+        @apply text-4xl md:text-5xl font-extrabold text-[#517d36] tracking-wide;
+    }
+
+    .login-title {
+        @apply text-4xl font-extrabold text-[#3a5826] mb-3;
+    }
+
+    .login-subtitle {
+        @apply text-gray-500 font-medium;
+    }
+
+    /* Formulario de Login */
+    .login-form {
+        @apply w-full max-w-sm mx-auto space-y-5;
+    }
+
+    .login-error-msg {
+        @apply bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl text-sm font-medium;
+    }
+
+    .login-input {
+        @apply w-full px-5 py-4 rounded-xl border border-gray-100 bg-[#f9fafb] text-gray-800 placeholder-gray-400 font-medium focus:outline-none focus:ring-2 focus:ring-[#517d36]/30 focus:border-[#517d36]/50 transition-all;
+    }
+
+    .login-btn-primary {
+        @apply w-full bg-[#568039] hover:bg-[#45682c] text-white font-bold py-4 rounded-xl shadow-[0_4px_0_0_#3f5e29] active:shadow-none active:translate-y-1 transition-all disabled:opacity-70 disabled:cursor-not-allowed uppercase tracking-wide text-sm;
+    }
+
+    .login-divider {
+        @apply flex items-center justify-center my-6;
+    }
+
+    .login-divider-text {
+        @apply text-xs font-semibold text-gray-400;
+    }
+
+    .login-btn-outline {
+        @apply w-full bg-white border border-gray-200 text-gray-700 font-bold py-4 rounded-xl hover:bg-gray-50 transition-colors uppercase tracking-wide text-sm;
+    }
+
+    /* Lado Derecho (Bento Grid / Features) */
+    .login-right-col {
+        @apply hidden lg:flex w-[60%] relative p-12 xl:p-20 flex-col justify-center items-center overflow-hidden bg-cover bg-center;
+        background-image: url('../img/fondo_login.png');
+    }
+
+    .login-bg-pattern {
+        @apply absolute inset-0 opacity-[0.03] pointer-events-none;
+        background-image: radial-gradient(#3a5826 1px, transparent 1px), radial-gradient(#3a5826 1px, transparent 1px);
+        background-position: 0 0, 25px 25px;
+        background-size: 50px 50px;
+    }
+
+    .login-bento-container {
+        @apply relative w-full max-w-3xl z-10 flex flex-col gap-6;
+    }
+
+    .login-bento-grid {
+        @apply grid grid-cols-3 gap-6;
+    }
+
+    /* Bento Cards */
+    .bento-card-col {
+        @apply flex flex-col gap-6;
+    }
+
+    .bento-card-col-mid {
+        @apply flex flex-col gap-6 mt-8;
+    }
+
+    .bento-card {
+        @apply bg-white rounded-3xl p-6 flex flex-col justify-center transform hover:-translate-y-1 transition-transform duration-300;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+    }
+
+    .bento-card-small {
+        @apply h-40;
+    }
+
+    .bento-card-tall {
+        @apply h-48;
+    }
+
+    .bento-icon {
+        @apply text-3xl mb-4;
+    }
+
+    .bento-title {
+        @apply font-bold text-gray-800 text-lg leading-tight;
+    }
+
+    .bento-desc {
+        @apply text-xs text-gray-400 font-medium mt-1;
+    }
+
+    /* Banner Inferior (Tu Compañero) */
+    .bento-banner {
+        @apply bg-[#486b2e] rounded-3xl p-8 pb-0 text-white flex overflow-hidden relative items-center justify-between mt-2;
+        box-shadow: 0 15px 40px rgba(72, 107, 46, 0.3);
+    }
+
+    .bento-banner-content {
+        @apply relative z-10 pb-8 pr-4;
+    }
+
+    .bento-banner-title {
+        @apply text-2xl font-bold mb-1;
+    }
+
+    .bento-banner-subtitle {
+        @apply text-green-100 font-medium text-sm;
+    }
+
+    .bento-banner-ghost-wrap {
+        @apply h-32 w-32 relative flex items-end justify-end pointer-events-none self-end mt-4;
+    }
+
+    .bento-banner-ghost-svg {
+        @apply w-28 h-28 text-white/20 fill-current drop-shadow-md pb-[-15px] -mb-4;
+    }
+
+    .bento-banner-accent {
+        @apply absolute right-0 top-0 h-full w-48 bg-white/5 skew-x-12 translate-x-10 pointer-events-none;
+    }
+}
 
 /* Estilos personalizados */
 

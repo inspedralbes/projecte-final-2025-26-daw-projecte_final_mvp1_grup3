@@ -22,6 +22,11 @@ function emit(io, payload) {
   }
 
   if (payload.xp_update) {
+    console.log("[RATXA_DEBUG] Node emet update_xp:", JSON.stringify({
+      ratxa_actual: payload.xp_update.ratxa_actual,
+      ratxa_maxima: payload.xp_update.ratxa_maxima,
+      user_id: userId
+    }));
     io.to("user_" + userId).emit("update_xp", payload.xp_update);
   }
 

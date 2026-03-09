@@ -20,6 +20,7 @@ Route::middleware('ensure.user')->group(function () {
     Route::get('/habits/{id}', [HabitReadController::class, 'show']);
     Route::get('/habits/progress', [HabitReadController::class, 'progress']);
     Route::get('/habits/logs', [HabitReadController::class, 'logs']);
+    Route::post('/habits/complete', [HabitReadController::class, 'complete']);
     Route::get('/plantilles', [PlantillaReadController::class, 'index']);
     Route::get('/plantilles/{id}', [PlantillaReadController::class, 'show']);
     Route::get('/game-state', [GameStateReadController::class, 'show']);

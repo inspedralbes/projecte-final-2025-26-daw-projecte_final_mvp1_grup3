@@ -649,17 +649,35 @@ export default {
 
     /**
      * Confirma la finalització de l'hàbit seleccionat.
+     * Usa socket si està connectat; sinó, fallback via API.
      */
-    confirmarHabit: function () {
+    confirmarHabit: async function () {
       var self = this;
-      if (!this.habitSeleccionat || !this.socket) {
+      if (!this.habitSeleccionat) {
         return;
       }
-      this.gameStore.confirmarHabit(this.habitSeleccionat.id, this.socket);
+      var habitId = this.habitSeleccionat.id;
+      var objectiu = this.objectiuModal || 1;
+      var usedApi = !this.socket || !this.socket.connected;
+      var resultat = this.gameStore.completarHabit(habitId, this.socket);
       this.tancarModalHabit();
+      if (resultat && typeof resultat.then === "function") {
+        var ok = await resultat;
+        if (ok && usedApi) {
+          self.actualitzarProgresLocal(habitId, objectiu, true);
+          self.mostrarAlertaHabitCompletat();
+        }
+        if (usedApi) {
+          self.gameStore.obtenirProgresHabits().then(function (mapa) {
+            if (mapa) {
+              self.gameStore.habitProgress = mapa;
+            }
+          }).catch(function () {});
+        }
+      }
       setTimeout(function () {
         self.gameStore.obtenirEstatJoc();
-      }, 2000);
+      }, 1200);
     },
 
     /**
@@ -698,16 +716,13 @@ export default {
         console.log("✅ Conectat al servidor de sockets:", self.socket.id);
       });
 
-      self.socket.on("update_xp", async function (data) {
-        console.log("⭐ Recept feedback gamificació:", data);
+      self.socket.on("update_xp", function (data) {
+        console.log("[RATXA_DEBUG] update_xp rebut:", JSON.stringify({ ratxa_actual: data?.ratxa_actual, ratxa_maxima: data?.ratxa_maxima }));
         if (data) {
           self.gameStore.actualitzarDesDeXpUpdate(data);
         }
-        try {
-          await self.gameStore.obtenirEstatJoc();
-        } catch (error) {
-          console.error("❌ Error actualitzant estat:", error);
-        }
+        // No fer obtenirEstatJoc aquí: els dades del socket són la font de veritat.
+        // Evita que una petició API potencialment desfasada sobreescrigui ratxa/XP.
       });
 
       self.socket.on("habit_action_confirmed", function (payload) {
@@ -725,7 +740,7 @@ export default {
           self.actualitzarProgresLocal(habitId, payload.progress, payload.completed_today);
         }
         if (payload.action === "COMPLETE") {
-          console.log("habit_action_confirmed COMPLETE:", payload.mission_completed ? "mission_completed" : "no mission");
+          console.log("[RATXA_DEBUG] habit_action_confirmed COMPLETE xp_update:", JSON.stringify(payload.xp_update));
           if (payload.habit && payload.habit.id) {
             self.actualitzarProgresLocal(payload.habit.id, self.obtenirProgres(payload.habit.id), true);
           }
@@ -740,8 +755,13 @@ export default {
               self.gameStore.missioProgres = missionData.missio_objectiu;
               self.gameStore.missioObjectiu = missionData.missio_objectiu;
             }
+            if (missionData.xp_update && typeof missionData.xp_update === "object") {
+              self.gameStore.actualitzarDesDeXpUpdate(missionData.xp_update);
+            }
             self.mostrarAlertaMissioCompletada();
           }
+          // No cridar obtenirEstatJoc aquí: el payload del socket (xp_update) és la font de veritat.
+          // Una petició API posterior podria sobreescriure la ratxa correcta amb dades antigues.
         }
       });
 

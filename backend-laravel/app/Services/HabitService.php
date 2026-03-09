@@ -12,6 +12,7 @@ use App\Models\UsuariHabit;
 use App\Services\MissionService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 //================================ PROPIETATS / ATRIBUTS ==========
 
@@ -182,8 +183,8 @@ class HabitService
                     if (isset($resultatMissio['missio_objectiu'])) {
                         $missionCompleted['missio_objectiu'] = (int) $resultatMissio['missio_objectiu'];
                     }
-                    if (isset($resultatMissio['xp_update'])) {
-                        $xpUpdate = $resultatMissio['xp_update'];
+                    if (isset($resultatMissio['xp_update']) && is_array($resultatMissio['xp_update'])) {
+                        $xpUpdate = array_merge($xpUpdate ?? [], $resultatMissio['xp_update']);
                     }
                 }
             } else {
@@ -267,6 +268,16 @@ class HabitService
             $payload['level_up'] = $resultatComplete['level_up'];
         }
 
+        // LOG TEMPORAL: verificar si xp_update inclou ratxa abans de publicar
+        if ($xpUpdate !== null) {
+            Log::info('[RATXA_DEBUG] Payload abans de publicar', [
+                'action' => $accio,
+                'user_id' => $usuariId,
+                'xp_update' => $xpUpdate,
+                'ratxa_actual' => $xpUpdate['ratxa_actual'] ?? 'NO_PRESENT',
+                'ratxa_maxima' => $xpUpdate['ratxa_maxima'] ?? 'NO_PRESENT',
+            ]);
+        }
         // D. Publicar feedback a Redis
         $this->feedbackService->publicarPayload($payload);
     }
@@ -315,8 +326,9 @@ class HabitService
             $timestampComplet = Carbon::now();
         }
 
-        // B2. Data només per a la lògica de ratxa (startOfDay)
-        $dataActivitat = $timestampComplet->copy()->startOfDay();
+        // B2. Data només per a la lògica de ratxa (startOfDay en timezone de l'app)
+        $timezone = config('app.timezone', 'Europe/Madrid');
+        $dataActivitat = $timestampComplet->copy()->setTimezone($timezone)->startOfDay();
 
         // B3. Verificar accés de l'usuari a l'hàbit
         if (!$this->usuariTeAccesHabit($habitId, $usuariId)) {
@@ -729,11 +741,12 @@ class HabitService
      */
     private function actualitzarRatxa(Ratxa $ratxa, Carbon $dataActivitat): void
     {
+        $timezone = config('app.timezone', 'Europe/Madrid');
         $avui = $dataActivitat->copy()->startOfDay();
 
-        // A. Si hi ha data prèvia, parsejar-la
+        // A. Si hi ha data prèvia, parsejar-la (mateix timezone per a comparacions coherents)
         if ($ratxa->ultima_data !== null) {
-            $ultimaData = Carbon::parse($ratxa->ultima_data)->startOfDay();
+            $ultimaData = Carbon::parse($ratxa->ultima_data, $timezone)->startOfDay();
         } else {
             $ultimaData = null;
         }
@@ -742,28 +755,33 @@ class HabitService
         $ratxaMaxima = (int) $ratxa->ratxa_maxima;
 
         // B. Si és el mateix dia, no modifiquem la ratxa (evitar duplicats)
-        if ($ultimaData && $ultimaData->isSameDay($avui)) {
+        if ($ultimaData !== null && $ultimaData->isSameDay($avui)) {
             return;
         }
 
         // C. Si és el dia següent al registrat: dia consecutiu, incrementar
-        if ($ultimaData && $ultimaData->diffInDays($avui) === 1) {
+        if ($ultimaData !== null && $avui->gt($ultimaData) && (int) $ultimaData->diffInDays($avui, true) === 1) {
             $ratxaActual++;
         } else {
             // Si hi ha un gap o és la primera vegada: nova ratxa, començar des d'1.
-            // (0 ratxa + 1 hàbit completat = 1 dia; no hi ha "dia 0", el primer dia és l'1.)
             $ratxaActual = 1;
         }
 
-        // D. Actualitzar ratxa_maxima si la ratxa actual és major
-        if ($ratxaActual > $ratxaMaxima) {
-            $ratxaMaxima = $ratxaActual;
-        }
+        // D. Actualitzar ratxa_maxima si la ratxa actual és la nova màxima
+        $ratxaMaxima = max($ratxaMaxima, $ratxaActual);
 
+        // E. Actualitzar ratxa_actual, ratxa_maxima i ultima_data amb la data nova
         $ratxa->update([
             'ratxa_actual' => $ratxaActual,
             'ratxa_maxima' => $ratxaMaxima,
             'ultima_data' => $avui,
+        ]);
+        Log::info('[RATXA_DEBUG] actualitzarRatxa aplicada', [
+            'usuari_id' => $ratxa->usuari_id,
+            'ratxa_actual' => $ratxaActual,
+            'ratxa_maxima' => $ratxaMaxima,
+            'ultima_data' => $avui->toDateString(),
+            'ultima_data_prev' => $ultimaData?->toDateString(),
         ]);
     }
 

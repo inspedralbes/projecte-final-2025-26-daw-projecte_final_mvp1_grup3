@@ -75,15 +75,57 @@ export var useGameStore = defineStore("game", {
     },
 
     /**
-     * Completa un hàbit (alias que emet habit_complete).
-     * La ratxa i XP s'actualitzen via socket (update_xp, habit_action_confirmed).
+     * Completa un hàbit via socket o API (fallback).
+     * Retorna Promise que resol amb true si s'ha enviat, false si no.
      */
     completarHabit: function (idHabit, socket) {
-      if (!socket) {
-        return Promise.resolve(false);
+      var self = this;
+      if (socket && socket.connected) {
+        this.confirmarHabit(idHabit, socket);
+        return Promise.resolve(true);
       }
-      this.confirmarHabit(idHabit, socket);
-      return Promise.resolve(true);
+      return this.completarHabitViaApi(idHabit);
+    },
+
+    /**
+     * Fallback: completa un hàbit via API quan el socket no està connectat.
+     * Actualitza el store amb xp_update de la resposta.
+     */
+    completarHabitViaApi: async function (idHabit) {
+      var self = this;
+      var url = this.construirUrlApi("/api/habits/complete");
+      try {
+        var resposta = await authFetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            habit_id: idHabit,
+            data: new Date().toISOString()
+          }),
+          mode: "cors"
+        });
+        var dades = await resposta.json();
+        if (dades.success === true) {
+          if (dades.xp_update) {
+            self.actualitzarDesDeXpUpdate(dades.xp_update);
+          }
+          if (dades.mission_completed && dades.mission_completed.success) {
+            self.missioCompletada = true;
+            if (dades.mission_completed.missio_objectiu !== undefined) {
+              self.missioProgres = dades.mission_completed.missio_objectiu;
+              self.missioObjectiu = dades.mission_completed.missio_objectiu;
+            }
+            if (dades.mission_completed.xp_update) {
+              self.actualitzarDesDeXpUpdate(dades.mission_completed.xp_update);
+            }
+          }
+          return true;
+        }
+        return false;
+      } catch (e) {
+        console.error("Error completar hàbit via API:", e);
+        return false;
+      }
     },
 
     /**

@@ -26,4 +26,4 @@ rm -f bootstrap/cache/packages.php bootstrap/cache/services.php
 php artisan package:discover --ansi
 
 echo "Iniciando PHP-FPM..."
-exec php-fpm -y /usr/local/etc/php-fpm.conf -R -O
+exec php-fpm

@@ -76,8 +76,11 @@ class MissionService
             $ratxaMaxima = (int) $ratxa->ratxa_maxima;
         }
 
+        $objectiu = $this->obtenirObjectiuMissio(MissioDiaria::find($usuari->missio_diaria_id));
+
         return [
             'completada' => true,
+            'missio_objectiu' => $objectiu,
             'xp_update' => [
                 'xp_total' => (int) $usuariRefresh->xp_total,
                 'ratxa_actual' => $ratxaActual,
@@ -148,6 +151,83 @@ class MissionService
     }
 
     /**
+     * Obté el progrés actual de la missió diària de l'usuari (per mostrar X/N a la UI).
+     *
+     * @return array{progres: int, objectiu: int}|null
+     */
+    public function obtenirProgresMissio(int $userId): ?array
+    {
+        $usuari = User::find($userId);
+        if ($usuari === null || $usuari->missio_diaria_id === null) {
+            return null;
+        }
+
+        if ($usuari->missio_completada === true) {
+            $missio = MissioDiaria::find($usuari->missio_diaria_id);
+            $objectiu = $this->obtenirObjectiuMissio($missio);
+
+            return [
+                'progres' => $objectiu,
+                'objectiu' => $objectiu,
+            ];
+        }
+
+        $missio = MissioDiaria::find($usuari->missio_diaria_id);
+        if ($missio === null) {
+            return null;
+        }
+
+        $avui = Carbon::today()->startOfDay();
+        $tipus = $missio->tipus_comprovacio ?? '';
+        $parametres = is_array($missio->parametres) ? $missio->parametres : [];
+
+        $progres = 0;
+        $objectiu = 1;
+
+        if ($tipus === 'hab_1_qualsevol') {
+            $progres = min(1, $this->comptarRegistresAvui($userId, $avui));
+            $objectiu = 1;
+        } elseif ($tipus === 'hab_n_qualsevol') {
+            $n = isset($parametres['n']) ? (int) $parametres['n'] : 1;
+            $progres = min($n, $this->comptarRegistresAvui($userId, $avui));
+            $objectiu = $n;
+        } elseif ($tipus === 'hab_fins_hora') {
+            $hora = isset($parametres['hora']) ? (int) $parametres['hora'] : 24;
+            $progres = $this->comptarRegistresAvuiAbansHora($userId, $avui, $hora) >= 1 ? 1 : 0;
+            $objectiu = 1;
+        } elseif ($tipus === 'hab_primer_del_dia') {
+            $compt = $this->comptarRegistresAvui($userId, $avui);
+            $progres = $compt >= 1 ? 1 : 0;
+            $objectiu = 1;
+        } elseif (in_array($tipus, ['hab_dificultat', 'hab_categoria', 'hab_dificultat_multi'], true)) {
+            $progres = $this->compleixMissio($missio, $userId, 0, Carbon::now()) ? 1 : 0;
+            $objectiu = 1;
+        }
+
+        return [
+            'progres' => $progres,
+            'objectiu' => $objectiu,
+        ];
+    }
+
+    /**
+     * Retorna l'objectiu numèric d'una missió.
+     */
+    private function obtenirObjectiuMissio(?MissioDiaria $missio): int
+    {
+        if ($missio === null) {
+            return 1;
+        }
+        $tipus = $missio->tipus_comprovacio ?? '';
+        $parametres = is_array($missio->parametres) ? $missio->parametres : [];
+        if ($tipus === 'hab_n_qualsevol') {
+            return isset($parametres['n']) ? (int) $parametres['n'] : 1;
+        }
+
+        return 1;
+    }
+
+    /**
      * Compta registres d'activitat d'avui per l'usuari (via hàbits).
      */
     private function comptarRegistresAvui(int $userId, Carbon $avui): int
@@ -179,9 +259,11 @@ class MissionService
     {
         $inici = $avui->copy();
         $fi = $avui->copy()->endOfDay();
+        $dificultatNorm = strtolower(trim($dificultat));
 
-        return RegistreActivitat::whereHas('habit', function ($q) use ($userId, $dificultat) {
-            $q->where('usuari_id', $userId)->where('dificultat', $dificultat);
+        return RegistreActivitat::whereHas('habit', function ($q) use ($userId, $dificultatNorm) {
+            $q->where('usuari_id', $userId)
+                ->whereRaw('LOWER(COALESCE(dificultat, \'\')) = ?', [$dificultatNorm]);
         })->whereBetween('data', [$inici, $fi])->exists();
     }
 
@@ -209,9 +291,11 @@ class MissionService
     {
         $inici = $avui->copy();
         $fi = $avui->copy()->endOfDay();
+        $dificultatsNorm = array_map(fn ($d) => strtolower(trim((string) $d)), $dificultats);
 
-        return RegistreActivitat::whereHas('habit', function ($q) use ($userId, $dificultats) {
-            $q->where('usuari_id', $userId)->whereIn('dificultat', $dificultats);
+        return RegistreActivitat::whereHas('habit', function ($q) use ($userId, $dificultatsNorm) {
+            $q->where('usuari_id', $userId)
+                ->whereRaw('LOWER(COALESCE(dificultat, \'\')) IN (' . implode(',', array_fill(0, count($dificultatsNorm), '?')) . ')', $dificultatsNorm);
         })->whereBetween('data', [$inici, $fi])->exists();
     }
 }

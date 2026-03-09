@@ -15,8 +15,7 @@
           <template v-else>{{ $t('home.loading') }}</template>
         </p>
         <p class="text-2xl font-bold text-orange-500">
-          <template v-if="missioCompletada">1/1</template>
-          <template v-else>0/1</template>
+          {{ missioProgres }}/{{ missioObjectiu }}
         </p>
       </div>
     </div>
@@ -28,7 +27,9 @@ export default {
   name: 'HomeMissionCard',
   props: {
     missioDiaria: { type: Object, default: null },
-    missioCompletada: { type: Boolean, default: false }
+    missioCompletada: { type: Boolean, default: false },
+    missioProgres: { type: Number, default: 0 },
+    missioObjectiu: { type: Number, default: 1 }
   }
 };
 </script>

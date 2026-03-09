@@ -129,6 +129,8 @@ function mapGameStateFromApi(gs) {
   if (gs.ruleta_ultima_tirada !== undefined) result.ruleta_ultima_tirada = gs.ruleta_ultima_tirada;
   if (gs.missio_diaria !== undefined) result.missio_diaria = gs.missio_diaria;
   if (gs.missio_completada !== undefined) result.missio_completada = gs.missio_completada;
+  if (gs.missio_progres !== undefined) result.missio_progres = gs.missio_progres;
+  if (gs.missio_objectiu !== undefined) result.missio_objectiu = gs.missio_objectiu;
   return result;
 }
 

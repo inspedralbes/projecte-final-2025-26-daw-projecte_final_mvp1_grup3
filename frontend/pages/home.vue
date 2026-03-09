@@ -6,7 +6,12 @@
         <!-- COSTAT ESQUERRE: Missions i Perfil -->
         <div class="col-span-3 space-y-6">
           <div class="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-orange-400">
-            <UserHomeHomeMissionCard :missio-diaria="missioDiaria" :missio-completada="missioCompletada" />
+            <UserHomeHomeMissionCard
+              :missio-diaria="missioDiaria"
+              :missio-completada="missioCompletada"
+              :missio-progres="missioProgres"
+              :missio-objectiu="missioObjectiu"
+            />
             <div class="h-px bg-gray-200 my-4"></div>
             <UserHomeHomeProfileCard
               :user="user"
@@ -407,6 +412,12 @@ export default {
     missioCompletada: function () {
       return this.gameStore.missioCompletada;
     },
+    missioProgres: function () {
+      return this.gameStore.missioProgres;
+    },
+    missioObjectiu: function () {
+      return this.gameStore.missioObjectiu;
+    },
     monedes: function () {
       return this.gameStore.monedes;
     },
@@ -640,10 +651,15 @@ export default {
      * Confirma la finalització de l'hàbit seleccionat.
      */
     confirmarHabit: function () {
+      var self = this;
       if (!this.habitSeleccionat || !this.socket) {
         return;
       }
       this.gameStore.confirmarHabit(this.habitSeleccionat.id, this.socket);
+      this.tancarModalHabit();
+      setTimeout(function () {
+        self.gameStore.obtenirEstatJoc();
+      }, 2000);
     },
 
     /**
@@ -701,15 +717,31 @@ export default {
           }
           return;
         }
+        if (payload.xp_update && typeof payload.xp_update === "object") {
+          self.gameStore.actualitzarDesDeXpUpdate(payload.xp_update);
+        }
         if (payload.action === "PROGRESS" && payload.progress !== undefined) {
           var habitId = payload.habit && payload.habit.id ? payload.habit.id : payload.habit_id;
           self.actualitzarProgresLocal(habitId, payload.progress, payload.completed_today);
         }
         if (payload.action === "COMPLETE") {
+          console.log("habit_action_confirmed COMPLETE:", payload.mission_completed ? "mission_completed" : "no mission");
           if (payload.habit && payload.habit.id) {
             self.actualitzarProgresLocal(payload.habit.id, self.obtenirProgres(payload.habit.id), true);
           }
+          if (payload.xp_update && typeof payload.xp_update === "object") {
+            self.gameStore.actualitzarDesDeXpUpdate(payload.xp_update);
+          }
           self.mostrarAlertaHabitCompletat();
+          var missionData = payload.mission_completed;
+          if (missionData && (missionData.success === true || missionData.success === "true")) {
+            self.gameStore.missioCompletada = true;
+            if (missionData.missio_objectiu !== undefined) {
+              self.gameStore.missioProgres = missionData.missio_objectiu;
+              self.gameStore.missioObjectiu = missionData.missio_objectiu;
+            }
+            self.mostrarAlertaMissioCompletada();
+          }
         }
       });
 
@@ -729,7 +761,6 @@ export default {
       });
 
       self.gameStore.registrarListenerMissionCompletada(self.socket, function () {
-        self.mostrarAlertaMissioCompletada();
       });
 
       self.socket.on("disconnect", function () {

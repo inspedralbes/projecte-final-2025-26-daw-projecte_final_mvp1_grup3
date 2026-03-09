@@ -29,6 +29,8 @@ export var useGameStore = defineStore("game", {
       habitProgress: {},
       missioDiaria: null,
       missioCompletada: false,
+      missioProgres: 0,
+      missioObjectiu: 1,
     };
   },
 
@@ -70,6 +72,18 @@ export var useGameStore = defineStore("game", {
         habit_id: idHabit,
         data: new Date().toISOString(),
       });
+    },
+
+    /**
+     * Completa un hàbit (alias que emet habit_complete).
+     * La ratxa i XP s'actualitzen via socket (update_xp, habit_action_confirmed).
+     */
+    completarHabit: function (idHabit, socket) {
+      if (!socket) {
+        return Promise.resolve(false);
+      }
+      this.confirmarHabit(idHabit, socket);
+      return Promise.resolve(true);
     },
 
     /**
@@ -137,9 +151,21 @@ export var useGameStore = defineStore("game", {
      * Registra un listener per a l'event de missió completada.
      */
     registrarListenerMissionCompletada: function (socket, callback) {
+      var self = this;
       if (socket) {
         socket.on("mission_completed", function (data) {
-          console.log("Missio completada detectada per socket");
+          console.log("Missio completada detectada per socket", data);
+          self.missioCompletada = true;
+          if (data && data.missio_objectiu !== undefined) {
+            self.missioProgres = data.missio_objectiu;
+            self.missioObjectiu = data.missio_objectiu;
+          } else {
+            self.missioProgres = 1;
+            self.missioObjectiu = 1;
+          }
+          if (data && data.xp_update && typeof data.xp_update === "object") {
+            self.actualitzarDesDeXpUpdate(data.xp_update);
+          }
           if (typeof callback === "function") {
             callback(data);
           }
@@ -230,6 +256,8 @@ export var useGameStore = defineStore("game", {
             if (gs.ruleta_ultima_tirada !== undefined) self.ruletaUltimaTirada = gs.ruleta_ultima_tirada;
             if (gs.missio_diaria !== undefined) self.missioDiaria = gs.missio_diaria;
             if (gs.missio_completada !== undefined) self.missioCompletada = gs.missio_completada;
+            if (gs.missio_progres !== undefined) self.missioProgres = gs.missio_progres;
+            if (gs.missio_objectiu !== undefined) self.missioObjectiu = gs.missio_objectiu;
           }
         }
         return dades;
@@ -286,6 +314,8 @@ export var useGameStore = defineStore("game", {
           if (gsMap.ruleta_ultima_tirada !== undefined) self.ruletaUltimaTirada = gsMap.ruleta_ultima_tirada;
           if (gsMap.missio_diaria !== undefined) self.missioDiaria = gsMap.missio_diaria;
           if (gsMap.missio_completada !== undefined) self.missioCompletada = gsMap.missio_completada;
+          if (gsMap.missio_progres !== undefined) self.missioProgres = gsMap.missio_progres;
+          if (gsMap.missio_objectiu !== undefined) self.missioObjectiu = gsMap.missio_objectiu;
         }
 
         h = dades.habits || [];

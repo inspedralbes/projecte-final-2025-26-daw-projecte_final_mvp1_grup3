@@ -25,6 +25,13 @@ function init(io) {
   io.on("connection", function (socket) {
     console.log("Client connectat:", socket.id);
 
+    // Unir usuari a la sala user_X per rebre feedback (update_xp, mission_completed, etc.)
+    var userId = socket.decoded_token && socket.decoded_token.user_id;
+    if (userId) {
+      socket.join("user_" + userId);
+      console.log("Usuari " + userId + " unit a la sala user_" + userId);
+    }
+
     habitHandlers.register(io, socket);
     plantillaHandlers.register(io, socket);
     rouletteHandlers.register(io, socket);

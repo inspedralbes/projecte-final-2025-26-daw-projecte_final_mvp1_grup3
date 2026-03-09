@@ -46,9 +46,9 @@ Route::get('/preguntes-registre/{categoria_id}', [PreguntaRegistreController::cl
 Route::middleware('ensure.user')->group(function () {
     Route::get('/habits', [HabitController::class, 'index']);
     Route::get('/habits/all', [HabitController::class, 'indexAll']);
-    Route::get('/habits/{id}', [HabitController::class, 'show']);
     Route::get('/habits/progress', [HabitProgressController::class, 'today']);
     Route::get('/habits/logs', [HabitProgressController::class, 'logs']);
+    Route::get('/habits/{id}', [HabitController::class, 'show']);
     Route::get('/plantilles', [PlantillaController::class, 'index']);
     Route::get('/plantilles/{id}', [PlantillaController::class, 'show']);
     Route::get('/game-state', [GameStateController::class, 'show']);

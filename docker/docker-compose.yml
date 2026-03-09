@@ -28,8 +28,9 @@ services:
     restart: unless-stopped
     volumes:
       - redis_data:/data
+    command: redis-server --requirepass ${REDIS_PASSWORD:-loopy_secret}
     healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
+      test: [ "CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-loopy_secret}", "ping" ]
       interval: 5s
       timeout: 3s
       retries: 5

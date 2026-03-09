@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { authFetch } from '~/utils/authFetch.js';
+import { authFetch } from '~/composables/useApi.js';
 
 /**
  * Store per a la gestió dels logros i medalles.

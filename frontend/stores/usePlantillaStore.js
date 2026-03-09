@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
-import { useHabitStore } from "./useHabitStore";
-import { authFetch } from "~/utils/authFetch.js";
+import { authFetch } from "~/composables/useApi.js";
+import { mapPlantillaFromApi, mapHabitFromApi } from "~/utils/mappers/apiMappers.js";
 
 /**
  * Store per a la gestió de les plantilles d'hàbits.
@@ -16,72 +16,13 @@ export var usePlantillaStore = defineStore("plantilla", {
   },
   actions: {
     /**
-     * Transforma les dades de l'API al format del frontend.
-     */
-    mapejarPlantillaDesDeApi: function (plantilla) {
-      var titolPlantilla;
-      var categoriaPlantilla;
-      var esPublicaPlantilla;
-      var creadorIdPlantilla;
-      var mappedHabits = [];
-      var habitStore = useHabitStore();
-      var i;
-
-      // A. Assignar títol o valor per defecte
-      if (plantilla.titol) {
-        titolPlantilla = plantilla.titol;
-      } else {
-        titolPlantilla = "Sense títol";
-      }
-
-      // B. Assignar categoria o valor per defecte
-      if (plantilla.categoria) {
-        categoriaPlantilla = plantilla.categoria;
-      } else {
-        categoriaPlantilla = "Altres";
-      }
-
-      // C. Assignar estat de publicació o valor per defecte
-      if (plantilla.hasOwnProperty('es_publica')) {
-        esPublicaPlantilla = !!plantilla.es_publica;
-      } else {
-        esPublicaPlantilla = false;
-      }
-
-      // D. Assignar creadorId o valor per defecte (1), forçant a enter
-      if (plantilla.creador_id) {
-        creadorIdPlantilla = parseInt(plantilla.creador_id, 10);
-      } else {
-        creadorIdPlantilla = 1;
-      }
-
-      // E. Mapejar hàbits si existeixen
-      if (plantilla.habits && Array.isArray(plantilla.habits)) {
-        for (i = 0; i < plantilla.habits.length; i++) {
-          mappedHabits.push(habitStore.mapejarHabitDesDeApi(plantilla.habits[i]));
-        }
-      }
-
-      return {
-        id: plantilla.id,
-        titol: titolPlantilla,
-        categoria: categoriaPlantilla,
-        esPublica: esPublicaPlantilla,
-        creadorId: creadorIdPlantilla,
-        habits: mappedHabits
-      };
-    },
-
-    /**
      * Estableix la llista de plantilles a partir de dades de l'API.
      */
     establirPlantillesDesDeApi: function (llistaPlantilles) {
       var mapejats = [];
       var i;
-
-      // A. Iterar usant bucle clàssic
       for (i = 0; i < llistaPlantilles.length; i++) {
-        mapejats.push(this.mapejarPlantillaDesDeApi(llistaPlantilles[i]));
+        mapejats.push(mapPlantillaFromApi(llistaPlantilles[i], mapHabitFromApi));
       }
       this.plantilles = mapejats;
     },

@@ -18,6 +18,10 @@ use Illuminate\Support\Facades\DB;
  */
 class GamificationService
 {
+    public function __construct(
+        private MissionService $missionService
+    ) {}
+
     /**
      * Nombre de missions disponibles (IDs 1-15).
      */
@@ -92,6 +96,13 @@ class GamificationService
         }
 
         $missioCompletada = (bool) $usuari->missio_completada;
+        $missioProgres = 0;
+        $missioObjectiu = 1;
+        $progresMissio = $this->missionService->obtenirProgresMissio($usuariId);
+        if ($progresMissio !== null) {
+            $missioProgres = (int) $progresMissio['progres'];
+            $missioObjectiu = (int) $progresMissio['objectiu'];
+        }
         if (isset($usuari->monedes)) {
             $monedes = (int) $usuari->monedes;
         } else {
@@ -122,6 +133,8 @@ class GamificationService
             'ruleta_ultima_tirada' => $ruletaUltimaTirada,
             'missio_diaria' => $missioDiaria,
             'missio_completada' => $missioCompletada,
+            'missio_progres' => $missioProgres,
+            'missio_objectiu' => $missioObjectiu,
         ];
     }
 

@@ -179,6 +179,9 @@ class HabitService
                 );
                 if ($resultatMissio !== null && $resultatMissio['completada'] === true) {
                     $missionCompleted = ['success' => true];
+                    if (isset($resultatMissio['missio_objectiu'])) {
+                        $missionCompleted['missio_objectiu'] = (int) $resultatMissio['missio_objectiu'];
+                    }
                     if (isset($resultatMissio['xp_update'])) {
                         $xpUpdate = $resultatMissio['xp_update'];
                     }
@@ -252,9 +255,13 @@ class HabitService
             $payload['message'] = $message;
         }
 
-        // C3. Afegir mission_completed si s'ha completat la missió
+        // C3. Afegir mission_completed si s'ha completat la missió (inclou xp_update per ratxa/monedes en temps real)
         if ($missionCompleted !== null) {
-            $payload['mission_completed'] = $missionCompleted;
+            $missionPayload = $missionCompleted;
+            if ($xpUpdate !== null) {
+                $missionPayload['xp_update'] = $xpUpdate;
+            }
+            $payload['mission_completed'] = $missionPayload;
         }
         if (isset($resultatComplete) && is_array($resultatComplete) && isset($resultatComplete['level_up'])) {
             $payload['level_up'] = $resultatComplete['level_up'];
@@ -743,7 +750,8 @@ class HabitService
         if ($ultimaData && $ultimaData->diffInDays($avui) === 1) {
             $ratxaActual++;
         } else {
-            // Si hi ha un gap o és la primera vegada: nova ratxa, començar des d'1
+            // Si hi ha un gap o és la primera vegada: nova ratxa, començar des d'1.
+            // (0 ratxa + 1 hàbit completat = 1 dia; no hi ha "dia 0", el primer dia és l'1.)
             $ratxaActual = 1;
         }
 

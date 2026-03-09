@@ -1,21 +1,13 @@
 import { defineStore } from "pinia";
-import { authFetch } from "~/utils/authFetch.js";
+import { authFetch, getBaseUrl } from "~/composables/useApi.js";
+import { useHabitStore } from "./useHabitStore.js";
+import {
+  mapGameStateFromApi,
+  mapHabitProgressListToMap
+} from "~/utils/mappers/apiMappers.js";
 
 // Constants de configuració
 var TEMPS_ESPERA_MS = 5000;
-var XP_BASE = 10;
-var XP_PER_DIFICULTAT = {
-  facil: 100,
-  mitja: 250,
-  media: 250,
-  dificil: 400,
-};
-var MONEDES_PER_DIFICULTAT = {
-  facil: 2,
-  mitja: 5,
-  media: 5,
-  dificil: 10,
-};
 
 /**
  * Store principal del joc per gestionar el progrés de l'usuari.
@@ -34,10 +26,11 @@ export var useGameStore = defineStore("game", {
       nivell: 1,
       xpActualNivel: 0,
       xpObjetivoNivel: 1000,
-      habits: [],
       habitProgress: {},
       missioDiaria: null,
       missioCompletada: false,
+      missioProgres: 0,
+      missioObjectiu: 1,
     };
   },
 
@@ -46,17 +39,9 @@ export var useGameStore = defineStore("game", {
      * Construeix una URL de l'API a partir d'un camí.
      */
     construirUrlApi: function (cami) {
-      var configuracio = useRuntimeConfig();
-      var urlApi = configuracio.public.apiUrl;
-      var base;
-
-      if (urlApi.endsWith("/")) {
-        base = urlApi.slice(0, -1);
-      } else {
-        base = urlApi;
-      }
-
-      return base + cami;
+      var base = getBaseUrl();
+      var camiNorm = cami.indexOf('/') === 0 ? cami : '/' + cami;
+      return base + camiNorm;
     },
 
     /**
@@ -87,6 +72,18 @@ export var useGameStore = defineStore("game", {
         habit_id: idHabit,
         data: new Date().toISOString(),
       });
+    },
+
+    /**
+     * Completa un hàbit (alias que emet habit_complete).
+     * La ratxa i XP s'actualitzen via socket (update_xp, habit_action_confirmed).
+     */
+    completarHabit: function (idHabit, socket) {
+      if (!socket) {
+        return Promise.resolve(false);
+      }
+      this.confirmarHabit(idHabit, socket);
+      return Promise.resolve(true);
     },
 
     /**
@@ -154,9 +151,21 @@ export var useGameStore = defineStore("game", {
      * Registra un listener per a l'event de missió completada.
      */
     registrarListenerMissionCompletada: function (socket, callback) {
+      var self = this;
       if (socket) {
         socket.on("mission_completed", function (data) {
-          console.log("Missio completada detectada per socket");
+          console.log("Missio completada detectada per socket", data);
+          self.missioCompletada = true;
+          if (data && data.missio_objectiu !== undefined) {
+            self.missioProgres = data.missio_objectiu;
+            self.missioObjectiu = data.missio_objectiu;
+          } else {
+            self.missioProgres = 1;
+            self.missioObjectiu = 1;
+          }
+          if (data && data.xp_update && typeof data.xp_update === "object") {
+            self.actualitzarDesDeXpUpdate(data.xp_update);
+          }
           if (typeof callback === "function") {
             callback(data);
           }
@@ -203,36 +212,12 @@ export var useGameStore = defineStore("game", {
           llistaHabits = dadesBrutes.data || [];
         }
 
-        for (i = 0; i < llistaHabits.length; i++) {
-          h = llistaHabits[i];
-          var diesSetmana;
-          if (Array.isArray(h.dies_setmana)) {
-            diesSetmana = h.dies_setmana;
-          } else {
-            diesSetmana = [];
-          }
-          mapejats.push({
-            id: h.id,
-            nom: h.titol || "Sense nom",
-            descripcio:
-              (h.frequencia_tipus || "") +
-              " - Dificultat: " +
-              (h.dificultat || ""),
-            completat: !!h.completat,
-            diesSetmana: diesSetmana,
-            recompensaXP: XP_PER_DIFICULTAT[h.dificultat] || XP_BASE,
-            recompensaMonedes: MONEDES_PER_DIFICULTAT[h.dificultat] || 2,
-            dificultat: h.dificultat,
-            objectiuVegades: h.objectiu_vegades || 1,
-            unitat: h.unitat || "",
-          });
-        }
-
-        self.habits = mapejats;
-        return self.habits;
+        var habitStore = useHabitStore();
+        habitStore.establirHabitsDesDeApi(llistaHabits);
+        return habitStore.habits;
       } catch (error) {
         console.error("Error fetching habits:", error);
-        self.habits = [];
+        useHabitStore().establirHabitsDesDeApi([]);
         return [];
       }
     },
@@ -257,40 +242,22 @@ export var useGameStore = defineStore("game", {
         }
 
         dades = await resposta.json();
-
         if (dades) {
-          if (dades.xp_total !== undefined) {
-            self.xpTotal = dades.xp_total;
-          }
-          if (dades.nivell !== undefined) {
-            self.nivell = dades.nivell;
-          }
-          if (dades.xp_actual_nivel !== undefined) {
-            self.xpActualNivel = dades.xp_actual_nivel;
-          }
-          if (dades.xp_objetivo_nivel !== undefined) {
-            self.xpObjetivoNivel = dades.xp_objetivo_nivel;
-          }
-          if (dades.ratxa_actual !== undefined) {
-            self.ratxa = dades.ratxa_actual;
-          }
-          if (dades.ratxa_maxima !== undefined) {
-            self.ratxaMaxima = dades.ratxa_maxima;
-          }
-          if (dades.monedes !== undefined) {
-            self.monedes = dades.monedes;
-          }
-          if (dades.can_spin_roulette !== undefined) {
-            self.canSpinRoulette = !!dades.can_spin_roulette;
-          }
-          if (dades.ruleta_ultima_tirada !== undefined) {
-            self.ruletaUltimaTirada = dades.ruleta_ultima_tirada;
-          }
-          if (dades.missio_diaria !== undefined) {
-            self.missioDiaria = dades.missio_diaria;
-          }
-          if (dades.missio_completada !== undefined) {
-            self.missioCompletada = dades.missio_completada;
+          var gs = mapGameStateFromApi(dades);
+          if (gs) {
+            if (gs.xp_total !== undefined) self.xpTotal = gs.xp_total;
+            if (gs.nivell !== undefined) self.nivell = gs.nivell;
+            if (gs.xp_actual_nivel !== undefined) self.xpActualNivel = gs.xp_actual_nivel;
+            if (gs.xp_objetivo_nivel !== undefined) self.xpObjetivoNivel = gs.xp_objetivo_nivel;
+            if (gs.ratxa_actual !== undefined) self.ratxa = gs.ratxa_actual;
+            if (gs.ratxa_maxima !== undefined) self.ratxaMaxima = gs.ratxa_maxima;
+            if (gs.monedes !== undefined) self.monedes = gs.monedes;
+            if (gs.can_spin_roulette !== undefined) self.canSpinRoulette = gs.can_spin_roulette;
+            if (gs.ruleta_ultima_tirada !== undefined) self.ruletaUltimaTirada = gs.ruleta_ultima_tirada;
+            if (gs.missio_diaria !== undefined) self.missioDiaria = gs.missio_diaria;
+            if (gs.missio_completada !== undefined) self.missioCompletada = gs.missio_completada;
+            if (gs.missio_progres !== undefined) self.missioProgres = gs.missio_progres;
+            if (gs.missio_objectiu !== undefined) self.missioObjectiu = gs.missio_objectiu;
           }
         }
         return dades;
@@ -334,44 +301,29 @@ export var useGameStore = defineStore("game", {
         }
 
         gs = dades.game_state || {};
-        if (gs.xp_total !== undefined) self.xpTotal = gs.xp_total;
-        if (gs.nivell !== undefined) self.nivell = gs.nivell;
-        if (gs.xp_actual_nivel !== undefined) self.xpActualNivel = gs.xp_actual_nivel;
-        if (gs.xp_objetivo_nivel !== undefined) self.xpObjetivoNivel = gs.xp_objetivo_nivel;
-        if (gs.ratxa_actual !== undefined) self.ratxa = gs.ratxa_actual;
-        if (gs.ratxa_maxima !== undefined) self.ratxaMaxima = gs.ratxa_maxima;
-        if (gs.monedes !== undefined) self.monedes = gs.monedes;
-        if (gs.can_spin_roulette !== undefined) self.canSpinRoulette = !!gs.can_spin_roulette;
-        if (gs.ruleta_ultima_tirada !== undefined) self.ruletaUltimaTirada = gs.ruleta_ultima_tirada;
-        if (gs.missio_diaria !== undefined) self.missioDiaria = gs.missio_diaria;
-        if (gs.missio_completada !== undefined) self.missioCompletada = gs.missio_completada;
+        if (gs) {
+          var gsMap = mapGameStateFromApi(gs);
+          if (gsMap.xp_total !== undefined) self.xpTotal = gsMap.xp_total;
+          if (gsMap.nivell !== undefined) self.nivell = gsMap.nivell;
+          if (gsMap.xp_actual_nivel !== undefined) self.xpActualNivel = gsMap.xp_actual_nivel;
+          if (gsMap.xp_objetivo_nivel !== undefined) self.xpObjetivoNivel = gsMap.xp_objetivo_nivel;
+          if (gsMap.ratxa_actual !== undefined) self.ratxa = gsMap.ratxa_actual;
+          if (gsMap.ratxa_maxima !== undefined) self.ratxaMaxima = gsMap.ratxa_maxima;
+          if (gsMap.monedes !== undefined) self.monedes = gsMap.monedes;
+          if (gsMap.can_spin_roulette !== undefined) self.canSpinRoulette = gsMap.can_spin_roulette;
+          if (gsMap.ruleta_ultima_tirada !== undefined) self.ruletaUltimaTirada = gsMap.ruleta_ultima_tirada;
+          if (gsMap.missio_diaria !== undefined) self.missioDiaria = gsMap.missio_diaria;
+          if (gsMap.missio_completada !== undefined) self.missioCompletada = gsMap.missio_completada;
+          if (gsMap.missio_progres !== undefined) self.missioProgres = gsMap.missio_progres;
+          if (gsMap.missio_objectiu !== undefined) self.missioObjectiu = gsMap.missio_objectiu;
+        }
 
         h = dades.habits || [];
-        for (i = 0; i < h.length; i++) {
-          var diesSetmana = Array.isArray(h[i].dies_setmana) ? h[i].dies_setmana : [];
-          mapejats.push({
-            id: h[i].id,
-            nom: h[i].titol || "Sense nom",
-            descripcio: (h[i].frequencia_tipus || "") + " - Dificultat: " + (h[i].dificultat || ""),
-            completat: !!h[i].completat,
-            diesSetmana: diesSetmana,
-            recompensaXP: XP_PER_DIFICULTAT[h[i].dificultat] || XP_BASE,
-            recompensaMonedes: MONEDES_PER_DIFICULTAT[h[i].dificultat] || 2,
-            dificultat: h[i].dificultat,
-            objectiuVegades: h[i].objectiu_vegades || 1,
-            unitat: h[i].unitat || "",
-          });
-        }
-        self.habits = mapejats;
+        var habitStore = useHabitStore();
+        habitStore.establirHabitsDesDeApi(h);
 
         hp = dades.habit_progress || [];
-        for (i = 0; i < hp.length; i++) {
-          mapaProgress[hp[i].habit_id] = {
-            progress: hp[i].progress || 0,
-            completed_today: !!hp[i].completed_today,
-          };
-        }
-        self.habitProgress = mapaProgress;
+        self.habitProgress = mapHabitProgressListToMap(hp);
 
         return dades;
       } catch (error) {
@@ -399,15 +351,7 @@ export var useGameStore = defineStore("game", {
 
         dades = await resposta.json();
         if (Array.isArray(dades)) {
-          var mapa = {};
-          var i;
-          for (i = 0; i < dades.length; i++) {
-            mapa[dades[i].habit_id] = {
-              progress: dades[i].progress || 0,
-              completed_today: !!dades[i].completed_today,
-            };
-          }
-          self.habitProgress = mapa;
+          self.habitProgress = mapHabitProgressListToMap(dades);
         }
         return self.habitProgress;
       } catch (error) {

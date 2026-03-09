@@ -44,7 +44,7 @@ const authStore = useAuthStore()
 
 const handleLogout = async () => {
   await authStore.logout()
-  await navigateTo('/Login')
+  await navigateTo('/auth/login')
 }
 </script>
 

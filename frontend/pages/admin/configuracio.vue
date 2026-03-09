@@ -6,6 +6,7 @@
 definePageMeta({ layout: 'admin' });
 
 import { ref } from 'vue';
+import { authFetch, getBaseUrl } from '~/composables/useApi.js';
 
 // 1. DADES (VAR)
 var runtimeConfig = useRuntimeConfig();
@@ -34,13 +35,12 @@ var missatgeExecucio = ref(null);
 // 2. METHODS (FUNCTION)
 async function guardarConfiguracio() {
   try {
-    var res = await $fetch('/api/admin/configuracio', {
+    var resposta = await authFetch(getBaseUrl() + '/api/admin/configuracio', {
       method: 'PUT',
-      baseURL: runtimeConfig.public.apiUrl,
-      headers: useAuthStore().getAuthHeaders(),
-      body: config.value
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(config.value)
     });
-    
+    var res = await resposta.json();
     if (res.success) {
       missatgeExecucio.value = "Configuració guardada correctament!";
       refreshConfig();
@@ -54,12 +54,10 @@ async function guardarConfiguracio() {
 async function netejarCache() {
   if (confirm("Segur que vols netejar la cache del sistema?")) {
     try {
-      var res = await $fetch('/api/admin/configuracio/netejar-cache', {
-        method: 'POST',
-        baseURL: runtimeConfig.public.apiUrl,
-        headers: useAuthStore().getAuthHeaders()
+      var resposta = await authFetch(getBaseUrl() + '/api/admin/configuracio/netejar-cache', {
+        method: 'POST'
       });
-      
+      var res = await resposta.json();
       if (res.success) {
         missatgeExecucio.value = "Cache neta!";
         setTimeout(function() { missatgeExecucio.value = null; }, 3000);

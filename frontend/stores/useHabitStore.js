@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
-import { authFetch } from "~/utils/authFetch.js";
+import { authFetch } from "~/composables/useApi.js";
+import { mapHabitFromApi } from "~/utils/mappers/apiMappers.js";
 
 /**
  * Store per a la gestió dels hàbits de l'usuari.
@@ -15,51 +16,13 @@ export var useHabitStore = defineStore("habit", {
   },
   actions: {
     /**
-     * Transforma les dades de l'API al format del frontend.
-     */
-    mapejarHabitDesDeApi: function (hàbit) {
-      var freq = hàbit.frequencia_tipus || "";
-      var freqMapejada = freq;
-
-      if (freq === "diaria") {
-        freqMapejada = "Diari";
-      } else if (freq === "semanal") {
-        freqMapejada = "Setmanal";
-      } else if (freq === "mensual") {
-        freqMapejada = "Mensual";
-      } else if (freq === "especifica") {
-        freqMapejada = "Dies específics";
-      }
-
-      return {
-        id: hàbit.id,
-        nom: hàbit.titol || "Sense nom",
-        frequencia: freqMapejada,
-        recordatori: hàbit.recordatori || "",
-        icona: hàbit.icona || "📝",
-        color: hàbit.color || "#10B981",
-        dificultat: hàbit.dificultat || null,
-        diesSetmana: Array.isArray(hàbit.dies_setmana)
-          ? hàbit.dies_setmana
-          : [],
-        objectiuVegades: hàbit.objectiu_vegades || 1,
-        unitat: hàbit.unitat || "",
-        usuariId: hàbit.usuari_id || null,
-        plantillaId: hàbit.plantilla_id || null,
-        categoriaId: hàbit.categoria_id || null,
-      };
-    },
-
-    /**
      * Estableix la llista d'hàbits a partir de dades de l'API.
      */
     establirHabitsDesDeApi: function (llistaHabits) {
       var mapejats = [];
       var i;
-
-      // A. Iterar usant bucle clàssic
       for (i = 0; i < llistaHabits.length; i++) {
-        mapejats.push(this.mapejarHabitDesDeApi(llistaHabits[i]));
+        mapejats.push(mapHabitFromApi(llistaHabits[i]));
       }
       this.habits = mapejats;
     },

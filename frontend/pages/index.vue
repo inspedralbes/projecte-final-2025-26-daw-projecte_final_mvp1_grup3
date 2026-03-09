@@ -4,7 +4,7 @@
  * Redirigeix automàticament al Login seguint el flux de l'aplicació.
  */
 onMounted(function() {
-  navigateTo('/login');
+  navigateTo('/auth/login');
 });
 </script>
 

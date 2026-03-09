@@ -1,0 +1,21 @@
+---
+description: Arquitectura frontend Loopy - estructura per domini, useApi, composables
+alwaysApply: true
+---
+
+# Arquitectura Frontend (Loopy)
+
+## Estructura per domini
+- `components/shared/` → Components sense rol (ErrorContent, LanguageSwitcher)
+- `components/user/` → Components d'usuari (home/, habits/, HeaderUser)
+- `components/admin/` → Components admin (AdminStatsGrid, AdminDataTable, etc.)
+- `composables/useApi.js` → Capa d'API unificada (authFetch, useAuthFetch, getBaseUrl)
+- `composables/user/` → useGameState, useHabits, useSocket, usePlantilles, useLogros
+- `composables/admin/` → useAdminApi, useAdminDashboard, useAdminSocket, useAdminList
+- `utils/mappers/apiMappers.js` → Transformació respostes API
+
+## Regles
+- **Pàgines**: Orquestadors lleugers; la lògica va a composables i components
+- **GET**: sempre via authFetch (useApi) contra API Laravel
+- **CUD**: Node → Redis → Laravel; sockets només per feedback
+- **Hàbits**: useHabitStore és la font única; gameStore només game_state

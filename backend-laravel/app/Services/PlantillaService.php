@@ -210,9 +210,9 @@ class PlantillaService
         // F. Retorn de la plantilla amb els hàbits carregats
         return $plantilla->load('habits');
     }
-    }
 
     /**
+
      * Actualitza una plantilla existent al sistema, validant la propietat.
      *
      * @param int $usuariId

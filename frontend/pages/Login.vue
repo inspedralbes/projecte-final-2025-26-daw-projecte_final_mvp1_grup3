@@ -40,7 +40,7 @@
             </div>
             <div>
               <label class="block text-xs font-medium text-gray-600 mb-2"
-                >CONTRASSENYA</label
+                >CONTRASEÑA</label
               >
               <input
                 v-model="formulari.contrasenya"

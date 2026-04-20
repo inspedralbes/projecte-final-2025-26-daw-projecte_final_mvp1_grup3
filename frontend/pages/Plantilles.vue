@@ -833,7 +833,7 @@ export default {
         }
 
         // --- SIMPLIFIED LOGIC: Refetch from DB to ensure "automatic" update ---
-        await self.habitStore.obtenirHabitos();
+        await self.gameStore.obtenirHabitos();
         
         // Refresh gameStore too if we want immediate home page consistency
         // self.gameStore.obtenirHabitos(); 

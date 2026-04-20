@@ -3,4 +3,5 @@ node_modules
 .output
 dist
 package-lock.json
-npm-debug.logpostcss.config.js
+npm-debug.log
+postcss.config.js

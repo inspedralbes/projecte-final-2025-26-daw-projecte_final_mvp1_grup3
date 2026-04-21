@@ -1,9 +1,5 @@
 <template>
-  <div class="global-app-container onboarding-container">
-    <div class="onboarding-lang-switch">
-      <LanguageSwitcher />
-    </div>
-
+  <div class="global-app-container onboarding-page onboarding-container">
     <!-- Progress Bar -->
     <div class="onboarding-progress-container">
       <div class="onboarding-progress-bar">
@@ -17,7 +13,7 @@
           }"
         ></div>
       </div>
-      <p class="onboarding-progress-text">Pas {{ currentStep }} de 4</p>
+      <p class="onboarding-progress-text">{{ $t('onboarding.progress', { current: currentStep }) }}</p>
     </div>
 
     <!-- Main Content Card -->
@@ -25,20 +21,19 @@
       <!-- Question 1: Objectiu (Goal) -->
       <div v-if="currentStep === 1" class="question-section">
         <div class="question-header">
-          <span class="question-emoji">🎯</span>
           <h2 class="question-title">{{ $t('onboarding.question1.title') }}</h2>
           <p class="question-subtitle">{{ $t('onboarding.question1.subtitle') }}</p>
         </div>
-        <div class="options-grid">
+        <div class="options-list">
           <button 
             v-for="option in goalOptions" 
             :key="option.value"
+            type="button"
             class="option-btn"
-            :class="{ selected: answers.objectiu === option.value }"
+            :class="{ 'option-btn--selected': answers.objectiu === option.value }"
             @click="selectAnswer('objectiu', option.value)"
           >
-            <span class="option-icon">{{ option.icon }}</span>
-            <span class="option-label">{{ option.label }}</span>
+            {{ option.label }}
           </button>
         </div>
       </div>
@@ -46,20 +41,19 @@
       <!-- Question 2: Energia (Energy) -->
       <div v-if="currentStep === 2" class="question-section">
         <div class="question-header">
-          <span class="question-emoji">⚡</span>
           <h2 class="question-title">{{ $t('onboarding.question2.title') }}</h2>
           <p class="question-subtitle">{{ $t('onboarding.question2.subtitle') }}</p>
         </div>
-        <div class="options-grid">
+        <div class="options-list">
           <button 
             v-for="option in energyOptions" 
             :key="option.value"
+            type="button"
             class="option-btn"
-            :class="{ selected: answers.energia === option.value }"
+            :class="{ 'option-btn--selected': answers.energia === option.value }"
             @click="selectAnswer('energia', option.value)"
           >
-            <span class="option-icon">{{ option.icon }}</span>
-            <span class="option-label">{{ option.label }}</span>
+            {{ option.label }}
           </button>
         </div>
       </div>
@@ -67,20 +61,19 @@
       <!-- Question 3: Obstacle -->
       <div v-if="currentStep === 3" class="question-section">
         <div class="question-header">
-          <span class="question-emoji">🏔️</span>
           <h2 class="question-title">{{ $t('onboarding.question3.title') }}</h2>
           <p class="question-subtitle">{{ $t('onboarding.question3.subtitle') }}</p>
         </div>
-        <div class="options-grid">
+        <div class="options-list">
           <button 
             v-for="option in obstacleOptions" 
             :key="option.value"
+            type="button"
             class="option-btn"
-            :class="{ selected: answers.obstacle === option.value }"
+            :class="{ 'option-btn--selected': answers.obstacle === option.value }"
             @click="selectAnswer('obstacle', option.value)"
           >
-            <span class="option-icon">{{ option.icon }}</span>
-            <span class="option-label">{{ option.label }}</span>
+            {{ option.label }}
           </button>
         </div>
       </div>
@@ -88,20 +81,19 @@
       <!-- Question 4: Temps (Time) -->
       <div v-if="currentStep === 4" class="question-section">
         <div class="question-header">
-          <span class="question-emoji">⏰</span>
           <h2 class="question-title">{{ $t('onboarding.question4.title') }}</h2>
           <p class="question-subtitle">{{ $t('onboarding.question4.subtitle') }}</p>
         </div>
-        <div class="options-grid">
+        <div class="options-list">
           <button 
             v-for="option in timeOptions" 
             :key="option.value"
+            type="button"
             class="option-btn"
-            :class="{ selected: answers.temps === option.value }"
+            :class="{ 'option-btn--selected': answers.temps === option.value }"
             @click="selectAnswer('temps', option.value)"
           >
-            <span class="option-icon">{{ option.icon }}</span>
-            <span class="option-label">{{ option.label }}</span>
+            {{ option.label }}
           </button>
         </div>
       </div>
@@ -115,7 +107,6 @@
       <!-- Habits Selection -->
       <div v-if="showHabitsSelection && !isLoading" class="habits-section">
         <div class="question-header">
-          <span class="question-emoji">💡</span>
           <h2 class="question-title">{{ $t('onboarding.habits.title') }}</h2>
           <p class="question-subtitle">{{ $t('onboarding.habits.subtitle') }}</p>
         </div>
@@ -134,12 +125,13 @@
             <p class="habit-rutina">{{ habit.rutina }}</p>
             <div class="habit-meta">
               <span class="habit-category">{{ habit.categoria }}</span>
-              <span class="habit-reward">🏆 {{ habit.recompensa }}</span>
+              <span class="habit-reward">{{ habit.recompensa }}</span>
             </div>
           </div>
         </div>
         <button 
-          class="confirm-btn" 
+          type="button"
+          class="login-btn-primary w-full mt-4" 
           :disabled="selectedHabits.length === 0"
           @click="confirmHabits"
         >
@@ -148,16 +140,18 @@
       </div>
 
       <!-- Navigation Buttons -->
-      <div v-if="!showHabitsSelection && !isLoading" class="navigation-buttons">
+      <div v-if="!showHabitsSelection && !isLoading" class="onboarding-nav">
         <button 
           v-if="currentStep > 1" 
-          class="nav-btn back-btn"
+          type="button"
+          class="login-btn-outline onboarding-nav-btn"
           @click="previousStep"
         >
           {{ $t('onboarding.back') }}
         </button>
         <button 
-          class="nav-btn next-btn"
+          type="button"
+          class="login-btn-primary onboarding-nav-btn"
           :disabled="!canProceed"
           @click="nextStep"
         >
@@ -174,8 +168,16 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { authFetch } from '~/composables/useApi.js';
+
+definePageMeta({ layout: false });
+
+const { t, setLocale } = useI18n();
+
+onMounted(function () {
+  setLocale('ca');
+});
 
 const config = useRuntimeConfig();
 
@@ -191,33 +193,41 @@ const answers = ref({
   temps: null,
 });
 
-const goalOptions = [
-  { value: 'salut', label: 'Salut', icon: '💪' },
-  { value: 'productivitat', label: 'Productivitat', icon: '📈' },
-  { value: 'ment', label: 'Ment', icon: '🧠' },
-  { value: 'aprenentatge', label: 'Aprenentatge', icon: '📚' },
-];
+const goalOptions = computed(function () {
+  return [
+    { value: 'salut', label: t('onboarding.options.goal.salut') },
+    { value: 'productivitat', label: t('onboarding.options.goal.productivitat') },
+    { value: 'ment', label: t('onboarding.options.goal.ment') },
+    { value: 'aprenentatge', label: t('onboarding.options.goal.aprenentatge') },
+  ];
+});
 
-const energyOptions = [
-  { value: 'mati', label: 'Matí', icon: '🌅' },
-  { value: 'migdia', label: 'Migdia', icon: '☀️' },
-  { value: 'tarda', label: 'Tarda', icon: '🌇' },
-  { value: 'nit', label: 'Nit', icon: '🌙' },
-];
+const energyOptions = computed(function () {
+  return [
+    { value: 'mati', label: t('onboarding.options.energy.mati') },
+    { value: 'migdia', label: t('onboarding.options.energy.migdia') },
+    { value: 'tarda', label: t('onboarding.options.energy.tarda') },
+    { value: 'nit', label: t('onboarding.options.energy.nit') },
+  ];
+});
 
-const obstacleOptions = [
-  { value: 'estress', label: 'Estrès', icon: '😰' },
-  { value: 'temps', label: 'Temps', icon: '⏳' },
-  { value: 'memoria', label: 'Memòria', icon: '🧠' },
-  { value: 'andra', label: 'Mandra', icon: '😴' },
-];
+const obstacleOptions = computed(function () {
+  return [
+    { value: 'estress', label: t('onboarding.options.obstacle.estress') },
+    { value: 'temps', label: t('onboarding.options.obstacle.temps') },
+    { value: 'memoria', label: t('onboarding.options.obstacle.memoria') },
+    { value: 'andra', label: t('onboarding.options.obstacle.andra') },
+  ];
+});
 
-const timeOptions = [
-  { value: '15min', label: '<15 min', icon: '⚡' },
-  { value: '30min', label: '30 min', icon: '⏰' },
-  { value: '1h', label: '1 hora', icon: '🕐' },
-  { value: '1h+', label: '+1 hora', icon: '🌟' },
-];
+const timeOptions = computed(function () {
+  return [
+    { value: '15min', label: t('onboarding.options.time.15min') },
+    { value: '30min', label: t('onboarding.options.time.30min') },
+    { value: '1h', label: t('onboarding.options.time.1h') },
+    { value: '1h+', label: t('onboarding.options.time.1h_plus') },
+  ];
+});
 
 const generatedHabits = ref([]);
 const selectedHabits = ref([]);
@@ -272,11 +282,11 @@ async function generateHabits() {
       generatedHabits.value = data.habits;
       showHabitsSelection.value = true;
     } else {
-      errorMessage.value = data.message || 'Error generant hàbits';
+      errorMessage.value = data.message || t('onboarding.errors.generate');
     }
   } catch (error) {
     console.error('Error generating habits:', error);
-    errorMessage.value = 'Error de connexió';
+    errorMessage.value = t('onboarding.errors.connection');
   } finally {
     isLoading.value = false;
   }
@@ -317,11 +327,11 @@ async function confirmHabits() {
       navigateTo('/home');
     } else {
       const data = await response.json();
-      errorMessage.value = data.message || 'Error guardant hàbits';
+      errorMessage.value = data.message || t('onboarding.errors.save');
     }
   } catch (error) {
     console.error('Error saving habits:', error);
-    errorMessage.value = 'Error de connexió';
+    errorMessage.value = t('onboarding.errors.connection');
   } finally {
     isLoading.value = false;
   }
@@ -340,11 +350,11 @@ function mapCategoria(categoria) {
 function mapDificultat(obstacle) {
   const map = {
     'estress': 'facil',
-    'temps': 'mitjana',
-    'memoria': 'mitjana',
+    'temps': 'media',
+    'memoria': 'media',
     'andra': 'dificil',
   };
-  return map[obstacle] || 'mitjana';
+  return map[obstacle] || 'media';
 }
 
 function mapTemps(temps) {
@@ -365,20 +375,15 @@ function mapTemps(temps) {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
-}
-
-.onboarding-lang-switch {
-  position: absolute;
-  top: 1.5rem;
-  right: 1.5rem;
+  padding: 2rem 1rem 3rem;
+  position: relative;
+  z-index: 1;
 }
 
 .onboarding-progress-container {
   width: 100%;
-  max-width: 400px;
-  margin-bottom: 2rem;
+  max-width: 28rem;
+  margin-bottom: 1.5rem;
 }
 
 .onboarding-progress-bar {
@@ -391,131 +396,104 @@ function mapTemps(temps) {
   flex: 1;
   height: 8px;
   border-radius: 4px;
-  background: #e2e8f0;
-  transition: all 0.3s ease;
+  background: #e5e7eb;
+  transition: background 0.3s ease;
 }
 
 .progress-segment.completed {
-  background: #10b981;
+  background: #568039;
 }
 
 .progress-segment.active {
-  background: #3b82f6;
+  background: #7cb342;
 }
 
 .onboarding-progress-text {
   text-align: center;
   font-size: 0.875rem;
-  color: #64748b;
+  color: #6b7280;
+  font-weight: 500;
 }
 
 .onboarding-card {
   width: 100%;
-  max-width: 600px;
-  background: white;
-  border-radius: 2rem;
-  padding: 2.5rem;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+  max-width: 28rem;
+  background: #ffffff;
+  border-radius: 1.5rem;
+  padding: 2rem 1.5rem;
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  position: relative;
+  z-index: 2;
 }
 
 .question-header {
-  text-align: center;
-  margin-bottom: 2rem;
-}
-
-.question-emoji {
-  font-size: 3rem;
-  display: block;
-  margin-bottom: 1rem;
+  text-align: left;
+  margin-bottom: 1.5rem;
 }
 
 .question-title {
   font-size: 1.5rem;
-  font-weight: 700;
-  color: #1f2937;
+  font-weight: 800;
+  color: #3a5826;
   margin-bottom: 0.5rem;
+  line-height: 1.25;
 }
 
 .question-subtitle {
-  color: #64748b;
+  color: #6b7280;
+  font-size: 0.95rem;
+  font-weight: 500;
 }
 
-.options-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
+.options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
 }
 
 .option-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 1.5rem;
-  border: 2px solid #e2e8f0;
-  border-radius: 1rem;
-  background: white;
+  width: 100%;
+  padding: 1rem 1.25rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  color: #1f2937;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-align: left;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
 }
 
 .option-btn:hover {
-  border-color: #3b82f6;
-  transform: translateY(-2px);
+  border-color: rgba(81, 125, 54, 0.45);
+  background: #ffffff;
 }
 
-.option-btn.selected {
-  border-color: #3b82f6;
-  background: #eff6ff;
+.option-btn--selected {
+  background: #568039;
+  border-color: #568039;
+  color: #ffffff;
+  box-shadow: 0 4px 0 0 #3f5e29;
 }
 
-.option-icon {
-  font-size: 2rem;
-  margin-bottom: 0.5rem;
+.option-btn--selected:hover {
+  background: #45682c;
+  border-color: #45682c;
 }
 
-.option-label {
-  font-weight: 600;
-  color: #374151;
-}
-
-.navigation-buttons {
+.onboarding-nav {
   display: flex;
-  justify-content: space-between;
-  margin-top: 2rem;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1.75rem;
+  width: 100%;
 }
 
-.nav-btn {
-  padding: 0.75rem 2rem;
-  border-radius: 0.75rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.back-btn {
-  background: #f1f5f9;
-  border: none;
-  color: #64748b;
-}
-
-.back-btn:hover {
-  background: #e2e8f0;
-}
-
-.next-btn {
-  background: #3b82f6;
-  border: none;
-  color: white;
-}
-
-.next-btn:hover:not(:disabled) {
-  background: #2563eb;
-}
-
-.next-btn:disabled {
-  background: #94a3b8;
-  cursor: not-allowed;
+.onboarding-nav-btn {
+  width: 100%;
 }
 
 .loading-section {
@@ -526,8 +504,8 @@ function mapTemps(temps) {
 .loading-spinner {
   width: 50px;
   height: 50px;
-  border: 4px solid #e2e8f0;
-  border-top-color: #3b82f6;
+  border: 4px solid #e5e7eb;
+  border-top-color: #568039;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 1rem;
@@ -557,12 +535,12 @@ function mapTemps(temps) {
 }
 
 .habit-card:hover {
-  border-color: #3b82f6;
+  border-color: rgba(81, 125, 54, 0.5);
 }
 
 .habit-card.selected {
-  border-color: #10b981;
-  background: #f0fdf4;
+  border-color: #568039;
+  background: #f7faf5;
 }
 
 .habit-card-header {
@@ -590,8 +568,8 @@ function mapTemps(temps) {
 }
 
 .habit-check.checked {
-  background: #10b981;
-  border-color: #10b981;
+  background: #568039;
+  border-color: #568039;
   color: white;
 }
 
@@ -608,35 +586,14 @@ function mapTemps(temps) {
 }
 
 .habit-category {
-  background: #e0f2fe;
-  color: #0369a1;
+  background: #e8f5e9;
+  color: #2e7d32;
   padding: 0.25rem 0.5rem;
   border-radius: 0.25rem;
 }
 
 .habit-reward {
   color: #64748b;
-}
-
-.confirm-btn {
-  width: 100%;
-  padding: 1rem;
-  background: #10b981;
-  color: white;
-  border: none;
-  border-radius: 0.75rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.confirm-btn:hover:not(:disabled) {
-  background: #059669;
-}
-
-.confirm-btn:disabled {
-  background: #94a3b8;
-  cursor: not-allowed;
 }
 
 .error-toast {

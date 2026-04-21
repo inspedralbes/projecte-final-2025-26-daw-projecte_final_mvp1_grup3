@@ -254,5 +254,64 @@
     "export_template_title_prefix": "Template Exported from ",
     "export_creating_template": "The new personal template is being created.",
     "export_no_template_created": "Habits exported. No new personal template created."
+  },
+  "onboarding": {
+    "progress": "Step {current} of 4",
+    "question1": {
+      "title": "What do you want to improve?",
+      "subtitle": "Pick the area you want to focus on."
+    },
+    "question2": {
+      "title": "When do you have the most energy?",
+      "subtitle": "We'll align habits with your rhythm."
+    },
+    "question3": {
+      "title": "What holds you back the most?",
+      "subtitle": "We'll factor it into your routines."
+    },
+    "question4": {
+      "title": "How much time can you spend per day?",
+      "subtitle": "We'll suggest realistic habits for you."
+    },
+    "next": "Next",
+    "back": "Back",
+    "generate": "Generate habits",
+    "generating_habits": "Generating your personalized habits…",
+    "habits": {
+      "title": "Choose your habits",
+      "subtitle": "Select the ones you want to add to Loopy."
+    },
+    "confirm": "Confirm selection",
+    "options": {
+      "goal": {
+        "salut": "Health",
+        "productivitat": "Productivity",
+        "ment": "Mind",
+        "aprenentatge": "Learning"
+      },
+      "energy": {
+        "mati": "Morning",
+        "migdia": "Midday",
+        "tarda": "Afternoon",
+        "nit": "Night"
+      },
+      "obstacle": {
+        "estress": "Stress",
+        "temps": "Lack of time",
+        "memoria": "Memory or focus",
+        "andra": "Laziness or procrastination"
+      },
+      "time": {
+        "15min": "Under 15 min",
+        "30min": "30 min",
+        "1h": "1 hour",
+        "1h_plus": "Over 1 hour"
+      }
+    },
+    "errors": {
+      "generate": "Could not generate habits.",
+      "connection": "Connection error.",
+      "save": "Could not save habits."
+    }
   }
 }

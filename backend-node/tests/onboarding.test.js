@@ -93,7 +93,10 @@ describe('Onboarding Handler', () => {
 
       await handler(req, mockRes);
 
-      expect(mockRes.writeHead).toHaveBeenCalledWith(500, { 'Content-Type': 'application/json' });
+      expect(mockRes.writeHead).toHaveBeenCalledWith(200, { 'Content-Type': 'application/json' });
+      expect(mockRes.end).toHaveBeenCalledWith(
+        expect.stringContaining('"success":true')
+      );
       expect(mockRes.end).toHaveBeenCalledWith(
         expect.stringContaining('"habits":')
       );
@@ -166,7 +169,7 @@ describe('Onboarding Handler', () => {
       FALLBACK_HABITS.forEach(habit => {
         expect(habit).toHaveProperty('titol');
         expect(habit).toHaveProperty('categoria');
-        expect(habit).toHaveProperty('senal');
+        expect(habit).toHaveProperty('senyal');
         expect(habit).toHaveProperty('rutina');
         expect(habit).toHaveProperty('recompensa');
       });

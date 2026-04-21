@@ -254,5 +254,64 @@
     "export_template_title_prefix": "Plantilla Exportada de ",
     "export_creating_template": "La nueva plantilla personal se está creando.",
     "export_no_template_created": "Los hábitos han sido exportados. No se ha creado una nueva plantilla personal."
+  },
+  "onboarding": {
+    "progress": "Paso {current} de 4",
+    "question1": {
+      "title": "¿Qué quieres mejorar?",
+      "subtitle": "Elige el área en la que quieres enfocarte."
+    },
+    "question2": {
+      "title": "¿Cuándo tienes más energía?",
+      "subtitle": "Así adaptamos los hábitos a tu ritmo."
+    },
+    "question3": {
+      "title": "¿Qué te frena más?",
+      "subtitle": "Lo tendremos en cuenta al proponerte rutinas."
+    },
+    "question4": {
+      "title": "¿Cuánto tiempo puedes dedicar al día?",
+      "subtitle": "Sugeriremos hábitos realistas para ti."
+    },
+    "next": "Siguiente",
+    "back": "Atrás",
+    "generate": "Generar hábitos",
+    "generating_habits": "Generando tus hábitos personalizados…",
+    "habits": {
+      "title": "Elige tus hábitos",
+      "subtitle": "Selecciona los que quieres añadir a Loopy."
+    },
+    "confirm": "Confirmar selección",
+    "options": {
+      "goal": {
+        "salut": "Salud",
+        "productivitat": "Productividad",
+        "ment": "Mente",
+        "aprenentatge": "Aprendizaje"
+      },
+      "energy": {
+        "mati": "Mañana",
+        "migdia": "Mediodía",
+        "tarda": "Tarde",
+        "nit": "Noche"
+      },
+      "obstacle": {
+        "estress": "Estrés",
+        "temps": "Falta de tiempo",
+        "memoria": "Memoria o foco",
+        "andra": "Pereza o procrastinación"
+      },
+      "time": {
+        "15min": "Menos de 15 min",
+        "30min": "30 min",
+        "1h": "1 hora",
+        "1h_plus": "Más de 1 hora"
+      }
+    },
+    "errors": {
+      "generate": "No se han podido generar los hábitos.",
+      "connection": "Error de conexión.",
+      "save": "No se han podido guardar los hábitos."
+    }
   }
 }

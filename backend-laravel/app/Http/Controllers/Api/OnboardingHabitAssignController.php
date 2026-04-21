@@ -5,15 +5,18 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Habit;
 use App\Models\UsuariHabit;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Carbon\Carbon;
 
 class OnboardingHabitAssignController extends Controller
 {
     public function assign(Request $request): JsonResponse
     {
+        $this->normalitzarDificultatAlRequest($request);
+
         $request->validate([
             'habits' => 'required|array|min:1',
             'habits.*.titol' => 'required|string|max:100',
@@ -34,8 +37,8 @@ class OnboardingHabitAssignController extends Controller
             'habits.*.objectiu_vegades.required' => 'L\'objectiu és obligatori.',
         ]);
 
-        $userId = $request->input('user_id');
-        if (!$userId) {
+        $userId = (int) $request->input('user_id');
+        if ($userId < 1) {
             return response()->json(['message' => 'Unauthorized'], 401);
         }
 
@@ -56,9 +59,9 @@ class OnboardingHabitAssignController extends Controller
                     'dificultat' => $habitData['dificultat'],
                     'objectiu_vegades' => $habitData['objectiu_vegades'],
                     'frequencia_tipus' => 'diaria',
-                    'dies_setmana' => '{t,t,t,t,t,t,t}',
+                    'dies_setmana' => DB::raw('ARRAY[true,true,true,true,true,true,true]::boolean[]'),
                     'unitat' => 'vegada',
-                    'icona' => $habitData['icona'] ?? '📌',
+                    'icona' => $habitData['icona'] ?? '-',
                     'color' => $habitData['color'] ?? '#6C63FF',
                 ]);
 
@@ -96,5 +99,25 @@ class OnboardingHabitAssignController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * Converteix valors antics (ex. mitjana) al format esperat per la validació.
+     */
+    private function normalitzarDificultatAlRequest(Request $request): void
+    {
+        $habits = $request->input('habits');
+        if (! is_array($habits)) {
+            return;
+        }
+        foreach ($habits as $i => $fila) {
+            if (! is_array($fila)) {
+                continue;
+            }
+            if (isset($fila['dificultat']) && $fila['dificultat'] === 'mitjana') {
+                $habits[$i]['dificultat'] = 'media';
+            }
+        }
+        $request->merge(['habits' => $habits]);
     }
 }

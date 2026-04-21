@@ -41,6 +41,17 @@ function getOnboardingGenerateHandler(genAI) {
         return;
       }
 
+      if (!genAI) {
+        console.warn('Onboarding generate: GEMINI_API_KEY no configurada; s\'usen hàbits per defecte.');
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          success: true,
+          habits: FALLBACK_HABITS,
+          fallback: true,
+        }));
+        return;
+      }
+
       const prompt = `Eres un assistent IA d'una app d'hàbits anomenada Loopy. Genera 3 hàbits personalitzats per a un usuari que:
 - Vol millorar en: ${categoria}
 - Té energia al: ${senyal}
@@ -97,11 +108,12 @@ Exemple de format:
       }));
     } catch (error) {
       console.error('Error in onboarding generate:', error.message);
-      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({
-        success: false,
-        message: 'Error generant hàbits',
+        success: true,
         habits: FALLBACK_HABITS,
+        fallback: true,
+        message: 'Error generant hàbits; s\'han retornat suggeriments per defecte.',
       }));
     }
   };

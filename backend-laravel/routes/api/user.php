@@ -4,6 +4,11 @@ use App\Http\Controllers\Api\GameStateReadController;
 use App\Http\Controllers\Api\HabitReadController;
 use App\Http\Controllers\Api\LogroReadController;
 use App\Http\Controllers\Api\PlantillaReadController;
+use App\Http\Controllers\Api\SocialPostController;
+use App\Http\Controllers\Api\SocialCommentController;
+use App\Http\Controllers\Api\SocialLikeController;
+use App\Http\Controllers\Api\SocialImportController;
+use App\Http\Controllers\Api\SocialReportController;
 use App\Http\Controllers\Api\UserHomeReadController;
 use App\Http\Controllers\Api\UserProfileReadController;
 use Illuminate\Support\Facades\Route;
@@ -15,6 +20,23 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::middleware('ensure.user')->group(function () {
+    Route::get('/social/posts', [SocialPostController::class, 'index']);
+    Route::post('/social/posts', [SocialPostController::class, 'store']);
+    Route::get('/social/posts/{id}', [SocialPostController::class, 'show']);
+    Route::delete('/social/posts/{id}', [SocialPostController::class, 'destroy']);
+
+    Route::get('/social/comments/{postId}', [SocialCommentController::class, 'index']);
+    Route::post('/social/comments', [SocialCommentController::class, 'store']);
+    Route::delete('/social/comments/{id}', [SocialCommentController::class, 'destroy']);
+
+    Route::post('/social/likes', [SocialLikeController::class, 'store']);
+    Route::get('/social/likes/check', [SocialLikeController::class, 'check']);
+
+    Route::post('/social/import/habit', [SocialImportController::class, 'importHabit']);
+    Route::post('/social/import/plantilla', [SocialImportController::class, 'importPlantilla']);
+
+    Route::post('/social/report', [SocialReportController::class, 'store']);
+
     Route::get('/habits', [HabitReadController::class, 'index']);
     Route::get('/habits/all', [HabitReadController::class, 'indexAll']);
     Route::get('/habits/{id}', [HabitReadController::class, 'show']);

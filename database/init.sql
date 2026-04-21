@@ -204,3 +204,43 @@ CREATE TABLE REPORTS (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- 6. SOCIAL FORUM
+-- ----------------------------------------------------------
+
+CREATE TABLE SOCIAL_POSTS (
+    id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES USUARIS(id) ON DELETE CASCADE,
+    content TEXT NOT NULL,
+    habit_id INT REFERENCES HABITS(id) ON DELETE SET NULL,
+    plantilla_id INT REFERENCES PLANTILLES(id) ON DELETE SET NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP
+);
+
+CREATE TABLE SOCIAL_COMMENTS (
+    id SERIAL PRIMARY KEY,
+    post_id INT REFERENCES SOCIAL_POSTS(id) ON DELETE CASCADE,
+    user_id INT REFERENCES USUARIS(id) ON DELETE CASCADE,
+    parent_id INT REFERENCES SOCIAL_COMMENTS(id) ON DELETE CASCADE,
+    content TEXT NOT NULL,
+    depth_level INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE SOCIAL_LIKES (
+    id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES USUARIS(id) ON DELETE CASCADE,
+    likeable_id INT NOT NULL,
+    likeable_type VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, likeable_id, likeable_type)
+);
+
+CREATE INDEX idx_social_posts_user_id ON SOCIAL_POSTS(user_id);
+CREATE INDEX idx_social_posts_created_at ON SOCIAL_POSTS(created_at);
+CREATE INDEX idx_social_comments_post_id ON SOCIAL_COMMENTS(post_id);
+CREATE INDEX idx_social_comments_user_id ON SOCIAL_COMMENTS(user_id);
+CREATE INDEX idx_social_likes_likeable ON SOCIAL_LIKES(likeable_id, likeable_type);
+

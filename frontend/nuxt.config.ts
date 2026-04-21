@@ -6,6 +6,9 @@ export default defineNuxtConfig({
     '@pinia/nuxt',
     '@nuxtjs/i18n',
   ],
+  routeRules: {
+    '/**': { middleware: ['require-onboarding'] },
+  },
   i18n: {
     lazy: false,
     langDir: 'lang',

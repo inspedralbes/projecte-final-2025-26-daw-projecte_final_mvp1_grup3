@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\GameStateReadController;
 use App\Http\Controllers\Api\HabitReadController;
 use App\Http\Controllers\Api\LogroReadController;
+use App\Http\Controllers\Api\OnboardingHabitAssignController;
 use App\Http\Controllers\Api\PlantillaReadController;
 use App\Http\Controllers\Api\UserHomeReadController;
 use App\Http\Controllers\Api\UserProfileReadController;
@@ -21,6 +22,7 @@ Route::middleware('ensure.user')->group(function () {
     Route::get('/habits/progress', [HabitReadController::class, 'progress']);
     Route::get('/habits/logs', [HabitReadController::class, 'logs']);
     Route::post('/habits/complete', [HabitReadController::class, 'complete']);
+    Route::post('/habits/assign', [OnboardingHabitAssignController::class, 'assign']);
     Route::get('/plantilles', [PlantillaReadController::class, 'index']);
     Route::get('/plantilles/{id}', [PlantillaReadController::class, 'show']);
     Route::get('/game-state', [GameStateReadController::class, 'show']);

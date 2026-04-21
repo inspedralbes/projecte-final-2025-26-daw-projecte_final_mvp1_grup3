@@ -80,6 +80,12 @@ class UserAuthController extends Controller
             'nom' => $request->input('nom'),
             'email' => $request->input('email'),
             'contrasenya_hash' => Hash::make($request->input('contrasenya')),
+            'nivell' => 1,
+            'xp_total' => 0,
+            'xp_actual_nivel' => 0,
+            'xp_objetivo_nivel' => 1000,
+            'monedes' => 0,
+            'missio_completada' => false,
         ]);
 
         Ratxa::create([

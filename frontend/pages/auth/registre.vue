@@ -244,7 +244,10 @@ export default {
         }
         var authStore = useAuthStore();
         authStore.aplicarSessio({ token: dades.token, user: dades.user, role: "user" });
-        navigateTo("/home");
+        authStore.reiniciarEstatOnboarding();
+        var habitStore = useHabitStore();
+        habitStore.establirHabitsDesDeApi([]);
+        await navigateTo("/onboarding");
       } catch (err) {
         self.errorMissatge = this.$t('error_connection');
       } finally {

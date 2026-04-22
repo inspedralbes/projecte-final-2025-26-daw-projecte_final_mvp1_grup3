@@ -3,12 +3,14 @@ FROM mirror.gcr.io/library/node:20.18.3-alpine
 
 WORKDIR /app
 
-# Instalar dependencias necesarias para algunas librerías
 RUN apk add --no-cache python3 make g++
 
-COPY package*.json ./
-RUN npm install --legacy-peer-deps
-RUN npm install -D tailwindcss@3.3.6 postcss@8 autoprefixer@10
+# Inclou package-lock.json al context (no l'excloguis a .dockerignore) per a npm ci
+COPY package.json package-lock.json* ./
+
+# Una sola capa RUN: menys passos d'exportació d'imatge
+RUN if [ -f package-lock.json ]; then npm ci --legacy-peer-deps; else npm install --legacy-peer-deps; fi \
+    && npm install -D tailwindcss@3.3.6 postcss@8 autoprefixer@10
 
 COPY . .
 

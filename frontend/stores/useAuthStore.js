@@ -156,11 +156,15 @@ export var useAuthStore = defineStore('auth', {
       this.admin = null;
       this.role = null;
       this.isAuthenticated = false;
+      var onboardingCookie = useCookie('loopy_onboarding_done');
+      onboardingCookie.value = null;
       if (typeof window !== 'undefined') {
         localStorage.removeItem('loopy_token');
         localStorage.removeItem('loopy_user');
         localStorage.removeItem('loopy_admin');
         localStorage.removeItem('loopy_role');
+        localStorage.removeItem('loopy_onboarding_done');
+        localStorage.removeItem('loopy_onboarding_user_id');
       }
     },
 
@@ -212,7 +216,35 @@ export var useAuthStore = defineStore('auth', {
           localStorage.setItem('loopy_admin', JSON.stringify(this.admin));
           localStorage.removeItem('loopy_user');
         }
+        this.reconciliarOnboardingAmbUsuari();
       }
+    },
+
+    /**
+     * Si l'onboarding estava marcat per un altre usuari (navegador compartit), el buida.
+     */
+    reconciliarOnboardingAmbUsuari: function () {
+      if (typeof window === 'undefined' || !this.user || this.user.id == null) {
+        return;
+      }
+      var actual = String(this.user.id);
+      var marcatPer = localStorage.getItem('loopy_onboarding_user_id');
+      if (marcatPer && marcatPer !== actual) {
+        this.reiniciarEstatOnboarding();
+      }
+    },
+
+    /**
+     * Buida marques d'onboarding (cookie, localStorage). U després de registre o canvi d'usuari.
+     */
+    reiniciarEstatOnboarding: function () {
+      if (typeof window === 'undefined') {
+        return;
+      }
+      var c = useCookie('loopy_onboarding_done', { sameSite: 'lax' });
+      c.value = null;
+      localStorage.removeItem('loopy_onboarding_done');
+      localStorage.removeItem('loopy_onboarding_user_id');
     },
 
     /**

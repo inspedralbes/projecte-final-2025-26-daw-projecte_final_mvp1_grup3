@@ -1,6 +1,12 @@
 # Loopy - Orquestación de microservicios
 # Nuxt :3000 | Node :3001 | Laravel :8000 | Adminer :8080 | PostgreSQL :5433 (host)->5432 | Redis :6380 (host)->6379
 # Si 5432/6379 están libres, puedes usar "5432:5432" y "6379:6379" para conectar desde el host a postgres/redis.
+#
+# Build Docker Desktop (Windows): si falla "parent snapshot ... does not exist" al exportar la imagen:
+#   1) docker builder prune -af
+#   2) docker compose build --no-cache frontend
+#   3) Opcional: .\docker\rebuild-frontend.ps1
+# O desactiva BuildKit temporalmente: $env:DOCKER_BUILDKIT=0; docker compose build
 
 services:
   postgres:
@@ -43,7 +49,7 @@ services:
     container_name: loopy-adminer
     restart: unless-stopped
     ports:
-      - "8080:8080"
+      - "8081:8080"
     environment:
       ADMINER_DEFAULT_SERVER: postgres
     depends_on:
@@ -205,12 +211,13 @@ services:
     build:
       context: ../frontend
       dockerfile: ../docker/Dockerfile.nuxt
+      # Evita condiciones de carrera entre servicios al construir en paralelo (algunos entornos Windows)
+      pull: true
     container_name: loopy-nuxt
     restart: unless-stopped
     working_dir: /app
     ports:
       - "3000:3000"
-      - "24678:24678"
     environment:
       NODE_ENV: development
       NUXT_HOST: 0.0.0.0

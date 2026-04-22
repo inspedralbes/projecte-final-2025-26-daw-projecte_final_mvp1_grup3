@@ -6,6 +6,9 @@ export default defineNuxtConfig({
     '@pinia/nuxt',
     '@nuxtjs/i18n',
   ],
+  routeRules: {
+    '/**': { middleware: ['require-onboarding'] },
+  },
   i18n: {
     lazy: false,
     langDir: 'lang',
@@ -36,6 +39,20 @@ export default defineNuxtConfig({
   devServer: {
     host: '0.0.0.0',
     port: 3000,
+  },
+  // HMR al mateix port que el dev server (3000): evita ws://localhost:24678 i ERR_EMPTY_RESPONSE amb Docker.
+  vite: {
+    server: {
+      hmr: {
+        protocol: 'ws',
+        host: 'localhost',
+        port: 3000,
+        clientPort: 3000,
+      },
+      watch: {
+        usePolling: true,
+      },
+    },
   },
   runtimeConfig: {
     public: {

@@ -181,6 +181,11 @@
         @apply absolute inset-0 bg-white/10 backdrop-blur-[2px] pointer-events-none;
     }
 
+    /* Onboarding: contingut net sense desenfocament del fons */
+    .global-app-container.onboarding-page::before {
+        display: none;
+    }
+
     .global-content-wrapper {
         @apply relative z-10;
     }

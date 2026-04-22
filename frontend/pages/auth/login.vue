@@ -34,10 +34,6 @@
           </button>
         </div>
 
-        <div class="login-divider">
-          <span class="login-divider-text">{{ $t('login_continue_with') }}</span>
-        </div>
-
         <div>
           <button type="button" @click="loginAmbGoogle" class="login-btn-google">
             <svg class="google-icon-svg" viewBox="0 0 24 24">
@@ -49,6 +45,10 @@
             </svg>
             {{ $t('login_google') }}
           </button>
+        </div>
+
+        <div class="login-divider">
+          <span class="login-divider-text">O</span>
         </div>
 
         <div>

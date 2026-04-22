@@ -161,4 +161,24 @@ class OnboardingHabitAssignTest extends TestCase
 
         $response->assertStatus(401);
     }
+
+    public function test_post_habits_assign_accepts_empty_selection(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->withHeaders(['user_id' => $user->id])
+            ->postJson('/api/habits/assign', [
+                'habits' => [],
+            ]);
+
+        $response->assertOk();
+        $response->assertJson([
+            'success' => true,
+            'habits' => [],
+        ]);
+
+        $this->assertDatabaseMissing('habits', [
+            'usuari_id' => $user->id,
+        ]);
+    }
 }

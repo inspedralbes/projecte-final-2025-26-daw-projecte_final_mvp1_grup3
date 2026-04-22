@@ -129,13 +129,20 @@
             </div>
           </div>
         </div>
+        <p class="habits-enter-hint" :class="{ 'habits-enter-hint--empty': selectedHabits.length === 0 }">
+          {{ selectedHabits.length === 0
+            ? $t('onboarding.habits.hint_zero')
+            : selectedHabits.length === 1
+              ? $t('onboarding.habits.hint_one')
+              : $t('onboarding.habits.hint_other', { n: selectedHabits.length })
+          }}
+        </p>
         <button 
           type="button"
-          class="login-btn-primary w-full mt-4" 
-          :disabled="selectedHabits.length === 0"
+          class="login-btn-primary w-full mt-3" 
           @click="confirmHabits"
         >
-          {{ $t('onboarding.confirm') }} ({{ selectedHabits.length }})
+          {{ $t('onboarding.enter_app') }}
         </button>
       </div>
 
@@ -170,10 +177,16 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { authFetch } from '~/composables/useApi.js';
+import { useHabitStore } from '~/stores/useHabitStore.js';
+import { useAuthStore } from '~/stores/useAuthStore.js';
 
 definePageMeta({ layout: false });
 
 const { t, setLocale } = useI18n();
+const onboardingDoneCookie = useCookie('loopy_onboarding_done', { sameSite: 'lax', maxAge: 60 * 60 * 24 * 365 });
+const habitStore = useHabitStore();
+/** Si és cert, al triar resposta a cada pas es passa automàticament al següent (hàbits sempre manual). */
+const AUTO_ADVANCE_STEPS = true;
 
 onMounted(function () {
   setLocale('ca');
@@ -242,6 +255,11 @@ const canProceed = computed(() => {
 
 function selectAnswer(key, value) {
   answers.value[key] = value;
+  if (AUTO_ADVANCE_STEPS && canProceed.value && !isLoading.value && !showHabitsSelection.value) {
+    setTimeout(function () {
+      nextStep();
+    }, 0);
+  }
 }
 
 function previousStep() {
@@ -263,11 +281,17 @@ async function generateHabits() {
   errorMessage.value = '';
 
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(function () {
+      controller.abort();
+    }, 4500);
+
     const response = await fetch(`${config.public.socketUrl}/api/onboarding/generate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
+      signal: controller.signal,
       body: JSON.stringify({
         categoria: answers.value.objectiu,
         senyal: answers.value.energia,
@@ -275,18 +299,21 @@ async function generateHabits() {
         temps: answers.value.temps,
       }),
     });
+    clearTimeout(timeoutId);
 
     const data = await response.json();
 
     if (data.success && data.habits) {
       generatedHabits.value = data.habits;
+      selectedHabits.value = [];
       showHabitsSelection.value = true;
     } else {
       errorMessage.value = data.message || t('onboarding.errors.generate');
     }
   } catch (error) {
-    console.error('Error generating habits:', error);
-    errorMessage.value = t('onboarding.errors.connection');
+    generatedHabits.value = generarHabitsRapids();
+    selectedHabits.value = [];
+    showHabitsSelection.value = true;
   } finally {
     isLoading.value = false;
   }
@@ -307,6 +334,12 @@ async function confirmHabits() {
 
   try {
     const habitsToSave = selectedHabits.value.map(index => generatedHabits.value[index]);
+    if (habitsToSave.length === 0) {
+      habitStore.establirHabitsDesDeApi([]);
+      marcarOnboardingCompletat();
+      navigateTo('/home');
+      return;
+    }
 
     const response = await authFetch('/api/habits/assign', {
       method: 'POST',
@@ -324,6 +357,11 @@ async function confirmHabits() {
     });
 
     if (response.ok) {
+      const data = await response.json();
+      if (data && Array.isArray(data.habits)) {
+        habitStore.establirHabitsDesDeApi(data.habits);
+      }
+      marcarOnboardingCompletat();
       navigateTo('/home');
     } else {
       const data = await response.json();
@@ -365,6 +403,41 @@ function mapTemps(temps) {
     '1h+': 2,
   };
   return map[temps] || 1;
+}
+
+function marcarOnboardingCompletat() {
+  const authStore = useAuthStore();
+  onboardingDoneCookie.value = '1';
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('loopy_onboarding_done', '1');
+    if (authStore.user && authStore.user.id != null) {
+      localStorage.setItem('loopy_onboarding_user_id', String(authStore.user.id));
+    }
+  }
+}
+
+function generarHabitsRapids() {
+  const categoria = answers.value.objectiu || 'salut';
+  return [
+    {
+      titol: 'Micro habit del matí',
+      rutina: 'Fes una acció petita en menys de 2 minuts.',
+      categoria: categoria,
+      recompensa: '+10 XP',
+    },
+    {
+      titol: 'Pausa conscient',
+      rutina: 'Respira profundament durant 1 minut.',
+      categoria: categoria,
+      recompensa: '+10 XP',
+    },
+    {
+      titol: 'Tancament del dia',
+      rutina: 'Marca una petita victòria abans de dormir.',
+      categoria: categoria,
+      recompensa: '+10 XP',
+    },
+  ];
 }
 </script>
 
@@ -594,6 +667,18 @@ function mapTemps(temps) {
 
 .habit-reward {
   color: #64748b;
+}
+
+.habits-enter-hint {
+  text-align: center;
+  font-size: 0.875rem;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.habits-enter-hint--empty {
+  color: #94a3b8;
 }
 
 .error-toast {

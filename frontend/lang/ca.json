@@ -279,8 +279,12 @@
         "generating_habits": "Generant els teus hàbits personalitzats…",
         "habits": {
             "title": "Tria els teus hàbits",
-            "subtitle": "Marca els que vols afegir a Loopy."
+            "subtitle": "Toca cada targeta per marcar els hàbits que vols afegir. Si no en marques cap, podràs continuar sense hàbits nous.",
+            "hint_zero": "No has marcat cap hàbit. Pots continuar i afegir-ne des de l'app quan vulguis.",
+            "hint_one": "Has marcat 1 hàbit per afegir a la teva llista.",
+            "hint_other": "Has marcat {n} hàbits per afegir a la teva llista."
         },
+        "enter_app": "Entrar a l'app",
         "confirm": "Confirmar selecció",
         "options": {
             "goal": {

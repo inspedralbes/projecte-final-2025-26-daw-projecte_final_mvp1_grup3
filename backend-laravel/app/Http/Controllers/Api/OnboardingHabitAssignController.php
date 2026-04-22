@@ -18,7 +18,7 @@ class OnboardingHabitAssignController extends Controller
         $this->normalitzarDificultatAlRequest($request);
 
         $request->validate([
-            'habits' => 'required|array|min:1',
+            'habits' => 'required|array',
             'habits.*.titol' => 'required|string|max:100',
             'habits.*.categoria_id' => 'required|integer',
             'habits.*.dificultat' => 'required|string|in:facil,media,dificil',
@@ -29,7 +29,6 @@ class OnboardingHabitAssignController extends Controller
         ], [
             'habits.required' => 'El camp habits és obligatori.',
             'habits.array' => 'El camp habits ha de ser un array.',
-            'habits.min' => 'Cal seleccionar almenys un hàbit.',
             'habits.*.titol.required' => 'El titol és obligatori per a cada hàbit.',
             'habits.*.categoria_id.required' => 'La categoria és obligatòria.',
             'habits.*.dificultat.required' => 'La dificultat és obligatòria.',
@@ -51,36 +50,50 @@ class OnboardingHabitAssignController extends Controller
         $createdHabits = [];
 
         try {
-            foreach ($habitsData as $habitData) {
-                $habit = Habit::create([
-                    'usuari_id' => $user->id,
-                    'categoria_id' => $habitData['categoria_id'],
-                    'titol' => $habitData['titol'],
-                    'dificultat' => $habitData['dificultat'],
-                    'objectiu_vegades' => $habitData['objectiu_vegades'],
-                    'frequencia_tipus' => 'diaria',
-                    'dies_setmana' => DB::raw('ARRAY[true,true,true,true,true,true,true]::boolean[]'),
-                    'unitat' => 'vegada',
-                    'icona' => $habitData['icona'] ?? '-',
-                    'color' => $habitData['color'] ?? '#6C63FF',
+            if (count($habitsData) === 0) {
+                Log::info('Onboarding habits assign with empty selection', [
+                    'user_id' => $user->id,
                 ]);
 
-                UsuariHabit::create([
-                    'usuari_id' => $user->id,
-                    'habit_id' => $habit->id,
-                    'data_inici' => Carbon::now(),
-                    'actiu' => true,
-                    'objetiu_vegades_personalitzat' => $habitData['objectiu_vegades'],
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Onboarding completat sense hàbits',
+                    'habits' => [],
                 ]);
-
-                $createdHabits[] = [
-                    'id' => $habit->id,
-                    'titol' => $habit->titol,
-                    'categoria_id' => $habit->categoria_id,
-                    'dificultat' => $habit->dificultat,
-                    'objectiu_vegades' => $habit->objectiu_vegades,
-                ];
             }
+
+            DB::transaction(function () use ($habitsData, $user, &$createdHabits) {
+                foreach ($habitsData as $habitData) {
+                    $habit = Habit::create([
+                        'usuari_id' => $user->id,
+                        'categoria_id' => $habitData['categoria_id'],
+                        'titol' => $habitData['titol'],
+                        'dificultat' => $habitData['dificultat'],
+                        'objectiu_vegades' => $habitData['objectiu_vegades'],
+                        'frequencia_tipus' => 'diaria',
+                        'dies_setmana' => '{t,t,t,t,t,t,t}',
+                        'unitat' => 'vegada',
+                        'icona' => $habitData['icona'] ?? '-',
+                        'color' => $habitData['color'] ?? '#6C63FF',
+                    ]);
+
+                    UsuariHabit::create([
+                        'usuari_id' => $user->id,
+                        'habit_id' => $habit->id,
+                        'data_inici' => Carbon::now(),
+                        'actiu' => true,
+                        'objetiu_vegades_personalitzat' => $habitData['objectiu_vegades'],
+                    ]);
+
+                    $createdHabits[] = [
+                        'id' => $habit->id,
+                        'titol' => $habit->titol,
+                        'categoria_id' => $habit->categoria_id,
+                        'dificultat' => $habit->dificultat,
+                        'objectiu_vegades' => $habit->objectiu_vegades,
+                    ];
+                }
+            });
 
             Log::info('Onboarding habits assigned', [
                 'user_id' => $user->id,

@@ -279,8 +279,12 @@
     "generating_habits": "Generando tus hábitos personalizados…",
     "habits": {
       "title": "Elige tus hábitos",
-      "subtitle": "Selecciona los que quieres añadir a Loopy."
+      "subtitle": "Toca cada tarjeta para marcar los hábitos que quieres añadir. Si no marcas ninguno, podrás continuar sin hábitos nuevos.",
+      "hint_zero": "No has marcado ningún hábito. Puedes continuar y añadirlos desde la app cuando quieras.",
+      "hint_one": "Has marcado 1 hábito para añadir a tu lista.",
+      "hint_other": "Has marcado {n} hábitos para añadir a tu lista."
     },
+    "enter_app": "Entrar a la app",
     "confirm": "Confirmar selección",
     "options": {
       "goal": {

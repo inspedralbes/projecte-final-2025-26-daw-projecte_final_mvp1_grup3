@@ -43,4 +43,13 @@ export default defineNuxtConfig({
       apiUrl: process.env.API_URL || 'http://localhost:8000',
     },
   },
+  vite: {
+    server: {
+      hmr: {
+        protocol: 'ws',
+        host: 'localhost',
+        port: 24678,
+      },
+    },
+  },
 })

@@ -17,9 +17,9 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('ensure.user')->group(function () {
     Route::get('/habits', [HabitReadController::class, 'index']);
     Route::get('/habits/all', [HabitReadController::class, 'indexAll']);
-    Route::get('/habits/{id}', [HabitReadController::class, 'show']);
     Route::get('/habits/progress', [HabitReadController::class, 'progress']);
     Route::get('/habits/logs', [HabitReadController::class, 'logs']);
+    Route::get('/habits/{id}', [HabitReadController::class, 'show']);
     Route::post('/habits/complete', [HabitReadController::class, 'complete']);
     Route::get('/plantilles', [PlantillaReadController::class, 'index']);
     Route::get('/plantilles/{id}', [PlantillaReadController::class, 'show']);

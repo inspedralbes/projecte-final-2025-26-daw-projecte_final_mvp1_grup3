@@ -17,6 +17,7 @@
   "login_welcome": "¡Bienvenido/a!",
   "login_subtitle": "Entra en el bucle de buenos hábitos.",
   "login_button": "ENTRAR A LOOPY",
+  "login_google": "Iniciar sesión con Google",
   "login_continue_with": "O continúa con",
   "already_have_account": "¿Ya tienes una cuenta?",
   "email_placeholder": "tu.email{'@'}ejemplo.com",

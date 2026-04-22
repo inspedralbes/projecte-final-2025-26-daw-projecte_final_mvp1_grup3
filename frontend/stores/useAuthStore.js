@@ -43,13 +43,13 @@ export var useAuthStore = defineStore('auth', {
             try {
               this.user = JSON.parse(userStr);
               this.admin = null;
-            } catch (e) {}
+            } catch (e) { }
           }
           if (adminStr) {
             try {
               this.admin = JSON.parse(adminStr);
               this.user = null;
-            } catch (e) {}
+            } catch (e) { }
           }
           return;
         }
@@ -111,8 +111,31 @@ export var useAuthStore = defineStore('auth', {
     },
 
     /**
+     * Login amb Google. GET /api/auth/google/callback?code=...
+     */
+    loginWithGoogle: async function (code) {
+      var config = useRuntimeConfig();
+      var base = (config.public.apiUrl || "").replace(/\/$/, "");
+      var url = base + "/api/auth/google/callback?code=" + encodeURIComponent(code);
+      var resposta = await fetch(url, {
+        method: "GET",
+        headers: {
+          Accept: "application/json"
+        },
+        credentials: "include"
+      });
+      var dades = await resposta.json();
+      if (!resposta.ok) {
+        throw new Error(dades.message || "Error en login amb Google");
+      }
+      this.aplicarSessio(dades);
+      return dades;
+    },
+
+    /**
      * Logout. Esborra token i dades.
      */
+
     logout: async function () {
       var config = useRuntimeConfig();
       var base = (config.public.apiUrl || '').replace(/\/$/, '');

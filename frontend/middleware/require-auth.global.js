@@ -15,8 +15,9 @@ export default defineNuxtRouteMiddleware(function (to, from) {
   }
 
   var path = to.path || "";
-  var rutasPubliques = ["/auth/login", "/auth/registre", "/login", "/Login", "/registre", "/"];
+  var rutasPubliques = ["/auth/login", "/auth/registre", "/login", "/Login", "/registre", "/", "/auth/google/redirect"];
   var esPublica = false;
+
   // B. Comprovar si la ruta actual és pública
   for (var i = 0; i < rutasPubliques.length; i++) {
     var r = rutasPubliques[i];

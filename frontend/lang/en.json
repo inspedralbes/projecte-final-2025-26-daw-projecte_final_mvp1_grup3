@@ -17,6 +17,7 @@
   "login_welcome": "Welcome!",
   "login_subtitle": "Enter the loop of good habits.",
   "login_button": "ENTER LOOPY",
+  "login_google": "Login with Google",
   "login_continue_with": "Or continue with",
   "already_have_account": "Already have an account?",
   "email_placeholder": "your.email{'@'}example.com",

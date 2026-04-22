@@ -19,3 +19,8 @@ Route::post('/auth/refresh', [UserAuthController::class, 'refresh']);
 Route::post('/auth/logout', [UserAuthController::class, 'logout']);
 Route::get('/onboarding/questions', [OnboardingQuestionReadController::class, 'questions']);
 Route::get('/preguntes-registre/{categoria_id}', [PreguntaRegistreReadController::class, 'index']);
+
+// Google Auth
+Route::get('/auth/google/redirect', [UserAuthController::class, 'redirectToGoogle']);
+Route::get('/auth/google/callback', [UserAuthController::class, 'handleGoogleCallback']);
+

@@ -75,6 +75,15 @@
         @apply w-full bg-white border border-gray-200 text-gray-700 font-bold py-4 rounded-xl hover:bg-gray-50 transition-colors uppercase tracking-wide text-sm;
     }
 
+    .login-btn-google {
+        @apply w-full bg-white border border-gray-200 text-gray-700 font-bold py-4 rounded-xl hover:bg-gray-50 transition-colors uppercase tracking-wide text-sm flex items-center justify-center gap-3 mb-2;
+    }
+
+    .google-icon-svg {
+        @apply w-5 h-5;
+    }
+
+
     /* Lado Derecho (Bento Grid / Features) */
     .login-right-col {
         @apply hidden lg:flex w-[60%] relative p-12 xl:p-20 flex-col justify-center items-center overflow-hidden bg-cover bg-center;

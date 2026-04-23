@@ -4,11 +4,19 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\SocialComment;
+use App\Services\RedisFeedbackService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class SocialCommentController extends Controller
 {
+    protected RedisFeedbackService $redisFeedback;
+
+    public function __construct(RedisFeedbackService $redisFeedback)
+    {
+        $this->redisFeedback = $redisFeedback;
+    }
+
     public function index(Request $request, int $postId): JsonResponse
     {
         $userId = $request->user_id;
@@ -56,6 +64,11 @@ class SocialCommentController extends Controller
         $comment->loadExists(['likes as liked_by_current_user' => function ($query) use ($request) {
             $query->where('user_id', $request->user_id);
         }]);
+
+        $this->redisFeedback->publicarPayload([
+            'social_event' => 'new_comment',
+            'comment' => $comment
+        ]);
 
         return response()->json($comment, 201);
     }

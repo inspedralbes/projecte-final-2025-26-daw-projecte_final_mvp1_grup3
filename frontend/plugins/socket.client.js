@@ -24,6 +24,22 @@ export default defineNuxtPlugin(function (nuxtApp) {
         console.log('[Socket] Acció Admin Confirmada:', payload);
     });
 
+    // Listeners per al fòrum social (temps real)
+    socket.on('new_post', function (post) {
+        var socialStore = useSocialStore();
+        socialStore.handleNewPost(post);
+    });
+
+    socket.on('new_comment', function (comment) {
+        var socialStore = useSocialStore();
+        socialStore.handleNewComment(comment);
+    });
+
+    socket.on('like_update', function (data) {
+        var socialStore = useSocialStore();
+        socialStore.handleLikeUpdate(data);
+    });
+
     socket.on('connect_error', function (err) {
         console.error('[Socket] Error de connexió:', err.message);
         // Si falla per auth, intentar refrescar token i reconnectar una vegada

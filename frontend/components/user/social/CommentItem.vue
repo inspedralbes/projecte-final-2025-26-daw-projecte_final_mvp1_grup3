@@ -2,24 +2,31 @@
   <div :class="['flex gap-3', depth > 0 ? 'ml-8 mt-3' : 'mt-4']">
     <div class="flex-shrink-0">
       <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-sm font-bold">
-        {{ getInitials(comment.user?.name) }}
+        {{ getInitials(comment.user?.nom) }}
       </div>
     </div>
     <div class="flex-1">
       <div class="bg-gray-50 rounded-lg px-4 py-2">
         <div class="flex items-center gap-2">
-          <span class="font-semibold text-sm text-gray-800">{{ comment.user?.name }}</span>
+          <span class="font-semibold text-sm text-gray-800">{{ comment.user?.nom }}</span>
           <span class="text-xs text-gray-500">{{ formatDate(comment.created_at) }}</span>
         </div>
         <p class="text-gray-700 text-sm mt-1">{{ comment.content }}</p>
       </div>
-      <div v-if="depth < 2" class="mt-1">
+      <div v-if="depth < 2" class="mt-1 flex items-center gap-3">
         <button
           @click="showReply = !showReply"
           class="text-xs text-blue-600 hover:text-blue-800"
         >
           {{ $t('social.reply') }}
         </button>
+        <UserSocialLikeButton
+          :content-id="comment.id"
+          content-type="comment"
+          :initial-liked="comment.liked_by_current_user"
+          :initial-count="comment.likes_count || 0"
+          class="scale-75 origin-left"
+        />
       </div>
       <div v-if="showReply" class="mt-2">
         <UserSocialCommentForm

@@ -190,6 +190,36 @@ export var useSocialStore = defineStore("social", {
         }
 
         var result = await resposta.json();
+
+        // Actualitzar l'estat en l'store per a l'usuari actual
+        var i, j;
+        var normalizedCount = Number(result.likes_count);
+        if (likeableType === 'post') {
+          for (i = 0; i < this.posts.length; i++) {
+            if (this.posts[i].id == likeableId) {
+              this.posts[i].likes_count = normalizedCount;
+              this.posts[i].liked_by_current_user = result.liked;
+              // Forçar reactivitat si cal
+              this.posts[i] = { ...this.posts[i] };
+              break;
+            }
+          }
+        } else if (likeableType === 'comment') {
+          for (i = 0; i < this.posts.length; i++) {
+            if (this.posts[i].comments) {
+              for (j = 0; j < this.posts[i].comments.length; j++) {
+                if (this.posts[i].comments[j].id == likeableId) {
+                  this.posts[i].comments[j].likes_count = normalizedCount;
+                  this.posts[i].comments[j].liked_by_current_user = result.liked;
+                  // Forçar reactivitat al post que conté el comentari
+                  this.posts[i] = { ...this.posts[i] };
+                  break;
+                }
+              }
+            }
+          }
+        }
+
         return result;
       } catch (e) {
         this.error = e.message;
@@ -300,6 +330,7 @@ export var useSocialStore = defineStore("social", {
         }
       }
       if (!trobat) {
+        post.liked_by_current_user = false;
         this.posts.unshift(post);
       }
     },
@@ -311,19 +342,44 @@ export var useSocialStore = defineStore("social", {
           if (!this.posts[i].comments) {
             this.posts[i].comments = [];
           }
-          this.posts[i].comments.push(comment);
+          // Evitar duplicats
+          var jaExisteix = this.posts[i].comments.some(function (c) { return c.id == comment.id; });
+          if (!jaExisteix) {
+            comment.liked_by_current_user = false;
+            this.posts[i].comments.push(comment);
+            this.posts[i].comments_count = (Number(this.posts[i].comments_count) || 0) + 1;
+            // Forçar reactivitat
+            this.posts[i] = { ...this.posts[i] };
+          }
           break;
         }
       }
     },
 
     handleLikeUpdate: function (data) {
-      var i;
-      for (i = 0; i < this.posts.length; i++) {
-        if (this.posts[i].id === data.post_id) {
-          this.posts[i].likes_count = data.likes_count;
-          this.posts[i].liked_by_current_user = data.liked;
-          break;
+      var i, j;
+      var normalizedCount = Number(data.likes_count);
+      if (data.likeable_type === 'post') {
+        for (i = 0; i < this.posts.length; i++) {
+          if (this.posts[i].id == data.likeable_id) {
+            this.posts[i].likes_count = normalizedCount;
+            // Forçar reactivitat
+            this.posts[i] = { ...this.posts[i] };
+            break;
+          }
+        }
+      } else if (data.likeable_type === 'comment') {
+        for (i = 0; i < this.posts.length; i++) {
+          if (this.posts[i].comments) {
+            for (j = 0; j < this.posts[i].comments.length; j++) {
+              if (this.posts[i].comments[j].id == data.likeable_id) {
+                this.posts[i].comments[j].likes_count = normalizedCount;
+                // Forçar reactivitat al post
+                this.posts[i] = { ...this.posts[i] };
+                return;
+              }
+            }
+          }
         }
       }
     },

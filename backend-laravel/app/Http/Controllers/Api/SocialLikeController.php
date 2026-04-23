@@ -6,11 +6,19 @@ use App\Http\Controllers\Controller;
 use App\Models\SocialLike;
 use App\Models\SocialPost;
 use App\Models\SocialComment;
+use App\Services\RedisFeedbackService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class SocialLikeController extends Controller
 {
+    protected RedisFeedbackService $redisFeedback;
+
+    public function __construct(RedisFeedbackService $redisFeedback)
+    {
+        $this->redisFeedback = $redisFeedback;
+    }
+
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -35,6 +43,14 @@ class SocialLikeController extends Controller
             $count = SocialLike::where('likeable_id', $likeableId)
                 ->where('likeable_type', $likeableModel)
                 ->count();
+
+            $this->redisFeedback->publicarPayload([
+                'social_event' => 'like_update',
+                'likeable_id' => $likeableId,
+                'likeable_type' => $likeableType,
+                'likes_count' => $count
+            ]);
+
             return response()->json(['liked' => false, 'likes_count' => $count]);
         }
 
@@ -47,6 +63,13 @@ class SocialLikeController extends Controller
         $count = SocialLike::where('likeable_id', $likeableId)
             ->where('likeable_type', $likeableModel)
             ->count();
+
+        $this->redisFeedback->publicarPayload([
+            'social_event' => 'like_update',
+            'likeable_id' => $likeableId,
+            'likeable_type' => $likeableType,
+            'likes_count' => $count
+        ]);
 
         return response()->json(['liked' => true, 'likes_count' => $count]);
     }

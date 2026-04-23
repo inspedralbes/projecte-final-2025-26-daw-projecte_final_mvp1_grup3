@@ -26,7 +26,8 @@ import { useSocialStore } from "~/stores/useSocialStore.js";
 export default {
   name: "LikeButton",
   props: {
-    postId: { type: Number, required: true },
+    contentId: { type: Number, required: true },
+    contentType: { type: String, default: "post" }, // 'post' o 'comment'
     initialLiked: { type: Boolean, default: false },
     initialCount: { type: Number, default: 0 }
   },
@@ -37,13 +38,21 @@ export default {
       loading: false
     };
   },
+  watch: {
+    initialLiked: function (newVal) {
+      this.liked = newVal;
+    },
+    initialCount: function (newVal) {
+      this.count = newVal;
+    }
+  },
   methods: {
     toggleLike: async function () {
       if (this.loading) return;
 
       this.loading = true;
       var socialStore = useSocialStore();
-      var result = await socialStore.toggleLike(this.postId, "post");
+      var result = await socialStore.toggleLike(this.contentId, this.contentType);
 
       if (result) {
         this.liked = result.liked !== undefined ? result.liked : !this.liked;

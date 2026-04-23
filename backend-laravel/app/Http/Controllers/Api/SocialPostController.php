@@ -4,11 +4,19 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\SocialPost;
+use App\Services\RedisFeedbackService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class SocialPostController extends Controller
 {
+    protected RedisFeedbackService $redisFeedback;
+
+    public function __construct(RedisFeedbackService $redisFeedback)
+    {
+        $this->redisFeedback = $redisFeedback;
+    }
+
     public function index(Request $request): JsonResponse
     {
         $userId = $request->user_id;
@@ -43,6 +51,12 @@ class SocialPostController extends Controller
         $post->loadExists(['likes as liked_by_current_user' => function ($query) use ($request) {
             $query->where('user_id', $request->user_id);
         }]);
+
+        // Emetre esdeveniment per a temps real
+        $this->redisFeedback->publicarPayload([
+            'social_event' => 'new_post',
+            'post' => $post
+        ]);
 
         return response()->json($post, 201);
     }

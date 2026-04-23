@@ -50,7 +50,8 @@
 
         <div class="flex items-center gap-4 mt-4">
           <UserSocialLikeButton
-            :post-id="post.id"
+            :content-id="post.id"
+            content-type="post"
             :initial-liked="post.liked_by_current_user"
             :initial-count="post.likes_count || 0"
           />

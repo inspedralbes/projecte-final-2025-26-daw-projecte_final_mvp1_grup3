@@ -39,6 +39,14 @@ export default {
   mounted: function () {
     this.loadComments();
   },
+  watch: {
+    initialComments: {
+      handler: function (newVal) {
+        this.comments = newVal;
+      },
+      deep: true
+    }
+  },
   methods: {
     loadComments: async function () {
       if (this.comments.length > 0) return;

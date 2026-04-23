@@ -59,7 +59,7 @@ class Habit extends Model
      */
     public function usuari(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'usuari_id');
+        return $this->belongsTo(User::class , 'usuari_id');
     }
 
     /**
@@ -69,7 +69,7 @@ class Habit extends Model
      */
     public function plantilla(): BelongsTo
     {
-        return $this->belongsTo(Plantilla::class, 'plantilla_id');
+        return $this->belongsTo(Plantilla::class , 'plantilla_id');
     }
 
     /**
@@ -80,7 +80,7 @@ class Habit extends Model
     public function plantilles(): BelongsToMany
     {
         return $this->belongsToMany(
-            Plantilla::class,
+            Plantilla::class ,
             'plantilla_habit',
             'habit_id',
             'plantilla_id'
@@ -92,7 +92,7 @@ class Habit extends Model
      */
     public function categoria(): BelongsTo
     {
-        return $this->belongsTo(Categoria::class, 'categoria_id');
+        return $this->belongsTo(Categoria::class , 'categoria_id');
     }
 
     /**
@@ -103,7 +103,7 @@ class Habit extends Model
     public function usuaris(): BelongsToMany
     {
         return $this->belongsToMany(
-            User::class,
+            User::class ,
             'usuaris_habits',
             'habit_id',
             'usuari_id'
@@ -117,6 +117,6 @@ class Habit extends Model
      */
     public function registresActivitat(): HasMany
     {
-        return $this->hasMany(RegistreActivitat::class, 'habit_id');
+        return $this->hasMany(RegistreActivitat::class , 'habit_id');
     }
 }

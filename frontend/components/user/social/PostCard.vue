@@ -3,13 +3,13 @@
     <div class="flex items-start gap-3">
       <div class="flex-shrink-0">
         <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold">
-          {{ getInitials(post.user?.name) }}
+          {{ getInitials(post.user?.nom) }}
         </div>
       </div>
       <div class="flex-1 min-w-0">
         <div class="flex items-center justify-between">
           <div>
-            <span class="font-semibold text-gray-800">{{ post.user?.name }}</span>
+            <span class="font-semibold text-gray-800">{{ post.user?.nom }}</span>
             <span class="text-gray-500 text-sm ml-2">{{ formatDate(post.created_at) }}</span>
           </div>
           <div class="relative" v-if="isOwner">
@@ -61,7 +61,7 @@
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
             </svg>
-            <span class="text-sm">{{ post.comments_count || 0 }}</span>
+            <span class="text-sm">{{ commentsCount }}</span>
           </button>
         </div>
 
@@ -87,8 +87,14 @@ export default {
   data: function () {
     return {
       showMenu: false,
-      showComments: false
+      showComments: false,
+      commentsCount: this.post.comments_count || 0
     };
+  },
+  watch: {
+    'post.comments_count': function (newVal) {
+      this.commentsCount = newVal || 0;
+    }
   },
   computed: {
     isOwner: function () {
@@ -134,7 +140,7 @@ export default {
       this.showMenu = false;
     },
     onCommentSubmitted: function () {
-      this.post.comments_count = (this.post.comments_count || 0) + 1;
+      this.commentsCount = (this.commentsCount || 0) + 1;
     }
   }
 };

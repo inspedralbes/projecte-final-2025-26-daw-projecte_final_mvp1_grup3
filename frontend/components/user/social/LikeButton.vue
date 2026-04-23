@@ -43,7 +43,7 @@ export default {
 
       this.loading = true;
       var socialStore = useSocialStore();
-      var result = await socialStore.toggleLike(this.postId, "App\\Models\\SocialPost");
+      var result = await socialStore.toggleLike(this.postId, "post");
 
       if (result) {
         this.liked = result.liked !== undefined ? result.liked : !this.liked;

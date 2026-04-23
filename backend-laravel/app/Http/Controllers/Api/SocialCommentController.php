@@ -11,7 +11,12 @@ class SocialCommentController extends Controller
 {
     public function index(Request $request, int $postId): JsonResponse
     {
+        $userId = $request->user_id;
         $comments = SocialComment::with('user:id,nom')
+            ->withCount('likes')
+            ->withExists(['likes as liked_by_current_user' => function ($query) use ($userId) {
+            $query->where('user_id', $userId);
+        }])
             ->where('post_id', $postId)
             ->orderBy('created_at', 'asc')
             ->get();
@@ -47,6 +52,10 @@ class SocialCommentController extends Controller
         ]);
 
         $comment->load('user:id,nom');
+        $comment->loadCount('likes');
+        $comment->loadExists(['likes as liked_by_current_user' => function ($query) use ($request) {
+            $query->where('user_id', $request->user_id);
+        }]);
 
         return response()->json($comment, 201);
     }

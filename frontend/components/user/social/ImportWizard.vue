@@ -77,10 +77,10 @@
           <button
             v-for="habit in habits"
             :key="habit.id"
-            @click="selectedHabit = habit"
+            @click="toggleHabit(habit.id)"
             :class="[
               'w-full p-3 rounded-lg text-left border-2',
-              selectedHabit?.id === habit.id
+              selectedHabitIds.includes(habit.id)
                 ? 'border-blue-500 bg-blue-50'
                 : 'border-gray-200 hover:border-gray-300'
             ]"
@@ -90,7 +90,7 @@
         </div>
         <button
           @click="confirmPlantillaImport"
-          :disabled="!selectedHabit || loading"
+          :disabled="selectedHabitIds.length === 0 || loading"
           class="w-full py-2 bg-purple-500 text-white rounded-lg font-medium hover:bg-purple-600 disabled:opacity-50"
         >
           {{ loading ? $t('home.loading') : $t('social.confirm') }}
@@ -130,8 +130,8 @@ export default {
     return {
       step: 1,
       importType: null,
-      selectedDays: [],
-      selectedHabit: null,
+      selectedDays: [1, 2, 3, 4, 5, 6, 7],
+      selectedHabitIds: [],
       habits: [],
       habitsLoading: false,
       loading: false,
@@ -155,8 +155,8 @@ export default {
     reset: function () {
       this.step = 1;
       this.importType = null;
-      this.selectedDays = [];
-      this.selectedHabit = null;
+      this.selectedDays = [1, 2, 3, 4, 5, 6, 7];
+      this.selectedHabitIds = [];
       this.habits = [];
       this.loading = false;
       this.error = null;
@@ -168,12 +168,14 @@ export default {
       }
       this.step = 2;
     },
-    loadHabits: async function () {
-      this.habitsLoading = true;
-      var habitStore = useHabitStore();
-      await habitStore.obtenirHabitsDesDeApi();
-      this.habits = habitStore.habits;
-      this.habitsLoading = false;
+    loadHabits: function () {
+      if (this.post?.plantilla?.habits) {
+        this.habits = this.post.plantilla.habits;
+        this.selectedHabitIds = this.habits.map(function(h) { return h.id; });
+      } else {
+        this.habits = [];
+        this.selectedHabitIds = [];
+      }
     },
     toggleDay: function (day) {
       var index = this.selectedDays.indexOf(day);
@@ -181,6 +183,14 @@ export default {
         this.selectedDays.push(day);
       } else {
         this.selectedDays.splice(index, 1);
+      }
+    },
+    toggleHabit: function (id) {
+      var index = this.selectedHabitIds.indexOf(id);
+      if (index === -1) {
+        this.selectedHabitIds.push(id);
+      } else {
+        this.selectedHabitIds.splice(index, 1);
       }
     },
     confirmHabitImport: async function () {
@@ -203,7 +213,7 @@ export default {
       this.error = null;
 
       var socialStore = useSocialStore();
-      var result = await socialStore.importPlantilla(this.post.id, this.selectedHabit.id);
+      var result = await socialStore.importPlantilla(this.post.id, this.selectedHabitIds);
 
       if (result && result.success) {
         this.step = 3;

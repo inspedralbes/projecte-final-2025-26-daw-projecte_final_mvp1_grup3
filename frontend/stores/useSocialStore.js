@@ -241,7 +241,7 @@ export var useSocialStore = defineStore("social", {
       }
     },
 
-    importPlantilla: async function (postId, habitId) {
+    importPlantilla: async function (postId, habitIds) {
       this.loading = true;
       this.error = null;
 
@@ -250,7 +250,7 @@ export var useSocialStore = defineStore("social", {
           method: "POST",
           body: JSON.stringify({
             post_id: postId,
-            habit_id: habitId,
+            habit_ids: habitIds,
           }),
         });
         if (!resposta.ok) {
@@ -274,8 +274,8 @@ export var useSocialStore = defineStore("social", {
         var resposta = await authFetch("/api/social/report", {
           method: "POST",
           body: JSON.stringify({
-            reportable_id: postId,
-            reportable_type: "App\\Models\\SocialPost",
+            content_id: postId,
+            content_type: "post",
             reason: reason,
           }),
         });

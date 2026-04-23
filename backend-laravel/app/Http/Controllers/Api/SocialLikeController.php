@@ -22,7 +22,7 @@ class SocialLikeController extends Controller
         $likeableType = $validated['likeable_type'];
 
         $likeableModel = $likeableType === 'post'
-            ? SocialPost::class
+            ?SocialPost::class
             : SocialComment::class;
 
         $existing = SocialLike::where('user_id', $request->user_id)
@@ -35,7 +35,7 @@ class SocialLikeController extends Controller
             $count = SocialLike::where('likeable_id', $likeableId)
                 ->where('likeable_type', $likeableModel)
                 ->count();
-            return response()->json(['liked' => false, 'count' => $count]);
+            return response()->json(['liked' => false, 'likes_count' => $count]);
         }
 
         SocialLike::create([
@@ -48,7 +48,7 @@ class SocialLikeController extends Controller
             ->where('likeable_type', $likeableModel)
             ->count();
 
-        return response()->json(['liked' => true, 'count' => $count]);
+        return response()->json(['liked' => true, 'likes_count' => $count]);
     }
 
     public function check(Request $request): JsonResponse
@@ -62,7 +62,7 @@ class SocialLikeController extends Controller
         $likeableType = $validated['likeable_type'];
 
         $likeableModel = $likeableType === 'post'
-            ? SocialPost::class
+            ?SocialPost::class
             : SocialComment::class;
 
         $liked = SocialLike::where('user_id', $request->user_id)

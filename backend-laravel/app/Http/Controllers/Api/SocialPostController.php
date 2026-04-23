@@ -11,7 +11,12 @@ class SocialPostController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $posts = SocialPost::with(['user:id,nom', 'habit', 'plantilla'])
+        $userId = $request->user_id;
+        $posts = SocialPost::with(['user:id,nom', 'habit', 'plantilla.habits'])
+            ->withCount(['comments', 'likes'])
+            ->withExists(['likes as liked_by_current_user' => function ($query) use ($userId) {
+            $query->where('user_id', $userId);
+        }])
             ->orderBy('created_at', 'desc')
             ->paginate(15);
 
@@ -33,15 +38,23 @@ class SocialPostController extends Controller
             'plantilla_id' => $validated['plantilla_id'] ?? null,
         ]);
 
-        $post->load(['user:id,nom', 'habit', 'plantilla']);
+        $post->load(['user:id,nom', 'habit', 'plantilla.habits']);
+        $post->loadCount(['comments', 'likes']);
+        $post->loadExists(['likes as liked_by_current_user' => function ($query) use ($request) {
+            $query->where('user_id', $request->user_id);
+        }]);
 
         return response()->json($post, 201);
     }
 
     public function show(Request $request, int $id): JsonResponse
     {
-        $post = SocialPost::with(['user:id,nom', 'habit', 'plantilla'])
-            ->withCount('comments')
+        $userId = $request->user_id;
+        $post = SocialPost::with(['user:id,nom', 'habit', 'plantilla.habits'])
+            ->withCount(['comments', 'likes'])
+            ->withExists(['likes as liked_by_current_user' => function ($query) use ($userId) {
+            $query->where('user_id', $userId);
+        }])
             ->findOrFail($id);
 
         return response()->json($post);

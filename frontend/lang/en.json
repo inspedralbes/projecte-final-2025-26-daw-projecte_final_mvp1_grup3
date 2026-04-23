@@ -285,6 +285,12 @@
     "error_comment": "Error commenting",
     "error_import": "Error importing",
     "habit": "Habit",
-    "template": "Template"
+    "template": "Template",
+    "select_attachment": "Select Attachment",
+    "habits": "Habits",
+    "templates": "Templates",
+    "cancel": "Cancel",
+    "add_attachment": "Attach habit or template",
+    "no_templates": "No templates available"
   }
 }

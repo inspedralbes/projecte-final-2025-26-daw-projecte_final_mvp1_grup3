@@ -285,6 +285,12 @@
     "error_comment": "Error al comentar",
     "error_import": "Error al importar",
     "habit": "Hábito",
-    "template": "Plantilla"
+    "template": "Plantilla",
+    "select_attachment": "Seleccionar Adjunto",
+    "habits": "Hábitos",
+    "templates": "Plantillas",
+    "cancel": "Cancelar",
+    "add_attachment": "Adjuntar hábito o plantilla",
+    "no_templates": "No tienes plantillas"
   }
 }

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class SocialComment extends Model
 {
@@ -25,21 +26,26 @@ class SocialComment extends Model
 
     public function post(): BelongsTo
     {
-        return $this->belongsTo(SocialPost::class, 'post_id');
+        return $this->belongsTo(SocialPost::class , 'post_id');
     }
 
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class , 'user_id');
     }
 
     public function parent(): BelongsTo
     {
-        return $this->belongsTo(SocialComment::class, 'parent_id');
+        return $this->belongsTo(SocialComment::class , 'parent_id');
     }
 
     public function replies(): HasMany
     {
-        return $this->hasMany(SocialComment::class, 'parent_id');
+        return $this->hasMany(SocialComment::class , 'parent_id');
+    }
+
+    public function likes(): MorphMany
+    {
+        return $this->morphMany(SocialLike::class , 'likeable');
     }
 }

@@ -12,8 +12,43 @@
           rows="3"
           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 resize-none"
         ></textarea>
+
+        <!-- Preview de l'adjunt -->
+        <div v-if="selectedAttachment" class="mt-2 p-2 bg-blue-50 rounded-lg border border-blue-100 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <div :class="['w-8 h-8 rounded-lg flex items-center justify-center text-white', selectedAttachment.type === 'habit' ? 'bg-blue-500' : 'bg-purple-500']">
+              <svg v-if="selectedAttachment.type === 'habit'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+              </svg>
+              <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/>
+              </svg>
+            </div>
+            <div>
+              <span class="text-xs font-semibold text-gray-500 uppercase">{{ selectedAttachment.type === 'habit' ? $t('social.habit') : $t('social.template') }}</span>
+              <p class="text-sm font-medium text-gray-800">{{ selectedAttachment.titol || selectedAttachment.nom }}</p>
+            </div>
+          </div>
+          <button @click="selectedAttachment = null" class="text-gray-400 hover:text-red-500">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+
         <div class="flex justify-between items-center mt-3">
-          <span class="text-xs text-gray-500">{{ newPostContent.length }}/500</span>
+          <div class="flex items-center gap-2">
+            <button
+              @click="showAttachmentSelector = true"
+              class="p-2 text-gray-500 hover:text-blue-500 hover:bg-blue-50 rounded-full transition-all"
+              :title="$t('social.add_attachment') || 'Adjuntar hàbit o plantilla'"
+            >
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+              </svg>
+            </button>
+            <span class="text-xs text-gray-400">{{ newPostContent.length }}/500</span>
+          </div>
           <button
             @click="createPost"
             :disabled="!newPostContent.trim() || posting"
@@ -53,6 +88,12 @@
         :post="selectedPost"
         @close="closeImportWizard"
       />
+
+      <UserSocialAttachmentSelector
+        :show="showAttachmentSelector"
+        @close="showAttachmentSelector = false"
+        @selected="onAttachmentSelected"
+      />
     </div>
   </div>
 </template>
@@ -71,7 +112,9 @@ export default {
       loading: false,
       posts: [],
       showImportWizard: false,
-      selectedPost: null
+      selectedPost: null,
+      showAttachmentSelector: false,
+      selectedAttachment: null
     };
   },
   mounted: function () {
@@ -80,14 +123,15 @@ export default {
   methods: {
     loadPosts: async function () {
       this.loading = true;
-      var socialStore = useSocialStore();
-      var result = await socialStore.fetchFeed();
-
-      if (result) {
+      try {
+        var socialStore = useSocialStore();
+        await socialStore.fetchFeed();
         this.posts = socialStore.posts;
+      } catch (e) {
+        console.error("Error loading posts:", e);
+      } finally {
+        this.loading = false;
       }
-
-      this.loading = false;
     },
     createPost: async function () {
       if (!this.newPostContent.trim() || this.posting) return;
@@ -95,19 +139,33 @@ export default {
       this.posting = true;
       this.postError = null;
 
-      var socialStore = useSocialStore();
-      var result = await socialStore.createPost({
+      var postData = {
         content: this.newPostContent
-      });
+      };
+
+      if (this.selectedAttachment) {
+        if (this.selectedAttachment.type === 'habit') {
+          postData.habit_id = this.selectedAttachment.id;
+        } else {
+          postData.plantilla_id = this.selectedAttachment.id;
+        }
+      }
+
+      var socialStore = useSocialStore();
+      var result = await socialStore.createPost(postData);
 
       if (result) {
         this.newPostContent = "";
-        await this.loadPosts();
+        this.selectedAttachment = null;
+        this.loadPosts();
       } else {
         this.postError = socialStore.error || this.$t('social.error_post');
       }
 
       this.posting = false;
+    },
+    onAttachmentSelected: function (attachment) {
+      this.selectedAttachment = attachment;
     },
     openImportWizard: function (post) {
       this.selectedPost = post;

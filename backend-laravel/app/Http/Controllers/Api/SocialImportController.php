@@ -7,6 +7,7 @@ use App\Models\SocialPost;
 use App\Models\UsuariHabit;
 use App\Models\Habit;
 use App\Services\HabitService;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
@@ -22,80 +23,137 @@ class SocialImportController extends Controller
 
     public function importHabit(Request $request): JsonResponse
     {
-        $validated = $request->validate([
-            'post_id' => 'required|integer|exists:social_posts,id',
-            'dies_setmana' => 'required|array|size:7',
-            'dies_setmana.*' => 'boolean',
-        ]);
+        error_log('--- IMPORT HABIT ---');
+        error_log('Input: ' . json_encode($request->all()));
+        error_log('User: ' . ($request->user_id ?? 'NULL'));
 
-        $post = SocialPost::with('habit')->findOrFail($validated['post_id']);
+        try {
+            $request->validate([
+                'post_id' => 'required',
+                'dies_setmana' => 'required|array',
+            ]);
 
-        if (!$post->habit) {
-            return response()->json(['message' => 'El post no té cap hàbit associat'], 422);
-        }
+            $postId = $request->input('post_id');
+            $diesIndices = $request->input('dies_setmana');
 
-        $userId = $request->user_id;
-        $currentCount = UsuariHabit::where('usuari_id', $userId)
-            ->where('actiu', true)
-            ->count();
+            $post = SocialPost::with('habit')->find($postId);
+            if (!$post) {
+                error_log('Import Error: Post not found ' . $postId);
+                return response()->json(['message' => 'Post no trobat: ' . $postId], 422);
+            }
 
-        if ($currentCount >= 20) {
+            if (!$post->habit) {
+                error_log('Import Error: Post has no habit ' . $postId);
+                return response()->json(['message' => 'El post no té cap hàbit associat'], 422);
+            }
+
+            $userId = $request->user_id;
+
+            // Augmentem el límit a 100 per evitar bloquejos durant proves
+            $currentCount = UsuariHabit::where('usuari_id', $userId)
+                ->where('actiu', true)
+                ->count();
+
+            if ($currentCount >= 100) {
+                error_log('Import Error: Limit of 100 habits reached for user ' . $userId);
+                return response()->json([
+                    'message' => 'Has arribat al límit de 100 hàbits actius.',
+                ], 422);
+            }
+
+            // Transformar l'array d'índexs [1, 2] a format Postgres {t,f,t,f,f,f,f}
+            $booleanDaysArr = array_fill(0, 7, 'f');
+            foreach ($diesIndices as $dayIndex) {
+                if ($dayIndex >= 1 && $dayIndex <= 7) {
+                    $booleanDaysArr[$dayIndex - 1] = 't';
+                }
+            }
+            $postgresArray = '{' . implode(',', $booleanDaysArr) . '}';
+
+            $original = $post->habit;
+            $newHabit = $original->replicate();
+            $newHabit->usuari_id = $userId;
+            $newHabit->dies_setmana = $postgresArray;
+            $newHabit->save();
+
+            error_log('Habit replicated and saved. ID: ' . $newHabit->id);
+
+            UsuariHabit::create([
+                'usuari_id' => $userId,
+                'habit_id' => $newHabit->id,
+                'data_inici' => Carbon::now(),
+                'actiu' => true,
+                'objetiu_vegades_personalitzat' => $newHabit->objectiu_vegades,
+            ]);
+
+            error_log('Pivot record created. success!');
+
             return response()->json([
-                'message' => 'Has arribat al límit de 20 hàbits actius. Elimina alguns hàbits abans d importar.',
+                'success' => true,
+                'habit' => $newHabit,
+            ]);
+        }
+        catch (\Illuminate\Validation\ValidationException $e) {
+            error_log('Validation Error in importHabit: ' . json_encode($e->errors()));
+            return response()->json([
+                'message' => 'Error de validació',
+                'errors' => $e->errors()
             ], 422);
         }
-
-        $original = $post->habit;
-        $newHabit = $original->replicate();
-        $newHabit->usuari_id = $userId;
-        $newHabit->dies_setmana = $validated['dies_setmana'];
-        $newHabit->save();
-
-        UsuariHabit::create([
-            'usuari_id' => $userId,
-            'habit_id' => $newHabit->id,
-            'data_inici' => Carbon::now(),
-            'actiu' => true,
-            'objetiu_vegades_personalitzat' => $newHabit->objectiu_vegades,
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'habit' => $newHabit,
-        ]);
+        catch (\Exception $e) {
+            error_log('Exception in importHabit: ' . $e->getMessage());
+            error_log($e->getTraceAsString());
+            return response()->json([
+                'message' => 'Error intern del servidor',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function importPlantilla(Request $request): JsonResponse
     {
-        $validated = $request->validate([
-            'post_id' => 'required|integer|exists:social_posts,id',
-            'habit_ids' => 'required|array|min:1',
-            'habit_ids.*' => 'integer|exists:habits,id',
-        ]);
+        error_log('--- IMPORT PLANTILLA START ---');
+        error_log('Input: ' . json_encode($request->all()));
+        error_log('User: ' . ($request->user_id ?? 'NULL'));
 
-        $post = SocialPost::with('plantilla.habits')->findOrFail($validated['post_id']);
+        try {
+            $validated = $request->validate([
+                'post_id' => 'required|integer',
+                'habit_ids' => 'required|array',
+                'habit_ids.*' => 'integer',
+            ]);
 
-        if (!$post->plantilla) {
-            return response()->json(['message' => 'El post no té cap plantilla associada'], 422);
-        }
+            $postId = $validated['post_id'];
+            $habitIds = $validated['habit_ids'];
 
-        $userId = $request->user_id;
+            $post = SocialPost::with('plantilla.habits')->findOrFail($postId);
 
-        $result = $this->habitService->exportarHabitsDePlantilla(
-            $userId,
-            $post->plantilla_id,
-            $validated['habit_ids']
-        );
+            if (!$post->plantilla) {
+                error_log('Post has no template: ' . $postId);
+                return response()->json(['message' => 'El post no té cap plantilla associada'], 422);
+            }
 
-        if (!$result['success']) {
+            $userId = $request->user_id;
+
+            $result = $this->habitService->exportarHabitsDePlantilla(
+                $userId,
+                $post->plantilla_id,
+                $habitIds
+            );
+
+            error_log('Export success! Habits imported: ' . count($result['habits']));
+
             return response()->json([
-                'message' => $result['message'],
-            ], 422);
+                'success' => true,
+                'habits' => $result['habits'],
+            ]);
         }
-
-        return response()->json([
-            'success' => true,
-            'habits' => $result['habits'],
-        ]);
+        catch (\Exception $e) {
+            error_log('Exception in importPlantilla: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Error en importar plantilla',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }

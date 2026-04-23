@@ -175,7 +175,7 @@ class UserAuthController extends Controller
     /**
      * Gestiona el callback de Google.
      */
-    public function handleGoogleCallback(): JsonResponse
+    public function handleGoogleCallback()
     {
         try {
             $googleUser = Socialite::driver('google')->stateless()->user();
@@ -213,7 +213,12 @@ class UserAuthController extends Controller
             }
 
             $token = JWTAuth::fromUser($usuari);
-            return $this->authService->crearRespostaLoginUsuari($usuari, $token);
+            
+            $frontendUrl = env('GOOGLE_FRONTEND_REDIRECT', 'http://localhost:3000/auth/google/redirect');
+            $redirectUrl = $frontendUrl . '?token=' . $token;
+
+            $resposta = redirect($redirectUrl);
+            return $this->authService->attachAuthCookies($resposta, $token, 'user');
 
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('Error Google Login: ' . $e->getMessage());

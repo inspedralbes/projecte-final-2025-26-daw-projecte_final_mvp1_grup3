@@ -137,17 +137,21 @@ class AuthService
 
     /**
      * Crea resposta amb cookies (token + rol).
-     *
-     * @param  array<string, mixed>  $dades
      */
     private function crearRespostaAmbCookies(array $dades, string $role): JsonResponse
     {
-        // A. Crear resposta amb payload
         $resposta = response()->json($dades);
-        // B. Assignar cookie del token
+        return $this->attachAuthCookies($resposta, $dades['token'], $role);
+    }
+
+    /**
+     * Adjunta les cookies d'autenticació a una resposta existent.
+     */
+    public function attachAuthCookies($resposta, string $token, string $role)
+    {
         $resposta->cookie(
             $this->cookieNom,
-            $dades['token'],
+            $token,
             $this->cookieMinuts,
             '/',
             null,
@@ -156,7 +160,7 @@ class AuthService
             false,
             $this->sameSite
         );
-        // C. Assignar cookie de rol
+
         $resposta->cookie(
             $this->roleCookieNom,
             $role,
@@ -169,7 +173,6 @@ class AuthService
             $this->sameSite
         );
 
-        // D. Retornar resposta final
         return $resposta;
     }
 }

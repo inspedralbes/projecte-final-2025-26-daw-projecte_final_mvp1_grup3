@@ -244,3 +244,31 @@ CREATE INDEX idx_social_comments_post_id ON SOCIAL_COMMENTS(post_id);
 CREATE INDEX idx_social_comments_user_id ON SOCIAL_COMMENTS(user_id);
 CREATE INDEX idx_social_likes_likeable ON SOCIAL_LIKES(likeable_id, likeable_type);
 
+-- 7. SOCIAL CONNECTIVITY
+-- ----------------------------------------------------------
+
+CREATE TABLE FRIENDSHIPS (
+    id SERIAL PRIMARY KEY,
+    requester_id INT REFERENCES USUARIS(id) ON DELETE CASCADE,
+    addressee_id INT REFERENCES USUARIS(id) ON DELETE CASCADE,
+    status VARCHAR(20) DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(requester_id, addressee_id)
+);
+
+CREATE TABLE PRIVATE_MESSAGES (
+    id SERIAL PRIMARY KEY,
+    sender_id INT REFERENCES USUARIS(id) ON DELETE CASCADE,
+    receiver_id INT REFERENCES USUARIS(id) ON DELETE CASCADE,
+    contingut TEXT NOT NULL,
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_friendships_requester ON FRIENDSHIPS(requester_id);
+CREATE INDEX idx_friendships_addressee ON FRIENDSHIPS(addressee_id);
+CREATE INDEX idx_friendships_status ON FRIENDSHIPS(status);
+CREATE INDEX idx_private_messages_sender ON PRIVATE_MESSAGES(sender_id);
+CREATE INDEX idx_private_messages_receiver ON PRIVATE_MESSAGES(receiver_id);
+

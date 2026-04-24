@@ -78,9 +78,32 @@
     "create": "Create",
     "catalog": "Catalog",
     "forum": "Forum",
+    "friends": "Friends",
     "profile": "Profile",
     "logout": "Logout",
     "soon": "Soon"
+  },
+  "friends": {
+    "title": "Friends",
+    "amigos": "Friends",
+    "pendientes": "Pending",
+    "buscador": "Search",
+    "no_amigos": "No friends yet",
+    "no_pendientes": "No pending requests",
+    "buscar_amigos": "Find friends",
+    "search_placeholder": "Search users...",
+    "send_request": "Send request",
+    "accept": "Accept",
+    "reject": "Reject",
+    "chat": "Chat",
+    "request_sent": "Request sent",
+    "online": "Online",
+    "no_messages": "No messages"
+  },
+  "chat": {
+    "placeholder": "Write a message...",
+    "online": "Online",
+    "no_messages": "No messages"
   },
   "home": {
     "daily_missions": "Daily Missions",
@@ -206,7 +229,10 @@
     "incomplet": "Incomplete",
     "personal_record": "Personal Record",
     "error_profile": "Error loading profile information.",
-    "error_history": "Error loading daily history."
+    "error_history": "Error loading daily history.",
+    "xp_total": "Total XP",
+    "streak": "Streak",
+    "error": "Error loading profile"
   },
   "templates": {
     "title": "Templates Management",

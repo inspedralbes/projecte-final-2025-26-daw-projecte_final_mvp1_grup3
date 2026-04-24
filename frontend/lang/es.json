@@ -78,9 +78,32 @@
     "create": "Crear",
     "catalog": "Catálogo",
     "forum": "Foro",
+    "friends": "Amigos",
     "profile": "Perfil",
     "logout": "Cerrar sesión",
     "soon": "Próximamente"
+  },
+  "friends": {
+    "title": "Amigos",
+    "amigos": "Amigos",
+    "pendientes": "Pendientes",
+    "buscador": "Buscador",
+    "no_amigos": "No tienes amigos todavía",
+    "no_pendientes": "No tienes solicitudes pendientes",
+    "buscar_amigos": "Buscar amigos",
+    "search_placeholder": "Buscar usuarios...",
+    "send_request": "Enviar solicitud",
+    "accept": "Aceptar",
+    "reject": "Rechazar",
+    "chat": "Chatear",
+    "request_sent": "Solicitud enviada",
+    "online": "En línea",
+    "no_messages": "No tienes mensajes"
+  },
+  "chat": {
+    "placeholder": "Escribe un mensaje...",
+    "online": "En línea",
+    "no_messages": "No tienes mensajes"
   },
   "home": {
     "daily_missions": "Misiones Diarias",
@@ -206,7 +229,10 @@
     "incomplet": "Incompleto",
     "personal_record": "Récord Personal",
     "error_profile": "Error al cargar la información del perfil.",
-    "error_history": "Error al cargar el historial diario."
+    "error_history": "Error al cargar el historial diario.",
+    "xp_total": "XP Total",
+    "streak": "Racha",
+    "error": "Error cargando perfil"
   },
   "templates": {
     "title": "Gestión de Plantillas",

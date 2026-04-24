@@ -78,9 +78,32 @@
         "create": "Crear",
         "catalog": "Catàleg",
         "forum": "Fòrum",
+        "friends": "Amics",
         "profile": "Perfil",
         "logout": "Tancar sessió",
         "soon": "Pròximament"
+    },
+    "friends": {
+        "title": "Amics",
+        "amigos": "Amics",
+        "pendientes": "Pendents",
+        "buscador": "Cercador",
+        "no_amigos": "No tens amics encara",
+        "no_pendientes": "No tens sol·licituds pendents",
+        "buscar_amigos": "Buscar amics",
+        "search_placeholder": "Buscar usuaris...",
+        "send_request": "Enviar sol·licitud",
+        "accept": "Acceptar",
+        "reject": "Rebutjar",
+        "chat": "Xatejar",
+        "request_sent": "Sol·licitud enviada",
+        "online": "En línia",
+        "no_messages": "No teniu missatges"
+    },
+    "chat": {
+        "placeholder": "Escriu un missatge...",
+        "online": "En línia",
+        "no_messages": "No teniu missatges"
     },
     "home": {
         "daily_missions": "Missions Diàries",
@@ -206,7 +229,10 @@
         "incomplet": "Incomplet",
         "personal_record": "Rècord Personal",
         "error_profile": "Error al carregar la informació del perfil.",
-        "error_history": "Error al carregar l'historial diari."
+        "error_history": "Error al carregar l'historial diari.",
+        "xp_total": "XP Total",
+        "streak": "Ratxa",
+        "error": "Error carregant perfil"
     },
     "templates": {
         "title": "Gestió de Plantilles",

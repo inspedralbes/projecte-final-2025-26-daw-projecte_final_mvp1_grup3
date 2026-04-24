@@ -64,6 +64,47 @@ function register(io, socket) {
       console.error("Error gestionant leave_social_post:", error);
     }
   });
+
+  socket.on("private_message", function (data) {
+    try {
+      var userId = socket.decoded_token && socket.decoded_token.user_id;
+      if (!userId) {
+        console.warn("private_message: usuari no autenticat");
+        return;
+      }
+      var receiverId = data.receiver_id;
+      if (receiverId) {
+        io.to("user_" + receiverId).emit("new_private_message", {
+          sender_id: userId,
+          message: data.message,
+          created_at: data.created_at,
+        });
+        console.log("Missatge privat enviat de " + userId + " a " + receiverId);
+      }
+    } catch (error) {
+      console.error("Error gestionant private_message:", error);
+    }
+  });
+
+  socket.on("friend_request_notify", function (data) {
+    try {
+      var userId = socket.decoded_token && socket.decoded_token.user_id;
+      if (!userId) {
+        console.warn("friend_request_notify: usuari no autenticat");
+        return;
+      }
+      var addresseeId = data.addressee_id;
+      if (addresseeId) {
+        io.to("user_" + addresseeId).emit("new_friend_request", {
+          requester_id: userId,
+          requester_name: data.requester_name,
+        });
+        console.log("Notificació de sol·licitud d'amistat enviat a " + addresseeId);
+      }
+    } catch (error) {
+      console.error("Error gestionant friend_request_notify:", error);
+    }
+  });
 }
 
 module.exports = {

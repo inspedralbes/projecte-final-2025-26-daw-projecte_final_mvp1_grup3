@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Api\ChatController;
+use App\Http\Controllers\Api\FriendshipController;
 use App\Http\Controllers\Api\GameStateReadController;
 use App\Http\Controllers\Api\HabitReadController;
 use App\Http\Controllers\Api\LogroReadController;
@@ -10,6 +12,7 @@ use App\Http\Controllers\Api\SocialLikeController;
 use App\Http\Controllers\Api\SocialImportController;
 use App\Http\Controllers\Api\SocialReportController;
 use App\Http\Controllers\Api\UserHomeReadController;
+use App\Http\Controllers\Api\UserProfileController;
 use App\Http\Controllers\Api\UserProfileReadController;
 use Illuminate\Support\Facades\Route;
 
@@ -49,4 +52,17 @@ Route::middleware('ensure.user')->group(function () {
     Route::get('/user/home', [UserHomeReadController::class, 'index']);
     Route::get('/logros', [LogroReadController::class, 'index']);
     Route::get('/user/profile', [UserProfileReadController::class, 'profile']);
+
+    Route::get('/users/{id}/profile', [UserProfileController::class, 'getPublicProfile']);
+    Route::get('/users/self/profile', [UserProfileController::class, 'getSelfProfile']);
+
+    Route::post('/friends/request', [FriendshipController::class, 'sendRequest']);
+    Route::put('/friends/accept/{id}', [FriendshipController::class, 'acceptRequest']);
+    Route::put('/friends/reject/{id}', [FriendshipController::class, 'rejectRequest']);
+    Route::get('/friends', [FriendshipController::class, 'getFriendsList']);
+    Route::get('/friends/pending', [FriendshipController::class, 'getPendingRequests']);
+
+    Route::post('/chat/{receiverId}', [ChatController::class, 'sendMessage']);
+    Route::get('/chat/{friendId}', [ChatController::class, 'getChatHistory']);
+    Route::put('/chat/{friendId}/read', [ChatController::class, 'markAsRead']);
 });

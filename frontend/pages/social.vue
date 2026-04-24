@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-screen bg-gray-50">
-    <HeaderUser />
+    <HeaderSocial />
 
     <div class="max-w-2xl mx-auto px-4 py-6">
       <h1 class="text-2xl font-bold text-gray-800 mb-6">{{ $t('social.title') }}</h1>
@@ -100,9 +100,13 @@
 
 <script>
 import { useSocialStore } from "~/stores/useSocialStore.js";
+import HeaderSocial from "~/components/HeaderSocial.vue";
 
 export default {
   name: "SocialPage",
+  components: {
+    HeaderSocial,
+  },
   middleware: ["auth"],
   data: function () {
     return {

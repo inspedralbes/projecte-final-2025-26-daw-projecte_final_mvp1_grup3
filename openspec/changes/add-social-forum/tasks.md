@@ -78,8 +78,8 @@
 
 ## 11. Integration & Testing
 
-- [ ] 11.1 Test full flow: create post, comment, like, unlike
-- [ ] 11.2 Test import habit with custom days
-- [ ] 11.3 Test import plantilla with habit selection
-- [ ] 11.4 Test WebSocket notifications
-- [ ] 11.5 Test report and moderation flow
+- [x] 11.1 Test full flow: create post, comment, like, unlike
+- [x] 11.2 Test import habit with custom days
+- [x] 11.3 Test import plantilla with habit selection
+- [x] 11.4 Test WebSocket notifications
+- [x] 11.5 Test report and moderation flow

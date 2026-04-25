@@ -22,14 +22,28 @@ const authStore = useAuthStore();
 const error = ref(null);
 
 onMounted(async () => {
-  const code = route.query.code;
-  if (!code) {
-    error.value = "No s'ha rebut cap codi de Google.";
-    return;
-  }
-
   try {
-    await authStore.loginWithGoogle(code);
+    const token = Array.isArray(route.query.token) ? route.query.token[0] : route.query.token;
+    const code = Array.isArray(route.query.code) ? route.query.code[0] : route.query.code;
+
+    if (token) {
+      // Flux actual del backend: retorna al frontend amb ?token=...
+      authStore.aplicarSessio({ token, role: "user" });
+      const sessioOk = await authStore.refrescarSessio();
+      if (!sessioOk) {
+        throw new Error("No s'ha pogut validar la sessió de Google.");
+      }
+    } else if (code) {
+      // Si rebem ?code al frontend, fem redirecció de navegador al callback backend.
+      // Evitem fetch aquí perquè el callback backend redirigeix i això pot donar CORS.
+      const config = useRuntimeConfig();
+      const base = (config.public.apiUrl || "").replace(/\/$/, "");
+      window.location.href = `${base}/api/auth/google/callback?code=${encodeURIComponent(code)}`;
+      return;
+    } else {
+      throw new Error("No s'ha rebut token ni codi de Google.");
+    }
+
     const nuxtApp = useNuxtApp();
     if (nuxtApp.$updateSocketAuth) nuxtApp.$updateSocketAuth();
     await navigateTo("/home");

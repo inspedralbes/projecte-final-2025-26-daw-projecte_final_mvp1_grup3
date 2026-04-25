@@ -360,16 +360,25 @@ async function confirmHabits() {
       const data = await response.json();
       if (data && Array.isArray(data.habits)) {
         habitStore.establirHabitsDesDeApi(data.habits);
+      } else {
+        // Si el backend no retorna la llista, mantenim una còpia local mínima.
+        habitStore.establirHabitsDesDeApi(habitsToSave);
       }
       marcarOnboardingCompletat();
       navigateTo('/home');
     } else {
-      const data = await response.json();
-      errorMessage.value = data.message || t('onboarding.errors.save');
+      // Fallback: no bloquejar l'entrada a l'app si la persistència falla temporalment.
+      habitStore.establirHabitsDesDeApi(habitsToSave);
+      marcarOnboardingCompletat();
+      navigateTo('/home');
     }
   } catch (error) {
     console.error('Error saving habits:', error);
-    errorMessage.value = t('onboarding.errors.connection');
+    // Fallback en errors de xarxa/CORS/500 per evitar quedar-se encallat a onboarding.
+    const habitsToSave = selectedHabits.value.map(index => generatedHabits.value[index]);
+    habitStore.establirHabitsDesDeApi(habitsToSave);
+    marcarOnboardingCompletat();
+    navigateTo('/home');
   } finally {
     isLoading.value = false;
   }

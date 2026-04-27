@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\SocialReportController;
 use App\Http\Controllers\Api\UserHomeReadController;
 use App\Http\Controllers\Api\UserProfileController;
 use App\Http\Controllers\Api\UserProfileReadController;
+use App\Http\Controllers\Api\UserSearchController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -55,6 +56,7 @@ Route::middleware('ensure.user')->group(function () {
 
     Route::get('/users/{id}/profile', [UserProfileController::class, 'getPublicProfile']);
     Route::get('/users/self/profile', [UserProfileController::class, 'getSelfProfile']);
+    Route::get('/users', [UserSearchController::class, 'search']);
 
     Route::post('/friends/request', [FriendshipController::class, 'sendRequest']);
     Route::put('/friends/accept/{id}', [FriendshipController::class, 'acceptRequest']);

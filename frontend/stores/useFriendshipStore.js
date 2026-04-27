@@ -83,7 +83,7 @@ export var useFriendshipStore = defineStore("friendship", {
       try {
         var resposta = await authFetch("/api/friends", {});
         if (!resposta.ok) {
-          throw new Error("Error en obtenir llista d'amics");
+          throw new Error("Error en obtenir llista d amics");
         }
         var dades = await resposta.json();
         this.friends = dades.data || dades || [];

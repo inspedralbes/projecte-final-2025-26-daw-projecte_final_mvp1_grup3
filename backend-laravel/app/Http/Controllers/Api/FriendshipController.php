@@ -17,22 +17,28 @@ class FriendshipController extends Controller
             'addressee_id' => 'required|integer|exists:usuaris,id',
         ]);
 
-        $requesterId = $request->user_id;
+        $requesterId = $request->user_id ?? 0;
+
+        if ($requesterId === 0) {
+            return response()->json(['error' => 'No autentificat'], 401);
+        }
 
         if ($requesterId === $validated['addressee_id']) {
-            return response()->json(['error' => 'No pots enviar-te sol·licitud d\'amistat a tu mateix'], 400);
+            return response()->json(['error' => "No pots enviar-te sol·licitud d'amistat a tu mateix"], 400);
         }
 
         $existing = Friendship::where(function ($query) use ($requesterId, $validated) {
             $query->where(function ($q) use ($requesterId, $validated) {
-                $q->where('requester_id', $requesterId)->where('addressee_id', $validated['addressee_id']);
-            })->orWhere(function ($q) use ($requesterId, $validated) {
-                $q->where('requester_id', $validated['addressee_id'])->where('addressee_id', $requesterId);
-            });
-        })->first();
+                    $q->where('requester_id', $requesterId)->where('addressee_id', $validated['addressee_id']);
+                }
+                )->orWhere(function ($q) use ($requesterId, $validated) {
+                    $q->where('requester_id', $validated['addressee_id'])->where('addressee_id', $requesterId);
+                }
+                );
+            })->first();
 
         if ($existing) {
-            return response()->json(['error' => 'Ja existeix una relació d\'amistat'], 409);
+            return response()->json(['error' => "Ja existeix una relació d'amistat"], 409);
         }
 
         $friendship = Friendship::create([
@@ -46,6 +52,12 @@ class FriendshipController extends Controller
 
     public function acceptRequest(int $id, Request $request): JsonResponse
     {
+        $userId = $request->user_id ?? 0;
+
+        if ($userId === 0) {
+            return response()->json(['error' => 'No autentificat'], 401);
+        }
+
         $friendship = Friendship::findOrFail($id);
 
         if ($friendship->addressee_id !== $request->user_id) {
@@ -64,6 +76,12 @@ class FriendshipController extends Controller
 
     public function rejectRequest(int $id, Request $request): JsonResponse
     {
+        $userId = $request->user_id ?? 0;
+
+        if ($userId === 0) {
+            return response()->json(['error' => 'No autentificat'], 401);
+        }
+
         $friendship = Friendship::findOrFail($id);
 
         if ($friendship->addressee_id !== $request->user_id) {
@@ -81,7 +99,11 @@ class FriendshipController extends Controller
 
     public function getFriendsList(Request $request): JsonResponse
     {
-        $userId = $request->user_id;
+        $userId = $request->user_id ?? 0;
+
+        if ($userId === 0) {
+            return response()->json(['error' => 'No autentificat'], 401);
+        }
 
         $friends = Friendship::where(function ($query) use ($userId) {
             $query->where('requester_id', $userId)
@@ -91,32 +113,36 @@ class FriendshipController extends Controller
             ->with(['requester:id,nom,nivell,xp_total', 'addressee:id,nom,nivell,xp_total'])
             ->get()
             ->map(function ($friendship) use ($userId) {
-                $friend = $friendship->requester_id === $userId ? $friendship->addressee : $friendship->requester;
-                return [
-                    'id' => $friendship->id,
-                    'friend' => $friend,
-                    'created_at' => $friendship->created_at,
-                ];
-            });
+            $friend = $friendship->requester_id === $userId ? $friendship->addressee : $friendship->requester;
+            return [
+            'id' => $friendship->id,
+            'friend' => $friend,
+            'created_at' => $friendship->created_at,
+            ];
+        });
 
         return response()->json($friends);
     }
 
     public function getPendingRequests(Request $request): JsonResponse
     {
-        $userId = $request->user_id;
+        $userId = $request->user_id ?? 0;
+
+        if ($userId === 0) {
+            return response()->json(['error' => 'No autentificat'], 401);
+        }
 
         $pending = Friendship::where('addressee_id', $userId)
             ->where('status', 'pending')
             ->with('requester:id,nom,nivell,xp_total')
             ->get()
             ->map(function ($friendship) {
-                return [
-                    'id' => $friendship->id,
-                    'requester' => $friendship->requester,
-                    'created_at' => $friendship->created_at,
-                ];
-            });
+            return [
+            'id' => $friendship->id,
+            'requester' => $friendship->requester,
+            'created_at' => $friendship->created_at,
+            ];
+        });
 
         return response()->json($pending);
     }

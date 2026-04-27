@@ -8,22 +8,28 @@
       </NuxtLink>
 
       <ul class="flex-1 flex items-center justify-center space-x-6 list-none m-0 p-0">
-        <li>
+        <li v-if="showSimpleNav">
+          <NuxtLink to="/social" class="nav-link" :class="{ active: isForumPage }">{{ $t('nav.forum') }}</NuxtLink>
+        </li>
+        <li v-if="showSimpleNav">
+          <NuxtLink to="/friends" class="nav-link" :class="{ active: isFriendsPage }">{{ $t('nav.friends') }}</NuxtLink>
+        </li>
+        <li v-if="!showSimpleNav">
           <NuxtLink to="/home" class="nav-link">{{ $t('nav.home') }}</NuxtLink> 
         </li>
-        <li>
+        <li v-if="!showSimpleNav">
           <NuxtLink to="/habits" class="nav-link">{{ $t('nav.create') }}</NuxtLink>
         </li>
-        <li>
+        <li v-if="!showSimpleNav">
           <NuxtLink to="/plantilles" class="nav-link">{{ $t('nav.catalog') }}</NuxtLink>
         </li>
-        <li>
-          <NuxtLink to="/social" class="nav-link active">{{ $t('nav.forum') }}</NuxtLink>
+        <li v-if="!showSimpleNav">
+          <NuxtLink to="/social" class="nav-link">{{ $t('nav.forum') }}</NuxtLink>
         </li>
-        <li>
+        <li v-if="!showSimpleNav">
           <NuxtLink to="/friends" class="nav-link">{{ $t('nav.friends') }}</NuxtLink>
         </li>
-        <li>
+        <li v-if="!showSimpleNav">
           <NuxtLink to="/perfil" class="nav-link">{{ $t('nav.profile') }}</NuxtLink>
         </li>
       </ul>
@@ -50,10 +56,27 @@ export default {
   components: {
     LanguageSwitcher,
   },
+  props: {
+    simpleNav: {
+      type: Boolean,
+      default: false,
+    },
+  },
   data() {
     return {
       logo: logo,
     }
+  },
+  computed: {
+    showSimpleNav() {
+      return this.$route.path === '/social' || this.$route.path === '/friends'
+    },
+    isForumPage() {
+      return this.$route.path === '/social'
+    },
+    isFriendsPage() {
+      return this.$route.path === '/friends'
+    },
   },
   methods: {
     async handleLogout() {

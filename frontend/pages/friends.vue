@@ -81,15 +81,14 @@
             type="text"
             :placeholder="$t('friends.search_placeholder')"
             class="w-full px-4 py-3 pl-10 border border-gray-300 rounded-xl focus:outline-none focus:border-blue-500"
-            @input="searchUsers"
           />
           <svg class="w-5 h-5 text-gray-400 absolute left-3 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
           </svg>
         </div>
-        <div v-if="searchResults.length > 0" class="space-y-2">
+        <div v-if="filteredUsers.length > 0" class="space-y-2">
           <div
-            v-for="user in searchResults"
+            v-for="user in filteredUsers"
             :key="user.id"
             class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex items-center justify-between"
           >
@@ -130,8 +129,8 @@
 </template>
 
 <script>
-import { useFriendshipStore } from "~/stores/useFriendshipStore";
-import { useAuthStore } from "~/stores/useAuthStore";
+import { useFriendshipStore } from "~/stores/useFriendshipStore.js";
+import { authFetch } from "~/composables/useApi.js";
 import HeaderSocial from "~/components/HeaderSocial.vue";
 import FriendCard from "~/components/user/social/FriendCard.vue";
 import ChatWindow from "~/components/user/social/ChatWindow.vue";
@@ -147,59 +146,74 @@ export default {
   },
   data() {
     return {
+      friendshipStore: useFriendshipStore(),
       activeTab: "amigos",
       searchQuery: "",
+      allUsers: [],
       searchResults: [],
       showChat: false,
       chatFriendId: null,
       chatFriendName: "",
       showProfile: false,
       profileUserId: null,
+      searching: false,
       sending: false,
     };
   },
   computed: {
+    filteredUsers() {
+      if (!this.searchQuery) {
+        return this.allUsers;
+      }
+      var query = this.searchQuery.toLowerCase();
+      return this.allUsers.filter(function(user) {
+        return user.nom && user.nom.toLowerCase().indexOf(query) !== -1;
+      });
+    },
     friends() {
-      return this.friendshipStore.friends;
+      return this.friendshipStore?.friends || [];
     },
     friendsLoading() {
-      return this.friendshipStore.loading;
+      return this.friendshipStore?.loading || false;
     },
     pendingRequests() {
-      return this.friendshipStore.pendingRequests;
+      return this.friendshipStore?.pendingRequests || [];
     },
     pendingLoading() {
-      return this.friendshipStore.loading;
+      return this.friendshipStore?.loading || false;
     },
     pendingCount() {
-      return this.pendingRequests.length;
+      return (this.friendshipStore?.pendingRequests || []).length;
     },
   },
   async mounted() {
-    await this.friendshipStore.fetchFriendsList();
-    await this.friendshipStore.fetchPendingRequests();
+    if (this.friendshipStore) {
+      await this.friendshipStore.fetchFriendsList();
+      await this.friendshipStore.fetchPendingRequests();
+      await this.fetchAllUsers();
+    }
   },
   methods: {
-    async searchUsers() {
-      if (this.searchQuery.length < 2) {
-        this.searchResults = [];
-        return;
-      }
+    async fetchAllUsers() {
+      this.searching = true;
       try {
-        var resposta = await this.$authFetch("/api/users?search=" + this.searchQuery);
+        var resposta = await authFetch("/api/users?search=");
         if (resposta.ok) {
           var dades = await resposta.json();
-          this.searchResults = dades.data || dades || [];
+          this.allUsers = dades.data || dades || [];
+          this.searchResults = this.allUsers;
         }
       } catch (e) {
-        console.error("Error cercant usuaris:", e);
+        console.error("Error carregant usuaris:", e);
+      } finally {
+        this.searching = false;
       }
     },
     async sendRequest(addresseeId) {
       this.sending = true;
       try {
         await this.friendshipStore.sendFriendRequest(addresseeId);
-        this.searchResults = this.searchResults.filter(function (u) {
+        this.allUsers = this.allUsers.filter(function (u) {
           return u.id !== addresseeId;
         });
       } catch (e) {

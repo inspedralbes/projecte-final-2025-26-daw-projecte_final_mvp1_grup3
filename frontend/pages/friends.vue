@@ -162,11 +162,22 @@ export default {
   },
   computed: {
     filteredUsers() {
+      var self = this;
+      var friendsIds = {};
+      var allFriends = this.friendshipStore?.friends || [];
+      for (var i = 0; i < allFriends.length; i++) {
+        if (allFriends[i] && allFriends[i].friend && allFriends[i].friend.id) {
+          friendsIds[allFriends[i].friend.id] = true;
+        }
+      }
+      var users = this.allUsers.filter(function(user) {
+        return user.id && !friendsIds[user.id];
+      });
       if (!this.searchQuery) {
-        return this.allUsers;
+        return users;
       }
       var query = this.searchQuery.toLowerCase();
-      return this.allUsers.filter(function(user) {
+      return users.filter(function(user) {
         return user.nom && user.nom.toLowerCase().indexOf(query) !== -1;
       });
     },

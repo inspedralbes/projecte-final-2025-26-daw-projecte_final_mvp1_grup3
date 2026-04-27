@@ -25,6 +25,7 @@ onMounted(async () => {
   try {
     const token = Array.isArray(route.query.token) ? route.query.token[0] : route.query.token;
     const code = Array.isArray(route.query.code) ? route.query.code[0] : route.query.code;
+    const onboarding = Array.isArray(route.query.onboarding) ? route.query.onboarding[0] : route.query.onboarding;
 
     if (token) {
       // Flux actual del backend: retorna al frontend amb ?token=...
@@ -32,6 +33,11 @@ onMounted(async () => {
       const sessioOk = await authStore.refrescarSessio();
       if (!sessioOk) {
         throw new Error("No s'ha pogut validar la sessió de Google.");
+      }
+      if (onboarding === "1") {
+        authStore.marcarOnboardingComPendent();
+      } else if (onboarding === "0") {
+        authStore.desmarcarOnboardingPendent();
       }
     } else if (code) {
       // Si rebem ?code al frontend, fem redirecció de navegador al callback backend.

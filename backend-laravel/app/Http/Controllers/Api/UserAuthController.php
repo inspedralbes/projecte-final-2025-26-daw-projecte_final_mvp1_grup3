@@ -96,7 +96,7 @@ class UserAuthController extends Controller
         ]);
 
         $token = JWTAuth::fromUser($usuari);
-        $resposta = $this->authService->crearRespostaLoginUsuari($usuari, $token);
+        $resposta = $this->authService->crearRespostaLoginUsuari($usuari, $token, true);
 
         return $resposta->setStatusCode(201);
     }
@@ -179,6 +179,7 @@ class UserAuthController extends Controller
     {
         try {
             $googleUser = Socialite::driver('google')->stateless()->user();
+            $requiresOnboarding = false;
 
             // 1. Cercar per google_id
             $usuari = User::where('google_id', $googleUser->getId())->first();
@@ -205,6 +206,7 @@ class UserAuthController extends Controller
                         'ratxa_actual' => 0,
                         'ratxa_maxima' => 0,
                     ]);
+                    $requiresOnboarding = true;
                 }
             }
 
@@ -215,7 +217,7 @@ class UserAuthController extends Controller
             $token = JWTAuth::fromUser($usuari);
             
             $frontendUrl = env('GOOGLE_FRONTEND_REDIRECT', 'http://localhost:3000/auth/google/redirect');
-            $redirectUrl = $frontendUrl . '?token=' . $token;
+            $redirectUrl = $frontendUrl . '?token=' . $token . '&onboarding=' . ($requiresOnboarding ? '1' : '0');
 
             $resposta = redirect($redirectUrl);
             return $this->authService->attachAuthCookies($resposta, $token, 'user');

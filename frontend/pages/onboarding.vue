@@ -417,6 +417,7 @@ function mapTemps(temps) {
 function marcarOnboardingCompletat() {
   const authStore = useAuthStore();
   onboardingDoneCookie.value = '1';
+  authStore.desmarcarOnboardingPendent();
   if (typeof window !== 'undefined') {
     localStorage.setItem('loopy_onboarding_done', '1');
     if (authStore.user && authStore.user.id != null) {

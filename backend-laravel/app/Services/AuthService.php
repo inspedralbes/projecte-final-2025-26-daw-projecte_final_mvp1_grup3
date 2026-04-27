@@ -40,12 +40,13 @@ class AuthService
     /**
      * Crea resposta de login per usuari.
      */
-    public function crearRespostaLoginUsuari(User $usuari, string $token): JsonResponse
+    public function crearRespostaLoginUsuari(User $usuari, string $token, bool $requiresOnboarding = false): JsonResponse
     {
         // A. Preparar payload d'usuari
         $dades = [
             'token' => $token,
             'role' => 'user',
+            'requires_onboarding' => $requiresOnboarding,
             'user' => [
                 'id' => $usuari->id,
                 'nom' => $usuari->nom,

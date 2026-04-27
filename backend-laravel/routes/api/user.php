@@ -67,4 +67,7 @@ Route::middleware('ensure.user')->group(function () {
     Route::post('/chat/{receiverId}', [ChatController::class, 'sendMessage']);
     Route::get('/chat/{friendId}', [ChatController::class, 'getChatHistory']);
     Route::put('/chat/{friendId}/read', [ChatController::class, 'markAsRead']);
+    Route::post('/webrtc-signal', [WebRTCSignalController::class, 'handleSignal']);
+    Route::get('/webrtc-rooms/{friendId}', [WebRTCSignalController::class, 'getRoom']);
+    Route::post('/webrtc-rooms/{friendId}/join', [WebRTCSignalController::class, 'joinRoom']);
 });

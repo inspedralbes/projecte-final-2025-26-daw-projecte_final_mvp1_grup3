@@ -8,7 +8,7 @@
           </div>
           <div>
             <p class="font-semibold text-gray-800">{{ friendName }}</p>
-            <p class="text-xs text-gray-500">{{ $t('chat.online') }}</p>
+            <p class="text-xs text-gray-500">En línia</p>
           </div>
         </div>
         <button @click="$emit('close')" class="p-2 text-gray-400 hover:text-gray-600">
@@ -19,9 +19,9 @@
       </div>
 
       <div ref="messagesContainer" class="flex-1 overflow-y-auto p-4 space-y-3 min-h-[300px]">
-        <div v-if="loading" class="text-center py-8 text-gray-500">{{ $t('home.loading') }}</div>
+        <div v-if="loading" class="text-center py-8 text-gray-500">Carregant...</div>
         <div v-else-if="messages.length === 0" class="text-center py-8 text-gray-500">
-          {{ $t('chat.no_messages') }}
+          No tens missatges
         </div>
         <div
           v-for="(msg, index) in messages"
@@ -40,7 +40,7 @@
           <input
             v-model="newMessage"
             type="text"
-            :placeholder="$t('chat.placeholder')"
+            placeholder="Escriu un missatge..."
             class="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:border-blue-500"
           />
           <button
@@ -98,7 +98,10 @@ export default {
   async mounted() {
     var chatStore = useChatStore();
     await chatStore.fetchChatHistory(this.friendId);
-    this.$nextTick(() => this.scrollToBottom());
+    var self = this;
+    this.$nextTick(function() {
+      self.scrollToBottom();
+    });
     this.startPolling();
   },
   beforeUnmount() {
@@ -107,15 +110,27 @@ export default {
   methods: {
     startPolling() {
       var self = this;
+      this.pollNewMessages();
       this.pollingInterval = setInterval(function() {
-        var chatStore = useChatStore();
-        chatStore.fetchChatHistory(self.friendId);
+        self.pollNewMessages();
       }, 2000);
     },
     stopPolling() {
       if (this.pollingInterval) {
         clearInterval(this.pollingInterval);
         this.pollingInterval = null;
+      }
+    },
+    async pollNewMessages() {
+      var chatStore = useChatStore();
+      var oldLength = chatStore.messages[this.friendId] ? chatStore.messages[this.friendId].length : 0;
+      await chatStore.fetchChatHistory(this.friendId);
+      var newLength = chatStore.messages[this.friendId] ? chatStore.messages[this.friendId].length : 0;
+      if (newLength > oldLength) {
+        var self = this;
+        this.$nextTick(function() {
+          self.scrollToBottom();
+        });
       }
     },
     async sendMessage() {
@@ -146,12 +161,14 @@ export default {
     scrollToBottom() {
       var container = this.$refs.messagesContainer;
       if (container) {
-        this.$nextTick(() => {
+        var self = this;
+        this.$nextTick(function() {
           container.scrollTop = container.scrollHeight;
         });
       }
     },
     formatTime(dateStr) {
+      if (!dateStr) return "";
       var date = new Date(dateStr);
       return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
     },

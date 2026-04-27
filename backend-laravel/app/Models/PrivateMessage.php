@@ -12,6 +12,8 @@ class PrivateMessage extends Model
 
     protected $table = 'private_messages';
 
+    public $timestamps = false;
+
     protected $fillable = [
         'sender_id',
         'receiver_id',

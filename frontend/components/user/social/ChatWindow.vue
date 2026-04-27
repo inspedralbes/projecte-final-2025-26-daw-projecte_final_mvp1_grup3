@@ -59,8 +59,8 @@
 </template>
 
 <script>
-import { useChatStore } from "~/stores/useChatStore";
-import { useAuthStore } from "~/stores/useAuthStore";
+import { useChatStore } from "~/stores/useChatStore.js";
+import { useAuthStore } from "~/stores/useAuthStore.js";
 
 export default {
   name: "ChatWindow",
@@ -79,12 +79,14 @@ export default {
     return {
       newMessage: "",
       sending: false,
+      pollingInterval: null,
     };
   },
   computed: {
     messages() {
       var chatStore = useChatStore();
-      return chatStore.messages[this.friendId] || [];
+      var msgs = chatStore.messages[this.friendId] || [];
+      return msgs.slice();
     },
     loading() {
       return useChatStore().loading;
@@ -97,16 +99,44 @@ export default {
     var chatStore = useChatStore();
     await chatStore.fetchChatHistory(this.friendId);
     this.$nextTick(() => this.scrollToBottom());
+    this.startPolling();
+  },
+  beforeUnmount() {
+    this.stopPolling();
   },
   methods: {
+    startPolling() {
+      var self = this;
+      this.pollingInterval = setInterval(function() {
+        var chatStore = useChatStore();
+        chatStore.fetchChatHistory(self.friendId);
+      }, 2000);
+    },
+    stopPolling() {
+      if (this.pollingInterval) {
+        clearInterval(this.pollingInterval);
+        this.pollingInterval = null;
+      }
+    },
     async sendMessage() {
       if (!this.newMessage.trim()) return;
       this.sending = true;
+      var messageText = this.newMessage;
+      var now = new Date().toISOString();
+      this.newMessage = "";
       try {
         var chatStore = useChatStore();
-        await chatStore.sendMessage(this.friendId, this.newMessage);
-        this.newMessage = "";
-        this.$nextTick(() => this.scrollToBottom());
+        await chatStore.sendMessage(this.friendId, messageText);
+        chatStore.addMessage(this.friendId, {
+          sender_id: this.currentUserId,
+          receiver_id: this.friendId,
+          contingut: messageText,
+          created_at: now,
+        });
+        var self = this;
+        this.$nextTick(function() {
+          self.scrollToBottom();
+        });
       } catch (e) {
         alert(e.message);
       } finally {

@@ -228,14 +228,24 @@ export default {
     async rejectRequest(id) {
       await this.friendshipStore.rejectFriendRequest(id);
     },
-    openChat(friend) {
-      this.chatFriendId = friend.id;
-      this.chatFriendName = friend.nom;
+    openChat(friendId, friendNom) {
+      var friend = null;
+      var allFriends = this.friendshipStore?.friends || [];
+      for (var i = 0; i < allFriends.length; i++) {
+        if (allFriends[i].friend && allFriends[i].friend.id === friendId) {
+          friend = allFriends[i].friend;
+          break;
+        }
+      }
+      this.chatFriendId = friendId;
+      this.chatFriendName = friend ? friend.nom : (friendNom || "");
       this.showChat = true;
     },
     viewProfile(userId) {
-      this.profileUserId = userId;
-      this.showProfile = true;
+      if (userId && typeof userId === 'number') {
+        this.profileUserId = userId;
+        this.showProfile = true;
+      }
     },
   },
 };

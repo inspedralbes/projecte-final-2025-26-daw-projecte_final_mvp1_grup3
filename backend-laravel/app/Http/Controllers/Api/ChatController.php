@@ -16,7 +16,11 @@ class ChatController extends Controller
             'contingut' => 'required|string|max:2000',
         ]);
 
-        $senderId = $request->user_id;
+        $senderId = $request->user_id ?? 0;
+
+        if ($senderId === 0) {
+            return response()->json(['error' => 'No autentificat'], 401);
+        }
 
         $friendship = Friendship::where(function ($query) use ($senderId, $receiverId) {
             $query->where(function ($q) use ($senderId, $receiverId) {
@@ -41,7 +45,11 @@ class ChatController extends Controller
 
     public function getChatHistory(Request $request, int $friendId): JsonResponse
     {
-        $userId = $request->user_id;
+        $userId = $request->user_id ?? 0;
+
+        if ($userId === 0) {
+            return response()->json(['error' => 'No autentificat'], 401);
+        }
 
         $messages = PrivateMessage::where(function ($query) use ($userId, $friendId) {
             $query->where(function ($q) use ($userId, $friendId) {
@@ -50,7 +58,7 @@ class ChatController extends Controller
                 $q->where('sender_id', $friendId)->where('receiver_id', $userId);
             });
         })
-            ->orderBy('created_at', 'desc')
+            ->orderBy('created_at', 'asc')
             ->paginate(50);
 
         return response()->json($messages);
@@ -58,7 +66,11 @@ class ChatController extends Controller
 
     public function markAsRead(Request $request, int $friendId): JsonResponse
     {
-        $userId = $request->user_id;
+        $userId = $request->user_id ?? 0;
+
+        if ($userId === 0) {
+            return response()->json(['error' => 'No autentificat'], 401);
+        }
 
         PrivateMessage::where('sender_id', $friendId)
             ->where('receiver_id', $userId)

@@ -1,7 +1,7 @@
 <template>
   <div
     class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex items-center justify-between hover:shadow-md transition-shadow cursor-pointer"
-    @click="$emit('view-profile', friend.friend)"
+    @click="$emit('view-profile', friend.friend.id)"
   >
     <div class="flex items-center gap-3">
       <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
@@ -13,7 +13,7 @@
       </div>
     </div>
     <button
-      @click.stop="$emit('open-chat', friend.friend)"
+      @click.stop="$emit('open-chat', friend.friend.id, friend.friend.nom)"
       class="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-all"
       :title="$t('friends.chat')"
     >
@@ -34,5 +34,8 @@ export default {
     },
   },
   emits: ["open-chat", "view-profile"],
+  setup(props) {
+    return {};
+  },
 };
 </script>

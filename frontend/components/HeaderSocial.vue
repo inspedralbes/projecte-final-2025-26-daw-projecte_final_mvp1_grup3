@@ -1,5 +1,5 @@
 <template>
-  <header class="w-full p-3">
+  <header class="w-full p-3 bg-white border-b border-gray-100">
     <nav class="w-full flex items-center justify-between px-4">
       
       <NuxtLink to="/home" class="brand"> 
@@ -8,19 +8,28 @@
       </NuxtLink>
 
       <ul class="flex-1 flex items-center justify-center space-x-6 list-none m-0 p-0">
-        <li>
+        <li v-if="showSimpleNav">
+          <NuxtLink to="/social" class="nav-link" :class="{ active: isForumPage }">{{ $t('nav.forum') }}</NuxtLink>
+        </li>
+        <li v-if="showSimpleNav">
+          <NuxtLink to="/friends" class="nav-link" :class="{ active: isFriendsPage }">{{ $t('nav.friends') }}</NuxtLink>
+        </li>
+        <li v-if="!showSimpleNav">
           <NuxtLink to="/home" class="nav-link">{{ $t('nav.home') }}</NuxtLink> 
         </li>
-        <li>
+        <li v-if="!showSimpleNav">
           <NuxtLink to="/habits" class="nav-link">{{ $t('nav.create') }}</NuxtLink>
         </li>
-        <li>
+        <li v-if="!showSimpleNav">
           <NuxtLink to="/plantilles" class="nav-link">{{ $t('nav.catalog') }}</NuxtLink>
         </li>
-        <li>
+        <li v-if="!showSimpleNav">
           <NuxtLink to="/social" class="nav-link">{{ $t('nav.forum') }}</NuxtLink>
         </li>
-        <li>
+        <li v-if="!showSimpleNav">
+          <NuxtLink to="/friends" class="nav-link">{{ $t('nav.friends') }}</NuxtLink>
+        </li>
+        <li v-if="!showSimpleNav">
           <NuxtLink to="/perfil" class="nav-link">{{ $t('nav.profile') }}</NuxtLink>
         </li>
       </ul>
@@ -37,16 +46,45 @@
   </header>
 </template>
 
-<script setup>
+<script>
 import logo from '~/assets/img/LogoLoopy.png'
 import LanguageSwitcher from './LanguageSwitcher.vue'
 import { useAuthStore } from '~/stores/useAuthStore'
 
-const authStore = useAuthStore()
-
-const handleLogout = async () => {
-  await authStore.logout()
-  await navigateTo('/auth/login')
+export default {
+  name: "HeaderSocial",
+  components: {
+    LanguageSwitcher,
+  },
+  props: {
+    simpleNav: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  data() {
+    return {
+      logo: logo,
+    }
+  },
+  computed: {
+    showSimpleNav() {
+      return this.$route.path === '/social' || this.$route.path === '/friends'
+    },
+    isForumPage() {
+      return this.$route.path === '/social'
+    },
+    isFriendsPage() {
+      return this.$route.path === '/friends'
+    },
+  },
+  methods: {
+    async handleLogout() {
+      const authStore = useAuthStore()
+      await authStore.logout()
+      await this.$router.push('/auth/login')
+    },
+  },
 }
 </script>
 
@@ -83,7 +121,7 @@ nav a {
   text-decoration: none;
 }
 .brand:hover {
-  color: #d1d5db; /* gray-300 */
+  color: #d1d5db;
 }
 .logo-img {
   width: 3rem;
@@ -97,12 +135,26 @@ nav a {
   font-weight: 700;
 }
 
+.nav-link {
+  color: #6b7280;
+  font-weight: 500;
+  transition: color 0.2s;
+  padding: 0.25rem 0;
+}
+.nav-link:hover {
+  color: #3b82f6;
+}
+.nav-link.active {
+  color: #3b82f6;
+  border-bottom: 2px solid #3b82f6;
+}
+
 .logout-btn {
   background: none;
   border: none;
   padding: 0.5rem;
   margin-right: 1rem;
-  color: #4b5563; /* gray-600 */
+  color: #4b5563;
   cursor: pointer;
   border-radius: 0.375rem;
   display: flex;
@@ -112,7 +164,7 @@ nav a {
 }
 
 .logout-btn:hover {
-  background-color: rgba(243, 244, 246, 0.5); /* gray-100 semi-transparent */
-  color: #dc2626; /* red-600 */
+  background-color: rgba(243, 244, 246, 0.5);
+  color: #dc2626;
 }
 </style>

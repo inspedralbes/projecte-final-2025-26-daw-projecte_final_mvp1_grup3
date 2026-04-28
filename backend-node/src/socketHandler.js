@@ -8,6 +8,7 @@ var habitHandlers = require("./handlers/user/habitHandlers");
 var plantillaHandlers = require("./handlers/user/plantillaHandlers");
 var rouletteHandlers = require("./handlers/user/rouletteHandlers");
 var userRegisterHandler = require("./handlers/user/userRegisterHandler");
+var socialHandlers = require("./handlers/user/socialHandlers");
 var adminHandlers = require("./handlers/admin/adminHandlers");
 var adminConnectedHandler = require("./handlers/admin/adminConnectedHandler");
 
@@ -32,12 +33,13 @@ function init(io) {
       console.log("Usuari " + userId + " unit a la sala user_" + userId);
     }
 
-    habitHandlers.register(io, socket);
-    plantillaHandlers.register(io, socket);
-    rouletteHandlers.register(io, socket);
-    userRegisterHandler.register(io, socket);
-    adminHandlers.register(io, socket);
-    adminConnectedHandler.register(io, socket);
+habitHandlers.register(io, socket);
+ plantillaHandlers.register(io, socket);
+ rouletteHandlers.register(io, socket);
+ userRegisterHandler.register(io, socket);
+ socialHandlers.register(io, socket);
+ adminHandlers.register(io, socket);
+ adminConnectedHandler.register(io, socket);
   });
 }
 

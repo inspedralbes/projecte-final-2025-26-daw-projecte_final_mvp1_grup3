@@ -79,9 +79,32 @@
         "create": "Crear",
         "catalog": "Catàleg",
         "forum": "Fòrum",
+        "friends": "Amics",
         "profile": "Perfil",
         "logout": "Tancar sessió",
         "soon": "Pròximament"
+    },
+    "friends": {
+        "title": "Amics",
+        "amigos": "Amics",
+        "pendientes": "Pendents",
+        "buscador": "Cercador",
+        "no_amigos": "No tens amics encara",
+        "no_pendientes": "No tens sol·licituds pendents",
+        "buscar_amigos": "Buscar amics",
+        "search_placeholder": "Buscar usuaris...",
+        "send_request": "Enviar sol·licitud",
+        "accept": "Acceptar",
+        "reject": "Rebutjar",
+        "chat": "Xatejar",
+        "request_sent": "Sol·licitud enviada",
+        "online": "En línia",
+        "no_messages": "No teniu missatges"
+    },
+    "chat": {
+        "placeholder": "Escriu un missatge...",
+        "online": "En línia",
+        "no_messages": "No teniu missatges"
     },
     "home": {
         "daily_missions": "Missions Diàries",
@@ -207,7 +230,10 @@
         "incomplet": "Incomplet",
         "personal_record": "Rècord Personal",
         "error_profile": "Error al carregar la informació del perfil.",
-        "error_history": "Error al carregar l'historial diari."
+        "error_history": "Error al carregar l'historial diari.",
+        "xp_total": "XP Total",
+        "streak": "Ratxa",
+        "error": "Error carregant perfil"
     },
     "templates": {
         "title": "Gestió de Plantilles",
@@ -256,6 +282,43 @@
         "export_creating_template": "La nova plantilla personal s'està creant.",
         "export_no_template_created": "Els hàbits han estat exportats. No s'ha creat una nova plantilla personal."
     },
+    "social": {
+        "title": "Fòrum Social",
+        "whats_new": "Què estàs pensant?",
+        "post": "Publicar",
+        "no_posts": "No hi ha publicacions encara",
+        "be_first": "Sigues el primer en compartir!",
+        "comments": "Comentaris",
+        "no_comments": "No hi ha comentaris encara",
+        "write_comment": "Escriu un comentari...",
+        "send": "Enviar",
+        "reply": "Respondre",
+        "just_now": "Ara",
+        "like": "M'agrada",
+        "delete": "Eliminar",
+        "confirm_delete": "Estàs segur que vols eliminar aquesta publicació?",
+        "import": "Importar",
+        "import_data": "Importar dades",
+        "select_import_type": "Què vols importar?",
+        "import_habit": "Hàbit",
+        "import_plantilla": "Plantilla",
+        "select_days": "Selecciona els dies de la setmana",
+        "select_at_least_one": "Selecciona almenys un dia",
+        "select_habit_for_template": "Selecciona l'hàbit al qual afegir la plantilla",
+        "confirm": "Confirmar",
+        "import_success": "Importat amb èxit!",
+        "close": "Tancar",
+        "error_post": "Error en publicar",
+        "error_comment": "Error en comentar",
+        "error_import": "Error en importar",
+        "habit": "Hàbit",
+        "template": "Plantilla",
+        "select_attachment": "Seleccionar Adjunt",
+        "habits": "Hàbits",
+        "templates": "Plantilles",
+        "cancel": "Cancel·lar",
+        "add_attachment": "Adjuntar hàbit o plantilla",
+        "no_templates": "No tens plantilles"
     "onboarding": {
         "progress": "Pas {current} de 4",
         "question1": {

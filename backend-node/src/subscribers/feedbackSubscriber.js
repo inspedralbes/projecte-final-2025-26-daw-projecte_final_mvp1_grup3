@@ -7,6 +7,7 @@
 var redis = require("redis");
 var userFeedbackEmitter = require("./emitters/userFeedbackEmitter");
 var adminFeedbackEmitter = require("./emitters/adminFeedbackEmitter");
+var socialFeedbackEmitter = require("./emitters/socialFeedbackEmitter");
 
 //==============================================================================
 //================================ VARIABLES ===================================
@@ -53,7 +54,9 @@ async function init(io) {
     try {
       payload = JSON.parse(message);
 
-      if (payload.admin_id !== undefined) {
+      if (payload.social_event !== undefined) {
+        socialFeedbackEmitter.emit(io, payload);
+      } else if (payload.admin_id !== undefined) {
         adminFeedbackEmitter.emit(io, payload);
       } else if (payload.user_id !== undefined) {
         userFeedbackEmitter.emit(io, payload);

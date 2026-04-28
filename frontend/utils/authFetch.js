@@ -23,6 +23,9 @@ export async function authFetch(url, options) {
 
   // C. Preparar headers i opcions del fetch
   headers = Object.assign({}, authStore.getAuthHeaders(), opts.headers || {});
+  if (opts.body && !headers['Content-Type']) {
+    headers['Content-Type'] = 'application/json';
+  }
 
   var fetchOpts = Object.assign({}, opts, {
     headers: headers,

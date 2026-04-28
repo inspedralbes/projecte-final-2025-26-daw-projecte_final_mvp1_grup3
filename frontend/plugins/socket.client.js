@@ -1,4 +1,5 @@
 import { io } from 'socket.io-client';
+import { useFriendshipStore } from '~/stores/useFriendshipStore.js';
 
 /**
  * Plugin de Socket.io per a Nuxt 3.
@@ -38,6 +39,22 @@ export default defineNuxtPlugin(function (nuxtApp) {
     socket.on('like_update', function (data) {
         var socialStore = useSocialStore();
         socialStore.handleLikeUpdate(data);
+    });
+
+    socket.on('new_friend_request', function (data) {
+        console.log('[Socket] Nova sol·licitud d\'amistat:', data);
+        var friendshipStore = useFriendshipStore();
+        if (friendshipStore) {
+            friendshipStore.fetchPendingRequests();
+        }
+    });
+
+    socket.on('friend_request_accepted', function (data) {
+        console.log('[Socket] Sol·licitud d\'amistat acceptada:', data);
+        var friendshipStore = useFriendshipStore();
+        if (friendshipStore) {
+            friendshipStore.fetchFriendsList();
+        }
     });
 
     socket.on('connect_error', function (err) {

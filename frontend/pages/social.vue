@@ -161,7 +161,6 @@ export default {
       if (result) {
         this.newPostContent = "";
         this.selectedAttachment = null;
-        this.loadPosts();
       } else {
         this.postError = socialStore.error || this.$t('social.error_post');
       }

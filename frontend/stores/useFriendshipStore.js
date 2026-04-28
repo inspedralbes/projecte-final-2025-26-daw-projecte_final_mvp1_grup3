@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import { authFetch } from "~/composables/useApi.js";
+import { useAuthStore } from "~/stores/useAuthStore.js";
 
 export var useFriendshipStore = defineStore("friendship", {
   state: function () {
@@ -24,6 +25,15 @@ export var useFriendshipStore = defineStore("friendship", {
           var errorData = await resposta.json();
           throw new Error(errorData.error || "Error en enviar sol·licitud");
         }
+        var authStore = useAuthStore();
+        var nuxtApp = useNuxtApp();
+        var socket = nuxtApp.$socket;
+        if (socket) {
+          socket.emit("friend_request_notify", {
+            addressee_id: addresseeId,
+            requester_name: authStore.user?.nom || "Usuari",
+          });
+        }
         return await resposta.json();
       } catch (e) {
         this.error = e.message;
@@ -43,6 +53,17 @@ export var useFriendshipStore = defineStore("friendship", {
         });
         if (!resposta.ok) {
           throw new Error("Error en acceptar sol·licitud");
+        }
+        var friendship = this.pendingRequests.find(function(r) { return r.id === friendshipId; });
+        var authStore = useAuthStore();
+        var nuxtApp = useNuxtApp();
+        var socket = nuxtApp.$socket;
+        if (friendship && friendship.requester && socket) {
+          socket.emit("friend_request_accepted_notify", {
+            requester_id: friendship.requester.id,
+            acceptor_id: authStore.user?.id,
+            acceptor_name: authStore.user?.nom || "Usuari",
+          });
         }
         await this.fetchPendingRequests();
         await this.fetchFriendsList();

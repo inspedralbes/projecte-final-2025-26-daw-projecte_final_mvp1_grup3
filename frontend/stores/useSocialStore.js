@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import { authFetch } from "~/composables/useApi.js";
+import { useAuthStore } from "~/stores/useAuthStore.js";
 
 export var useSocialStore = defineStore("social", {
   state: function () {
@@ -8,6 +9,8 @@ export var useSocialStore = defineStore("social", {
       loading: false,
       error: null,
       currentPost: null,
+      recentPostIds: [],
+      recentCommentIds: [],
     };
   },
   actions: {
@@ -47,7 +50,11 @@ export var useSocialStore = defineStore("social", {
         }
 
         var nouPost = await resposta.json();
-        this.posts.unshift(nouPost.data || nouPost);
+        var postResult = nouPost.data || nouPost;
+        
+        this.posts.push(postResult);
+        this.recentPostIds.push(postResult.id);
+        
         return nouPost;
       } catch (e) {
         this.error = e.message;
@@ -124,7 +131,24 @@ export var useSocialStore = defineStore("social", {
         }
 
         var comentari = await resposta.json();
-        return comentari.data || comentari;
+        var result = comentari.data || comentari;
+        
+        var i;
+        for (i = 0; i < this.posts.length; i++) {
+          if (this.posts[i].id === postId) {
+            if (!this.posts[i].comments) {
+              this.posts[i].comments = [];
+            }
+            this.posts[i].comments.push(result);
+            this.posts[i].comments_count = (Number(this.posts[i].comments_count) || 0) + 1;
+            this.posts[i] = { ...this.posts[i] };
+            break;
+          }
+        }
+        
+        this.recentCommentIds.push(result.id);
+        
+        return result;
       } catch (e) {
         this.error = e.message;
         return null;
@@ -321,36 +345,50 @@ export var useSocialStore = defineStore("social", {
     },
 
     handleNewPost: function (post) {
-      var trobat = false;
       var i;
+      var postId = post.id;
+      
+      if (this.recentPostIds.indexOf(postId) !== -1) {
+        return;
+      }
+
       for (i = 0; i < this.posts.length; i++) {
-        if (this.posts[i].id === post.id) {
-          trobat = true;
+        if (this.posts[i].id === postId) {
+          this.posts.splice(i, 1);
           break;
         }
       }
-      if (!trobat) {
-        post.liked_by_current_user = false;
-        this.posts.unshift(post);
-      }
+      
+      post.liked_by_current_user = false;
+      this.posts.unshift(post);
     },
 
     handleNewComment: function (comment) {
       var i;
+      var commentId = comment.id;
+      
+      if (this.recentCommentIds && this.recentCommentIds.indexOf(commentId) !== -1) {
+        return;
+      }
+      
       for (i = 0; i < this.posts.length; i++) {
         if (this.posts[i].id === comment.post_id) {
           if (!this.posts[i].comments) {
             this.posts[i].comments = [];
           }
-          // Evitar duplicats
-          var jaExisteix = this.posts[i].comments.some(function (c) { return c.id == comment.id; });
-          if (!jaExisteix) {
-            comment.liked_by_current_user = false;
-            this.posts[i].comments.push(comment);
-            this.posts[i].comments_count = (Number(this.posts[i].comments_count) || 0) + 1;
-            // Forçar reactivitat
-            this.posts[i] = { ...this.posts[i] };
+          
+          var j;
+          for (j = 0; j < this.posts[i].comments.length; j++) {
+            if (this.posts[i].comments[j].id === commentId) {
+              this.posts[i].comments.splice(j, 1);
+              break;
+            }
           }
+          
+          comment.liked_by_current_user = false;
+          this.posts[i].comments.push(comment);
+          this.posts[i].comments_count = (Number(this.posts[i].comments_count) || 0) + 1;
+          this.posts[i] = { ...this.posts[i] };
           break;
         }
       }

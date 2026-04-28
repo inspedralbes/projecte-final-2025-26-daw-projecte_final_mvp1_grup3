@@ -5,7 +5,8 @@ return [
     'allowed_methods' => ['*'],
     'allowed_origins' => [
         env('FRONTEND_URL', 'http://localhost:3000'),
-        'https://loopy.daw.inspedralbes.cat'
+        'https://looppy.cat',
+        'https://www.looppy.cat'
     ],
     'allowed_origins_patterns' => [],
     'allowed_headers' => ['*'],

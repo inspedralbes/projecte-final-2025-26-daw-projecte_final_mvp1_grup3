@@ -131,7 +131,6 @@ jobs:
           port: ${{ secrets.SERVER_PORT }}
           timeout: 30m
           command_timeout: 30m
-          script_stop: true
           script: |
             set -e
             APP_DIR="${{ secrets.APP_DIR }}" # Example: /opt/loopy (Configure this in GitHub Secrets!)

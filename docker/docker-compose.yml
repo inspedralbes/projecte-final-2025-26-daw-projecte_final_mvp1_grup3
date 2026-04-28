@@ -62,16 +62,19 @@ services:
     container_name: loopy-nginx
     restart: unless-stopped
     ports:
-      - "80:80" # Puerto estándar para Certbot validation & redirects HTTP -> HTTPS
+      - "80:80"   # HTTP (Certbot validation + redirect a HTTPS)
       - "443:443" # HTTPS
     volumes:
       - ../backend-laravel:/var/www
-      - ./default.conf:/etc/nginx/conf.d/default.conf
-      # RUTAS PARA LEER LOS CERTIFICADOS DESDE EL HOST AL DOCKER (Solo lectura):
+      - ./default.conf:/etc/nginx/conf.d/default.conf:ro
+      # Certificados Let's Encrypt (montados desde el host, solo lectura)
       - /etc/letsencrypt:/etc/letsencrypt:ro
+      # Carpeta para los challenges de Certbot (necesaria para renovaciones)
       - ./certbot/www:/var/www/certbot:ro
     depends_on:
       - backend-laravel
+      - backend-node
+      - frontend
 
   backend-laravel-worker:
     build:

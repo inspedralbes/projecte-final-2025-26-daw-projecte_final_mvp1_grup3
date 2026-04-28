@@ -319,6 +319,7 @@
     "cancel": "Cancelar",
     "add_attachment": "Adjuntar hábito o plantilla",
     "no_templates": "No tienes plantillas"
+  },
   "onboarding": {
     "progress": "Paso {current} de 4",
     "question1": {

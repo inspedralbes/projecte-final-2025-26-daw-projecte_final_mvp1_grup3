@@ -319,6 +319,7 @@
     "cancel": "Cancel",
     "add_attachment": "Attach habit or template",
     "no_templates": "No templates available"
+  },
   "onboarding": {
     "progress": "Step {current} of 4",
     "question1": {

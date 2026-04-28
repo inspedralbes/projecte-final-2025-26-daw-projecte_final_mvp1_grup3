@@ -12,6 +12,7 @@ use App\Services\AuthService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Laravel\Socialite\Facades\Socialite;
 use PHPOpenSourceSaver\JWTAuth\Exceptions\JWTException;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
@@ -80,6 +81,12 @@ class UserAuthController extends Controller
             'nom' => $request->input('nom'),
             'email' => $request->input('email'),
             'contrasenya_hash' => Hash::make($request->input('contrasenya')),
+            'nivell' => 1,
+            'xp_total' => 0,
+            'xp_actual_nivel' => 0,
+            'xp_objetivo_nivel' => 1000,
+            'monedes' => 0,
+            'missio_completada' => false,
         ]);
 
         Ratxa::create([
@@ -89,7 +96,7 @@ class UserAuthController extends Controller
         ]);
 
         $token = JWTAuth::fromUser($usuari);
-        $resposta = $this->authService->crearRespostaLoginUsuari($usuari, $token);
+        $resposta = $this->authService->crearRespostaLoginUsuari($usuari, $token, true);
 
         return $resposta->setStatusCode(201);
     }
@@ -155,5 +162,72 @@ class UserAuthController extends Controller
     public function logout(Request $request): JsonResponse
     {
         return $this->authService->crearRespostaLogout();
+    }
+
+    /**
+     * Redirigeix a Google.
+     */
+    public function redirectToGoogle()
+    {
+        return Socialite::driver('google')->stateless()->redirect();
+    }
+
+    /**
+     * Gestiona el callback de Google.
+     */
+    public function handleGoogleCallback()
+    {
+        try {
+            $googleUser = Socialite::driver('google')->stateless()->user();
+            $requiresOnboarding = false;
+
+            // 1. Cercar per google_id
+            $usuari = User::where('google_id', $googleUser->getId())->first();
+
+            if (!$usuari) {
+                // 2. Cercar per email (si té el mateix email però no google_id)
+                $usuari = User::where('email', 'ILIKE', $googleUser->getEmail())->first();
+
+                if ($usuari) {
+                    // Existeix per email, enllacem el google_id
+                    $usuari->update(['google_id' => (string) $googleUser->getId()]);
+                } else {
+                    // 3. Crear nou usuari
+                    $usuari = User::create([
+                        'nom' => $googleUser->getName() ?? $googleUser->getNickname() ?? 'Google User',
+                        'email' => $googleUser->getEmail(),
+                        'google_id' => (string) $googleUser->getId(),
+                        // No password for Google users initially
+                    ]);
+
+                    // Crear ratxa inicial
+                    Ratxa::create([
+                        'usuari_id' => $usuari->id,
+                        'ratxa_actual' => 0,
+                        'ratxa_maxima' => 0,
+                    ]);
+                    $requiresOnboarding = true;
+                }
+            }
+
+            if (!empty($usuari->prohibit)) {
+                return response()->json(['message' => 'El compte està prohibit'], 403);
+            }
+
+            $token = JWTAuth::fromUser($usuari);
+            
+            $frontendUrl = env('GOOGLE_FRONTEND_REDIRECT', 'http://localhost:3000/auth/google/redirect');
+            $redirectUrl = $frontendUrl . '?token=' . $token . '&onboarding=' . ($requiresOnboarding ? '1' : '0');
+
+            $resposta = redirect($redirectUrl);
+            return $this->authService->attachAuthCookies($resposta, $token, 'user');
+
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Error Google Login: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Error en el login amb Google',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }

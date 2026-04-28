@@ -17,6 +17,7 @@
     "login_welcome": "Benvingut/da!",
     "login_subtitle": "Entra al bucle de bons hàbits.",
     "login_button": "ENTRAR A LOOPY",
+    "login_google": "Inicia sessió amb Google",
     "login_continue_with": "O continua amb",
     "already_have_account": "Ja tens un compte?",
     "email_placeholder": "el.teu.email{'@'}exemple.com",
@@ -318,5 +319,67 @@
         "cancel": "Cancel·lar",
         "add_attachment": "Adjuntar hàbit o plantilla",
         "no_templates": "No tens plantilles"
+    "onboarding": {
+        "progress": "Pas {current} de 4",
+        "question1": {
+            "title": "Què vols millorar?",
+            "subtitle": "Tria l'àrea en què vols centrar-te."
+        },
+        "question2": {
+            "title": "Quan tens més energia?",
+            "subtitle": "Adaptarem els hàbits al teu ritme."
+        },
+        "question3": {
+            "title": "Què et frena més?",
+            "subtitle": "Ho tindrem en compte en proposar-te rutines."
+        },
+        "question4": {
+            "title": "Quant temps hi pots dedicar cada dia?",
+            "subtitle": "Et proposarem hàbits realistes segons el temps del que disposes."
+        },
+        "next": "Següent",
+        "back": "Enrere",
+        "generate": "Generar hàbits",
+        "generating_habits": "Generant els teus hàbits personalitzats…",
+        "habits": {
+            "title": "Tria els teus hàbits",
+            "subtitle": "Toca cada targeta per marcar els hàbits que vols afegir. Si no en marques cap, podràs continuar sense hàbits nous.",
+            "hint_zero": "No has marcat cap hàbit. Pots continuar i afegir-ne des de l'app quan vulguis.",
+            "hint_one": "Has marcat 1 hàbit per afegir a la teva llista.",
+            "hint_other": "Has marcat {n} hàbits per afegir a la teva llista."
+        },
+        "enter_app": "Entrar a l'app",
+        "confirm": "Confirmar selecció",
+        "options": {
+            "goal": {
+                "salut": "Salut",
+                "productivitat": "Productivitat",
+                "ment": "Ment",
+                "aprenentatge": "Aprenentatge"
+            },
+            "energy": {
+                "mati": "Matí",
+                "migdia": "Migdia",
+                "tarda": "Tarda",
+                "nit": "Nit"
+            },
+            "obstacle": {
+                "estress": "Estrès",
+                "temps": "Mança de temps",
+                "memoria": "Memòria o focus",
+                "andra": "Mandra o procrastinació"
+            },
+            "time": {
+                "15min": "Menys de 15 min",
+                "30min": "30 min",
+                "1h": "1 hora",
+                "1h_plus": "Més d'1 hora"
+            }
+        },
+        "errors": {
+            "generate": "No s'han pogut generar els hàbits.",
+            "connection": "S'ha produït un error de connexió.",
+            "save": "No s'han pogut guardar els hàbits."
+        }
     }
 }

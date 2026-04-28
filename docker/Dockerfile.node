@@ -1,5 +1,5 @@
 # Backend Node.js 20.11.1 LTS con Socket.io 4.7.4
-FROM node:20.11.1-alpine
+FROM mirror.gcr.io/library/node:20.11.1-alpine
 
 WORKDIR /app
 

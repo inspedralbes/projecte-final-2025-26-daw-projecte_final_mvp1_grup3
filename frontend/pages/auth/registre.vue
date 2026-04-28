@@ -243,8 +243,11 @@ export default {
           return;
         }
         var authStore = useAuthStore();
-        authStore.aplicarSessio({ token: dades.token, user: dades.user, role: "user" });
-        navigateTo("/home");
+        authStore.aplicarSessio({ token: dades.token, user: dades.user, role: "user", requires_onboarding: true });
+        authStore.reiniciarEstatOnboarding();
+        var habitStore = useHabitStore();
+        habitStore.establirHabitsDesDeApi([]);
+        await navigateTo("/onboarding");
       } catch (err) {
         self.errorMissatge = this.$t('error_connection');
       } finally {

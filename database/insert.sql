@@ -39,7 +39,8 @@ INSERT INTO MISSIOS_DIARIES (id, titol, tipus_comprovacio, parametres) VALUES
 (12, 'Completa 1 hàbit de lectura', 'hab_categoria', '{"categoria_id": 4}'),
 (13, 'Completa 1 hàbit de benestar', 'hab_categoria', '{"categoria_id": 5}'),
 (14, 'Completa el primer hàbit del dia', 'hab_primer_del_dia', '{}'),
-(15, 'Completa 1 hàbit de dificultat mitjana o alta', 'hab_dificultat_multi', '{"dificultats": ["media","dificil"]}');
+(15, 'Completa 1 hàbit de dificultat mitjana o alta', 'hab_dificultat_multi', '{"dificultats": ["media","dificil"]}'),
+(16, 'Completa el teu primer hàbit!', 'onboarding_primer_habit', '{"xp_bonus": 50}');
 
 -- La missió diària s'assigna pel backend (GamificationService) a la primera petició game-state
 SELECT setval('missios_diaries_id_seq', (SELECT COALESCE(MAX(id), 1) FROM MISSIOS_DIARIES));

@@ -139,13 +139,18 @@ jobs:
             echo "🚀 Deploying commit ${{ github.sha }}"
 
             # ── 1. Pull latest code ──
-            if [ -d "$APP_DIR" ]; then
+            if [ -d "$APP_DIR/.git" ]; then
               cd $APP_DIR
               git fetch origin main
               git reset --hard origin/main
+            elif [ -d "$APP_DIR" ]; then
+              echo "📦 Directory exists but no git repo found. Cloning..."
+              git clone https://github.com/${{ github.repository }}.git $APP_DIR
+              cd $APP_DIR
             else
-              echo "Error: Directory $APP_DIR not found!"
-              exit 1
+              echo "📦 Directory not found. Cloning..."
+              git clone https://github.com/${{ github.repository }}.git $APP_DIR
+              cd $APP_DIR
             fi
 
             # ── 2. Copy .env from root ──

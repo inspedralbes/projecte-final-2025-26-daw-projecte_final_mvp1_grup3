@@ -12,7 +12,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        $middleware->prepend(\Illuminate\Http\Middleware\HandleCors::class);
+        $middleware->append(\Illuminate\Http\Middleware\HandleCors::class);
         $middleware->alias([
             'ensure.user' => \App\Http\Middleware\EnsureUserToken::class,
             'ensure.admin' => \App\Http\Middleware\EnsureAdminToken::class,

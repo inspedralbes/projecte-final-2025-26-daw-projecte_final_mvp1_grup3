@@ -1,18 +1,7 @@
-# Redueix el context de build (evita fallides BuildKit "parent snapshot" a Windows)
 node_modules
 .nuxt
 .output
 dist
-.cache
-.parcel-cache
-.turbo
-.git
-.gitignore
-.cursor
-*.md
-npm-debug.log*
-yarn-error.log*
-coverage
-.env
-.env.*
-!.env.example
+package-lock.json
+npm-debug.log
+postcss.config.js

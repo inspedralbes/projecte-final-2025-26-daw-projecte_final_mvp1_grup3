@@ -18,7 +18,7 @@
           <NuxtLink to="/plantilles" class="nav-link">{{ $t('nav.catalog') }}</NuxtLink>
         </li>
         <li>
-          <a href="javascript:void(0)" class="nav-link opacity-50 cursor-not-allowed" :title="$t('nav.soon')">{{ $t('nav.forum') }}</a>
+          <NuxtLink to="/social" class="nav-link">{{ $t('nav.forum') }}</NuxtLink>
         </li>
         <li>
           <NuxtLink to="/perfil" class="nav-link">{{ $t('nav.profile') }}</NuxtLink>

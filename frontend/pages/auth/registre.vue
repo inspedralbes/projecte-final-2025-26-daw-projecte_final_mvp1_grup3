@@ -243,7 +243,7 @@ export default {
           return;
         }
         var authStore = useAuthStore();
-        authStore.aplicarSessio({ token: dades.token, user: dades.user, role: "user" });
+        authStore.aplicarSessio({ token: dades.token, user: dades.user, role: "user", requires_onboarding: true });
         authStore.reiniciarEstatOnboarding();
         var habitStore = useHabitStore();
         habitStore.establirHabitsDesDeApi([]);

@@ -81,16 +81,10 @@ export default defineNuxtConfig({
     },
   },
   routeRules: {
-    // Els assets _nuxt/ porten hash, aquests es poden guardar a la memòria cau durant un any sencer
+    // Els assets _nuxt/ porten hash, es poden guardar a la memòria cau durant un any sencer
     '/_nuxt/**': { headers: { 'Cache-Control': 'public, max-age=31536000, immutable' } },
-    // Assets estàtics del public/ (imatges, favicons): cau d'un dia
-    '/*.png': { headers: { 'Cache-Control': 'public, max-age=86400' } },
-    '/*.svg': { headers: { 'Cache-Control': 'public, max-age=86400' } },
-    '/*.ico': { headers: { 'Cache-Control': 'public, max-age=86400' } },
-    '/*.jpg': { headers: { 'Cache-Control': 'public, max-age=86400' } },
-    '/*.webp': { headers: { 'Cache-Control': 'public, max-age=86400' } },
-    // Desactivar la memòria cau per la pàgina HTML (evita carregar arxius de configuració vells)
-    // NO usar isr:false en mode SPA (ssr:false) — provoca errors 500 en servir arxius
-    '/**': { headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' } },
+    // NOTA: NO usar regla catch-all '/**' aquí. En mode SPA (ssr:false) provoca errors 500
+    // en servir arxius binaris del directori public/ (PNG, JPG, etc.)
+    // Per evitar la cau del HTML, configurar Cache-Control a Nginx en lloc d'aquí.
   },
 })

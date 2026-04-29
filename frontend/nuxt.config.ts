@@ -32,6 +32,53 @@ export default defineNuxtConfig({
   app: {
     baseURL: '/',
     buildAssetsDir: '/_nuxt/',
+    head: {
+      htmlAttrs: {
+        lang: 'ca',
+      },
+      title: 'Loopy — Crea hàbits, trenca rutines',
+      meta: [
+        { charset: 'utf-8' },
+        { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+        {
+          name: 'description',
+          content: 'Loopy és l\'app per crear, seguir i mantenir hàbits saludables amb missions, plantilles i assoliments. Construeix la teva millor versió, dia a dia.',
+        },
+        { name: 'theme-color', content: '#7C3AED' },
+
+        // Open Graph (Facebook, WhatsApp, LinkedIn, Telegram, Discord, iMessage...)
+        { property: 'og:type', content: 'website' },
+        { property: 'og:site_name', content: 'Loopy' },
+        { property: 'og:title', content: 'Loopy — Crea hàbits, trenca rutines' },
+        {
+          property: 'og:description',
+          content: 'Crea, segueix i mantén hàbits saludables amb missions, plantilles i assoliments. Construeix la teva millor versió, dia a dia.',
+        },
+        { property: 'og:url', content: 'https://looppy.cat' },
+        { property: 'og:image', content: 'https://looppy.cat/og-image.png' },
+        { property: 'og:image:secure_url', content: 'https://looppy.cat/og-image.png' },
+        { property: 'og:image:type', content: 'image/png' },
+        { property: 'og:image:width', content: '1200' },
+        { property: 'og:image:height', content: '630' },
+        { property: 'og:image:alt', content: 'Logo de Loopy amb el lema Crea hàbits, trenca rutines' },
+        { property: 'og:locale', content: 'ca_ES' },
+        { property: 'og:locale:alternate', content: 'es_ES' },
+
+        // Twitter / X
+        { name: 'twitter:card', content: 'summary_large_image' },
+        { name: 'twitter:title', content: 'Loopy — Crea hàbits, trenca rutines' },
+        {
+          name: 'twitter:description',
+          content: 'Crea, segueix i mantén hàbits saludables amb missions, plantilles i assoliments.',
+        },
+        { name: 'twitter:image', content: 'https://looppy.cat/og-image.png' },
+        { name: 'twitter:image:alt', content: 'Logo de Loopy' },
+      ],
+      link: [
+        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
+        { rel: 'canonical', href: 'https://looppy.cat' },
+      ],
+    },
   },
   routeRules: {
     // Desactivar la memòria cau per la pàgina HTML principal (evita carregar arxius de configuració vells)

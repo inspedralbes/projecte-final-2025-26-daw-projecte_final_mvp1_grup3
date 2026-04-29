@@ -15,6 +15,8 @@ use App\Http\Controllers\Api\SocialReportController;
 use App\Http\Controllers\Api\UserHomeReadController;
 use App\Http\Controllers\Api\UserProfileController;
 use App\Http\Controllers\Api\UserProfileReadController;
+use App\Http\Controllers\Api\ClanController;
+use App\Http\Controllers\Api\ClanRequestController;
 use App\Http\Controllers\Api\UserSearchController;
 use Illuminate\Support\Facades\Route;
 
@@ -58,6 +60,7 @@ Route::middleware('ensure.user')->group(function () {
 
     Route::get('/users/{id}/profile', [UserProfileController::class, 'getPublicProfile']);
     Route::get('/users/self/profile', [UserProfileController::class, 'getSelfProfile']);
+    Route::put('/users/self/showcase', [UserProfileController::class, 'updateShowcase']);
     Route::get('/users', [UserSearchController::class, 'search']);
 
     Route::post('/friends/request', [FriendshipController::class, 'sendRequest']);
@@ -72,4 +75,26 @@ Route::middleware('ensure.user')->group(function () {
     Route::post('/webrtc-signal', [WebRTCSignalController::class, 'handleSignal']);
     Route::get('/webrtc-rooms/{friendId}', [WebRTCSignalController::class, 'getRoom']);
     Route::post('/webrtc-rooms/{friendId}/join', [WebRTCSignalController::class, 'joinRoom']);
+
+    Route::get('/clans', [ClanController::class, 'index']);
+    Route::post('/clans', [ClanController::class, 'create']);
+    Route::get('/clans/{id}', [ClanController::class, 'show']);
+    Route::put('/clans/{id}', [ClanController::class, 'update']);
+    Route::post('/clans/{id}/leave', [ClanController::class, 'leave']);
+    Route::get('/clans/{id}/members', [ClanController::class, 'members']);
+    Route::get('/clans/{id}/messages', [ClanController::class, 'messages']);
+    Route::post('/clans/{id}/messages', [ClanController::class, 'sendMessage']);
+    Route::post('/clans/{id}/share/habit', [ClanController::class, 'shareHabit']);
+    Route::post('/clans/{id}/share/plantilla', [ClanController::class, 'sharePlantilla']);
+    Route::post('/clans/{id}/import/habit/{messageId}', [ClanController::class, 'importHabit']);
+    Route::post('/clans/{id}/import/plantilla/{messageId}', [ClanController::class, 'importPlantilla']);
+
+    Route::post('/clans/{id}/join', [ClanRequestController::class, 'joinPublic']);
+    Route::post('/clans/{id}/request', [ClanRequestController::class, 'requestJoin']);
+    Route::post('/clans/{id}/invite', [ClanRequestController::class, 'invite']);
+    Route::get('/clans/{id}/requests', [ClanRequestController::class, 'getPendingRequests']);
+    Route::put('/clan-requests/{requestId}/accept', [ClanRequestController::class, 'acceptRequest']);
+    Route::put('/clan-requests/{requestId}/reject', [ClanRequestController::class, 'rejectRequest']);
+    Route::delete('/clans/{id}/members/{memberId}', [ClanRequestController::class, 'removeMember']);
+    Route::put('/clan-invitations/{invitationId}/accept', [ClanRequestController::class, 'acceptInvitation']);
 });

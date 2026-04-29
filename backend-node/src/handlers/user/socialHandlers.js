@@ -125,6 +125,111 @@ function register(io, socket) {
       console.error("Error gestionant friend_request_accepted_notify:", error);
     }
   });
+
+  socket.on("clan_message", function (data) {
+    try {
+      var userId = socket.decoded_token && socket.decoded_token.user_id;
+      if (!userId) {
+        console.warn("clan_message: usuari no autenticat");
+        return;
+      }
+      var clanId = data.clan_id;
+      if (clanId) {
+        io.to("clan_" + clanId).emit("new_clan_message", {
+          clan_id: clanId,
+          sender_id: userId,
+          message: data.message,
+          created_at: data.created_at,
+        });
+        console.log("Missatge de clan enviat de " + userId + " al clan " + clanId);
+      }
+    } catch (error) {
+      console.error("Error gestionant clan_message:", error);
+    }
+  });
+
+  socket.on("clan_request_notify", function (data) {
+    try {
+      var userId = socket.decoded_token && socket.decoded_token.user_id;
+      if (!userId) {
+        console.warn("clan_request_notify: usuari no autenticat");
+        return;
+      }
+      var leaderId = data.leader_id;
+      if (leaderId) {
+        io.to("user_" + leaderId).emit("clan_request_received", {
+          clan_id: data.clan_id,
+          clan_nom: data.clan_nom,
+          usuari_id: userId,
+          created_at: data.created_at,
+        });
+        console.log("Notificació de sol·licitud de clan a líder " + leaderId);
+      }
+    } catch (error) {
+      console.error("Error gestionant clan_request_notify:", error);
+    }
+  });
+
+  socket.on("clan_invitation_received", function (data) {
+    try {
+      var invitedUserId = data.invited_user_id;
+      if (invitedUserId) {
+        io.to("user_" + invitedUserId).emit("clan_invitation_received", {
+          clan_id: data.clan_id,
+          clan_nom: data.clan_nom,
+          invitador_id: data.invitador_id,
+          created_at: data.created_at,
+        });
+        console.log("Invitació de clan/enviada a " + invitedUserId);
+      }
+    } catch (error) {
+      console.error("Error gestionant clan_invitation_received:", error);
+    }
+  });
+
+  socket.on("clan_share_notification", function (data) {
+    try {
+      var clanId = data.clan_id;
+      var memberIds = data.member_ids || [];
+      memberIds.forEach(function (memberId) {
+        io.to("user_" + memberId).emit("clan_share_received", {
+          clan_id: clanId,
+          sender_id: data.sender_id,
+          share_type: data.share_type,
+          created_at: data.created_at,
+        });
+      });
+      console.log("Notificació de compartició de clan/enviada");
+    } catch (error) {
+      console.error("Error gestionant clan_share_notification:", error);
+    }
+  });
+
+  socket.on("join_clan_room", function (data) {
+    try {
+      var userId = socket.decoded_token && socket.decoded_token.user_id;
+      if (!userId || !data.clan_id) {
+        return;
+      }
+      socket.join("clan_" + data.clan_id);
+      console.log("Usuari " + userId + " unit a clan_room " + data.clan_id);
+    } catch (error) {
+      console.error("Error unint a clan_room:", error);
+    }
+  });
+
+  socket.on("leave_clan_room", function (data) {
+    try {
+      var userId = socket.decoded_token && socket.decoded_token.user_id;
+      if (!userId || !data.clan_id) {
+        return;
+      }
+      socket.leave("clan_" + data.clan_id);
+      console.log("Usuari " + userId + " sortit de clan_room " + data.clan_id);
+    } catch (error) {
+      console.error("Error sortint de clan_room:", error);
+    }
+  });
 }
 
 module.exports = {

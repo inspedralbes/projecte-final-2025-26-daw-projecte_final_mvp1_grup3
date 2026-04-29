@@ -399,7 +399,7 @@ function mapDificultat(obstacle) {
     'estress': 'facil',
     'temps': 'media',
     'memoria': 'media',
-    'andra': 'dificil',
+    'andra': 'media',
   };
   return map[obstacle] || 'media';
 }

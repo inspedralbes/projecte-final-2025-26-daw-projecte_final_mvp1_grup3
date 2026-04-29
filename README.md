@@ -40,6 +40,34 @@ Detall a `docker/README.md`.
 
 El fitxer `.env.example` a la arrel unifica credencials de PostgreSQL, Redis, `JWT_SECRET` i URLs dels serveis. Copiar a `.env` i completar abans d’executar Docker.
 
+### APIs externes per hàbits vinculats
+
+Per activar la vinculació d'hàbits amb context extern (llibres, rutines, vídeos i clima), configura també al backend Laravel:
+
+- `GOOGLE_BOOKS_API_KEY` i `GOOGLE_BOOKS_API_URL`
+- `WGER_API_TOKEN` i `WGER_API_URL`
+- `YOUTUBE_DATA_API_KEY` i `YOUTUBE_DATA_API_URL`
+- `OPENWEATHER_API_KEY` i `OPENWEATHER_API_URL`
+
+> Les claus **mai** s'envien al client: Nuxt consumeix només endpoints proxy de Laravel (`/api/external/*`).
+
+### Contracte `habits.metadata` (JSONB)
+
+El camp `metadata` de `HABITS` guarda únicament dades normalitzades i segures:
+
+- `api_id` (string)
+- `titol` (string)
+- `url_imatge` (string)
+- `tipus_api` (string: `google_books`, `wger`, `youtube`, `manual`, ...)
+
+Qualsevol altre camp extern no forma part del contracte i no s'ha de persistir.
+
+### Notes operatives (quotes / rate limit)
+
+- Configura timeouts curts al proxy i mostra fallback manual al frontend quan un proveïdor falla.
+- Monitoritza errors 5xx de `/api/external/*` i percentatge d'ús del mode manual.
+- Si una API té límits estrictes, limita consultes al frontend (mínim 2 caràcters + acció explícita de cerca) i aplica cache curt al backend si cal.
+
 ## 🔗 Enllaços d’Interès
 
 - 🎨 [Disseny a Figma](https://www.figma.com/design/XyO3s84xWpSUEjQk2fwktb/Aplicaci%C3%B3-habits?node-id=0-1&t=D6xaYpsrqnb5eyuY-1)

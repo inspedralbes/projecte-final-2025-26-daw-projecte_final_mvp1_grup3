@@ -63,8 +63,18 @@
         </div>
       </div>
 
-      <!-- COSTAT DRET: Hàbits -->
+      <!-- COSTAT DRET: Clima + Hàbits -->
       <div class="col-span-12 lg:col-span-3 space-y-6">
+        <WeatherWidget
+          :dades="weatherGlobal"
+          :carregant="weatherCarregant"
+          :mode="weatherMode"
+          :ciutat="weatherCiutat"
+          @update:ciutat="weatherCiutat = $event"
+          @refresh="carregarClima"
+          @use-geo="usarGeolocal"
+          @switch-manual="passarAManual"
+        />
         <UserHomeHomeHabitsSection
           :habits="habitsDelDia"
           :esta-carregant="estaCarregantHabits"
@@ -72,8 +82,10 @@
           :obtenir-progres="obtenirProgres"
           :habit-completat-avui="habitCompletatAvui"
           :esta-processant="comvprovarSiSestaProcessant"
+          :weather-global="weatherGlobal"
           @netejar-error="errorMissatge = ''"
           @obrir-modal-habit="obrirModalHabit"
+          @obrir-detalls-habit="obrirModalDetallsHabit"
         />
       </div>
     </div>
@@ -90,6 +102,12 @@
       @decrement="decrementarHabit"
       @confirm="confirmarHabit"
       @invalid-complete="mostrarAvisIncomplet"
+    />
+    <HabitDetailsModal
+      :is-open="esObertModalDetalls"
+      :habit="habitDetallsSeleccionat"
+      :weather-context="weatherContextDetalls"
+      @close="tancarModalDetallsHabit"
     />
 
     <StreakBrokenModal
@@ -123,18 +141,22 @@ import HabitProgressModal from "~/components/home/HabitProgressModal.vue";
 import StreakBrokenModal from "~/components/home/StreakBrokenModal.vue";
 import LogrosModal from "~/components/home/LogrosModal.vue";
 import RouletteModal from "~/components/home/RouletteModal.vue";
+import HabitDetailsModal from "~/components/user/home/HabitDetailsModal.vue";
 import UserHomeHomeMissionCard from "~/components/user/home/HomeMissionCard.vue";
 import UserHomeHomeProfileCard from "~/components/user/home/HomeProfileCard.vue";
 import UserHomeHomeLogrosCard from "~/components/user/home/HomeLogrosCard.vue";
 import UserHomeHomeRouletteSection from "~/components/user/home/HomeRouletteSection.vue";
 import UserHomeHomeStreakSection from "~/components/user/home/HomeStreakSection.vue";
 import UserHomeHomeHabitsSection from "~/components/user/home/HomeHabitsSection.vue";
+import WeatherWidget from "~/components/user/home/WeatherWidget.vue";
+import { authFetch } from "~/composables/useApi.js";
 import bosqueImg from "~/assets/img/Bosque.png";
 import mascotaImg from "~/assets/img/Mascota.png";
 
 export default {
   components: {
     HabitProgressModal,
+    HabitDetailsModal,
     StreakBrokenModal,
     LogrosModal,
     RouletteModal,
@@ -143,7 +165,8 @@ export default {
     UserHomeHomeLogrosCard,
     UserHomeHomeRouletteSection,
     UserHomeHomeStreakSection,
-    UserHomeHomeHabitsSection
+    UserHomeHomeHabitsSection,
+    WeatherWidget
   },
   data: function () {
     return {
@@ -155,9 +178,18 @@ export default {
       esObertModalLogros: false,
       esObertModalRuleta: false,
       esObertModalHabit: false,
+      esObertModalDetalls: false,
       esObertModalRatxa: false,
       ratxaAnteriorModal: 0,
       habitSeleccionat: null,
+      habitDetallsSeleccionat: null,
+      weatherContextDetalls: null,
+      weatherGlobal: null,
+      weatherCiutat: "",
+      weatherMode: "requesting",
+      weatherLat: null,
+      weatherLon: null,
+      weatherCarregant: false,
       ruletaProcessant: false,
       estilFons: {
         backgroundImage: "url(" + bosqueImg + ")",
@@ -214,8 +246,149 @@ export default {
       .then(function (dades) { if (dades && dades.logros) self.logroStore.setLogros(dades.logros); })
       .finally(function () { self.estaCarregantHabits = false; });
     self.inicialitzarSocket();
+
+    self.inicialitzarClima();
+  },
+  watch: {
+    weatherCiutat: function (nova) {
+      if (typeof window !== "undefined" && nova && nova.trim() !== "") {
+        localStorage.setItem("loopy_weather_city", nova.trim());
+      }
+    }
   },
   methods: {
+    /**
+     * Punt d'entrada al carregar la pàgina.
+     * Si el navegador té el permís concedit, getCurrentPosition torna ràpid
+     * sense cap popup. Sempre s'intenta primer; el mode guardat és el fallback.
+     */
+    inicialitzarClima: function () {
+      var self = this;
+      if (typeof window === "undefined") {
+        return;
+      }
+
+      var modeSat = localStorage.getItem("loopy_weather_mode");
+
+      if (modeSat === "denied") {
+        localStorage.removeItem("loopy_weather_mode");
+        modeSat = null;
+      }
+
+      if (modeSat === "manual") {
+        var ciutatDesada = localStorage.getItem("loopy_weather_city") || "";
+        self.weatherCiutat = ciutatDesada.trim() || "Barcelona";
+        self.weatherMode = "manual";
+        self.carregarClima();
+        return;
+      }
+
+      if (typeof navigator === "undefined" || !navigator.geolocation) {
+        var ciutatFallback = localStorage.getItem("loopy_weather_city") || "Barcelona";
+        self.weatherCiutat = ciutatFallback.trim();
+        self.weatherMode = "manual";
+        self.carregarClima();
+        return;
+      }
+
+      self.weatherMode = "requesting";
+
+      navigator.geolocation.getCurrentPosition(
+        function (pos) {
+          self.weatherLat = pos.coords.latitude;
+          self.weatherLon = pos.coords.longitude;
+          self.weatherMode = "geo";
+          localStorage.setItem("loopy_weather_mode", "geo");
+          self.carregarClima();
+        },
+        function () {
+          self.weatherMode = "denied";
+          var ciutatDesadaDenied = localStorage.getItem("loopy_weather_city") || "";
+          self.weatherCiutat = ciutatDesadaDenied.trim() || "Barcelona";
+          self.carregarClima();
+        },
+        { timeout: 8000, maximumAge: 300000 }
+      );
+    },
+
+    /**
+     * Intenta obtenir la geolocalització del navegador (cridat manualment).
+     */
+    intentarGeolocal: function () {
+      var self = this;
+      if (typeof navigator === "undefined" || !navigator.geolocation) {
+        self.weatherMode = "manual";
+        localStorage.setItem("loopy_weather_mode", "manual");
+        return;
+      }
+      self.weatherMode = "requesting";
+      navigator.geolocation.getCurrentPosition(
+        function (pos) {
+          self.weatherLat = pos.coords.latitude;
+          self.weatherLon = pos.coords.longitude;
+          self.weatherMode = "geo";
+          localStorage.setItem("loopy_weather_mode", "geo");
+          self.carregarClima();
+        },
+        function () {
+          self.weatherMode = "denied";
+          localStorage.setItem("loopy_weather_mode", "denied");
+          var ciutatDesada = localStorage.getItem("loopy_weather_city") || "";
+          self.weatherCiutat = ciutatDesada.trim() || "Barcelona";
+          self.carregarClima();
+        },
+        { timeout: 8000, maximumAge: 60000 }
+      );
+    },
+
+    /**
+     * Crida quan l'usuari vol tornar a usar geolocalització.
+     */
+    usarGeolocal: function () {
+      this.weatherGlobal = null;
+      this.intentarGeolocal();
+    },
+
+    /**
+     * Crida quan l'usuari vol passar al mode manual.
+     */
+    passarAManual: function () {
+      this.weatherMode = "manual";
+      this.weatherLat = null;
+      this.weatherLon = null;
+      localStorage.setItem("loopy_weather_mode", "manual");
+    },
+
+    /**
+     * Carrega el clima. Usa lat/lon si mode=geo, sinó usa la ciutat.
+     */
+    carregarClima: async function () {
+      var self = this;
+      self.weatherCarregant = true;
+      try {
+        var url = "/api/external/weather?";
+        if (self.weatherMode === "geo" && self.weatherLat !== null && self.weatherLon !== null) {
+          url += "lat=" + encodeURIComponent(self.weatherLat) + "&lon=" + encodeURIComponent(self.weatherLon);
+        } else {
+          var ciutat = (self.weatherCiutat || "Barcelona").trim();
+          url += "city=" + encodeURIComponent(ciutat);
+        }
+        var resposta = await authFetch(url, {});
+        var dades = await resposta.json();
+        if (resposta.ok) {
+          self.weatherGlobal = dades;
+          if (dades.city && self.weatherMode !== "geo") {
+            self.weatherCiutat = dades.city;
+          }
+        } else {
+          self.weatherGlobal = null;
+        }
+      } catch (e) {
+        self.weatherGlobal = null;
+      } finally {
+        self.weatherCarregant = false;
+      }
+    },
     logout: async function() {
       await useAuthStore().logout();
       navigateTo("/auth/login");
@@ -238,11 +411,29 @@ export default {
     },
 
     /**
+     * Obre modal de detalls d'un hàbit.
+     */
+    obrirModalDetallsHabit: function (habit) {
+      this.habitDetallsSeleccionat = habit;
+      this.esObertModalDetalls = true;
+      this.weatherContextDetalls = this.weatherGlobal || null;
+    },
+
+    /**
      * Tanca el modal de progrés.
      */
     tancarModalHabit: function () {
       this.esObertModalHabit = false;
       this.habitSeleccionat = null;
+    },
+
+    /**
+     * Tanca el modal de detalls de l'hàbit.
+     */
+    tancarModalDetallsHabit: function () {
+      this.esObertModalDetalls = false;
+      this.habitDetallsSeleccionat = null;
+      this.weatherContextDetalls = null;
     },
 
     /**
@@ -391,7 +582,6 @@ export default {
           self.actualitzarProgresLocal(habitId, payload.progress, payload.completed_today);
         }
         if (payload.action === "COMPLETE") {
-          console.log("[RATXA_DEBUG] habit_action_confirmed COMPLETE xp_update:", JSON.stringify(payload.xp_update));
           if (payload.habit && payload.habit.id) {
             self.actualitzarProgresLocal(payload.habit.id, self.obtenirProgres(payload.habit.id), true);
           }
@@ -435,7 +625,6 @@ export default {
       });
 
       self.socket.on("disconnect", function () {
-        console.log("❌ Desconectat del servidor de sockets");
       });
     },
 
@@ -709,21 +898,11 @@ export default {
       var self = this;
       self.esObertModalLogros = true;
       self.logroStore.carregarLogros().then(function () {
-        console.log("Logros carregats al modal");
       }).catch(function (err) {
         console.error("Error carregant logros al modal:", err);
       });
     },
     tancarModalLogros: function () { this.esObertModalLogros = false; },
-    obrirModalRuleta: function () {
-      if (!this.canSpinRoulette) return;
-      this.esObertModalRuleta = true;
-    },
-    tancarModalRuleta: function () {
-      this.esObertModalRuleta = false;
-      this.aturarSpinRuleta();
-      this.ruletaProcessant = false;
-    },
     enviarSpinRuleta: function () {
       if (this.socket) {
         this.socket.emit("roulette_spin", {});

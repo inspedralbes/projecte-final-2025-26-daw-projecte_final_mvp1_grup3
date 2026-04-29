@@ -13,6 +13,7 @@ use App\Services\MissionService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 //================================ PROPIETATS / ATRIBUTS ==========
 
@@ -91,8 +92,6 @@ class HabitService
      */
     public function processarAccioHabit(array $dades): void
     {
-        // A. Normalitzar entrada
-        // A1. Validar si s'ha rebut acció
         if (isset($dades['action'])) {
             $accio = strtoupper((string) $dades['action']);
         } else {
@@ -105,14 +104,12 @@ class HabitService
         }
         $usuariId = (int) $dades['user_id'];
 
-        // A3. Validar si s'ha rebut id d'hàbit
         if (isset($dades['habit_id'])) {
             $habitId = (int) $dades['habit_id'];
         } else {
             $habitId = 0;
         }
 
-        // A4. Validar si s'han rebut dades d'hàbit
         if (isset($dades['habit_data']) && is_array($dades['habit_data'])) {
             $habitData = $dades['habit_data'];
         } else {
@@ -127,20 +124,15 @@ class HabitService
         $completedToday = null;
         $message = null;
 
-        // B. Executar l'acció
-        // B1. Acció CREATE
         if ($accio === 'CREATE') {
             $habitModel = $this->crearHabit($usuariId, $habitData);
             $success = $habitModel !== null;
-            // B2. Acció UPDATE
         } elseif ($accio === 'UPDATE') {
             $habitModel = $this->actualitzarHabit($usuariId, $habitId, $habitData);
             $success = $habitModel !== null;
-            // B3. Acció DELETE
         } elseif ($accio === 'DELETE') {
             $habitModel = $this->eliminarHabit($usuariId, $habitId);
             $success = $habitModel !== null;
-            // B4. Acció PROGRESS (increment/decrement)
         } elseif ($accio === 'PROGRESS') {
             $delta = isset($dades['valor']) ? (int) $dades['valor'] : 1;
             $resultatProgres = $this->processarProgresHabit($habitId, $usuariId, $delta);
@@ -156,7 +148,6 @@ class HabitService
                 $success = false;
                 $message = 'No s\'ha pogut actualitzar el progrés.';
             }
-            // B5. Acció COMPLETE (confirmar finalització)
         } elseif ($accio === 'COMPLETE') {
             $resultatComplete = $this->processarConfirmacioHabit([
                 'habit_id' => $habitId,
@@ -172,7 +163,6 @@ class HabitService
                 if (isset($resultatComplete['completed_today'])) {
                     $completedToday = $resultatComplete['completed_today'];
                 }
-                // B5.1. Comprovar missió diària (després de completar)
                 $resultatMissio = $this->missionService->comprovarMissioCompletada(
                     $usuariId,
                     $habitId,
@@ -191,7 +181,6 @@ class HabitService
                 $success = false;
                 $message = $resultatComplete['message'] ?? 'No s\'ha pogut completar l\'hàbit.';
             }
-            // B6. Acció EXPORT_HABITS
         } elseif ($accio === 'EXPORT_HABITS') {
             $plantillaId = isset($dades['plantilla_id']) ? (int) $dades['plantilla_id'] : 0;
             $hàbitsSeleccionats = isset($dades['selected_habits']) ? $dades['selected_habits'] : [];
@@ -202,7 +191,7 @@ class HabitService
             } else {
                 $message = $resultatExport['message'];
             }
-            // B7. Acció TOGGLE (compatibilitat antiga)
+        // B7. Acció TOGGLE (compatibilitat antiga)
         } elseif ($accio === 'TOGGLE') {
             $resultatComplete = $this->processarConfirmacioHabit([
                 'habit_id' => $habitId,
@@ -222,27 +211,22 @@ class HabitService
                 $success = false;
                 $message = $resultatComplete['message'] ?? 'No s\'ha pogut completar l\'hàbit.';
             }
-            // B5. Acció no reconeguda
         } else {
             throw new \InvalidArgumentException('Acció d\'hàbits no reconeguda.');
         }
 
-        // C. Construir payload de feedback
-        // C1. Preparar l'hàbit per a resposta
         $payload = [
             'action' => $accio,
             'user_id' => $usuariId,
             'success' => $success,
         ];
 
-        // C1. Preparar l'hàbit per a resposta
         if ($accio === 'EXPORT_HABITS' && isset($hàbitsExportats)) {
             $payload['exported_habits'] = $hàbitsExportats;
         } elseif ($habitModel !== null) {
             $payload['habit'] = $habitModel->toArray();
         }
 
-        // C2. Afegir XP si hi ha actualització
         if ($xpUpdate !== null) {
             $payload['xp_update'] = $xpUpdate;
         }
@@ -268,17 +252,6 @@ class HabitService
             $payload['level_up'] = $resultatComplete['level_up'];
         }
 
-        // LOG TEMPORAL: verificar si xp_update inclou ratxa abans de publicar
-        if ($xpUpdate !== null) {
-            Log::info('[RATXA_DEBUG] Payload abans de publicar', [
-                'action' => $accio,
-                'user_id' => $usuariId,
-                'xp_update' => $xpUpdate,
-                'ratxa_actual' => $xpUpdate['ratxa_actual'] ?? 'NO_PRESENT',
-                'ratxa_maxima' => $xpUpdate['ratxa_maxima'] ?? 'NO_PRESENT',
-            ]);
-        }
-        // D. Publicar feedback a Redis
         $this->feedbackService->publicarPayload($payload);
     }
 
@@ -291,35 +264,29 @@ class HabitService
      */
     public function processarConfirmacioHabit(array $dades): array
     {
-        // A. Validació i recuperació de l'hàbit
-        // A1. Comprovar si hi ha habit_id
         if (isset($dades['habit_id'])) {
             $habitId = (int) $dades['habit_id'];
         } else {
             $habitId = 0;
         }
 
-        // A2. Validar que l'id sigui positiu
         if ($habitId <= 0) {
             throw new \InvalidArgumentException('El camp habit_id és obligatori i ha de ser un enter positiu.');
         }
 
         $habit = Habit::find($habitId);
 
-        // A3. Validar que l'hàbit existeixi
         if (!$habit) {
             throw new \InvalidArgumentException("No s'ha trobat l'hàbit amb id {$habitId}.");
         }
 
-        // A4. Usuari que completa (del payload o propietari de l'hàbit)
+        // Usuari que completa: del payload JWT (preferent) o propietari de l'hàbit com a fallback
         if (isset($dades['user_id']) && $dades['user_id'] > 0) {
             $usuariId = (int) $dades['user_id'];
         } else {
             $usuariId = (int) ($habit->usuari_id);
         }
 
-        // B. Determinar la data/hora de l'activitat (avui ara per defecte)
-        // B1. Si arriba data, parsejar (conservar hora); si no, usar ara
         if (isset($dades['data']) && $dades['data'] !== null) {
             $timestampComplet = Carbon::parse($dades['data']);
         } else {
@@ -330,7 +297,6 @@ class HabitService
         $timezone = config('app.timezone', 'Europe/Madrid');
         $dataActivitat = $timestampComplet->copy()->setTimezone($timezone)->startOfDay();
 
-        // B3. Verificar accés de l'usuari a l'hàbit
         if (!$this->usuariTeAccesHabit($habitId, $usuariId)) {
             return [
                 'success' => false,
@@ -338,7 +304,6 @@ class HabitService
             ];
         }
 
-        // C. Obtenir progrés d'avui i validar objectiu
         $progresAvui = $this->obtenirProgresDiari($habitId, $dataActivitat);
         if ($progresAvui < (int) $habit->objectiu_vegades) {
             return [
@@ -347,7 +312,6 @@ class HabitService
             ];
         }
 
-        // C1. Comprovar si ja s'ha completat avui
         $jaCompletat = RegistreActivitat::where('habit_id', $habitId)
             ->whereDate('data', $dataActivitat)
             ->where('acabado', true)
@@ -359,15 +323,12 @@ class HabitService
             ];
         }
 
-        // D. Calcular XP i monedes segons la dificultat de l'hàbit
         $xpGuanyada = $this->calcularXPSegonsDificultat($habit->dificultat);
         $monedesGuanyades = $this->calcularMonedesSegonsDificultat($habit->dificultat);
 
         $levelUpData = null;
 
-        // D. Executar tot dins d'una transacció
         DB::transaction(function () use ($habit, $usuariId, $dataActivitat, $timestampComplet, $xpGuanyada, $monedesGuanyades, &$levelUpData) {
-            // D1. Actualitzar XP/Nivell/Monedes de l'usuari
             $usuari = User::where('id', $usuariId)->lockForUpdate()->first();
             if ($usuari === null) {
                 throw new \RuntimeException('Usuari no trobat.');
@@ -393,7 +354,6 @@ class HabitService
                 ];
             }
 
-            // D2. Obtenir o crear la ratxa de l'usuari i actualitzar-la
             $ratxa = Ratxa::firstOrCreate(
                 ['usuari_id' => $usuariId],
                 [
@@ -417,24 +377,20 @@ class HabitService
         // D5. Comprovar i atorgar logros un cop guardada l'activitat de l'hàbit
         $this->logroService->comprovarLogros($usuariId, $habit);
 
-        // E. Recuperar valors finals per retornar el resultat
         $usuari = User::find($usuariId);
 
         $ratxa = Ratxa::where('usuari_id', $usuariId)->first();
 
-        // E1. Si no hi ha ratxa, inicialitzar valors
         if ($ratxa === null) {
             $ratxaActual = 0;
             $ratxaMaxima = 0;
         } else {
-            // E2. Validar ratxa_actual
             if (isset($ratxa->ratxa_actual)) {
                 $ratxaActual = (int) $ratxa->ratxa_actual;
             } else {
                 $ratxaActual = 0;
             }
 
-            // E3. Validar ratxa_maxima
             if (isset($ratxa->ratxa_maxima)) {
                 $ratxaMaxima = (int) $ratxa->ratxa_maxima;
             } else {
@@ -471,7 +427,6 @@ class HabitService
      */
     private function calcularXPSegonsDificultat(?string $dificultat): int
     {
-        // A. Si la dificultat no està informada, usar XP per defecte
         if ($dificultat === null || $dificultat === '') {
             return self::XP_DEFECTE;
         }
@@ -479,7 +434,6 @@ class HabitService
         $clau = strtolower(trim($dificultat));
         $mapXp = self::XP_PER_DIFICULTAT;
 
-        // B. Si la clau existeix al mapa, retornar XP corresponent
         if (array_key_exists($clau, $mapXp)) {
             return $mapXp[$clau];
         }
@@ -759,7 +713,6 @@ class HabitService
             return;
         }
 
-        // C. Si és el dia següent al registrat: dia consecutiu, incrementar
         if ($ultimaData !== null && $avui->gt($ultimaData) && (int) $ultimaData->diffInDays($avui, true) === 1) {
             $ratxaActual++;
         } else {
@@ -767,21 +720,12 @@ class HabitService
             $ratxaActual = 1;
         }
 
-        // D. Actualitzar ratxa_maxima si la ratxa actual és la nova màxima
         $ratxaMaxima = max($ratxaMaxima, $ratxaActual);
 
-        // E. Actualitzar ratxa_actual, ratxa_maxima i ultima_data amb la data nova
         $ratxa->update([
             'ratxa_actual' => $ratxaActual,
             'ratxa_maxima' => $ratxaMaxima,
             'ultima_data' => $avui,
-        ]);
-        Log::info('[RATXA_DEBUG] actualitzarRatxa aplicada', [
-            'usuari_id' => $ratxa->usuari_id,
-            'ratxa_actual' => $ratxaActual,
-            'ratxa_maxima' => $ratxaMaxima,
-            'ultima_data' => $avui->toDateString(),
-            'ultima_data_prev' => $ultimaData?->toDateString(),
         ]);
     }
 
@@ -805,7 +749,6 @@ class HabitService
 
             $ultimaData = Carbon::parse($ratxa->ultima_data, 'Europe/Madrid')->startOfDay();
 
-            // Si l'última activitat és anterior a ahir, la ratxa es trenca
             if ($ultimaData->lt($ahir)) {
                 $ratxaAnterior = (int) $ratxa->ratxa_actual;
                 $ratxa->update([
@@ -838,13 +781,13 @@ class HabitService
      */
     private function crearHabit(int $usuariId, array $habitData): ?Habit
     {
-        // A. Normalitzar dades d'entrada
-        $dades = $this->filtrarDadesHabit($habitData);
+        if (!$this->validarShapeMetadata($habitData)) {
+            return null;
+        }
 
-        // B. Assignar usuari per defecte
+        $dades = $this->filtrarDadesHabit($habitData);
         $dades['usuari_id'] = $usuariId;
 
-        // C. Crear model
         $habit = Habit::create($dades);
 
         return $habit;
@@ -859,18 +802,18 @@ class HabitService
      */
     private function actualitzarHabit(int $usuariId, int $habitId, array $habitData): ?Habit
     {
-        // A. Recuperar hàbit
+        if (!$this->validarShapeMetadata($habitData)) {
+            return null;
+        }
+
         $habit = Habit::find($habitId);
 
-        // A1. Validar existència i propietat
         if (!$habit || (int) $habit->usuari_id !== $usuariId) {
             return null;
         }
 
-        // B. Actualitzar camps permesos
         $dades = $this->filtrarDadesHabit($habitData);
 
-        // B1. Si hi ha dades, actualitzar
         if (!empty($dades)) {
             $habit->update($dades);
         }
@@ -886,15 +829,12 @@ class HabitService
      */
     private function eliminarHabit(int $usuariId, int $habitId): ?Habit
     {
-        // A. Recuperar hàbit
         $habit = Habit::find($habitId);
 
-        // A1. Validar existència i propietat
         if (!$habit || (int) $habit->usuari_id !== $usuariId) {
             return null;
         }
 
-        // B. Guardar dades abans d'eliminar
         $habit->delete();
 
         return $habit;
@@ -910,57 +850,116 @@ class HabitService
     {
         $dades = [];
 
-        // A. Copiar plantilla_id si existeix
         if (isset($habitData['plantilla_id'])) {
             $dades['plantilla_id'] = $habitData['plantilla_id'];
         }
 
-        // B. Copiar titol si existeix
         if (isset($habitData['titol'])) {
             $dades['titol'] = $habitData['titol'];
         }
 
-        // C. Copiar dificultat si existeix
         if (isset($habitData['dificultat'])) {
             $dades['dificultat'] = $habitData['dificultat'];
         }
 
-        // D. Copiar frequencia_tipus si existeix
         if (isset($habitData['frequencia_tipus'])) {
             $dades['frequencia_tipus'] = $habitData['frequencia_tipus'];
         }
 
-        // E. Copiar dies_setmana si existeix
         if (isset($habitData['dies_setmana'])) {
             $dades['dies_setmana'] = $this->normalitzarDiesSetmana($habitData['dies_setmana']);
         }
 
-        // F. Copiar objectiu_vegades si existeix
         if (isset($habitData['objectiu_vegades'])) {
             $dades['objectiu_vegades'] = $habitData['objectiu_vegades'];
         }
 
-        // F2. Copiar unitat si existeix
         if (isset($habitData['unitat'])) {
             $dades['unitat'] = $habitData['unitat'];
         }
 
-        // G. Copiar categoria_id si existeix
         if (isset($habitData['categoria_id'])) {
             $dades['categoria_id'] = $habitData['categoria_id'];
         }
 
-        // H. Copiar icona si existeix
         if (isset($habitData['icona'])) {
             $dades['icona'] = $habitData['icona'];
         }
 
-        // I. Copiar color si existeix
         if (isset($habitData['color'])) {
             $dades['color'] = $habitData['color'];
         }
 
+        if (array_key_exists('metadata', $habitData)) {
+            $dades['metadata'] = $this->normalitzarMetadata($habitData['metadata']);
+        }
+
         return $dades;
+    }
+
+    /**
+     * Normalitza metadata externa i evita claus sensibles.
+     *
+     * @param mixed $metadata
+     * @return array<string, string>|null
+     */
+    private function normalitzarMetadata($metadata): ?array
+    {
+        if ($metadata === null) {
+            return null;
+        }
+
+        if (!is_array($metadata)) {
+            return null;
+        }
+
+        $clausPermeses = ['api_id', 'titol', 'url_imatge', 'tipus_api'];
+        $resultat = [];
+
+        foreach ($clausPermeses as $clau) {
+            if (!array_key_exists($clau, $metadata)) {
+                continue;
+            }
+            $valor = $metadata[$clau];
+            if ($valor === null) {
+                $resultat[$clau] = '';
+                continue;
+            }
+            if (!is_scalar($valor)) {
+                $resultat[$clau] = '';
+                continue;
+            }
+            $resultat[$clau] = mb_substr((string) $valor, 0, 500);
+        }
+
+        if (empty($resultat)) {
+            return null;
+        }
+
+        return $resultat;
+    }
+
+    /**
+     * Valida shape de metadata per accions CREATE/UPDATE.
+     */
+    private function validarShapeMetadata(array $habitData): bool
+    {
+        if (!array_key_exists('metadata', $habitData)) {
+            return true;
+        }
+
+        $validator = Validator::make(
+            ['metadata' => $habitData['metadata']],
+            [
+                'metadata' => 'nullable|array',
+                'metadata.api_id' => 'nullable|string|max:500',
+                'metadata.titol' => 'nullable|string|max:500',
+                'metadata.url_imatge' => 'nullable|string|max:500',
+                'metadata.tipus_api' => 'nullable|string|max:100',
+            ]
+        );
+
+        return !$validator->fails();
     }
 
     /**
@@ -1165,14 +1164,10 @@ class HabitService
     public function exportarHabitsDePlantilla(int $usuariId, int $plantillaId, array $hàbitsSeleccionats): array
     {
         try {
-            // A. Preparació inicial de dades
             $nousHabits = [];
 
-            // B. Recuperació d'hàbits existents per a l'usuari
-            // Obtenim els IDs dels hàbits assignats via pivot
             $habitIdsAssignats = UsuariHabit::where('usuari_id', $usuariId)->pluck('habit_id');
 
-            // Recuperem els títols de tots els hàbits de l'usuari (propietari o assignat)
             $titolsExistents = Habit::where('usuari_id', $usuariId)
                 ->orWhereIn('id', $habitIdsAssignats)
                 ->pluck('titol')
@@ -1181,31 +1176,24 @@ class HabitService
             // Normalitzem els títols per a una comparació més robusta (minúscules)
             $titolsNormalitzats = [];
             foreach ($titolsExistents as $titol) {
-                // Afegim cada títol en minúscules a la llista de control
                 $titolsNormalitzats[] = strtolower(trim((string) $titol));
             }
 
-            // C. Processament de l'exportació dins d'una transacció
             DB::transaction(function () use ($usuariId, $hàbitsSeleccionats, $titolsNormalitzats, &$nousHabits) {
-                // 1. Recuperar els hàbits originals de la plantilla
                 $originals = Habit::whereIn('id', $hàbitsSeleccionats)->get();
 
                 foreach ($originals as $original) {
                     /** @var Habit $original */
                     $titolNou = strtolower(trim((string) $original->titol));
 
-                    // 2. Comprovar si l'hàbit ja existeix per títol
-                    // Si el títol ja és a la llista de l'usuari, el saltem per evitar duplicats
                     if (in_array($titolNou, $titolsNormalitzats)) {
                         continue;
                     }
 
-                    // 3. Duplicar l'hàbit a la taula HABITS
                     $nou = $original->replicate();
                     $nou->usuari_id = $usuariId;
                     $nou->save();
 
-                    // 4. Crear la relació a USUARIS_HABITS (pivot) per a la persistència funcional
                     UsuariHabit::create([
                         'usuari_id' => $usuariId,
                         'habit_id' => $nou->id,

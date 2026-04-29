@@ -9,6 +9,7 @@
       <div>
         <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3 px-1">{{ $t('habits.habit_name') }}</label>
         <input 
+          data-testid="habit-name-input"
           :value="modelValue.nom" 
           @input="$emit('update:modelValue', { ...modelValue, nom: $event.target.value })"
           type="text" 

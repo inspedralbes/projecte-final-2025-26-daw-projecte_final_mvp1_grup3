@@ -9,6 +9,7 @@
       <button 
         v-for="cat in categories" 
         :key="cat.id" 
+        :data-testid="'habit-category-' + cat.key"
         type="button" 
         @click="$emit('select', cat.id)" 
         :class="['p-6 rounded-2xl flex flex-col items-center justify-center gap-3 transition-all transform hover:scale-105 active:scale-95 border-2', selectedId === cat.id ? 'border-green-500 bg-green-50 shadow-md ring-4 ring-green-500/5' : 'bg-gray-50/50 border-gray-100 hover:border-green-200']"

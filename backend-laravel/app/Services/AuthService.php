@@ -29,7 +29,6 @@ class AuthService
 
     public function __construct()
     {
-        // A. Preparar configuració base de cookies
         $this->cookieNom = (string) config('jwt.cookie', 'loopy_token');
         $this->roleCookieNom = 'loopy_role';
         $this->cookieMinuts = (int) config('jwt.refresh_ttl', 20160);
@@ -42,7 +41,6 @@ class AuthService
      */
     public function crearRespostaLoginUsuari(User $usuari, string $token, bool $requiresOnboarding = false): JsonResponse
     {
-        // A. Preparar payload d'usuari
         $dades = [
             'token' => $token,
             'role' => 'user',
@@ -54,7 +52,6 @@ class AuthService
             ],
         ];
 
-        // B. Crear resposta amb cookies
         return $this->crearRespostaAmbCookies($dades, 'user');
     }
 
@@ -63,7 +60,6 @@ class AuthService
      */
     public function crearRespostaLoginAdmin(Administrador $admin, string $token): JsonResponse
     {
-        // A. Preparar payload d'administrador
         $dades = [
             'token' => $token,
             'role' => 'admin',
@@ -74,7 +70,6 @@ class AuthService
             ],
         ];
 
-        // B. Crear resposta amb cookies
         return $this->crearRespostaAmbCookies($dades, 'admin');
     }
 
@@ -85,19 +80,17 @@ class AuthService
      */
     public function crearRespostaRefresh(string $role, array $dadesPerfil, string $token): JsonResponse
     {
-        // A. Preparar dades de resposta bàsiques
         $dades = [
             'token' => $token,
             'role' => $role,
         ];
-        // B. Assignar perfil segons rol
+
         if ($role === 'admin') {
             $dades['admin'] = $dadesPerfil;
         } else {
             $dades['user'] = $dadesPerfil;
         }
 
-        // C. Retornar resposta amb cookies
         return $this->crearRespostaAmbCookies($dades, $role);
     }
 
@@ -106,9 +99,7 @@ class AuthService
      */
     public function crearRespostaLogout(): JsonResponse
     {
-        // A. Crear resposta base de logout
         $resposta = response()->json(['message' => 'Logout correcte']);
-        // B. Esborrar cookie del token
         $resposta->cookie(
             $this->cookieNom,
             '',
@@ -120,7 +111,6 @@ class AuthService
             false,
             $this->sameSite
         );
-        // C. Esborrar cookie de rol
         $resposta->cookie(
             $this->roleCookieNom,
             '',

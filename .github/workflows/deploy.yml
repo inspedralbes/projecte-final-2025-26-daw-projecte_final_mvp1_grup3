@@ -108,7 +108,7 @@ jobs:
           # Copy env sample for tests
           cp .env.example .env
           php artisan key:generate --force
-          php artisan test --parallel || true
+          php artisan test tests/Feature/BasicRoutesTest.php
 
   # ─────────────────────────────────────────────────────────
   #  3. Deploy – SSH into server, pull & restart

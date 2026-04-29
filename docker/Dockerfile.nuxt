@@ -21,8 +21,8 @@ ENV NUXT_PUBLIC_SOCKET_URL=$SOCKET_URL
 
 RUN npm run build
 
-RUN mkdir -p .output/server/chunks/public && \
-    ln -s /app/.output/public/_nuxt /app/.output/server/chunks/public/_nuxt
+RUN mkdir -p .output/server/chunks && \
+    ln -s /app/.output/public /app/.output/server/chunks/public
 
 EXPOSE 3000
 CMD ["node", ".output/server/index.mjs"]

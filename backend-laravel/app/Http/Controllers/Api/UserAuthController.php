@@ -165,44 +165,40 @@ class UserAuthController extends Controller
     }
 
     /**
-     * Redirigeix a Google.
+     * Redirigeix a Google per autenticació.
      */
-    public function redirectToGoogle()
+    public function redirectToGoogle(): mixed
     {
-        return Socialite::driver('google')->stateless()->redirect();
+        return Socialite::driver('google')
+            ->stateless()
+            ->redirect();
     }
 
     /**
-     * Gestiona el callback de Google.
+     * Gestiona el callback de Google OAuth.
      */
-    public function handleGoogleCallback()
+    public function handleGoogleCallback(): mixed
     {
         try {
             $googleUser = Socialite::driver('google')->stateless()->user();
             $requiresOnboarding = false;
 
-            // 1. Cercar per google_id
             $usuari = User::where('google_id', $googleUser->getId())->first();
 
             if (!$usuari) {
-                // 2. Cercar per email (si té el mateix email però no google_id)
                 $usuari = User::where('email', 'ILIKE', $googleUser->getEmail())->first();
 
                 if ($usuari) {
-                    // Existeix per email, enllacem el google_id
                     $usuari->update(['google_id' => (string) $googleUser->getId()]);
                 } else {
-                    // 3. Crear nou usuari
                     $usuari = User::create([
-                        'nom' => $googleUser->getName() ?? $googleUser->getNickname() ?? 'Google User',
-                        'email' => $googleUser->getEmail(),
+                        'nom'       => $googleUser->getName() ?? $googleUser->getNickname() ?? 'Google User',
+                        'email'     => $googleUser->getEmail(),
                         'google_id' => (string) $googleUser->getId(),
-                        // No password for Google users initially
                     ]);
 
-                    // Crear ratxa inicial
                     Ratxa::create([
-                        'usuari_id' => $usuari->id,
+                        'usuari_id'    => $usuari->id,
                         'ratxa_actual' => 0,
                         'ratxa_maxima' => 0,
                     ]);
@@ -211,22 +207,21 @@ class UserAuthController extends Controller
             }
 
             if (!empty($usuari->prohibit)) {
-                return response()->json(['message' => 'El compte està prohibit'], 403);
+                return response()->json(['message' => 'El compte esta prohibit'], 403);
             }
 
             $token = JWTAuth::fromUser($usuari);
-            
+
             $frontendUrl = env('GOOGLE_FRONTEND_REDIRECT', 'http://localhost:3000/auth/google/redirect');
             $redirectUrl = $frontendUrl . '?token=' . $token . '&onboarding=' . ($requiresOnboarding ? '1' : '0');
 
             $resposta = redirect($redirectUrl);
             return $this->authService->attachAuthCookies($resposta, $token, 'user');
-
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('Error Google Login: ' . $e->getMessage());
             return response()->json([
                 'message' => 'Error en el login amb Google',
-                'error' => $e->getMessage()
+                'error'   => $e->getMessage(),
             ], 500);
         }
     }

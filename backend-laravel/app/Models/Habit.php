@@ -18,22 +18,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Habit extends Model
 {
-    /**
-     * Taula associada al model.
-     * @var string
-     */
     protected $table = 'habits';
 
-    /**
-     * Indica si el model ha de tenir timestamps automàtics.
-     * @var bool
-     */
     public $timestamps = false;
 
-    /**
-     * Atributs assignables de forma massiva.
-     * @var array
-     */
     protected $fillable = [
         'usuari_id',
         'plantilla_id',
@@ -46,6 +34,11 @@ class Habit extends Model
         'unitat',
         'icona',
         'color',
+        'metadata',
+    ];
+
+    protected $casts = [
+        'metadata' => 'array',
     ];
 
     //================================ MÈTODES / FUNCIONS ===========

@@ -1,4 +1,9 @@
-const { getOnboardingGenerateHandler, FALLBACK_HABITS } = require('../src/handlers/user/onboardingHandlers');
+const {
+  getOnboardingGenerateHandler,
+  FALLBACK_HABITS,
+  generarHabitsFallbackPerPerfil,
+  validarHabitsGenerats,
+} = require('../src/handlers/user/onboardingHandlers');
 
 describe('Onboarding Handler', () => {
   let mockGenAI;
@@ -128,7 +133,7 @@ describe('Onboarding Handler', () => {
       );
     });
 
-    it('should return at most 4 habits', async () => {
+    it('should return exactly 3 habits', async () => {
       const manyHabits = Array(6).fill({
         titol: 'Test Habit',
         categoria: 'salut',
@@ -156,7 +161,7 @@ describe('Onboarding Handler', () => {
       await handler(req, mockRes);
 
       const response = JSON.parse(mockRes.end.mock.calls[0][0]);
-      expect(response.habits.length).toBeLessThanOrEqual(4);
+      expect(response.habits.length).toBe(3);
     });
   });
 
@@ -173,6 +178,37 @@ describe('Onboarding Handler', () => {
         expect(habit).toHaveProperty('rutina');
         expect(habit).toHaveProperty('recompensa');
       });
+    });
+  });
+
+  describe('generarHabitsFallbackPerPerfil', () => {
+    it('should generate 3 contextual fallback habits', () => {
+      const habits = generarHabitsFallbackPerPerfil('aprenentatge', 'nit', 'temps', '30min');
+      expect(habits.length).toBe(3);
+      expect(habits[0].categoria).toBe('aprenentatge');
+      expect(habits[0].senyal).toBe('nit');
+      expect(habits[0].rutina).toEqual(expect.stringContaining('10-15 minuts'));
+    });
+  });
+
+  describe('validarHabitsGenerats', () => {
+    it('should keep max 3 unique habits and normalize senyal', () => {
+      const habits = validarHabitsGenerats(
+        [
+          { titol: 'Habit A', categoria: 'salut', senal: 'mati', rutina: 'r1', recompensa: 'x' },
+          { titol: 'Habit A', categoria: 'salut', senyal: 'mati', rutina: 'r2', recompensa: 'y' },
+          { titol: 'Habit B', categoria: 'salut', senyal: 'tarda', rutina: 'r3', recompensa: 'z' },
+          { titol: 'Habit C', categoria: 'salut', senyal: 'nit', rutina: 'r4', recompensa: 'k' },
+        ],
+        'salut',
+        'mati',
+        'estress',
+        '15min'
+      );
+
+      expect(habits.length).toBe(3);
+      expect(habits[0]).toHaveProperty('senyal');
+      expect(habits[0]).not.toHaveProperty('senal');
     });
   });
 });

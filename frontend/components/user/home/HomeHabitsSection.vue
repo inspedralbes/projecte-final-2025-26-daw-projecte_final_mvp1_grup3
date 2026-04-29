@@ -25,7 +25,9 @@
           :progress="obtenirProgres(h.id)"
           :completat-avui="habitCompletatAvui(h.id)"
           :esta-processant="estaProcessant(h.id)"
+          :clima-advers="esClimaAdversPerHabit(h)"
           @obrir-modal="$emit('obrir-modal-habit', $event)"
+          @obrir-detalls="$emit('obrir-detalls-habit', $event)"
         />
       </template>
     </div>
@@ -41,12 +43,22 @@ export default {
     UserHomeHomeHabitCard: UserHomeHomeHabitCard
   },
   props: {
-    habits: { type: Array, default: function () { return []; } },
-    estaCarregant: { type: Boolean, default: false },
-    errorMissatge: { type: String, default: '' },
-    obtenirProgres: { type: Function, required: true },
+    habits:             { type: Array,    default: function () { return []; } },
+    estaCarregant:      { type: Boolean,  default: false },
+    errorMissatge:      { type: String,   default: '' },
+    obtenirProgres:     { type: Function, required: true },
     habitCompletatAvui: { type: Function, required: true },
-    estaProcessant: { type: Function, default: function () { return false; } }
+    estaProcessant:     { type: Function, default: function () { return false; } },
+    weatherGlobal:      { type: Object,   default: null }
+  },
+  methods: {
+    esClimaAdversPerHabit: function (habit) {
+      var CATEGORIES_EXTERIOR = [1, 7, 8];
+      if (!this.weatherGlobal || this.weatherGlobal.suitable !== false) {
+        return false;
+      }
+      return CATEGORIES_EXTERIOR.indexOf(habit.categoriaId) >= 0;
+    }
   }
 };
 </script>

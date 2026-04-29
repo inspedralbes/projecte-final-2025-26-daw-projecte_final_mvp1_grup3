@@ -49,6 +49,8 @@ class User extends Model implements JWTSubject
         'motiu_prohibicio',
     ];
 
+    protected $casts = [];
+
     //================================ MÈTODES / FUNCIONS ===========
 
     /**

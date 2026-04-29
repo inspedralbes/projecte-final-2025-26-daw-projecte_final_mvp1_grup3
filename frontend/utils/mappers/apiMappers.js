@@ -37,7 +37,9 @@ function mapHabitFromApi(hàbit) {
   return {
     id: hàbit.id,
     nom: hàbit.titol || "Sense nom",
+    titol: hàbit.titol || "Sense nom",
     frequencia: freqMapejada,
+    frequenciaTipus: hàbit.frequencia_tipus || "",
     recordatori: hàbit.recordatori || "",
     icona: hàbit.icona || "📝",
     color: hàbit.color || "#10B981",
@@ -48,6 +50,7 @@ function mapHabitFromApi(hàbit) {
     usuariId: hàbit.usuari_id || null,
     plantillaId: hàbit.plantilla_id || null,
     categoriaId: hàbit.categoria_id || null,
+    metadata: (hàbit.metadata && typeof hàbit.metadata === "object") ? hàbit.metadata : null,
     completat: !!hàbit.completat,
     descripcio: (hàbit.frequencia_tipus || "") + " - Dificultat: " + (hàbit.dificultat || ""),
     recompensaXP: XP_PER_DIFICULTAT[hàbit.dificultat] || XP_BASE,
@@ -70,7 +73,10 @@ function mapHabitFromApiForHome(h) {
     recompensaMonedes: MONEDES_PER_DIFICULTAT[h.dificultat] || 2,
     dificultat: h.dificultat,
     objectiuVegades: h.objectiu_vegades || 1,
-    unitat: h.unitat || ""
+    unitat: h.unitat || "",
+    categoriaId: h.categoria_id || null,
+    frequenciaTipus: h.frequencia_tipus || "",
+    metadata: (h.metadata && typeof h.metadata === "object") ? h.metadata : null
   };
 }
 

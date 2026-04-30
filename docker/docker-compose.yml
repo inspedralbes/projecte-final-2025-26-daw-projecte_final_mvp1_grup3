@@ -47,6 +47,9 @@ services:
     environment:
       APP_ENV: production
       APP_DEBUG: "false"
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-loopy_secret}
     volumes:
       - ../backend-laravel:/var/www
       - /var/www/vendor
@@ -89,6 +92,9 @@ services:
     environment:
       APP_ENV: production
       APP_DEBUG: "false"
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-loopy_secret}
     volumes:
       - ../backend-laravel:/var/www
       - /var/www/vendor
@@ -113,6 +119,9 @@ services:
     environment:
       APP_ENV: production
       APP_DEBUG: "false"
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-loopy_secret}
     volumes:
       - ../backend-laravel:/var/www
       - /var/www/vendor
@@ -139,6 +148,9 @@ services:
       APP_ENV: production
       APP_DEBUG: "false"
       REDIS_CLIENT: phpredis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-loopy_secret}
     volumes:
       - ../backend-laravel:/var/www
       - /var/www/vendor
@@ -163,6 +175,9 @@ services:
     environment:
       APP_ENV: production
       APP_DEBUG: "false"
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-loopy_secret}
     volumes:
       - ../backend-laravel:/var/www
       - /var/www/vendor
@@ -187,6 +202,9 @@ services:
     environment:
       APP_ENV: production
       APP_DEBUG: "false"
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-loopy_secret}
     volumes:
       - ../backend-laravel:/var/www
       - /var/www/vendor
@@ -213,6 +231,9 @@ services:
       NODE_ENV: production
       PORT: 3001
       LARAVEL_URL: http://backend-laravel:8000
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-loopy_secret}
     depends_on:
       redis:
         condition: service_healthy
@@ -222,8 +243,8 @@ services:
       context: ../frontend
       dockerfile: ../docker/Dockerfile.nuxt
       args:
-        API_URL: ${API_URL:-http://localhost:8000}
-        SOCKET_URL: ${SOCKET_URL:-http://localhost:3001}
+        API_URL: ${API_URL:-http://localhost}
+        SOCKET_URL: ${SOCKET_URL:-http://localhost}
     container_name: loopy-nuxt
     restart: unless-stopped
     working_dir: /app
@@ -235,8 +256,8 @@ services:
       NODE_ENV: production
       NUXT_HOST: 0.0.0.0
       NUXT_PORT: 3000
-      NUXT_PUBLIC_SOCKET_URL: ${SOCKET_URL}
-      NUXT_PUBLIC_API_URL: ${API_URL}
+      NUXT_PUBLIC_SOCKET_URL: ${SOCKET_URL:-http://localhost}
+      NUXT_PUBLIC_API_URL: ${API_URL:-http://localhost}
       NITRO_PORT: 3000
     depends_on:
       - backend-node

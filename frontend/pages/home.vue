@@ -1,13 +1,13 @@
 <template>
-  <main class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-8">
+  <main class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-4 sm:p-6 lg:p-8">
     <div class="max-w-7xl mx-auto">
       <!-- Grid Principal -->
-      <div class="grid grid-cols-12 gap-6">
+      <div class="grid grid-cols-1 gap-4 lg:grid-cols-12 lg:gap-6">
         <!-- COSTAT ESQUERRE: Missions i Perfil -->
-        <div class="col-span-3 space-y-6">
+        <div class="space-y-4 lg:col-span-3 lg:space-y-6">
           <!-- Targeta Missions Diàries -->
           <div
-            class="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-orange-400"
+            class="bg-white rounded-2xl shadow-lg p-4 sm:p-6 border-l-4 border-orange-400"
           >
             <div class="flex items-center gap-2 mb-4">
               <div
@@ -69,13 +69,13 @@
           </div>
 
           <!-- Targeta Últims Assoliments -->
-          <div class="bg-white rounded-2xl shadow-lg p-6">
+          <div class="bg-white rounded-2xl shadow-lg p-4 sm:p-6">
             <h3
               class="text-xs font-bold text-gray-800 uppercase tracking-wide mb-4"
             >
               Últims Assoliments
             </h3>
-            <div class="flex justify-around items-center relative group min-h-[48px]">
+            <div class="flex justify-around items-center relative group min-h-[48px] pr-8">
               <template v-if="ultimsLogros.length > 0">
                 <div
                   v-for="logro in ultimsLogros"
@@ -94,9 +94,9 @@
               </template>
               
               <!-- Botó per veure tots els logros -->
-              <button 
+              <button
                 @click="obrirModalLogros"
-                class="absolute -right-2 -bottom-2 w-8 h-8 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 hover:scale-110 transition flex items-center justify-center font-bold text-xl"
+                class="absolute right-0 bottom-0 w-8 h-8 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 hover:scale-110 transition flex items-center justify-center font-bold text-xl"
                 title="Veure tots els logros"
               >
                 +
@@ -106,7 +106,7 @@
 
           <!-- Icona Ruleta Diària -->
           <div
-            class="bg-white rounded-2xl shadow-lg p-4 flex items-center justify-center cursor-pointer transition"
+            class="bg-white rounded-2xl shadow-lg p-4 flex items-center justify-center cursor-pointer transition min-h-12"
             :class="classeIconaRuleta"
             @click="obrirModalRuleta"
             title="Ruleta diària"
@@ -116,22 +116,22 @@
         </div>
 
         <!-- CENTRE: El teu Monstre -->
-        <div class="col-span-6 space-y-6">
+        <div class="space-y-4 lg:col-span-6 lg:space-y-6">
           <!-- Targeta El teu Monstre -->
           <div
-            class="rounded-2xl shadow-lg p-8 flex flex-col items-center justify-center relative"
+            class="rounded-2xl shadow-lg p-4 sm:p-6 lg:p-8 flex flex-col items-center justify-center relative"
           >
             <!-- Contingut -->
             <div class="relative z-10 w-full">
-              <div class="flex items-center justify-between w-full mb-4">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between w-full mb-4 gap-3">
                 <div>
-                  <h2 class="text-lg font-bold text-gray-800">
+                  <h2 class="text-base sm:text-lg font-bold text-gray-800">
                     EL TEU MONSTRE
                   </h2>
                   <p class="text-xs text-gray-500">Lv 1</p>
                 </div>
-                <div class="text-right">
-                  <p class="text-2xl font-bold">Ratxa: {{ ratxa }}</p>
+                <div class="text-left sm:text-right">
+                  <p class="text-xl sm:text-2xl font-bold">Ratxa: {{ ratxa }}</p>
                   <p class="text-xs font-bold text-yellow-600 mb-1">Ratxa Màxima: {{ ratxaMaxima }}</p>
                   <p class="text-sm text-green-600">XP Total: {{ xpTotal }}</p>
                   <p class="text-sm text-amber-600">Monedes: {{ monedes }}</p>
@@ -140,12 +140,11 @@
 
               <!-- Imatge Monstre -->
               <div
-                class="rounded-2xl shadow-lg p-8 flex flex-col items-center justify-center relative"
+                class="rounded-2xl shadow-lg p-4 sm:p-6 lg:p-8 flex flex-col items-center justify-center relative w-full max-w-md mx-auto"
                 :style="estilFons"
-                style="min-width: 450px"
               >
                 <div
-                  class="w-40 h-40 rounded-xl flex items-center justify-center mb-6 overflow-hidden mx-auto"
+                  class="w-28 h-28 sm:w-36 sm:h-36 lg:w-40 lg:h-40 rounded-xl flex items-center justify-center mb-4 sm:mb-6 overflow-hidden mx-auto"
                 >
                   <img
                     v-if="imatgeMascota"
@@ -163,10 +162,10 @@
         </div>
 
         <!-- COSTAT DRET: Hàbits -->
-        <div class="col-span-3 space-y-6">
+        <div class="space-y-4 lg:col-span-3 lg:space-y-6">
           <!-- Capçalera Hàbits -->
-          <div class="flex items-center justify-between">
-            <h2 class="text-lg font-bold text-gray-800">HÀBITS</h2>
+          <div class="flex items-center justify-between gap-3">
+            <h2 class="text-base sm:text-lg font-bold text-gray-800">HÀBITS</h2>
             <NuxtLink
               to="/habits"
               class="text-blue-500 text-xs font-semibold hover:underline"
@@ -211,9 +210,9 @@
               <div
                 v-for="hàbit in habitsDelDia"
                 :key="hàbit.id"
-                class="bg-white rounded-lg p-4 shadow flex items-center justify-between transition-all hover:shadow-md"
+                class="bg-white rounded-lg p-4 shadow flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all hover:shadow-md"
               >
-                <div class="flex-1 mr-3">
+                <div class="flex-1 sm:mr-3 w-full">
                   <p class="font-semibold text-gray-800">{{ hàbit.nom }}</p>
                   <p class="text-xs text-gray-500 truncate">
                     {{ hàbit.descripcio }} • +{{ hàbit.recompensaXP }} XP
@@ -231,7 +230,7 @@
                 <button
                   @click="obrirModalHabit(hàbit)"
                   :disabled="comvprovarSiSestaProcessant(hàbit.id)"
-                  class="px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed min-w-[110px]"
+                  class="w-full sm:w-auto px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed min-w-[110px]"
                 >
                   <span v-if="comvprovarSiSestaProcessant(hàbit.id)">...</span>
                   <span v-else>Progrés</span>
@@ -263,10 +262,10 @@
     />
 
     <!-- MODAL DE RULETA DIARIA -->
-    <div v-if="esObertModalRuleta" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div v-if="esObertModalRuleta" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
       <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="tancarModalRuleta"></div>
 
-      <div class="bg-white rounded-3xl w-full max-w-xl p-6 shadow-2xl relative">
+      <div class="bg-white rounded-3xl w-full max-w-xl p-4 sm:p-6 shadow-2xl relative">
         <button
           @click="tancarModalRuleta"
           class="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-600"
@@ -275,7 +274,7 @@
         </button>
 
         <div class="flex flex-col items-center gap-4">
-          <h2 class="text-lg font-bold text-gray-800">Ruleta diària</h2>
+          <h2 class="text-base sm:text-lg font-bold text-gray-800">Ruleta diària</h2>
           <p class="text-xs text-gray-500">Fes click a la ruleta per tirar</p>
 
           <div class="relative">
@@ -305,18 +304,18 @@
     </div>
 
     <!-- MODAL DE LOGROS (Achivements) -->
-    <div v-if="esObertModalLogros" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div v-if="esObertModalLogros" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
       <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="tancarModalLogros"></div>
       
-      <div class="bg-white rounded-3xl w-full max-w-4xl max-h-[85vh] overflow-hidden shadow-2xl relative animate-in fade-in zoom-in duration-200 flex flex-col">
+      <div class="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] sm:max-h-[85vh] overflow-hidden shadow-2xl relative animate-in fade-in zoom-in duration-200 flex flex-col">
         <!-- Capçalera Modal -->
-        <div class="p-6 border-b border-gray-100 flex items-center justify-between bg-white sticky top-0 z-10">
+        <div class="p-4 sm:p-6 border-b border-gray-100 flex items-center justify-between bg-white sticky top-0 z-10 gap-3">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center text-xl">
               🏆
             </div>
             <div>
-              <h2 class="text-xl font-bold text-gray-800">Tots els Logros</h2>
+              <h2 class="text-lg sm:text-xl font-bold text-gray-800">Tots els Logros</h2>
               <p class="text-xs text-gray-500">Descobreix nous reptes i medalles</p>
             </div>
           </div>
@@ -326,7 +325,7 @@
         </div>
 
         <!-- Contingut Modal (Bento Grid) -->
-        <div class="p-8 overflow-y-auto bg-gray-50/50 flex-1">
+        <div class="p-4 sm:p-8 overflow-y-auto bg-gray-50/50 flex-1">
           <div v-if="logroStore.loading" class="flex flex-col items-center justify-center py-20 gap-4">
             <div class="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
             <p class="text-gray-500 font-medium">Carregant la teva vitrina...</p>
@@ -1250,8 +1249,8 @@ export default {
 <style scoped>
 /* Estils locals per a la pàgina d'inici */
 .roulette-wheel {
-  width: 280px;
-  height: 280px;
+  width: min(78vw, 280px);
+  height: min(78vw, 280px);
   border-radius: 50%;
   border: 6px solid #ffffff;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
@@ -1283,14 +1282,22 @@ export default {
   top: 50%;
   left: 50%;
   transform-origin: center;
-  width: 90px;
-  margin-left: -45px;
-  font-size: 10px;
+  width: 72px;
+  margin-left: -36px;
+  font-size: 9px;
   font-weight: 700;
   color: #111827;
   text-align: center;
   user-select: none;
   pointer-events: none;
+}
+
+@media (min-width: 640px) {
+  .roulette-label {
+    width: 90px;
+    margin-left: -45px;
+    font-size: 10px;
+  }
 }
 </style>
 

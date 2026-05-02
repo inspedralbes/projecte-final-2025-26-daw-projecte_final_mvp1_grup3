@@ -23,6 +23,9 @@ export async function authFetch(url, options) {
 
   // C. Preparar headers i opcions del fetch
   headers = Object.assign({}, authStore.getAuthHeaders(), opts.headers || {});
+  if (opts.body && !headers['Content-Type']) {
+    headers['Content-Type'] = 'application/json';
+  }
 
   var fetchOpts = Object.assign({}, opts, {
     headers: headers,
@@ -41,7 +44,9 @@ export async function authFetch(url, options) {
     return resposta;
   }
 
-  // F. Reintentar la petició original
+  // F. Reintentar la petició original amb headers actualitzats (token nou)
+  headers = Object.assign({}, authStore.getAuthHeaders(), opts.headers || {});
+  fetchOpts = Object.assign({}, opts, { headers: headers, credentials: 'include' });
   resposta = await fetch(fullUrl, fetchOpts);
   return resposta;
 }

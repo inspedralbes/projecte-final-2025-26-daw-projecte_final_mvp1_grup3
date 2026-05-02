@@ -6,6 +6,7 @@
 definePageMeta({ layout: 'admin' });
 
 import { ref } from 'vue';
+import { authFetch, getBaseUrl } from '~/composables/useApi.js';
 
 // 1. DADES (VAR)
 var config = useRuntimeConfig();
@@ -72,13 +73,13 @@ async function guardarCanvis() {
   }
 
   try {
-    var res = await $fetch(url, {
+    var fullUrl = getBaseUrl() + url;
+    var resposta = await authFetch(fullUrl, {
       method: popupObert.value === 'editar_perfil' ? 'PUT' : 'PATCH',
-      baseURL: config.public.apiUrl,
-      headers: authStore.getAuthHeaders(),
-      body: body
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
     });
-    
+    var res = await resposta.json();
     if (res.success) {
       refreshAdmin();
       tancaPopup();

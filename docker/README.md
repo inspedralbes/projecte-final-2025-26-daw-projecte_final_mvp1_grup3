@@ -22,10 +22,10 @@ Servicios:
 
 ## Worker Redis (Laravel → feedback_channel)
 
-Para que Laravel consuma la cola `habits_queue` y publique en `feedback_channel`, ejecutar en otro terminal:
+El worker unificat s'inicia automàticament amb el servei `backend-laravel-redis-worker`. Processa totes les cues Redis (habits, plantilles, admin, ruleta) i publica a `feedback_channel`. Per a execució manual:
 
 ```bash
-docker compose exec backend-laravel php artisan habits:redis-worker
+docker compose exec backend-laravel php artisan redis:unified-worker
 ```
 
 ## Base de datos

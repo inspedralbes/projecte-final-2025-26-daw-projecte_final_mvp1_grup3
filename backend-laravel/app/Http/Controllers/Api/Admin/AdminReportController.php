@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Admin;
 //================================ NAMESPACES / IMPORTS ============
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Admin\AdminReportResource;
 use App\Models\Report;
 use Illuminate\Http\JsonResponse;
 
@@ -31,29 +32,19 @@ class AdminReportController extends Controller
             ->orderByDesc('created_at')
             ->paginate($perPage, ['*'], 'page', $page);
 
-        // B. Transformació final
-        $formattedData = [];
-        foreach ($paginator->items() as $r) {
-            $formattedData[] = [
-                'id' => $r->id,
-                'usuari' => $r->usuari ? $r->usuari->nom : 'Sistema',
-                'tipus' => $r->tipus,
-                'contingut' => $r->contingut,
-                'post_id' => $r->post_id,
-                'data' => $r->created_at ? $r->created_at->diffForHumans() : 'revent'
-            ];
-        }
+        $items = AdminReportResource::collection($paginator->items())->resolve(request());
+        $dataArray = $items['data'] ?? $items;
 
         return response()->json([
             'success' => true,
             'data' => [
-                'data' => $formattedData,
+                'data' => $dataArray,
                 'meta' => [
                     'current_page' => $paginator->currentPage(),
                     'total' => $paginator->total(),
                     'per_page' => $paginator->perPage(),
-                ]
-            ]
+                ],
+            ],
         ]);
     }
 }

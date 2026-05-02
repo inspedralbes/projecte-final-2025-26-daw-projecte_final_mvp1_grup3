@@ -6,6 +6,7 @@
 definePageMeta({ layout: 'admin' });
 
 import { ref, computed } from 'vue';
+import { authFetch, getBaseUrl } from '~/composables/useApi.js';
 
 // 1. DADES REACTIVES (VAR)
 var { $socket } = useNuxtApp();
@@ -96,9 +97,8 @@ function obrePopup(nom) {
   }
   if (nom === 'usuaris_totals') {
     carregantLlista.value = true;
-    $fetch('/api/admin/usuaris/tots/1/50/0/-', {
-      baseURL: config.public.apiUrl,
-      headers: useAuthStore().getAuthHeaders()
+    authFetch(getBaseUrl() + '/api/admin/usuaris/tots/1/50/0/-').then(function(resposta) {
+      return resposta.json();
     }).then(function(res) {
       if (res.success) usuarisLlista.value = res.data.data;
       carregantLlista.value = false;

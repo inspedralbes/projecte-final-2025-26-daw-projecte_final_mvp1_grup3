@@ -203,16 +203,16 @@ class PlantillaService
         if ($plantilla) {
             if (!empty($habitsIds)) {
                 $plantilla->habits()->attach($habitsIds);
+                file_put_contents('/tmp/plantilla_service_debug.log', "PlantillaService - Attached " . count($habitsIds) . " habits to template ID: " . $plantilla->id . "\n", FILE_APPEND);
             }
         }
-
-        file_put_contents('/tmp/plantilla_service_debug.log', "PlantillaService - crearPlantilla result: " . ($plantilla ? json_encode($plantilla->toArray()) : "null") . "\n", FILE_APPEND);
 
         // F. Retorn de la plantilla amb els hàbits carregats
         return $plantilla->load('habits');
     }
 
     /**
+
      * Actualitza una plantilla existent al sistema, validant la propietat.
      *
      * @param int $usuariId

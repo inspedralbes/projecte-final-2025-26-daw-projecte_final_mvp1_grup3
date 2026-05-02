@@ -99,29 +99,34 @@ class RouletteService
             }
         }
 
-        // D. Validar premi rebut del frontend
+        // D. Obtenir premi: del payload si és vàlid, sinó triar-ne un d'aleatori (servidor = font de veritat)
         $premi = $this->obtenirPremiDelPayload($dades);
         if ($premi === null) {
-            $this->feedbackService->publicarPayload([
-                'type' => 'ROULETTE',
-                'action' => 'SPIN',
-                'user_id' => $usuariId,
-                'success' => false,
-                'roulette_result' => [
-                    'error' => 'Premi invàlid',
-                    'can_spin_roulette' => true,
-                ],
-            ]);
-            return;
+            $premis = $this->obtenirPremis();
+            if (empty($premis)) {
+                $this->feedbackService->publicarPayload([
+                    'type' => 'ROULETTE',
+                    'action' => 'SPIN',
+                    'user_id' => $usuariId,
+                    'success' => false,
+                    'roulette_result' => [
+                        'error' => 'Cap premi disponible',
+                        'can_spin_roulette' => true,
+                    ],
+                ]);
+                return;
+            }
+            $index = array_rand($premis);
+            $premi = $premis[$index];
         }
 
         // E. Preparar increments de recompensa
         $incrementXp = 0;
         $incrementMonedes = 0;
         if ($premi['type'] === 'xp') {
-            $incrementXp = (int) $premi['amount'];
+            $incrementXp = (int) ($premi['amount'] ?? 0);
         } elseif ($premi['type'] === 'coins') {
-            $incrementMonedes = (int) $premi['amount'];
+            $incrementMonedes = (int) ($premi['amount'] ?? 0);
         }
 
         // F. Aplicar la recompensa i guardar última tirada

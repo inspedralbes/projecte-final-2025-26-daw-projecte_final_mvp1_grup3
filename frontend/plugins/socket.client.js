@@ -1,9 +1,11 @@
 import { io } from 'socket.io-client';
+import { useFriendshipStore } from '~/stores/useFriendshipStore.js';
 
 /**
  * Plugin de Socket.io per a Nuxt 3.
  * Injecta $socket a tota l'aplicació.
- * segueix les regles ES5 per al contingut de les funcions si és possible.
+ * Conecta quan el token està disponible (després de loadFromStorage o login).
+ * Segueix les regles ES5 per al contingut de les funcions si és possible.
  */
 export default defineNuxtPlugin(function (nuxtApp) {
     var config = useRuntimeConfig();
@@ -16,31 +18,88 @@ export default defineNuxtPlugin(function (nuxtApp) {
         transports: ['websocket']
     });
 
+    var authRefreshRetried = false;
+
     // Listener global per a confirmacions d'admin
     socket.on('admin_action_confirmed', function (payload) {
         console.log('[Socket] Acció Admin Confirmada:', payload);
-        // Aquí es podria disparar un event local o actualitzar un store de Pinia
+    });
+
+    // Listeners per al fòrum social (temps real)
+    socket.on('new_post', function (post) {
+        var socialStore = useSocialStore();
+        socialStore.handleNewPost(post);
+    });
+
+    socket.on('new_comment', function (comment) {
+        var socialStore = useSocialStore();
+        socialStore.handleNewComment(comment);
+    });
+
+    socket.on('like_update', function (data) {
+        var socialStore = useSocialStore();
+        socialStore.handleLikeUpdate(data);
+    });
+
+    socket.on('new_friend_request', function (data) {
+        console.log('[Socket] Nova sol·licitud d\'amistat:', data);
+        var friendshipStore = useFriendshipStore();
+        if (friendshipStore) {
+            friendshipStore.fetchPendingRequests();
+        }
+    });
+
+    socket.on('friend_request_accepted', function (data) {
+        console.log('[Socket] Sol·licitud d\'amistat acceptada:', data);
+        var friendshipStore = useFriendshipStore();
+        if (friendshipStore) {
+            friendshipStore.fetchFriendsList();
+        }
     });
 
     socket.on('connect_error', function (err) {
         console.error('[Socket] Error de connexió:', err.message);
+        // Si falla per auth, intentar refrescar token i reconnectar una vegada
+        if (err.message === 'Authentication required' && !authRefreshRetried) {
+            authRefreshRetried = true;
+            authStore.refrescarSessio().then(function (ok) {
+                if (ok) {
+                    socket.auth = { token: authStore.token || '' };
+                    socket.connect();
+                }
+            });
+        }
     });
 
-    // Permet reconnectar amb el token actual (després del login)
-    function updateSocketAuth() {
-        var authStore = useAuthStore();
-        socket.auth = { token: authStore.token || '' };
-        socket.disconnect();
-        if (authStore.token && authStore.isAuthenticated) {
+    socket.on('connect', function () {
+        authRefreshRetried = false;
+    });
+
+    // Connecta quan el token està disponible
+    function tryConnect() {
+        var auth = useAuthStore();
+        if (auth.token && auth.isAuthenticated && !socket.connected) {
+            socket.auth = { token: auth.token };
             socket.connect();
         }
     }
 
+    // Permet reconnectar amb el token actual (després del login)
+    function updateSocketAuth() {
+        var auth = useAuthStore();
+        authRefreshRetried = false;
+        socket.auth = { token: auth.token || '' };
+        socket.disconnect();
+        tryConnect();
+    }
+
     if (typeof window !== 'undefined') {
-        socket.auth = { token: authStore.token || '' };
-        if (authStore.token && authStore.isAuthenticated) {
-            socket.connect();
-        }
+        // Endarrerir la connexió fins que l'auth estigui hidratat (0.auth-init carrega localStorage)
+        nuxtApp.hook('app:mounted', function () {
+            setTimeout(function () {
+                tryConnect();
+            }, 150);
+        });
     }
 
     return {

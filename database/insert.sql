@@ -39,7 +39,8 @@ INSERT INTO MISSIOS_DIARIES (id, titol, tipus_comprovacio, parametres) VALUES
 (12, 'Completa 1 hàbit de lectura', 'hab_categoria', '{"categoria_id": 4}'),
 (13, 'Completa 1 hàbit de benestar', 'hab_categoria', '{"categoria_id": 5}'),
 (14, 'Completa el primer hàbit del dia', 'hab_primer_del_dia', '{}'),
-(15, 'Completa 1 hàbit de dificultat mitjana o alta', 'hab_dificultat_multi', '{"dificultats": ["media","dificil"]}');
+(15, 'Completa 1 hàbit de dificultat mitjana o alta', 'hab_dificultat_multi', '{"dificultats": ["media","dificil"]}'),
+(16, 'Completa el teu primer hàbit!', 'onboarding_primer_habit', '{"xp_bonus": 50}');
 
 -- La missió diària s'assigna pel backend (GamificationService) a la primera petició game-state
 SELECT setval('missios_diaries_id_seq', (SELECT COALESCE(MAX(id), 1) FROM MISSIOS_DIARIES));
@@ -181,9 +182,9 @@ SELECT 1, id, 1 FROM HABITS;
 -- INSERT INTO REGISTRE_ACTIVITAT (habit_id, acabado, xp_guanyada)
 -- SELECT id, true, 10 FROM HABITS;
 
--- 6. RATXES
+-- 6. RATXES (ultima_data NULL per permetre que el primer hàbit completat incrementi la ratxa)
 INSERT INTO RATXES (usuari_id, ratxa_actual, ratxa_maxima, ultima_data)
-VALUES (1, 0, 0, CURRENT_TIMESTAMP);
+VALUES (1, 0, 0, NULL);
 
 -- 8. PREGUNTES DE REGISTRE (PAS 2)
 -- ----------------------------------------------------------

@@ -1,0 +1,143 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e1]:
+  - generic [ref=e5]:
+    - banner [ref=e6]:
+      - navigation [ref=e7]:
+        - link "Loopy logo Loopy" [ref=e8] [cursor=pointer]:
+          - /url: /home
+          - img "Loopy logo" [ref=e9]
+          - generic [ref=e10]: Loopy
+        - list [ref=e11]:
+          - listitem [ref=e12]:
+            - link "Home" [ref=e13] [cursor=pointer]:
+              - /url: /home
+          - listitem [ref=e14]:
+            - link "Create" [ref=e15] [cursor=pointer]:
+              - /url: /habits
+          - listitem [ref=e16]:
+            - link "Catalog" [ref=e17] [cursor=pointer]:
+              - /url: /plantilles
+          - listitem [ref=e18]:
+            - link "Forum" [ref=e19]:
+              - /url: javascript:void(0)
+          - listitem [ref=e20]:
+            - link "Profile" [ref=e21] [cursor=pointer]:
+              - /url: /perfil
+        - generic [ref=e22]:
+          - button "English" [expanded] [ref=e25] [cursor=pointer]:
+            - text: English
+            - img [ref=e26]
+          - button "Logout" [ref=e28] [cursor=pointer]:
+            - img [ref=e29]
+    - main [ref=e31]:
+      - generic [ref=e32]:
+        - generic [ref=e34]:
+          - link "←" [ref=e35] [cursor=pointer]:
+            - /url: /home
+          - heading "Create Habit" [level=1] [ref=e36]
+        - generic [ref=e37]:
+          - generic [ref=e38]:
+            - generic [ref=e39]:
+              - generic [ref=e40]:
+                - generic [ref=e41]: ✍️
+                - heading "Habit Details" [level=2] [ref=e42]
+              - generic [ref=e43]:
+                - generic [ref=e44]:
+                  - generic [ref=e45]: Habit name
+                  - 'textbox "Ex: Drink 2L of water, Read 30 min..." [ref=e46]'
+                - generic [ref=e47]:
+                  - generic [ref=e48]: Motivation (Optional)
+                  - textbox "Why do you want to start this habit?" [ref=e49]
+                - generic [ref=e50]:
+                  - generic [ref=e51]:
+                    - generic [ref=e52]: Difficulty
+                    - combobox [ref=e53] [cursor=pointer]:
+                      - option "Easy" [selected]
+                      - option "Medium"
+                      - option "Hard"
+                  - generic [ref=e54]:
+                    - generic [ref=e55]:
+                      - generic [ref=e56]: Daily goal
+                      - spinbutton [ref=e57]: "1"
+                    - generic [ref=e58]:
+                      - generic [ref=e59]: Unit
+                      - textbox "times, minutes, km..." [ref=e60]: vegades
+            - generic [ref=e61]:
+              - generic [ref=e62]:
+                - generic [ref=e63]: 📅
+                - heading "Planning" [level=2] [ref=e64]
+              - generic [ref=e66]:
+                - generic [ref=e67]:
+                  - generic [ref=e68]: Frequency
+                  - combobox [ref=e69] [cursor=pointer]:
+                    - option "Daily" [selected]
+                    - option "Weekly"
+                    - option "Specific Days"
+                - generic [ref=e70]:
+                  - generic [ref=e71]: Reminder
+                  - textbox [ref=e72]: 08:00
+            - generic [ref=e73]:
+              - generic [ref=e74]:
+                - generic [ref=e75]: 📂
+                - heading "Category" [level=2] [ref=e76]
+              - generic [ref=e77]:
+                - button "🏃 Physical Activity" [ref=e78] [cursor=pointer]:
+                  - generic [ref=e79]: 🏃
+                  - generic [ref=e80]: Physical Activity
+                - button "🥗 Nutrition" [ref=e81] [cursor=pointer]:
+                  - generic [ref=e82]: 🥗
+                  - generic [ref=e83]: Nutrition
+                - button "📚 Study" [ref=e84] [cursor=pointer]:
+                  - generic [ref=e85]: 📚
+                  - generic [ref=e86]: Study
+                - button "📖 Reading" [active] [ref=e87] [cursor=pointer]:
+                  - generic [ref=e88]: 📖
+                  - generic [ref=e89]: Reading
+                - button "🧘 Wellness" [ref=e90] [cursor=pointer]:
+                  - generic [ref=e91]: 🧘
+                  - generic [ref=e92]: Wellness
+                - button "✨ Habit Improvement" [ref=e93] [cursor=pointer]:
+                  - generic [ref=e94]: ✨
+                  - generic [ref=e95]: Habit Improvement
+                - button "🏠 Home" [ref=e96] [cursor=pointer]:
+                  - generic [ref=e97]: 🏠
+                  - generic [ref=e98]: Home
+                - button "🎨 Hobby" [ref=e99] [cursor=pointer]:
+                  - generic [ref=e100]: 🎨
+                  - generic [ref=e101]: Hobby
+            - generic [ref=e102]:
+              - generic [ref=e103]:
+                - generic [ref=e104]: 🎨
+                - heading "Style" [level=2] [ref=e105]
+              - generic [ref=e106]:
+                - generic [ref=e107]: Color
+                - generic [ref=e108]:
+                  - button [ref=e109] [cursor=pointer]
+                  - button [ref=e110] [cursor=pointer]
+                  - button [ref=e111] [cursor=pointer]
+                  - button [ref=e112] [cursor=pointer]
+                  - button [ref=e113] [cursor=pointer]
+                  - button [ref=e114] [cursor=pointer]
+                  - button [ref=e115] [cursor=pointer]
+                  - button [ref=e116] [cursor=pointer]
+            - button "＋ Create Habit" [ref=e117] [cursor=pointer]:
+              - generic [ref=e118]: ＋
+              - text: Create Habit
+          - generic [ref=e120]:
+            - generic [ref=e121]:
+              - generic [ref=e122]: ✨
+              - heading "My Habits" [level=2] [ref=e123]
+            - generic [ref=e124]:
+              - paragraph [ref=e125]: You don't have any habits yet.
+              - paragraph [ref=e126]: Add a new one!
+  - generic [ref=e127]:
+    - button "Toggle Nuxt DevTools" [ref=e128] [cursor=pointer]:
+      - img [ref=e129]
+    - generic "Page load time" [ref=e132]:
+      - generic [ref=e133]: "53"
+      - generic [ref=e134]: ms
+    - button "Toggle Component Inspector" [ref=e136] [cursor=pointer]:
+      - img [ref=e137]
+```

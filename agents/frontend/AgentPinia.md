@@ -5,6 +5,8 @@ Aquest document defineix com s'ha de gestionar l'estat global de l'aplicació mi
 ## 1. Objectiu de l'Agent
 Centralitzar les dades de l'aplicació (Usuari, Hàbits, Mascota) i gestionar la sincronització amb el Backend (Laravel/Node) sense bloquejar la interfície d'usuari.
 
+**Arquitectura**: Els composables encapsulen la lògica de domini i poden delegar a les stores. `useHabitStore` és la **font única** d'hàbits. Per transformar dades de l'API, usar `utils/mappers/apiMappers.js` (mapHabitFromApi, mapPlantillaFromApi, etc.).
+
 ## 2. Definició de Stores
 Les stores s'han de definir a la carpeta `stores/`.
 - S'ha d'utilitzar la sintaxi de **Setup Stores** (`defineStore` amb funció), però respectant les regles de `AgentJavascript` (ES5 `var`, `function`).

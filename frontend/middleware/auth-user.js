@@ -13,6 +13,6 @@ export default defineNuxtRouteMiddleware(function (to, from) {
 
   // Redirigir a Login si no hi ha token o el rol no és user
   if (role !== 'user') {
-    return navigateTo('/Login');
+    return navigateTo('/auth/login');
   }
 });

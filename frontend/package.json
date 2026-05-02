@@ -7,11 +7,14 @@
     "build": "nuxt build",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
-    "preview": "nuxt preview"
+    "preview": "nuxt preview",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed"
   },
   "dependencies": {
+    "@nuxtjs/i18n": "^8.3.1",
     "@pinia/nuxt": "^0.5.4",
-    "nuxt": "^3.11.2",
+    "nuxt": "3.10.3",
     "pinia": "^2.1.7",
     "socket.io-client": "^4.7.4",
     "sweetalert2": "^11.10.0",
@@ -24,5 +27,13 @@
     "autoprefixer": "^10.4.17",
     "postcss": "^8.4.32",
     "tailwindcss": "^3.4.1"
+  },
+  "overrides": {
+    "unhead": "1.8.10",
+    "@unhead/vue": "1.8.10",
+    "@unhead/dom": "1.8.10",
+    "@unhead/ssr": "1.8.10",
+    "@unhead/schema": "1.8.10",
+    "@unhead/shared": "1.8.10"
   }
 }

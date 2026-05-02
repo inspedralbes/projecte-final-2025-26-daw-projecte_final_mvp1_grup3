@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Admin;
 //================================ NAMESPACES / IMPORTS ============
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Admin\AdminNotificacioResource;
 use App\Models\AdminNotificacio;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -54,9 +55,11 @@ class AdminNotificacioController extends Controller
         $query->orderByDesc('data');
         $paginator = $query->paginate($perPage, ['*'], 'page', $page);
 
-        // C. Retornar resposta
+        $items = AdminNotificacioResource::collection($paginator->items())->resolve($request);
+        $data = $items['data'] ?? $items;
+
         return response()->json([
-            'data' => $paginator->items(),
+            'data' => $data,
             'meta' => [
                 'current_page' => $paginator->currentPage(),
                 'total' => $paginator->total(),
@@ -86,6 +89,9 @@ class AdminNotificacioController extends Controller
         $notificacio->llegida = true;
         $notificacio->save();
 
-        return response()->json(['success' => true, 'data' => $notificacio]);
+        return response()->json([
+            'success' => true,
+            'data' => (new AdminNotificacioResource($notificacio))->resolve($request),
+        ]);
     }
 }

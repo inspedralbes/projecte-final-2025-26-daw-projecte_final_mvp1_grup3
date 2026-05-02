@@ -84,11 +84,27 @@ L'agent té prohibit escriure codi sense documentació explicativa. S'ha de segu
 
 ## 7. Mecanisme de Comunicació Redis (Bridge)
 
-1. **Entrada**: Escoltar la cua `habits_queue` mitjançant l'operació bloquejant `Redis::brpop`.
-2. **Processament**: El `RedisWorker.php` rep la tasca i executa la lògica.
-3. **Sortida**: Publicar confirmació al canal `feedback_channel` mitjançant `Redis::publish`.
+1. **Entrada**: El `UnifiedRedisWorker` escolta les cues `habits_queue`, `plantilles_queue`, `admin_queue`, `roulette_queue` mitjançant BRPOP multillista.
+2. **Processament**: El worker delega en un Queue Handler (`app/Console/Commands/QueueHandlers/`). Cada handler té `handle(array $dades): void` i crida el Service corresponent (HabitService, PlantillaService, AdminActionService, RouletteService).
+3. **Sortida**: Publicar confirmació al canal `feedback_channel` mitjançant `Redis::publish` (via RedisFeedbackService).
 
-## 8. Lògica de Gamificació (Referència)
+## 8. Esquema de Refactorització (Estructura Objectiu)
+
+Cal respectar aquesta estructura en totes les tasques de Laravel:
+
+### 8.1 Controllers
+- **Nomenclatura**: Controllers de només lectura amb sufix `Read` (ex: `HabitReadController`, `UserProfileReadController`, `GameStateReadController`).
+- **Docblocks obligatoris**: Cada controller ha de tenir un docblock de classe amb `Operacions: READ | CREATE | UPDATE | DELETE` (segons correspongui). Cada mètode amb docblock indicant l’operació i una breu descripció.
+
+### 8.2 Resources
+- **Tots els GET** han de passar per un Resource. El controller crida el Service i retorna `new XResource($dades)` o `XResource::collection($dades)`. No es permet `response()->json()` directe per a respostes estructurades.
+
+### 8.3 Queue Handlers
+- Ubicació: `app/Console/Commands/QueueHandlers/`.
+- Fitxers: `HabitQueueHandler.php`, `PlantillaQueueHandler.php`, `AdminQueueHandler.php`, `RouletteQueueHandler.php`.
+- Cada handler implementa `handle(array $dades): void` i delega en el Service corresponent.
+
+## 9. Lògica de Gamificació (Referència)
 
 | Dificultat de l'Hàbit | Experiència (XP) |
 | :-------------------- | :--------------- |

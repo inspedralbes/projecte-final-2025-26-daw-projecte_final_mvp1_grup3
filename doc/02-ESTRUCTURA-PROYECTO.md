@@ -54,7 +54,7 @@ Backend de **negocio**: API REST, base de datos, lógica de dominio. Versión: *
 backend-laravel/
 ├── app/
 │   ├── Console/Commands/
-│   │   └── RedisWorker.php      # Comando que consume habits_queue (BRPOP) y publica en feedback_channel
+│   │   └── UnifiedRedisWorker.php  # Comando redis:unified-worker que consume totes les cues (BRPOP multillista) i publica a feedback_channel
 │   ├── Http/Controllers/
 │   │   └── Controller.php       # Controlador base (vacío, para extender)
 │   ├── Models/
@@ -97,7 +97,7 @@ backend-laravel/
 
 | Archivo | Qué hace |
 |--------|-----------|
-| **app/Console/Commands/RedisWorker.php** | Comando `habits:redis-worker`. Hace **BRPOP** sobre la lista Redis `habits_queue` (timeout configurable). Por cada elemento recibido, decodifica el JSON, llama a `RedisFeedbackService::processAndPublish()` y publica en el canal `feedback_channel`. Así el frontend (vía Node y Socket.io) recibe la confirmación en tiempo real. |
+| **app/Console/Commands/UnifiedRedisWorker.php** | Comando `redis:unified-worker`. Fa **BRPOP** multillista sobre `habits_queue`, `plantilles_queue`, `admin_queue`, `roulette_queue`. Per cada missatge rebut, despatxa al servei corresponent (HabitService, PlantillaService, AdminActionService, RouletteService) que publica a `feedback_channel`. |
 | **app/Services/RedisFeedbackService.php** | Servicio que recibe el payload procesado, construye un objeto de feedback (evento, payload, fecha) y ejecuta **Redis::publish($channel, json_encode($feedback))**. Es el puente Laravel → Redis Pub/Sub → Node → frontend. |
 | **config/database.php** | Define la conexión **pgsql** usando variables de entorno (DB_HOST, DB_DATABASE, DB_USERNAME, DB_PASSWORD, etc.). |
 | **config/redis.php** | Define conexiones Redis (default y cache) con host/puerto desde env. Laravel usa **predis** como cliente. |
@@ -130,7 +130,7 @@ backend-node/
 | Archivo | Qué hace |
 |--------|-----------|
 | **src/index.js** | Crea un servidor HTTP que responde con JSON de estado y monta **Socket.io** sobre él. Carga el **feedbackSubscriber** y lo asocia al objeto `io` para que los mensajes del canal Redis `feedback_channel` se reenvíen a los clientes como evento `feedback`. Escucha conexiones/desconexiones de clientes. Puerto por defecto 3001. |
-| **src/queues/habitQueue.js** | Cliente Redis (módulo `redis`). Expone **push(payload)** que hace **LPUSH** a la lista `habits_queue`. Esa lista la consume Laravel con BRPOP en `RedisWorker`. Así Node envía trabajos de hábitos al backend Laravel. |
+| **src/queues/habitQueue.js** | Cliente Redis (módulo `redis`). Expone **pushToLaravel()** que hace **LPUSH** a `habits_queue`. Laravel consume amb BRPOP al `UnifiedRedisWorker`. Node també envia a `plantilles_queue`, `admin_queue`, `roulette_queue` via els altres queues. |
 | **src/subscribers/feedbackSubscriber.js** | Crea un cliente Redis solo para suscripciones. Se conecta y hace **subscribe** al canal `feedback_channel`. Por cada mensaje recibido, hace **JSON.parse** (o envía raw) y emite **io.emit('feedback', data)** para que todos los clientes Socket.io conectados reciban el feedback en tiempo real. |
 | **src/middleware/jwtAuth.js** | Función middleware para Socket.io: lee el token JWT de `handshake.auth.token` o de `handshake.query.token`, lo verifica con **jsonwebtoken** usando `JWT_SECRET`, y asigna `socket.user` con el payload decodificado. Si no hay token o es inválido, llama a `next(new Error(...))`. |
 
@@ -249,6 +249,6 @@ Documentación del proyecto.
 ## Flujo de comunicación Redis (resumen)
 
 - **Node → Laravel:** El backend Node usa **habitQueue.push(payload)** → **LPUSH** en la lista Redis **habits_queue**. Laravel no hace polling HTTP; consume esa cola.
-- **Laravel → Node/Frontend:** El comando **habits:redis-worker** (Laravel) hace **BRPOP** de **habits_queue**, procesa el mensaje con **RedisFeedbackService** y hace **Redis::publish('feedback_channel', json_encode($feedback))**. El backend Node tiene un suscriptor a **feedback_channel** que recibe el mensaje y hace **io.emit('feedback', data)**. El frontend, con el plugin **socket.client.js**, escucha **feedback** y actualiza **useHabitStore** (lastFeedback).
+- **Laravel → Node/Frontend:** El comando **redis:unified-worker** (Laravel) fa **BRPOP** de totes les cues (habits, plantilles, admin, roulette), processa amb el servei corresponent i publica a **feedback_channel**. El backend Node té un subscriptor a **feedback_channel** que reemet els missatges via Socket.io als clients.
 
 Con esto tienes documentado qué hay en el proyecto y para qué sirve cada parte. Para ponerlo en marcha desde cero, usa **doc/01-SETUP-DESDE-CERO.md**.

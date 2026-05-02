@@ -33,6 +33,7 @@ class User extends Model implements JWTSubject
     protected $fillable = [
         'nom',
         'email',
+        'google_id',
         'contrasenya_hash',
         'nivell',
         'xp_total',
@@ -47,6 +48,8 @@ class User extends Model implements JWTSubject
         'data_prohibicio',
         'motiu_prohibicio',
     ];
+
+    protected $casts = [];
 
     //================================ MÈTODES / FUNCIONS ===========
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Admin;
 //================================ NAMESPACES / IMPORTS ============
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Admin\AdminRankingResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 
@@ -114,10 +115,12 @@ class AdminRankingController extends Controller
             $indexH++;
         }
 
-        return response()->json([
+        $dades = [
             'periodo' => $periodo,
             'ranking_plantilles' => $rankingPlantilles,
             'ranking_habits' => $rankingHabits,
-        ]);
+        ];
+
+        return response()->json((new AdminRankingResource($dades))->resolve(request()));
     }
 }

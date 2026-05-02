@@ -1,247 +1,96 @@
 <template>
-  <main class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-4 sm:p-6 lg:p-8">
-    <div class="max-w-7xl mx-auto">
-      <!-- Grid Principal -->
-      <div class="grid grid-cols-1 gap-4 lg:grid-cols-12 lg:gap-6">
-        <!-- COSTAT ESQUERRE: Missions i Perfil -->
-        <div class="space-y-4 lg:col-span-3 lg:space-y-6">
-          <!-- Targeta Missions Diàries -->
-          <div
-            class="bg-white rounded-2xl shadow-lg p-4 sm:p-6 border-l-4 border-orange-400"
-          >
-            <div class="flex items-center gap-2 mb-4">
-              <div
-                class="w-6 h-6 bg-orange-400 rounded-full flex items-center justify-center"
-              >
-                <span class="text-white text-sm">✓</span>
-              </div>
-              <h2
-                class="text-sm font-bold text-gray-800 uppercase tracking-wide"
-              >
-                Missions Diàries
+  <div class="relative w-full min-h-screen pb-12 overflow-y-auto">
+    <!-- El header ja el proporciona el layout default.vue -->
+
+    <!-- Contenedor Principal Bento -->
+    <div class="max-w-7xl mx-auto px-6 grid grid-cols-12 gap-6 pb-20">
+      
+      <!-- COSTAT ESQUERRE: Missions i Perfil -->
+      <div class="col-span-12 lg:col-span-3 space-y-6">
+        <div class="bento-card bg-white/95 backdrop-blur-md rounded-3xl p-6 shadow-xl border border-white/50">
+          <UserHomeHomeMissionCard
+            :missio-diaria="missioDiaria"
+            :missio-completada="missioCompletada"
+            :missio-progres="missioProgres"
+            :missio-objectiu="missioObjectiu"
+          />
+          <div class="h-px bg-gray-100 my-4"></div>
+          <UserHomeHomeProfileCard
+            :user="user"
+            :nivell="nivell"
+            :xp-actual-nivel="xpActualNivel"
+            :xp-objetivo-nivel="xpObjetivoNivel"
+            :percentatge-nivell="percentatgeNivell"
+          />
+        </div>
+        <UserHomeHomeLogrosCard :ultims-logros="ultimsLogros" @obrir-modal-logros="obrirModalLogros" />
+        <UserHomeHomeRouletteSection :classe-icona-ruleta="classeIconaRuleta" @obrir-modal-ruleta="obrirModalRuleta" />
+      </div>
+
+      <!-- CENTRE: El teu Monstre -->
+      <div class="col-span-12 lg:col-span-6 space-y-6">
+        <div class="bento-card bg-white/95 backdrop-blur-md rounded-3xl p-8 shadow-2xl border border-white/50 flex flex-col items-center relative min-h-[500px]">
+          <div class="flex items-center justify-between w-full mb-6 relative z-10">
+            <div>
+              <h2 class="text-2xl font-black text-gray-800 tracking-tight">
+                {{ $t('home.monster_title') }}
               </h2>
-            </div>
-
-            <div class="space-y-3">
-              <div class="bg-gray-50 rounded-lg p-3">
-                <p class="text-gray-700 font-semibold text-sm">
-                  <template v-if="missioDiaria && missioDiaria.titol">
-                    {{ missioDiaria.titol }}
-                  </template>
-                  <template v-else>
-                    Carregant...
-                  </template>
-                </p>
-                <p class="text-2xl font-bold text-orange-500">
-                  <template v-if="missioCompletada">1/1</template>
-                  <template v-else>0/1</template>
-                </p>
+              <div class="flex items-center gap-2 mt-1">
+                <span class="bg-green-100 text-green-700 px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider">{{ $t('home.level') }} {{ nivell }}</span>
               </div>
             </div>
+            <UserHomeHomeStreakSection :ratxa="ratxa" :ratxa-maxima="ratxaMaxima" :xp-total="xpTotal" :monedes="monedes" />
+          </div>
 
-            <!-- Divisor -->
-            <div class="h-px bg-gray-200 my-4"></div>
-
-            <!-- Perfil Usuari -->
-            <div class="text-center">
-              <div
-                class="w-16 h-16 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 mx-auto mb-3 flex items-center justify-center"
-              >
-                <span class="text-3xl"></span>
-              </div>
-              <h3 class="font-bold text-gray-800 text-sm">Nom</h3>
-              <p class="text-xs text-gray-500 mb-2">Etiqueta</p>
-              <div
-                class="flex justify-center items-center gap-1 text-xs text-gray-600"
-              >
-                <span>Lv {{ nivell }}</span>
-                <div class="w-20 h-1 bg-gray-200 rounded-full overflow-hidden">
-                  <div
-                    class="h-1 bg-blue-500"
-                    :style="{ width: percentatgeNivell + '%' }"
-                  ></div>
-                </div>
-                <span class="text-[10px] text-gray-500">
-                  {{ xpActualNivel }}/{{ xpObjetivoNivel }}
-                </span>
+          <!-- Imatge Monstre en Escenari -->
+          <div class="flex-1 w-full flex items-center justify-center relative">
+            <div class="w-full h-full rounded-2xl overflow-hidden shadow-inner relative" :style="estilFons">
+              <div class="absolute inset-0 bg-black/5"></div>
+              <div class="relative w-full h-full flex items-center justify-center p-8">
+                <img
+                  v-if="imatgeMascota"
+                  :src="imatgeMascota"
+                  alt="El teu monstre"
+                  class="w-48 h-48 lg:w-64 lg:h-64 object-contain drop-shadow-[0_20px_20px_rgba(0,0,0,0.3)] animate-float"
+                />
               </div>
             </div>
           </div>
 
-          <!-- Targeta Últims Assoliments -->
-          <div class="bg-white rounded-2xl shadow-lg p-4 sm:p-6">
-            <h3
-              class="text-xs font-bold text-gray-800 uppercase tracking-wide mb-4"
-            >
-              Últims Assoliments
-            </h3>
-            <div class="flex justify-around items-center relative group min-h-[48px] pr-8">
-              <template v-if="ultimsLogros.length > 0">
-                <div
-                  v-for="logro in ultimsLogros"
-                  :key="logro.id"
-                  class="w-12 h-12 rounded-full flex items-center justify-center text-lg hover:scale-110 transition shadow-inner"
-                  :class="logro.obtingut ? 'bg-orange-100' : 'bg-gray-100 opacity-40'"
-                  :title="logro.nom"
-                >
-                  {{ logro.obtingut ? '🏅' : '🔒' }}
-                </div>
-              </template>
-              <template v-else>
-                <div class="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center text-xs text-gray-300 border border-dashed border-gray-200">?</div>
-                <div class="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center text-xs text-gray-300 border border-dashed border-gray-200">?</div>
-                <div class="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center text-xs text-gray-300 border border-dashed border-gray-200">?</div>
-              </template>
-              
-              <!-- Botó per veure tots els logros -->
-              <button
-                @click="obrirModalLogros"
-                class="absolute right-0 bottom-0 w-8 h-8 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 hover:scale-110 transition flex items-center justify-center font-bold text-xl"
-                title="Veure tots els logros"
-              >
-                +
-              </button>
-            </div>
-          </div>
-
-          <!-- Icona Ruleta Diària -->
-          <div
-            class="bg-white rounded-2xl shadow-lg p-4 flex items-center justify-center cursor-pointer transition min-h-12"
-            :class="classeIconaRuleta"
-            @click="obrirModalRuleta"
-            title="Ruleta diària"
-          >
-            <span class="text-sm font-bold">RULETA</span>
-          </div>
+          <p class="text-center text-gray-500 font-medium text-sm mt-6 max-w-sm">
+            {{ $t('home.monster_subtitle') }}
+          </p>
         </div>
+      </div>
 
-        <!-- CENTRE: El teu Monstre -->
-        <div class="space-y-4 lg:col-span-6 lg:space-y-6">
-          <!-- Targeta El teu Monstre -->
-          <div
-            class="rounded-2xl shadow-lg p-4 sm:p-6 lg:p-8 flex flex-col items-center justify-center relative"
-          >
-            <!-- Contingut -->
-            <div class="relative z-10 w-full">
-              <div class="flex flex-col sm:flex-row sm:items-center justify-between w-full mb-4 gap-3">
-                <div>
-                  <h2 class="text-base sm:text-lg font-bold text-gray-800">
-                    EL TEU MONSTRE
-                  </h2>
-                  <p class="text-xs text-gray-500">Lv 1</p>
-                </div>
-                <div class="text-left sm:text-right">
-                  <p class="text-xl sm:text-2xl font-bold">Ratxa: {{ ratxa }}</p>
-                  <p class="text-xs font-bold text-yellow-600 mb-1">Ratxa Màxima: {{ ratxaMaxima }}</p>
-                  <p class="text-sm text-green-600">XP Total: {{ xpTotal }}</p>
-                  <p class="text-sm text-amber-600">Monedes: {{ monedes }}</p>
-                </div>
-              </div>
-
-              <!-- Imatge Monstre -->
-              <div
-                class="rounded-2xl shadow-lg p-4 sm:p-6 lg:p-8 flex flex-col items-center justify-center relative w-full max-w-md mx-auto"
-                :style="estilFons"
-              >
-                <div
-                  class="w-28 h-28 sm:w-36 sm:h-36 lg:w-40 lg:h-40 rounded-xl flex items-center justify-center mb-4 sm:mb-6 overflow-hidden mx-auto"
-                >
-                  <img
-                    v-if="imatgeMascota"
-                    :src="imatgeMascota"
-                    alt="El teu monstre"
-                    class="w-full h-full object-cover"
-                  />
-                </div>
-              </div>
-              <p class="text-center text-gray-600 text-sm mt-4">
-                ¡Ho estàs fent genial!
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <!-- COSTAT DRET: Hàbits -->
-        <div class="space-y-4 lg:col-span-3 lg:space-y-6">
-          <!-- Capçalera Hàbits -->
-          <div class="flex items-center justify-between gap-3">
-            <h2 class="text-base sm:text-lg font-bold text-gray-800">HÀBITS</h2>
-            <NuxtLink
-              to="/habits"
-              class="text-blue-500 text-xs font-semibold hover:underline"
-              >VEURE TOT</NuxtLink
-            >
-          </div>
-
-          <!-- Llista d'Hàbits -->
-          <div class="space-y-3">
-            <!-- Missatge d'error -->
-            <div
-              v-if="errorMissatge"
-              class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
-            >
-              <span class="block sm:inline">{{ errorMissatge }}</span>
-              <button
-                @click="errorMissatge = ''"
-                class="absolute top-0 bottom-0 right-0 px-4 py-3"
-              >
-                ✕
-              </button>
-            </div>
-
-            <!-- Estat de càrrega -->
-            <div
-              v-if="estaCarregantHabits"
-              class="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded text-center"
-            >
-              <span>Carregant hàbits...</span>
-            </div>
-
-            <!-- Estat buit -->
-            <div
-              v-else-if="habitsDelDia.length === 0"
-              class="bg-gray-50 border border-gray-200 text-gray-600 px-4 py-3 rounded text-center"
-            >
-              <span>No hi ha hàbits disponibles</span>
-            </div>
-
-            <!-- Llista d'hàbits -->
-            <template v-else>
-              <div
-                v-for="hàbit in habitsDelDia"
-                :key="hàbit.id"
-                class="bg-white rounded-lg p-4 shadow flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all hover:shadow-md"
-              >
-                <div class="flex-1 sm:mr-3 w-full">
-                  <p class="font-semibold text-gray-800">{{ hàbit.nom }}</p>
-                  <p class="text-xs text-gray-500 truncate">
-                    {{ hàbit.descripcio }} • +{{ hàbit.recompensaXP }} XP
-                  </p>
-                  <p class="text-xs text-blue-600 font-semibold">
-                    {{ obtenirProgres(hàbit.id) }}/{{ hàbit.objectiuVegades || 1 }}
-                  </p>
-                  <p
-                    v-if="habitCompletatAvui(hàbit.id)"
-                    class="text-xs text-green-600 font-semibold"
-                  >
-                    ✓ Completat
-                  </p>
-                </div>
-                <button
-                  @click="obrirModalHabit(hàbit)"
-                  :disabled="comvprovarSiSestaProcessant(hàbit.id)"
-                  class="w-full sm:w-auto px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed min-w-[110px]"
-                >
-                  <span v-if="comvprovarSiSestaProcessant(hàbit.id)">...</span>
-                  <span v-else>Progrés</span>
-                </button>
-              </div>
-            </template>
-          </div>
-        </div>
+      <!-- COSTAT DRET: Clima + Hàbits -->
+      <div class="col-span-12 lg:col-span-3 space-y-6">
+        <WeatherWidget
+          :dades="weatherGlobal"
+          :carregant="weatherCarregant"
+          :mode="weatherMode"
+          :ciutat="weatherCiutat"
+          @update:ciutat="weatherCiutat = $event"
+          @refresh="carregarClima"
+          @use-geo="usarGeolocal"
+          @switch-manual="passarAManual"
+        />
+        <UserHomeHomeHabitsSection
+          :habits="habitsDelDia"
+          :esta-carregant="estaCarregantHabits"
+          :error-missatge="errorMissatge"
+          :obtenir-progres="obtenirProgres"
+          :habit-completat-avui="habitCompletatAvui"
+          :esta-processant="comvprovarSiSestaProcessant"
+          :weather-global="weatherGlobal"
+          @netejar-error="errorMissatge = ''"
+          @obrir-modal-habit="obrirModalHabit"
+          @obrir-detalls-habit="obrirModalDetallsHabit"
+        />
       </div>
     </div>
 
+    <!-- Modals -->
     <HabitProgressModal
       :is-open="esObertModalHabit"
       :habit="habitSeleccionat"
@@ -254,6 +103,12 @@
       @confirm="confirmarHabit"
       @invalid-complete="mostrarAvisIncomplet"
     />
+    <HabitDetailsModal
+      :is-open="esObertModalDetalls"
+      :habit="habitDetallsSeleccionat"
+      :weather-context="weatherContextDetalls"
+      @close="tancarModalDetallsHabit"
+    />
 
     <StreakBrokenModal
       :is-open="esObertModalRatxa"
@@ -261,147 +116,58 @@
       @close="tancarModalRatxa"
     />
 
-    <!-- MODAL DE RULETA DIARIA -->
-    <div v-if="esObertModalRuleta" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
-      <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="tancarModalRuleta"></div>
+    <LogrosModal
+      :is-open="esObertModalLogros"
+      :logros="logroStore.logros"
+      @close="tancarModalLogros"
+    />
 
-      <div class="bg-white rounded-3xl w-full max-w-xl p-4 sm:p-6 shadow-2xl relative">
-        <button
-          @click="tancarModalRuleta"
-          class="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-600"
-        >
-          <span class="text-2xl">×</span>
-        </button>
-
-        <div class="flex flex-col items-center gap-4">
-          <h2 class="text-base sm:text-lg font-bold text-gray-800">Ruleta diària</h2>
-          <p class="text-xs text-gray-500">Fes click a la ruleta per tirar</p>
-
-          <div class="relative">
-            <div class="roulette-pointer"></div>
-            <div
-              class="roulette-wheel"
-              :class="classeRuleta"
-              :style="estilRuleta"
-              @click="tirarRuleta"
-            >
-              <div
-                v-for="(premi, index) in ruletaPremis"
-                :key="premi.key"
-                class="roulette-label"
-                :style="estilEtiquetaRuleta(index)"
-              >
-                {{ premi.label }}
-              </div>
-            </div>
-          </div>
-
-          <p v-if="!canSpinRoulette" class="text-xs text-gray-400">
-            Ruleta desactivada fins demà.
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <!-- MODAL DE LOGROS (Achivements) -->
-    <div v-if="esObertModalLogros" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
-      <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="tancarModalLogros"></div>
-      
-      <div class="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] sm:max-h-[85vh] overflow-hidden shadow-2xl relative animate-in fade-in zoom-in duration-200 flex flex-col">
-        <!-- Capçalera Modal -->
-        <div class="p-4 sm:p-6 border-b border-gray-100 flex items-center justify-between bg-white sticky top-0 z-10 gap-3">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center text-xl">
-              🏆
-            </div>
-            <div>
-              <h2 class="text-lg sm:text-xl font-bold text-gray-800">Tots els Logros</h2>
-              <p class="text-xs text-gray-500">Descobreix nous reptes i medalles</p>
-            </div>
-          </div>
-          <button @click="tancarModalLogros" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-600">
-            <span class="text-2xl">×</span>
-          </button>
-        </div>
-
-        <!-- Contingut Modal (Bento Grid) -->
-        <div class="p-4 sm:p-8 overflow-y-auto bg-gray-50/50 flex-1">
-          <div v-if="logroStore.loading" class="flex flex-col items-center justify-center py-20 gap-4">
-            <div class="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
-            <p class="text-gray-500 font-medium">Carregant la teva vitrina...</p>
-          </div>
-
-          <div v-else-if="logrosFiltrats.length === 0" class="text-center py-20 text-gray-400">
-            <p class="text-4xl mb-4">🏜️</p>
-            <p class="font-medium text-lg">Encara no hi ha logros disponibles.</p>
-            <p class="text-sm">Torna més tard per veure noves missions!</p>
-          </div>
-
-          <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div 
-              v-for="logro in logrosFiltrats" 
-              :key="logro.id"
-              class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-all group relative overflow-hidden"
-              :class="{'opacity-60': !logro.obtingut}"
-            >
-              <!-- Icona/Medalla -->
-              <div class="flex items-start justify-between mb-4">
-                <div 
-                  class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl shadow-inner transition-transform group-hover:scale-110"
-                  :class="logro.obtingut ? 'bg-gradient-to-br from-yellow-400 to-orange-500 text-white' : 'bg-gray-100 text-gray-400'"
-                >
-                  {{ logro.obtingut ? '🏅' : '🔒' }}
-                </div>
-                <div v-if="logro.obtingut" class="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider">
-                  Desbloquejat
-                </div>
-              </div>
-
-              <!-- Info -->
-              <h4 class="font-bold text-gray-800 mb-1 group-hover:text-blue-600 transition-colors">{{ logro.nom }}</h4>
-              <p class="text-xs text-gray-500 leading-relaxed mb-4">{{ logro.descripcio }}</p>
-
-              <!-- Progress (Simulat si ho requereix el tipus de logro) -->
-              <div class="mt-auto pt-4 border-t border-gray-50 flex items-center justify-between">
-                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{{ logro.tipus || 'Especial' }}</span>
-                <span v-if="logro.data_obtencio" class="text-[10px] text-gray-400">{{ logro.data_obtencio }}</span>
-              </div>
-
-              <!-- Efecte de fons per als desbloquejats -->
-              <div v-if="logro.obtingut" class="absolute -right-4 -bottom-4 w-24 h-24 bg-yellow-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity -z-10"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Peu Modal -->
-        <div class="p-4 border-t border-gray-100 bg-white text-center">
-            <p class="text-[10px] text-gray-400 uppercase font-bold tracking-[0.2em]">Loopy Achivements System</p>
-        </div>
-      </div>
-    </div>
-  </main>
+    <RouletteModal
+      :is-open="esObertModalRuleta"
+      :can-spin="canSpinRoulette"
+      @close="tancarModalRuleta"
+      @spin="enviarSpinRuleta"
+    />
+  </div>
 </template>
 
 <script>
 import { useGameStore } from "~/stores/gameStore.js";
+import { useHabitStore } from "~/stores/useHabitStore.js";
 import { useLogroStore } from "~/stores/useLogroStore.js";
+import { useAuthStore } from "~/stores/useAuthStore.js";
+
 import HabitProgressModal from "~/components/home/HabitProgressModal.vue";
 import StreakBrokenModal from "~/components/home/StreakBrokenModal.vue";
+import LogrosModal from "~/components/home/LogrosModal.vue";
+import RouletteModal from "~/components/home/RouletteModal.vue";
+import HabitDetailsModal from "~/components/user/home/HabitDetailsModal.vue";
+import UserHomeHomeMissionCard from "~/components/user/home/HomeMissionCard.vue";
+import UserHomeHomeProfileCard from "~/components/user/home/HomeProfileCard.vue";
+import UserHomeHomeLogrosCard from "~/components/user/home/HomeLogrosCard.vue";
+import UserHomeHomeRouletteSection from "~/components/user/home/HomeRouletteSection.vue";
+import UserHomeHomeStreakSection from "~/components/user/home/HomeStreakSection.vue";
+import UserHomeHomeHabitsSection from "~/components/user/home/HomeHabitsSection.vue";
+import WeatherWidget from "~/components/user/home/WeatherWidget.vue";
+import { authFetch } from "~/composables/useApi.js";
 import bosqueImg from "~/assets/img/Bosque.png";
 import mascotaImg from "~/assets/img/Mascota.png";
 
-/**
- * Pàgina principal del joc (Home).
- * Gestiona el visualitzador del monstre i la llista d'hàbits diaris.
- */
 export default {
   components: {
-    HabitProgressModal: HabitProgressModal,
-    StreakBrokenModal: StreakBrokenModal
+    HabitProgressModal,
+    HabitDetailsModal,
+    StreakBrokenModal,
+    LogrosModal,
+    RouletteModal,
+    UserHomeHomeMissionCard,
+    UserHomeHomeProfileCard,
+    UserHomeHomeLogrosCard,
+    UserHomeHomeRouletteSection,
+    UserHomeHomeStreakSection,
+    UserHomeHomeHabitsSection,
+    WeatherWidget
   },
-  /**
-   * Configuració de l'estat local.
-   */
   data: function () {
     return {
       socket: null,
@@ -412,35 +178,19 @@ export default {
       esObertModalLogros: false,
       esObertModalRuleta: false,
       esObertModalHabit: false,
+      esObertModalDetalls: false,
       esObertModalRatxa: false,
       ratxaAnteriorModal: 0,
       habitSeleccionat: null,
+      habitDetallsSeleccionat: null,
+      weatherContextDetalls: null,
+      weatherGlobal: null,
+      weatherCiutat: "",
+      weatherMode: "requesting",
+      weatherLat: null,
+      weatherLon: null,
+      weatherCarregant: false,
       ruletaProcessant: false,
-      ruletaSpinActiva: false,
-      ruletaSpinTimer: null,
-      ruletaSpinIntervalMs: 120,
-      ruletaSpinStepDeg: 24,
-      ruletaRotacio: 0,
-      ruletaDuracioMs: 4000,
-      ruletaPremiSeleccionat: null,
-      ruletaPremis: [
-        { key: "xp_50", type: "xp", amount: 50, label: "50 XP" },
-        { key: "xp_150", type: "xp", amount: 150, label: "150 XP" },
-        { key: "xp_500", type: "xp", amount: 500, label: "500 XP" },
-        { key: "coins_1", type: "coins", amount: 1, label: "1 moneda" },
-        { key: "coins_5", type: "coins", amount: 5, label: "5 monedes" },
-        { key: "coins_10", type: "coins", amount: 10, label: "10 monedes" },
-        { key: "shop_item", type: "shop_item", amount: null, label: "Objecte botiga" }
-      ],
-      ruletaColors: [
-        "#fde68a",
-        "#bfdbfe",
-        "#fecaca",
-        "#bbf7d0",
-        "#e9d5ff",
-        "#fed7aa",
-        "#c7d2fe"
-      ],
       estilFons: {
         backgroundImage: "url(" + bosqueImg + ")",
         backgroundSize: "cover",
@@ -448,233 +198,208 @@ export default {
       }
     };
   },
-
-  /**
-   * Propietats computades.
-   */
   computed: {
-    gameStore: function () {
-      return useGameStore();
-    },
-    ratxa: function () {
-      return this.gameStore.ratxa;
-    },
-    ratxaMaxima: function () {
-      return this.gameStore.ratxaMaxima;
-    },
-    xpTotal: function () {
-      return this.gameStore.xpTotal;
-    },
-    nivell: function () {
-      return this.gameStore.nivell || 1;
-    },
-    xpActualNivel: function () {
-      return this.gameStore.xpActualNivel || 0;
-    },
-    xpObjetivoNivel: function () {
-      return this.gameStore.xpObjetivoNivel || 1000;
-    },
+    user: function () { return useAuthStore().user; },
+    gameStore: function () { return useGameStore(); },
+    habitStore: function () { return useHabitStore(); },
+    ratxa: function () { return this.gameStore.ratxa; },
+    ratxaMaxima: function () { return this.gameStore.ratxaMaxima; },
+    xpTotal: function () { return this.gameStore.xpTotal; },
+    nivell: function () { return this.gameStore.nivell || 1; },
+    xpActualNivel: function () { return this.gameStore.xpActualNivel || 0; },
+    xpObjetivoNivel: function () { return this.gameStore.xpObjetivoNivel || 1000; },
     percentatgeNivell: function () {
-      if (!this.xpObjetivoNivel || this.xpObjetivoNivel <= 0) {
-        return 0;
-      }
       var percent = (this.xpActualNivel / this.xpObjetivoNivel) * 100;
-      if (percent > 100) {
-        percent = 100;
-      }
-      if (percent < 0) {
-        percent = 0;
-      }
-      return Math.round(percent);
+      return Math.round(Math.min(100, Math.max(0, percent)));
     },
-    habits: function () {
-      return this.gameStore.habits;
-    },
+    habits: function () { return this.habitStore.habits || []; },
     habitsDelDia: function () {
       var llista = this.habits || [];
-      var idxDia = this.obtenirIndexDiaActual();
-      var filtrats = [];
-      var i;
-      for (i = 0; i < llista.length; i++) {
-        var dies = llista[i].diesSetmana;
-        if (!Array.isArray(dies) || dies.length < 7) {
-          filtrats.push(llista[i]);
-        } else if (dies[idxDia] === true) {
-          filtrats.push(llista[i]);
-        }
+      var completats = [];
+      var pendents = [];
+      for (var i = 0; i < llista.length; i++) {
+        if (this.habitCompletatAvui(llista[i].id)) completats.push(llista[i]);
+        else pendents.push(llista[i]);
       }
-      return filtrats;
+      return pendents.concat(completats);
     },
-    logroStore: function () {
-        return useLogroStore();
-    },
-    logrosFiltrats: function () {
-      return this.logroStore.logros;
-    },
-    ultimsLogros: function () {
-      var obtinguts = [];
-      var i;
-      var l = this.logroStore.logros;
-      for (i = 0; i < l.length; i++) {
-        if (l[i].obtingut) {
-          obtinguts.push(l[i]);
-        }
-      }
-      // Si no n'hi ha cap de desbloquejat, mostrem els 3 primers com a 'bloquejats' o simplement els 3 primers
-      if (obtinguts.length === 0) {
-        return l.slice(0, 3);
-      }
-      return obtinguts.slice(-3);
-    },
-    missioDiaria: function () {
-      return this.gameStore.missioDiaria;
-    },
-    missioCompletada: function () {
-      return this.gameStore.missioCompletada;
-    },
-    monedes: function () {
-      return this.gameStore.monedes;
-    },
-    canSpinRoulette: function () {
-      return this.gameStore.canSpinRoulette;
-    },
-    ruletaUltimaTirada: function () {
-      return this.gameStore.ruletaUltimaTirada;
-    },
-    classeIconaRuleta: function () {
-      if (this.canSpinRoulette) {
-        return "hover:shadow-xl";
-      }
-      return "grayscale opacity-60 cursor-not-allowed";
-    },
-    classeRuleta: function () {
-      if (!this.canSpinRoulette || this.ruletaProcessant) {
-        return "roulette-disabled";
-      }
-      return "";
-    },
-    estilRuleta: function () {
-      var transicio;
-      if (this.ruletaSpinActiva) {
-        transicio = "transform 0.15s linear";
-      } else {
-        transicio = "transform " + (this.ruletaDuracioMs / 1000) + "s cubic-bezier(0.2, 0.8, 0.2, 1)";
-      }
-      return {
-        transform: "rotate(" + this.ruletaRotacio + "deg)",
-        transition: transicio,
-        background: this.obtenirGradientRuleta()
-      };
-    },
-    progresModal: function () {
-      if (!this.habitSeleccionat) {
-        return 0;
-      }
-      return this.obtenirProgres(this.habitSeleccionat.id);
-    },
-    objectiuModal: function () {
-      if (!this.habitSeleccionat) {
-        return 1;
-      }
-      return this.habitSeleccionat.objectiuVegades || 1;
-    },
-    unitatModal: function () {
-      if (!this.habitSeleccionat) {
-        return "vegades";
-      }
-      return this.habitSeleccionat.unitat || "vegades";
-    }
+    logroStore: function () { return useLogroStore(); },
+    ultimsLogros: function () { return this.logroStore.logros.slice(-3); },
+    missioDiaria: function () { return this.gameStore.missioDiaria; },
+    missioCompletada: function () { return this.gameStore.missioCompletada; },
+    missioProgres: function () { return this.gameStore.missioProgres; },
+    missioObjectiu: function () { return this.gameStore.missioObjectiu; },
+    monedes: function () { return this.gameStore.monedes; },
+    canSpinRoulette: function () { return this.gameStore.canSpinRoulette; },
+    classeIconaRuleta: function () { return this.canSpinRoulette ? "hover:scale-105" : "grayscale opacity-50"; },
+    progresModal: function () { return this.habitSeleccionat ? this.obtenirProgres(this.habitSeleccionat.id) : 0; },
+    objectiuModal: function () { return this.habitSeleccionat ? this.habitSeleccionat.objectiuVegades || 1 : 1; },
+    unitatModal: function () { return this.habitSeleccionat ? this.habitSeleccionat.unitat || "vegades" : "vegades" }
   },
-
-  /**
-   * Inicialització del component.
-   */
   mounted: function () {
     var self = this;
-    
-    // A. Assignar usuari des de l'authStore
+    var authStore = useAuthStore();
+    authStore.loadFromStorage();
     self.gameStore.sincronitzarUsuariId();
-
-    // B. Carregar dades inicials de l'hàbit i estat
     self.estaCarregantHabits = true;
-    Promise.all([
-      self.gameStore.obtenirHabitos(),
-      self.gameStore.obtenirProgresHabits(),
-      self.gameStore.obtenirEstatJoc(),
-      self.logroStore.carregarLogros()
-    ])
-    .then(function() {
-        console.log("✅ Dades carregades correctament (Incloent Logros)");
-    })
-    .catch(function(error) {
-        console.error("❌ Error carregant dades:", error);
-        self.errorMissatge = "Error al carregar la informació del servidor.";
-    })
-    .finally(function() {
-        self.estaCarregantHabits = false;
-    });
-
-    // C. Conectar Sockets
+    self.gameStore.carregarDadesHome()
+      .then(function (dades) { if (dades && dades.logros) self.logroStore.setLogros(dades.logros); })
+      .finally(function () { self.estaCarregantHabits = false; });
     self.inicialitzarSocket();
-  },
 
-  /**
-   * Neteja abans de destruir el component.
-   */
-  beforeUnmount: function () {
-    // El socket global es gestionat pel plugin, no el tanquem aquí
+    self.inicialitzarClima();
   },
-
+  watch: {
+    weatherCiutat: function (nova) {
+      if (typeof window !== "undefined" && nova && nova.trim() !== "") {
+        localStorage.setItem("loopy_weather_city", nova.trim());
+      }
+    }
+  },
   methods: {
     /**
-     * Retorna l'índex del dia actual (0 = Dilluns ... 6 = Diumenge).
+     * Punt d'entrada al carregar la pàgina.
+     * Si el navegador té el permís concedit, getCurrentPosition torna ràpid
+     * sense cap popup. Sempre s'intenta primer; el mode guardat és el fallback.
      */
-    obtenirIndexDiaActual: function () {
-      var avui = new Date();
-      var dia = avui.getDay(); // 0 = Diumenge ... 6 = Dissabte
-      return (dia + 6) % 7;
-    },
-
-    /**
-     * Retorna progrés d'un hàbit.
-     */
-    obtenirProgres: function (habitId) {
-      var mapa = this.gameStore.habitProgress || {};
-      if (mapa[habitId]) {
-        return mapa[habitId].progress || 0;
-      }
-      return 0;
-    },
-
-    /**
-     * Retorna si l'hàbit està completat avui.
-     */
-    habitCompletatAvui: function (habitId) {
-      var mapa = this.gameStore.habitProgress || {};
-      if (mapa[habitId]) {
-        return !!mapa[habitId].completed_today;
-      }
-      return false;
-    },
-
-    /**
-     * Actualitza el progrés local al store.
-     */
-    actualitzarProgresLocal: function (habitId, progress, completed) {
-      if (!habitId) {
+    inicialitzarClima: function () {
+      var self = this;
+      if (typeof window === "undefined") {
         return;
       }
+
+      var modeSat = localStorage.getItem("loopy_weather_mode");
+
+      if (modeSat === "denied") {
+        localStorage.removeItem("loopy_weather_mode");
+        modeSat = null;
+      }
+
+      if (modeSat === "manual") {
+        var ciutatDesada = localStorage.getItem("loopy_weather_city") || "";
+        self.weatherCiutat = ciutatDesada.trim() || "Barcelona";
+        self.weatherMode = "manual";
+        self.carregarClima();
+        return;
+      }
+
+      if (typeof navigator === "undefined" || !navigator.geolocation) {
+        var ciutatFallback = localStorage.getItem("loopy_weather_city") || "Barcelona";
+        self.weatherCiutat = ciutatFallback.trim();
+        self.weatherMode = "manual";
+        self.carregarClima();
+        return;
+      }
+
+      self.weatherMode = "requesting";
+
+      navigator.geolocation.getCurrentPosition(
+        function (pos) {
+          self.weatherLat = pos.coords.latitude;
+          self.weatherLon = pos.coords.longitude;
+          self.weatherMode = "geo";
+          localStorage.setItem("loopy_weather_mode", "geo");
+          self.carregarClima();
+        },
+        function () {
+          self.weatherMode = "denied";
+          var ciutatDesadaDenied = localStorage.getItem("loopy_weather_city") || "";
+          self.weatherCiutat = ciutatDesadaDenied.trim() || "Barcelona";
+          self.carregarClima();
+        },
+        { timeout: 8000, maximumAge: 300000 }
+      );
+    },
+
+    /**
+     * Intenta obtenir la geolocalització del navegador (cridat manualment).
+     */
+    intentarGeolocal: function () {
+      var self = this;
+      if (typeof navigator === "undefined" || !navigator.geolocation) {
+        self.weatherMode = "manual";
+        localStorage.setItem("loopy_weather_mode", "manual");
+        return;
+      }
+      self.weatherMode = "requesting";
+      navigator.geolocation.getCurrentPosition(
+        function (pos) {
+          self.weatherLat = pos.coords.latitude;
+          self.weatherLon = pos.coords.longitude;
+          self.weatherMode = "geo";
+          localStorage.setItem("loopy_weather_mode", "geo");
+          self.carregarClima();
+        },
+        function () {
+          self.weatherMode = "denied";
+          localStorage.setItem("loopy_weather_mode", "denied");
+          var ciutatDesada = localStorage.getItem("loopy_weather_city") || "";
+          self.weatherCiutat = ciutatDesada.trim() || "Barcelona";
+          self.carregarClima();
+        },
+        { timeout: 8000, maximumAge: 60000 }
+      );
+    },
+
+    /**
+     * Crida quan l'usuari vol tornar a usar geolocalització.
+     */
+    usarGeolocal: function () {
+      this.weatherGlobal = null;
+      this.intentarGeolocal();
+    },
+
+    /**
+     * Crida quan l'usuari vol passar al mode manual.
+     */
+    passarAManual: function () {
+      this.weatherMode = "manual";
+      this.weatherLat = null;
+      this.weatherLon = null;
+      localStorage.setItem("loopy_weather_mode", "manual");
+    },
+
+    /**
+     * Carrega el clima. Usa lat/lon si mode=geo, sinó usa la ciutat.
+     */
+    carregarClima: async function () {
+      var self = this;
+      self.weatherCarregant = true;
+      try {
+        var url = "/api/external/weather?";
+        if (self.weatherMode === "geo" && self.weatherLat !== null && self.weatherLon !== null) {
+          url += "lat=" + encodeURIComponent(self.weatherLat) + "&lon=" + encodeURIComponent(self.weatherLon);
+        } else {
+          var ciutat = (self.weatherCiutat || "Barcelona").trim();
+          url += "city=" + encodeURIComponent(ciutat);
+        }
+        var resposta = await authFetch(url, {});
+        var dades = await resposta.json();
+        if (resposta.ok) {
+          self.weatherGlobal = dades;
+          if (dades.city && self.weatherMode !== "geo") {
+            self.weatherCiutat = dades.city;
+          }
+        } else {
+          self.weatherGlobal = null;
+        }
+      } catch (e) {
+        self.weatherGlobal = null;
+      } finally {
+        self.weatherCarregant = false;
+      }
+    },
+    logout: async function() {
+      await useAuthStore().logout();
+      navigateTo("/auth/login");
+    },
+    obtenirProgres: function (habitId) {
       var mapa = this.gameStore.habitProgress || {};
-      if (!mapa[habitId]) {
-        mapa[habitId] = { progress: 0, completed_today: false };
-      }
-      if (typeof progress === "number") {
-        mapa[habitId].progress = progress;
-      }
-      if (typeof completed !== "undefined") {
-        mapa[habitId].completed_today = !!completed;
-      }
-      this.gameStore.habitProgress = mapa;
+      return (mapa[habitId] && mapa[habitId].progress) || 0;
+    },
+    habitCompletatAvui: function (habitId) {
+      var mapa = this.gameStore.habitProgress || {};
+      return !!(mapa[habitId] && mapa[habitId].completed_today);
     },
 
     /**
@@ -686,11 +411,29 @@ export default {
     },
 
     /**
+     * Obre modal de detalls d'un hàbit.
+     */
+    obrirModalDetallsHabit: function (habit) {
+      this.habitDetallsSeleccionat = habit;
+      this.esObertModalDetalls = true;
+      this.weatherContextDetalls = this.weatherGlobal || null;
+    },
+
+    /**
      * Tanca el modal de progrés.
      */
     tancarModalHabit: function () {
       this.esObertModalHabit = false;
       this.habitSeleccionat = null;
+    },
+
+    /**
+     * Tanca el modal de detalls de l'hàbit.
+     */
+    tancarModalDetallsHabit: function () {
+      this.esObertModalDetalls = false;
+      this.habitDetallsSeleccionat = null;
+      this.weatherContextDetalls = null;
     },
 
     /**
@@ -702,13 +445,28 @@ export default {
     },
 
     /**
-     * Incrementa el progrés de l'hàbit seleccionat.
+     * Actualitza el progrés local al store (per feedback immediat a la UI).
+     */
+    actualitzarProgresLocal: function (habitId, progress, completedToday) {
+      if (!habitId) return;
+      var mapa = this.gameStore.habitProgress || {};
+      mapa[habitId] = { progress: progress, completed_today: !!completedToday };
+      this.gameStore.habitProgress = Object.assign({}, mapa);
+    },
+
+    /**
+     * Incrementa el progrés de l'hàbit seleccionat. Actualització optimista + enviar al backend.
      */
     incrementarHabit: function () {
-      if (!this.habitSeleccionat || !this.socket) {
-        return;
+      if (!this.habitSeleccionat) return;
+      var id = this.habitSeleccionat.id;
+      var current = this.obtenirProgres(id);
+      var max = this.habitSeleccionat.objectiuVegades || 1;
+      if (current >= max) return;
+      this.actualitzarProgresLocal(id, current + 1, false);
+      if (this.socket && this.socket.connected) {
+        this.gameStore.enviarProgresHabit(id, 1, this.socket);
       }
-      this.gameStore.enviarProgresHabit(this.habitSeleccionat.id, 1, this.socket);
     },
 
     /**
@@ -716,29 +474,73 @@ export default {
      * Si restar faria que l'hàbit deixi d'estar completat, mostra avís amb SweetAlert.
      */
     decrementarHabit: function () {
-      if (!this.habitSeleccionat || !this.socket) {
-        return;
-      }
+      if (!this.habitSeleccionat) return;
+      var id = this.habitSeleccionat.id;
       var progressActual = this.progresModal;
       var objectiu = this.objectiuModal;
-      var completatAvui = this.habitCompletatAvui(this.habitSeleccionat.id);
+      var completatAvui = this.habitCompletatAvui(id);
       if (completatAvui && (progressActual - 1) < objectiu) {
         this.mostrarAlertaRestarHabitCompletat(function () {
-          this.gameStore.enviarProgresHabit(this.habitSeleccionat.id, -1, this.socket);
+          this.actualitzarProgresLocal(id, progressActual - 1, false);
+          if (this.socket && this.socket.connected) {
+            this.gameStore.enviarProgresHabit(id, -1, this.socket);
+          }
         }.bind(this));
         return;
       }
-      this.gameStore.enviarProgresHabit(this.habitSeleccionat.id, -1, this.socket);
+      if (progressActual <= 0) return;
+      this.actualitzarProgresLocal(id, progressActual - 1, false);
+      if (this.socket && this.socket.connected) {
+        this.gameStore.enviarProgresHabit(id, -1, this.socket);
+      }
+    },
+
+    /**
+     * Comprova si un hàbit s'està processant actualment.
+     */
+    comvprovarSiSestaProcessant: function (idHabit) {
+      return this.procesantHabits.indexOf(idHabit) >= 0;
     },
 
     /**
      * Confirma la finalització de l'hàbit seleccionat.
+     * Usa socket si està connectat; sinó, fallback via API.
      */
-    confirmarHabit: function () {
-      if (!this.habitSeleccionat || !this.socket) {
-        return;
+    confirmarHabit: async function () {
+      var self = this;
+      if (!this.habitSeleccionat) return;
+      var habitId = this.habitSeleccionat.id;
+      var objectiu = this.objectiuModal || 1;
+      var usedApi = !this.socket || !this.socket.connected;
+      self.procesantHabits.push(habitId);
+      self.errorMissatge = "";
+      var success = false;
+      try {
+        var resultat = self.gameStore.completarHabit(habitId, self.socket);
+        self.tancarModalHabit();
+        if (resultat && typeof resultat.then === "function") {
+          success = await resultat;
+          if (success && usedApi) {
+            self.actualitzarProgresLocal(habitId, objectiu, true);
+            self.mostrarAlertaHabitCompletat();
+          }
+          if (usedApi) {
+            self.gameStore.obtenirProgresHabits().then(function (mapa) {
+              if (mapa) self.gameStore.habitProgress = mapa;
+            }).catch(function () {});
+          }
+        } else if (resultat === true) {
+          success = true;
+        }
+      } catch (err) {
+        console.error("Error completant hàbit:", err);
+        self.errorMissatge = "Error inesperat en completar l'hàbit.";
+      } finally {
+        self.procesantHabits = self.procesantHabits.filter(function (id) { return id !== habitId; });
       }
-      this.gameStore.confirmarHabit(this.habitSeleccionat.id, this.socket);
+      setTimeout(function () {
+        self.gameStore.obtenirEstatJoc();
+      }, 1200);
     },
 
     /**
@@ -752,47 +554,28 @@ export default {
      * Mostra alert genèrica.
      */
     mostrarAvis: function (text) {
-      if (typeof window !== "undefined" && window.alert) {
-        window.alert(text);
-      }
+      this.$swal.fire({
+        icon: 'info',
+        title: 'Atenció',
+        text: text
+      });
     },
     /**
      * Inicialitza la conexió de sockets.
      */
     inicialitzarSocket: function () {
       var self = this;
-      var nuxtApp = useNuxtApp();
-      
-      // Utilitzem la instància global injectada pel plugin
-      self.socket = nuxtApp.$socket;
-
-      if (!self.socket) {
-        console.error("❌ Socket global no disponible");
-        return;
-      }
-
-      self.socket.on("connect", function () {
-        console.log("✅ Conectat al servidor de sockets:", self.socket.id);
-      });
-
-      self.socket.on("update_xp", async function (data) {
-        console.log("⭐ Recept feedback gamificació:", data);
-        if (data) {
-          self.gameStore.actualitzarDesDeXpUpdate(data);
-        }
-        try {
-          await self.gameStore.obtenirEstatJoc();
-        } catch (error) {
-          console.error("❌ Error actualitzant estat:", error);
-        }
-      });
-
+      self.socket = useNuxtApp().$socket;
+      if (!self.socket) return;
       self.socket.on("habit_action_confirmed", function (payload) {
         if (!payload || payload.success !== true) {
           if (payload && payload.message) {
             self.mostrarAvis(payload.message);
           }
           return;
+        }
+        if (payload.xp_update && typeof payload.xp_update === "object") {
+          self.gameStore.actualitzarDesDeXpUpdate(payload.xp_update);
         }
         if (payload.action === "PROGRESS" && payload.progress !== undefined) {
           var habitId = payload.habit && payload.habit.id ? payload.habit.id : payload.habit_id;
@@ -802,7 +585,24 @@ export default {
           if (payload.habit && payload.habit.id) {
             self.actualitzarProgresLocal(payload.habit.id, self.obtenirProgres(payload.habit.id), true);
           }
+          if (payload.xp_update && typeof payload.xp_update === "object") {
+            self.gameStore.actualitzarDesDeXpUpdate(payload.xp_update);
+          }
           self.mostrarAlertaHabitCompletat();
+          var missionData = payload.mission_completed;
+          if (missionData && (missionData.success === true || missionData.success === "true")) {
+            self.gameStore.missioCompletada = true;
+            if (missionData.missio_objectiu !== undefined) {
+              self.gameStore.missioProgres = missionData.missio_objectiu;
+              self.gameStore.missioObjectiu = missionData.missio_objectiu;
+            }
+            if (missionData.xp_update && typeof missionData.xp_update === "object") {
+              self.gameStore.actualitzarDesDeXpUpdate(missionData.xp_update);
+            }
+            self.mostrarAlertaMissioCompletada();
+          }
+          // No cridar obtenirEstatJoc aquí: el payload del socket (xp_update) és la font de veritat.
+          // Una petició API posterior podria sobreescriure la ratxa correcta amb dades antigues.
         }
       });
 
@@ -822,11 +622,9 @@ export default {
       });
 
       self.gameStore.registrarListenerMissionCompletada(self.socket, function () {
-        self.mostrarAlertaMissioCompletada();
       });
 
       self.socket.on("disconnect", function () {
-        console.log("❌ Desconectat del servidor de sockets");
       });
     },
 
@@ -962,9 +760,9 @@ export default {
           if (self.ruletaPremiSeleccionat && self.ruletaPremiSeleccionat.label) {
             label = self.ruletaPremiSeleccionat.label;
           } else {
-            label = "un premi";
+            label = "...";
           }
-          self.mostrarAlertaRuleta("Felicidades!", "Has recibido " + label + "!", "success");
+          self.mostrarAlertaRuleta(self.$t('home.roulette_won_title'), self.$t('home.roulette_won_text', { premi: label }), "success");
         }, self.ruletaDuracioMs);
       }, 600);
     },
@@ -998,69 +796,47 @@ export default {
     gestionarResultatRuleta: function (data) {
       var self = this;
       self.aturarSpinRuleta();
-      if (!data) {
-        self.ruletaProcessant = false;
-        return;
-      }
+      self.ruletaProcessant = false;
+      if (!data) return;
       if (data.error) {
-        self.ruletaProcessant = false;
         self.mostrarAlertaRuleta("Ruleta", data.error, "error");
         return;
       }
-
       self.gameStore.canSpinRoulette = false;
       if (data.ruleta_ultima_tirada !== undefined) {
         self.gameStore.ruletaUltimaTirada = data.ruleta_ultima_tirada;
       }
-      self.ruletaProcessant = false;
+      self.gameStore.obtenirEstatJoc();
+      var premiLabel = data.label || data.premi_text || data.premi_valor || "";
+      if (premiLabel) {
+        self.$swal.fire({
+          icon: "success",
+          title: self.$t("home.roulette_won_title") || "Enhorabona!",
+          text: self.$t("home.roulette_won_text", { premi: premiLabel }) || "Has rebut " + premiLabel + "!"
+        });
+      }
     },
 
     /**
      * Mostra SweetAlert per la ruleta.
      */
     mostrarAlertaRuleta: function (titol, text, icona) {
-      var mostrarAlerta = function () {
-        if (typeof window !== "undefined" && window.Swal) {
-          window.Swal.fire({
-            title: titol,
-            text: text,
-            icon: icona || "success"
-          });
-        }
-      };
-
-      if (typeof window !== "undefined" && window.Swal) {
-        mostrarAlerta();
-      } else if (typeof document !== "undefined") {
-        var script = document.createElement("script");
-        script.src = "https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js";
-        script.onload = mostrarAlerta;
-        document.head.appendChild(script);
-      }
+      this.$swal.fire({
+        title: titol,
+        text: text,
+        icon: icona || "success"
+      });
     },
 
     /**
      * Mostra SweetAlert quan es completa un hàbit.
      */
     mostrarAlertaHabitCompletat: function () {
-      var mostrarAlerta = function () {
-        if (typeof window !== "undefined" && window.Swal) {
-          window.Swal.fire({
-            title: "Felicidades!",
-            text: "Has completado un hábito!",
-            icon: "success"
-          });
-        }
-      };
-
-      if (typeof window !== "undefined" && window.Swal) {
-        mostrarAlerta();
-      } else if (typeof document !== "undefined") {
-        var script = document.createElement("script");
-        script.src = "https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js";
-        script.onload = mostrarAlerta;
-        document.head.appendChild(script);
-      }
+      this.$swal.fire({
+        title: this.$t('home.habit_completed_title'),
+        text: this.$t('home.habit_completed_text'),
+        icon: "success"
+      });
     },
 
     /**
@@ -1075,250 +851,74 @@ export default {
       var monedes = this.habitSeleccionat && this.habitSeleccionat.recompensaMonedes ? this.habitSeleccionat.recompensaMonedes : 2;
       var monedesActuals = this.monedes || 0;
       var monedesDespres = monedesActuals - monedes;
-      var textMonedes = "Se't restarien " + xp + " XP i " + monedes + " monedes.";
+      var textMonedes = this.$t('home.confirm_undo_subtext', { xp: xp, monedes: monedes });
       if (monedesDespres < 0) {
-        textMonedes = textMonedes + " El teu saldo de monedes quedaria en " + monedesDespres + ".";
+        textMonedes += " " + this.$t('home.confirm_undo_balance', { monedes: monedesDespres });
       }
 
-      var executarAlerta = function () {
-        if (typeof window !== "undefined" && window.Swal) {
-          window.Swal.fire({
-            title: "Desfer la completació?",
-            html: "<p>Si restes ara, l'hàbit deixarà d'estar completat i perdras la recompensa obtinguda.</p><p class=\"mt-2 font-semibold\">" + textMonedes + "</p><p class=\"mt-2 text-sm text-gray-500\">N'estàs segur que vols continuar?</p>",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonText: "Confirmar",
-            cancelButtonText: "Cancel·lar",
-            confirmButtonColor: "#dc2626",
-            cancelButtonColor: "#374151",
-            customClass: {
-              popup: "swal-restar-habit-popup",
-              actions: "swal-restar-habit-actions",
-              confirmButton: "swal-restar-habit-confirm",
-              cancelButton: "swal-restar-habit-cancel"
-            },
-            buttonsStyling: true
-          }).then(function (result) {
-            if (result && result.isConfirmed && typeof callbackOnConfirm === "function") {
-              var habitId = self.habitSeleccionat && self.habitSeleccionat.id;
-              var nouProgress = self.progresModal - 1;
-              self.actualitzarProgresLocal(habitId, nouProgress, false);
-              callbackOnConfirm();
-            }
-          });
+      this.$swal.fire({
+        title: self.$t('home.confirm_undo_title'),
+        html: "<p>" + self.$t('home.confirm_undo_text') + "</p><p class=\"mt-2 font-semibold\">" + textMonedes + "</p><p class=\"mt-2 text-sm text-gray-500\">" + self.$t('home.confirm_undo_footer') + "</p>",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: self.$t('home.confirm'),
+        cancelButtonText: self.$t('home.cancel'),
+        buttonsStyling: true
+      }).then(function (result) {
+        if (result && result.isConfirmed && typeof callbackOnConfirm === "function") {
+          var habitId = self.habitSeleccionat && self.habitSeleccionat.id;
+          var nouProgress = self.progresModal - 1;
+          self.actualitzarProgresLocal(habitId, nouProgress, false);
+          callbackOnConfirm();
         }
-      };
-
-      if (typeof window !== "undefined" && window.Swal) {
-        executarAlerta();
-      } else if (typeof document !== "undefined") {
-        var script = document.createElement("script");
-        script.src = "https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js";
-        script.onload = executarAlerta;
-        document.head.appendChild(script);
-      }
+      });
     },
-
     /**
      * Mostra SweetAlert quan es puja de nivell.
      */
     mostrarAlertaLevelUp: function (data) {
-      var nivell = data && data.nivell ? data.nivell : this.nivell;
-      var bonusMonedes = data && data.bonus_monedes ? data.bonus_monedes : 10;
-      var mostrarAlerta = function () {
-        if (typeof window !== "undefined" && window.Swal) {
-          window.Swal.fire({
-            title: "Nivel aumentado!",
-            text: "Has subido al nivel " + nivell + ". Has conseguido +" + bonusMonedes + " monedas.",
-            icon: "success"
-          });
-        }
-      };
-
-      if (typeof window !== "undefined" && window.Swal) {
-        mostrarAlerta();
-      } else if (typeof document !== "undefined") {
-        var script = document.createElement("script");
-        script.src = "https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js";
-        script.onload = mostrarAlerta;
-        document.head.appendChild(script);
-      }
+      this.$swal.fire({
+        title: this.$t('home.level_up_title'),
+        text: this.$t('home.level_up_text', { nivell: data && data.nivell ? data.nivell : this.nivell, bonus: data && data.bonus_monedes ? data.bonus_monedes : 10 }),
+        icon: "success"
+      });
     },
 
     /**
      * Mostra SweetAlert quan la missió diària s'ha completat.
-     * Carrega SweetAlert2 des del CDN si encara no és disponible.
      */
     mostrarAlertaMissioCompletada: function () {
-      var mostrarAlerta = function () {
-        if (typeof window !== "undefined" && window.Swal) {
-          window.Swal.fire({
-            title: "Missió completada!",
-            text: "Has completat la teva missió diària! +10 monedes i +20 XP",
-            icon: "success"
-          });
-        }
-      };
-
-      if (typeof window !== "undefined" && window.Swal) {
-        mostrarAlerta();
-      } else if (typeof document !== "undefined") {
-        var script = document.createElement("script");
-        script.src = "https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js";
-        script.onload = mostrarAlerta;
-        document.head.appendChild(script);
-      }
+      this.$swal.fire({
+        title: this.$t('home.mission_completed_title'),
+        text: this.$t('home.mission_completed_text'),
+        icon: "success"
+      });
     },
-
-    /**
-     * Comprova si un hàbit s'està processant actualment.
-     */
-    comvprovarSiSestaProcessant: function (idHabit) {
-      var trobat = false;
-      var i;
-      for (i = 0; i < this.procesantHabits.length; i++) {
-        if (this.procesantHabits[i] === idHabit) {
-          trobat = true;
-          break;
-        }
-      }
-      return trobat;
-    },
-
-    /**
-     * Acció de completar un hàbit.
-     */
-    completarHabit: async function (idHabit) {
-      var self = this;
-      var success;
-
-      try {
-        // A. Marcar com a processant
-        self.procesantHabits.push(idHabit);
-        self.errorMissatge = "";
-
-        // B. Cridar acció del store
-        success = await self.gameStore.completarHabit(idHabit, self.socket);
-
-        if (!success) {
-          self.errorMissatge = "No s'ha pogut completar l'hàbit.";
-        }
-      } catch (error) {
-        console.error("Error completant hàbit:", error);
-        self.errorMissatge = "Error inesperat en completar l'hàbit.";
-      } finally {
-        // C. Treure de la llista de processant (clàssic)
-        var novaLlista = [];
-        var j;
-        for (j = 0; j < self.procesantHabits.length; j++) {
-            if (self.procesantHabits[j] !== idHabit) {
-                novaLlista.push(self.procesantHabits[j]);
-            }
-        }
-        self.procesantHabits = novaLlista;
-      }
-    },
-
-    /**
-     * Obre el modal de logros i carrega les dades des de l'API.
-     */
     obrirModalLogros: function () {
-        var self = this;
-        self.esObertModalLogros = true;
-        
-        // Carregar logros (gestionat pel company)
-        self.logroStore.carregarLogros()
-            .then(function() {
-                console.log("🏆 Logros carregats al modal");
-            })
-            .catch(function(err) {
-                console.error("❌ Error carregant logros al modal:", err);
-            });
+      var self = this;
+      self.esObertModalLogros = true;
+      self.logroStore.carregarLogros().then(function () {
+      }).catch(function (err) {
+        console.error("Error carregant logros al modal:", err);
+      });
     },
-
-    /**
-     * Tanca el modal de logros.
-     */
-    tancarModalLogros: function () {
-        this.esObertModalLogros = false;
+    tancarModalLogros: function () { this.esObertModalLogros = false; },
+    enviarSpinRuleta: function () {
+      if (this.socket) {
+        this.socket.emit("roulette_spin", {});
+      }
     }
   }
 };
 </script>
 
 <style scoped>
-/* Estils locals per a la pàgina d'inici */
-.roulette-wheel {
-  width: min(78vw, 280px);
-  height: min(78vw, 280px);
-  border-radius: 50%;
-  border: 6px solid #ffffff;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
-  position: relative;
-  cursor: pointer;
+.animate-float {
+  animation: float 6s ease-in-out infinite;
 }
-
-.roulette-disabled {
-  filter: grayscale(1);
-  opacity: 0.6;
-  pointer-events: none;
-}
-
-.roulette-pointer {
-  position: absolute;
-  top: -10px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 0;
-  height: 0;
-  border-left: 10px solid transparent;
-  border-right: 10px solid transparent;
-  border-bottom: 18px solid #111827;
-  z-index: 10;
-}
-
-.roulette-label {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform-origin: center;
-  width: 72px;
-  margin-left: -36px;
-  font-size: 9px;
-  font-weight: 700;
-  color: #111827;
-  text-align: center;
-  user-select: none;
-  pointer-events: none;
-}
-
-@media (min-width: 640px) {
-  .roulette-label {
-    width: 90px;
-    margin-left: -45px;
-    font-size: 10px;
-  }
-}
-</style>
-
-<style>
-/* Estils globals per als botons del SweetAlert de restar hàbit - sempre visibles */
-.swal-restar-habit-popup .swal-restar-habit-confirm {
-  opacity: 1 !important;
-  visibility: visible !important;
-  background-color: #dc2626 !important;
-  color: white !important;
-  border: none !important;
-  padding: 0.625em 1.5em !important;
-  font-weight: 600 !important;
-}
-.swal-restar-habit-popup .swal-restar-habit-cancel {
-  opacity: 1 !important;
-  visibility: visible !important;
-  background-color: #374151 !important;
-  color: white !important;
-  border: none !important;
-  padding: 0.625em 1.5em !important;
-  font-weight: 600 !important;
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+  100% { transform: translateY(0px); }
 }
 </style>

@@ -1,11 +1,33 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2024-04-03',
-  ssr: false,
   devtools: { enabled: true },
   modules: [
     '@pinia/nuxt',
+    '@nuxtjs/i18n',
   ],
+  routeRules: {
+    '/**': { middleware: ['require-onboarding'] },
+  },
+  i18n: {
+    lazy: false,
+    langDir: 'lang',
+    defaultLocale: 'ca',
+    preload: ['ca', 'es', 'en'],
+    strictMessage: false,
+    strategy: 'no_prefix',
+    locales: [
+      { code: 'ca', iso: 'ca-ES', file: 'ca.json', name: 'Català' },
+      { code: 'es', iso: 'es-ES', file: 'es.json', name: 'Español' },
+      { code: 'en', iso: 'en-US', file: 'en.json', name: 'English' },
+    ],
+    detectBrowserLanguage: {
+      useCookie: true,
+      cookieKey: 'i18n_redirected',
+      alwaysRedirect: true,
+      fallbackLocale: 'ca',
+    },
+  },
   css: ['~/assets/css/main.css'],
   postcss: {
     plugins: {
@@ -18,73 +40,33 @@ export default defineNuxtConfig({
     host: '0.0.0.0',
     port: 3000,
   },
+  // HMR al mateix port que el dev server (3000): evita ws://localhost:24678 i ERR_EMPTY_RESPONSE amb Docker.
+  vite: {
+    server: {
+      hmr: {
+        protocol: 'ws',
+        host: 'localhost',
+        port: 3000,
+        clientPort: 3000,
+      },
+      watch: {
+        usePolling: true,
+      },
+    },
+  },
   runtimeConfig: {
     public: {
       socketUrl: process.env.SOCKET_URL || 'http://localhost:3001',
       apiUrl: process.env.API_URL || 'http://localhost:8000',
     },
   },
-  experimental: {
-    // Si un chunk falla (perquè l'usuari navega a una ruta i l'arxiu JS o CSS ja no existeix desprès del desplegament)
-    // Forçarà el navegador a recarregar la pàgina
-    emitRouteChunkError: 'automatic',
-  },
-  app: {
-    baseURL: '/',
-    buildAssetsDir: '/_nuxt/',
-    head: {
-      htmlAttrs: {
-        lang: 'ca',
+  vite: {
+    server: {
+      hmr: {
+        protocol: 'ws',
+        host: 'localhost',
+        port: 24678,
       },
-      title: 'Loopy — Crea hàbits, trenca rutines',
-      meta: [
-        { charset: 'utf-8' },
-        { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-        {
-          name: 'description',
-          content: 'Loopy és l\'app per crear, seguir i mantenir hàbits saludables amb missions, plantilles i assoliments. Construeix la teva millor versió, dia a dia.',
-        },
-        { name: 'theme-color', content: '#7C3AED' },
-
-        // Open Graph (Facebook, WhatsApp, LinkedIn, Telegram, Discord, iMessage...)
-        { property: 'og:type', content: 'website' },
-        { property: 'og:site_name', content: 'Loopy' },
-        { property: 'og:title', content: 'Loopy — Crea hàbits, trenca rutines' },
-        {
-          property: 'og:description',
-          content: 'Crea, segueix i mantén hàbits saludables amb missions, plantilles i assoliments. Construeix la teva millor versió, dia a dia.',
-        },
-        { property: 'og:url', content: 'https://looppy.cat' },
-        { property: 'og:image', content: 'https://looppy.cat/img/og-image.png' },
-        { property: 'og:image:secure_url', content: 'https://looppy.cat/img/og-image.png' },
-        { property: 'og:image:type', content: 'image/png' },
-        { property: 'og:image:width', content: '1200' },
-        { property: 'og:image:height', content: '630' },
-        { property: 'og:image:alt', content: 'Logo de Loopy amb el lema Crea hàbits, trenca rutines' },
-        { property: 'og:locale', content: 'ca_ES' },
-        { property: 'og:locale:alternate', content: 'es_ES' },
-
-        // Twitter / X
-        { name: 'twitter:card', content: 'summary_large_image' },
-        { name: 'twitter:title', content: 'Loopy — Crea hàbits, trenca rutines' },
-        {
-          name: 'twitter:description',
-          content: 'Crea, segueix i mantén hàbits saludables amb missions, plantilles i assoliments.',
-        },
-        { name: 'twitter:image', content: 'https://looppy.cat/img/og-image.png' },
-        { name: 'twitter:image:alt', content: 'Logo de Loopy' },
-      ],
-      link: [
-        { rel: 'icon', type: 'image/png', href: '/img/favicon.png' },
-        { rel: 'canonical', href: 'https://looppy.cat' },
-      ],
     },
-  },
-  routeRules: {
-    // Els assets _nuxt/ porten hash, es poden guardar a la memòria cau durant un any sencer
-    '/_nuxt/**': { headers: { 'Cache-Control': 'public, max-age=31536000, immutable' } },
-    // NOTA: NO usar regla catch-all '/**' aquí. En mode SPA (ssr:false) provoca errors 500
-    // en servir arxius binaris del directori public/ (PNG, JPG, etc.)
-    // Per evitar la cau del HTML, configurar Cache-Control a Nginx en lloc d'aquí.
   },
 })

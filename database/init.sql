@@ -38,7 +38,8 @@ CREATE TABLE USUARIS (
     id SERIAL PRIMARY KEY,
     nom VARCHAR(100) NOT NULL,
     email VARCHAR(150) UNIQUE NOT NULL,
-    contrasenya_hash VARCHAR(255) NOT NULL,
+    google_id VARCHAR(255) UNIQUE,
+    contrasenya_hash VARCHAR(255),
     nivell INT DEFAULT 1,
     xp_total INT DEFAULT 0,
     xp_actual_nivel INT DEFAULT 0,
@@ -203,4 +204,72 @@ CREATE TABLE REPORTS (
     estat VARCHAR(20) DEFAULT 'pendent',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- 6. SOCIAL FORUM
+-- ----------------------------------------------------------
+
+CREATE TABLE SOCIAL_POSTS (
+    id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES USUARIS(id) ON DELETE CASCADE,
+    content TEXT NOT NULL,
+    habit_id INT REFERENCES HABITS(id) ON DELETE SET NULL,
+    plantilla_id INT REFERENCES PLANTILLES(id) ON DELETE SET NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP
+);
+
+CREATE TABLE SOCIAL_COMMENTS (
+    id SERIAL PRIMARY KEY,
+    post_id INT REFERENCES SOCIAL_POSTS(id) ON DELETE CASCADE,
+    user_id INT REFERENCES USUARIS(id) ON DELETE CASCADE,
+    parent_id INT REFERENCES SOCIAL_COMMENTS(id) ON DELETE CASCADE,
+    content TEXT NOT NULL,
+    depth_level INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE SOCIAL_LIKES (
+    id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES USUARIS(id) ON DELETE CASCADE,
+    likeable_id INT NOT NULL,
+    likeable_type VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, likeable_id, likeable_type)
+);
+
+CREATE INDEX idx_social_posts_user_id ON SOCIAL_POSTS(user_id);
+CREATE INDEX idx_social_posts_created_at ON SOCIAL_POSTS(created_at);
+CREATE INDEX idx_social_comments_post_id ON SOCIAL_COMMENTS(post_id);
+CREATE INDEX idx_social_comments_user_id ON SOCIAL_COMMENTS(user_id);
+CREATE INDEX idx_social_likes_likeable ON SOCIAL_LIKES(likeable_id, likeable_type);
+
+-- 7. SOCIAL CONNECTIVITY
+-- ----------------------------------------------------------
+
+CREATE TABLE FRIENDSHIPS (
+    id SERIAL PRIMARY KEY,
+    requester_id INT REFERENCES USUARIS(id) ON DELETE CASCADE,
+    addressee_id INT REFERENCES USUARIS(id) ON DELETE CASCADE,
+    status VARCHAR(20) DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(requester_id, addressee_id)
+);
+
+CREATE TABLE PRIVATE_MESSAGES (
+    id SERIAL PRIMARY KEY,
+    sender_id INT REFERENCES USUARIS(id) ON DELETE CASCADE,
+    receiver_id INT REFERENCES USUARIS(id) ON DELETE CASCADE,
+    contingut TEXT NOT NULL,
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_friendships_requester ON FRIENDSHIPS(requester_id);
+CREATE INDEX idx_friendships_addressee ON FRIENDSHIPS(addressee_id);
+CREATE INDEX idx_friendships_status ON FRIENDSHIPS(status);
+CREATE INDEX idx_private_messages_sender ON PRIVATE_MESSAGES(sender_id);
+CREATE INDEX idx_private_messages_receiver ON PRIVATE_MESSAGES(receiver_id);
 

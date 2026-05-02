@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { authFetch } from '~/utils/authFetch.js';
+import { authFetch } from '~/composables/useApi.js';
 
 /**
  * Store per a la gestió dels logros i medalles.
@@ -14,6 +14,17 @@ export var useLogroStore = defineStore('logro', {
         };
     },
     actions: {
+        /**
+         * Estableix els logros directament (per exemple des de carregarDadesHome).
+         */
+        setLogros: function (logrosArray) {
+            if (Array.isArray(logrosArray)) {
+                this.logros = logrosArray;
+            } else {
+                this.logros = [];
+            }
+        },
+
         /**
          * Carrega tots els logros des de l'API de Laravel.
          * El endpoint és gestionat pel company.

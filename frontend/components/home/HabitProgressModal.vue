@@ -16,7 +16,7 @@
           {{ titolHabit }}
         </h2>
         <p class="text-xs text-gray-500">
-          Objectiu diari: {{ objectiu }} {{ unitat }}
+          {{ $t('habits.daily_goal_label') }}: {{ objectiu }} {{ unitat }}
         </p>
 
         <div class="relative w-48 h-48 flex items-center justify-center">
@@ -64,13 +64,13 @@
             :disabled="!potCompletar"
             @click="completar"
           >
-            Completar hàbit
+            {{ $t('habits.complete_habit') }}
           </button>
           <button
             class="w-full py-3 rounded-xl font-bold text-gray-600 border border-gray-200 hover:bg-gray-50"
             @click="tancar"
           >
-            Enrere
+            {{ $t('habits.back') }}
           </button>
         </div>
       </div>

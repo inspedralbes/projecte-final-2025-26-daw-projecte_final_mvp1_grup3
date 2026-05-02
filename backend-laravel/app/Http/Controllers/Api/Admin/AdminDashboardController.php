@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Admin;
 //================================ NAMESPACES / IMPORTS ============
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Admin\AdminDashboardResource;
 use App\Models\AdminLog;
 use App\Models\Habit;
 use App\Models\Plantilla;
@@ -117,18 +118,17 @@ class AdminDashboardController extends Controller
             ];
         }
 
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'totalUsuaris' => $usuarisTotals,
-                'connectats' => $connectatsAra,
-                'prohibits' => $prohibits,
-                'logrosActius' => $plantillesPubliques, // En el frontend s'usava per plantilles o similar
-                'totalHabits' => Habit::count(),
-                'top_5_plantilles' => $topPlantilles,
-                'top_5_habits' => $top5Habits,
-                'ultims_10_logs' => $ultimsLogs,
-            ]
-        ]);
+        $dades = [
+            'totalUsuaris' => $usuarisTotals,
+            'connectats' => $connectatsAra,
+            'prohibits' => $prohibits,
+            'logrosActius' => $plantillesPubliques,
+            'totalHabits' => Habit::count(),
+            'top_5_plantilles' => $topPlantilles,
+            'top_5_habits' => $top5Habits,
+            'ultims_10_logs' => $ultimsLogs,
+        ];
+
+        return response()->json((new AdminDashboardResource($dades))->resolve(request()));
     }
 }

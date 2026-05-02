@@ -27,7 +27,6 @@ class HabitResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        // A. Obtenir 'completat' mirant si hi ha registre d'avui a REGISTRE_ACTIVITAT
         $completat = false;
         $usuariId = $request->user_id ?? null;
         if ($usuariId) {
@@ -37,7 +36,6 @@ class HabitResource extends JsonResource
                 ->exists();
         }
 
-        // B. Mapatge dels camps del model
         return [
             'id' => $this->id,
             'usuari_id' => $this->usuari_id,
@@ -47,11 +45,11 @@ class HabitResource extends JsonResource
             'dificultat' => $this->dificultat,
             'frequencia_tipus' => $this->frequencia_tipus,
             'dies_setmana' => $this->parseDiesSetmana($this->dies_setmana),
-            'dies_setmana' => $this->parseDiesSetmana($this->dies_setmana),
             'objectiu_vegades' => $this->objectiu_vegades,
             'unitat' => $this->unitat,
             'icona' => $this->icona,
             'color' => $this->color,
+            'metadata' => $this->metadata ?? null,
             'completat' => $completat,
         ];
     }

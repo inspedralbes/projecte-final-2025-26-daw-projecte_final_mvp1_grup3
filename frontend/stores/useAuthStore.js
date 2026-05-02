@@ -11,7 +11,8 @@ export var useAuthStore = defineStore('auth', {
       user: null,
       admin: null,
       role: null, // 'user' | 'admin'
-      isAuthenticated: false
+      isAuthenticated: false,
+      requiresOnboarding: false
     };
   },
 
@@ -43,14 +44,15 @@ export var useAuthStore = defineStore('auth', {
             try {
               this.user = JSON.parse(userStr);
               this.admin = null;
-            } catch (e) {}
+            } catch (e) { }
           }
           if (adminStr) {
             try {
               this.admin = JSON.parse(adminStr);
               this.user = null;
-            } catch (e) {}
+            } catch (e) { }
           }
+          this.sincronitzarOnboardingRequeritDesDeStorage();
           return;
         }
       }
@@ -60,6 +62,7 @@ export var useAuthStore = defineStore('auth', {
       }
       this.role = roleCookie.value;
       this.isAuthenticated = true;
+      this.sincronitzarOnboardingRequeritDesDeStorage();
     },
 
     /**
@@ -111,8 +114,31 @@ export var useAuthStore = defineStore('auth', {
     },
 
     /**
+     * Login amb Google. GET /api/auth/google/callback?code=...
+     */
+    loginWithGoogle: async function (code) {
+      var config = useRuntimeConfig();
+      var base = (config.public.apiUrl || "").replace(/\/$/, "");
+      var url = base + "/api/auth/google/callback?code=" + encodeURIComponent(code);
+      var resposta = await fetch(url, {
+        method: "GET",
+        headers: {
+          Accept: "application/json"
+        },
+        credentials: "include"
+      });
+      var dades = await resposta.json();
+      if (!resposta.ok) {
+        throw new Error(dades.message || "Error en login amb Google");
+      }
+      this.aplicarSessio(dades);
+      return dades;
+    },
+
+    /**
      * Logout. Esborra token i dades.
      */
+
     logout: async function () {
       var config = useRuntimeConfig();
       var base = (config.public.apiUrl || '').replace(/\/$/, '');
@@ -133,11 +159,17 @@ export var useAuthStore = defineStore('auth', {
       this.admin = null;
       this.role = null;
       this.isAuthenticated = false;
+      this.requiresOnboarding = false;
+      var onboardingCookie = useCookie('loopy_onboarding_done');
+      onboardingCookie.value = null;
       if (typeof window !== 'undefined') {
         localStorage.removeItem('loopy_token');
         localStorage.removeItem('loopy_user');
         localStorage.removeItem('loopy_admin');
         localStorage.removeItem('loopy_role');
+        localStorage.removeItem('loopy_onboarding_done');
+        localStorage.removeItem('loopy_onboarding_user_id');
+        localStorage.removeItem('loopy_requires_onboarding_user_id');
       }
     },
 
@@ -174,6 +206,15 @@ export var useAuthStore = defineStore('auth', {
         this.user = null;
       }
       this.isAuthenticated = true;
+      if (typeof dades.requires_onboarding === 'boolean') {
+        if (dades.requires_onboarding) {
+          this.marcarOnboardingComPendent();
+        } else {
+          this.desmarcarOnboardingPendent();
+        }
+      } else {
+        this.sincronitzarOnboardingRequeritDesDeStorage();
+      }
       if (typeof window !== 'undefined') {
         if (this.token) {
           localStorage.setItem('loopy_token', this.token);
@@ -189,7 +230,69 @@ export var useAuthStore = defineStore('auth', {
           localStorage.setItem('loopy_admin', JSON.stringify(this.admin));
           localStorage.removeItem('loopy_user');
         }
+        this.reconciliarOnboardingAmbUsuari();
       }
+    },
+
+    /**
+     * Si l'onboarding estava marcat per un altre usuari (navegador compartit), el buida.
+     */
+    reconciliarOnboardingAmbUsuari: function () {
+      if (typeof window === 'undefined' || !this.user || this.user.id == null) {
+        return;
+      }
+      var actual = String(this.user.id);
+      var marcatPer = localStorage.getItem('loopy_onboarding_user_id');
+      if (marcatPer && marcatPer !== actual) {
+        this.reiniciarEstatOnboarding();
+      }
+      this.sincronitzarOnboardingRequeritDesDeStorage();
+    },
+
+    /**
+     * Buida marques d'onboarding (cookie, localStorage). U després de registre o canvi d'usuari.
+     */
+    reiniciarEstatOnboarding: function () {
+      if (typeof window === 'undefined') {
+        return;
+      }
+      var c = useCookie('loopy_onboarding_done', { sameSite: 'lax' });
+      c.value = null;
+      localStorage.removeItem('loopy_onboarding_done');
+      localStorage.removeItem('loopy_onboarding_user_id');
+    },
+
+    /**
+     * Marca que l'usuari actual ha de completar onboarding.
+     */
+    marcarOnboardingComPendent: function () {
+      if (typeof window === 'undefined' || !this.user || this.user.id == null || this.role !== 'user') {
+        return;
+      }
+      localStorage.setItem('loopy_requires_onboarding_user_id', String(this.user.id));
+      this.requiresOnboarding = true;
+    },
+
+    /**
+     * Desmarca onboarding pendent per a qualsevol usuari del navegador.
+     */
+    desmarcarOnboardingPendent: function () {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('loopy_requires_onboarding_user_id');
+      }
+      this.requiresOnboarding = false;
+    },
+
+    /**
+     * Sincronitza l'estat local de "onboarding pendent" amb localStorage.
+     */
+    sincronitzarOnboardingRequeritDesDeStorage: function () {
+      if (typeof window === 'undefined' || this.role !== 'user' || !this.user || this.user.id == null) {
+        this.requiresOnboarding = false;
+        return;
+      }
+      var pendentPer = localStorage.getItem('loopy_requires_onboarding_user_id');
+      this.requiresOnboarding = pendentPer === String(this.user.id);
     },
 
     /**

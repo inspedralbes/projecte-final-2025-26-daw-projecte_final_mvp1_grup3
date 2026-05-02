@@ -15,8 +15,9 @@ export default defineNuxtRouteMiddleware(function (to, from) {
   }
 
   var path = to.path || "";
-  var rutasPubliques = ["/login", "/Login", "/registre", "/"];
+  var rutasPubliques = ["/auth/login", "/auth/registre", "/login", "/Login", "/registre", "/", "/auth/google/redirect"];
   var esPublica = false;
+
   // B. Comprovar si la ruta actual és pública
   for (var i = 0; i < rutasPubliques.length; i++) {
     var r = rutasPubliques[i];
@@ -41,7 +42,7 @@ export default defineNuxtRouteMiddleware(function (to, from) {
           return navigateTo("/home");
         }
       }
-      return navigateTo("/login");
+      return navigateTo("/auth/login");
     }
     return;
   }
@@ -50,7 +51,7 @@ export default defineNuxtRouteMiddleware(function (to, from) {
   // A SSR no tenim localStorage; permetre navegació i deixar que el client carregui l'auth
   if (!role) {
     if (typeof window !== "undefined") {
-      return navigateTo("/login?redirect=" + encodeURIComponent(path));
+      return navigateTo("/auth/login?redirect=" + encodeURIComponent(path));
     }
     return;
   }

@@ -1,0 +1,38 @@
+[
+  {
+    "id": 1,
+    "nom": "Beure Aigua",
+    "descripcio": "Beure 2 litres d'aigua al dia",
+    "recompensaXP": 50,
+    "recompensaMonedes": 2,
+    "objectiuVegades": 4,
+    "unitat": "gots",
+    "diesSetmana": [true, true, true, true, true, true, true],
+    "icona": "💧",
+    "color": "#3B82F6"
+  },
+  {
+    "id": 2,
+    "nom": "Fer Exercici",
+    "descripcio": "30 minuts d'exercici",
+    "recompensaXP": 100,
+    "recompensaMonedes": 5,
+    "objectiuVegades": 1,
+    "unitat": "vegades",
+    "diesSetmana": [true, true, true, true, true, false, false],
+    "icona": "🏋️",
+    "color": "#10B981"
+  },
+  {
+    "id": 3,
+    "nom": "Llegir",
+    "descripcio": "Llegir 20 pàgines",
+    "recompensaXP": 30,
+    "recompensaMonedes": 1,
+    "objectiuVegades": 1,
+    "unitat": "vegades",
+    "diesSetmana": [true, true, true, true, true, true, true],
+    "icona": "📖",
+    "color": "#8B5CF6"
+  }
+]

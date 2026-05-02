@@ -1,0 +1,5 @@
+{
+  "1": { "progress": 2, "completed_today": false },
+  "2": { "progress": 0, "completed_today": false },
+  "3": { "progress": 1, "completed_today": true }
+}

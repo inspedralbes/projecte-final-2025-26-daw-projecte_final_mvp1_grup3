@@ -33,13 +33,16 @@ async function obtenirClient() {
   var host = process.env.REDIS_HOST || '127.0.0.1';
   var port = parseInt(process.env.REDIS_PORT || '6379', 10);
 
-  client = redis.createClient({
+  var redisOpts = {
     socket: {
       host: host,
       port: port
-    },
-    password: process.env.REDIS_PASSWORD || 'loopy_secret'
-  });
+    }
+  };
+  if (process.env.REDIS_PASSWORD) {
+    redisOpts.password = process.env.REDIS_PASSWORD;
+  }
+  client = redis.createClient(redisOpts);
 
   client.on('error', function (err) {
     console.error('Error Redis Client (rouletteQueue):', err);

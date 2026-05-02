@@ -1,0 +1,14 @@
+{
+  "id": 1,
+  "nom": "Test User",
+  "email": "test@example.com",
+  "nivell": 5,
+  "monedes": 120,
+  "xp_total": 2500,
+  "ratxa_actual": 3,
+  "ratxa_maxima": 10,
+  "logros": [
+    { "id": 1, "nom": "Primer Hàbit", "descripcio": "Crea el teu primer hàbit", "obtingut": true },
+    { "id": 2, "nom": "Ratxa de 3", "descripcio": "Aconsegueix 3 dies seguits", "obtingut": true }
+  ]
+}

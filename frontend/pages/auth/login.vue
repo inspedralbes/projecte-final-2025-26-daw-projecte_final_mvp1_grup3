@@ -172,9 +172,7 @@ export default {
       }
     },
     loginAmbGoogle: function () {
-      const config = useRuntimeConfig();
-      const apiUrl = config.public.apiUrl;
-      window.location.href = `${apiUrl}/api/auth/google/redirect`;
+      window.location.href = 'http://localhost:8000/api/auth/google/redirect';
     }
   }
 };

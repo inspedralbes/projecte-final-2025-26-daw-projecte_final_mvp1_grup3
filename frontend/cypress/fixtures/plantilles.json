@@ -1,0 +1,23 @@
+[
+  {
+    "id": 1,
+    "titol": "Vida Saludable",
+    "categoria": "Salut",
+    "esPublica": true,
+    "creadorId": 1,
+    "habits": [
+      { "id": 1, "nom": "Beure Aigua", "icona": "💧", "color": "#3B82F6" },
+      { "id": 2, "nom": "Fer Exercici", "icona": "🏋️", "color": "#10B981" }
+    ]
+  },
+  {
+    "id": 2,
+    "titol": "Productivitat",
+    "categoria": "Treball",
+    "esPublica": false,
+    "creadorId": 2,
+    "habits": [
+      { "id": 3, "nom": "Llegir", "icona": "📖", "color": "#8B5CF6" }
+    ]
+  }
+]

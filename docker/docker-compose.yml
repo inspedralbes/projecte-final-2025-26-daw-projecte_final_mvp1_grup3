@@ -200,6 +200,7 @@ services:
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-1.5-flash}
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      REDIS_PASSWORD: ""
       JWT_SECRET: ${JWT_SECRET:-4b2e95c71827e0f29601e4566112841c47b7fe53eab506fb3884be7e8735c623}
       LARAVEL_URL: http://backend-laravel:8000
     volumes:
@@ -226,6 +227,8 @@ services:
       NUXT_PORT: 3000
       SOCKET_URL: http://localhost:3001
       API_URL: http://localhost:8000
+      NUXT_PUBLIC_API_URL: http://localhost:8000
+      NUXT_PUBLIC_SOCKET_URL: http://localhost:3001
       NITRO_PORT: 3000
     volumes:
       - ../frontend/assets:/app/assets

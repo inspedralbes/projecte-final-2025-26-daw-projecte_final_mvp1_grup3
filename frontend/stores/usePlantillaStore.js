@@ -45,10 +45,16 @@ export var usePlantillaStore = defineStore("plantilla", {
       this.error = null;
 
       try {
-        configuracio = useRuntimeConfig();
-        urlApi = configuracio.public.apiUrl;
+        try {
+          configuracio = useRuntimeConfig();
+          urlApi = configuracio.public.apiUrl;
+        } catch (e) {
+          urlApi = null;
+        }
+        if (!urlApi || typeof urlApi !== 'string' || !urlApi.startsWith('http')) {
+          urlApi = 'http://localhost:8000';
+        }
 
-        // A. Normalitzar la URL base
         if (urlApi.endsWith("/")) {
           base = urlApi.slice(0, -1);
         } else {

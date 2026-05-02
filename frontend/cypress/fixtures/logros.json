@@ -1,0 +1,6 @@
+[
+  { "id": 1, "nom": "Primer Hàbit", "descripcio": "Crea el teu primer hàbit", "tipus": "habit", "obtingut": true, "data_obtencio": "2026-01-15" },
+  { "id": 2, "nom": "Ratxa de 3", "descripcio": "Aconsegueix 3 dies seguits", "tipus": "streak", "obtingut": true, "data_obtencio": "2026-02-01" },
+  { "id": 3, "nom": "Ratxa de 7", "descripcio": "Aconsegueix 7 dies seguits", "tipus": "streak", "obtingut": false, "data_obtencio": null },
+  { "id": 4, "nom": "Mestre XP", "descripcio": "Acumula 5000 XP", "tipus": "xp", "obtingut": false, "data_obtencio": null }
+]

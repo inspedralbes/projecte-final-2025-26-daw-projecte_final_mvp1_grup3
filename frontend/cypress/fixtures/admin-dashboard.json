@@ -1,0 +1,10 @@
+{
+  "success": true,
+  "data": {
+    "totalUsuaris": 42,
+    "totalHabits": 156,
+    "connectats": 8,
+    "prohibits": 2,
+    "logrosActius": 12
+  }
+}

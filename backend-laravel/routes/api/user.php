@@ -78,6 +78,7 @@ Route::middleware('ensure.user')->group(function () {
 
     Route::get('/clans', [ClanController::class, 'index']);
     Route::post('/clans', [ClanController::class, 'create']);
+    Route::get('/clans/me', [ClanController::class, 'myClan']);
     Route::get('/clans/{id}', [ClanController::class, 'show']);
     Route::put('/clans/{id}', [ClanController::class, 'update']);
     Route::post('/clans/{id}/leave', [ClanController::class, 'leave']);

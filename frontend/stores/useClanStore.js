@@ -39,6 +39,25 @@ export var useClanStore = defineStore("clan", {
             }
         },
 
+        getMyClan: async function () {
+            this.loading = true;
+            this.error = null;
+            try {
+                var resposta = await authFetch("/api/clans/me", {
+                    method: "GET"
+                });
+                if (!resposta.ok) throw new Error("Error fetching my clan");
+                var data = await resposta.json();
+                this.currentClan = data.clan;
+                return data.clan;
+            } catch (e) {
+                this.error = e.message;
+                return null;
+            } finally {
+                this.loading = false;
+            }
+        },
+
         getClan: async function (id) {
             this.loading = true;
             this.error = null;
@@ -151,13 +170,12 @@ export var useClanStore = defineStore("clan", {
             this.loading = true;
             this.error = null;
             try {
-                var resposta = await authFetch("/api/clan-requests/join-public", {
-                    method: "POST",
-                    body: JSON.stringify({ clan_id: clanId })
+                var resposta = await authFetch("/api/clans/" + clanId + "/join", {
+                    method: "POST"
                 });
                 if (!resposta.ok) {
                     var errResponse = await resposta.json();
-                    throw new Error(errResponse.message || "Error joining clan");
+                    throw new Error(errResponse.error || errResponse.message || "Error joining clan");
                 }
                 return await resposta.json();
             } catch (e) {
@@ -172,9 +190,8 @@ export var useClanStore = defineStore("clan", {
             this.loading = true;
             this.error = null;
             try {
-                var resposta = await authFetch("/api/clan-requests/request-join", {
-                    method: "POST",
-                    body: JSON.stringify({ clan_id: clanId })
+                var resposta = await authFetch("/api/clans/" + clanId + "/request", {
+                    method: "POST"
                 });
                 if (!resposta.ok) {
                     var errResponse = await resposta.json();
@@ -193,7 +210,7 @@ export var useClanStore = defineStore("clan", {
             this.loading = true;
             this.error = null;
             try {
-                var resposta = await authFetch("/api/clan-requests/pending/" + clanId, {
+                var resposta = await authFetch("/api/clans/" + clanId + "/requests", {
                     method: "GET"
                 });
                 if (!resposta.ok) throw new Error("Error fetching pending requests");
@@ -277,13 +294,13 @@ export var useClanStore = defineStore("clan", {
             this.loading = true;
             this.error = null;
             try {
-                var resposta = await authFetch("/api/clan-requests/invite", {
+                var resposta = await authFetch("/api/clans/" + clanId + "/invite", {
                     method: "POST",
-                    body: JSON.stringify({ clan_id: clanId, usuari_id: userId })
+                    body: JSON.stringify({ user_id: userId })
                 });
                 if (!resposta.ok) {
                     var errResponse = await resposta.json();
-                    throw new Error(errResponse.message || "Error al convidar");
+                    throw new Error(errResponse.error || errResponse.message || "Error al convidar");
                 }
                 return await resposta.json();
             } catch (e) {
@@ -294,12 +311,12 @@ export var useClanStore = defineStore("clan", {
             }
         },
 
-        acceptInvitation: async function (requestId) {
+        acceptInvitation: async function (invitationId) {
             this.loading = true;
             this.error = null;
             try {
-                var resposta = await authFetch("/api/clan-requests/" + requestId + "/accept-invitation", {
-                    method: "POST"
+                var resposta = await authFetch("/api/clan-invitations/" + invitationId + "/accept", {
+                    method: "PUT"
                 });
                 if (!resposta.ok) throw new Error("Error accepting invitation");
                 return await resposta.json();

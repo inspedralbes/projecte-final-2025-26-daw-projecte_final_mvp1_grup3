@@ -27,6 +27,7 @@ import ClanDetail from "~/components/clans/ClanDetail.vue";
 import ClanSettings from "~/components/clans/ClanSettings.vue";
 import InvitationModal from "~/components/clans/InvitationModal.vue";
 import { useAuthStore } from "~/stores/useAuthStore.js";
+import { useNuxtApp } from "#app";
 import { useClanStore } from "~/stores/useClanStore.js";
 
 export default {
@@ -38,12 +39,14 @@ export default {
     ClanSettings,
     InvitationModal
   },
-  data: function() {
+data: function() {
      return {
         showEdit: false,
-        showInvite: false
+        showInvite: false,
+        checkInterval: null,
+        alreadyExpelled: false
      }
-  },
+   },
   computed: {
      clanId: function() {
         return this.$route.params.id;
@@ -60,14 +63,64 @@ export default {
         return this.clanData ? this.clanData.nom : 'Clan';
      }
   },
-  mounted: function() {
+mounted: function() {
      var authStore = useAuthStore();
      if (authStore.user && authStore.user.nivell < 5) {
         alert("Has de ser nivell 5 o superior per accedir als clans.");
         this.$router.push("/social");
      }
-  },
+     this.checkMembership();
+     this.setupSocketListener();
+   },
+   beforeUnmount: function() {
+     this.removeSocketListener();
+   },
   methods: {
+     setupSocketListener: function() {
+       var self = this;
+       var tryConnect = function() {
+          var nuxtApp = useNuxtApp();
+          var authStore = useAuthStore();
+          if (nuxtApp.$socket && nuxtApp.$socket.connected) {
+             nuxtApp.$socket.on("clan_member_left", function(data) {
+                console.log("Page received clan_member_left", data);
+                if (Number(data.clan_id) === Number(self.clanId) && Number(data.user_id) === Number(authStore.user.id)) {
+                   if (!self.alreadyExpelled) {
+                      self.alreadyExpelled = true;
+                      alert("Has estat expulsat del clan.");
+                      self.$router.push("/clans");
+                   }
+                }
+             });
+          } else {
+             setTimeout(tryConnect, 1000);
+          }
+       };
+       tryConnect();
+     },
+     removeSocketListener: function() {
+       var nuxtApp = useNuxtApp();
+       if (nuxtApp.$socket) {
+          nuxtApp.$socket.off("clan_member_left");
+       }
+     },
+     checkMembership: async function() {
+        var store = useClanStore();
+        await store.fetchMembers(this.clanId);
+        var authStore = useAuthStore();
+        var isMember = store.clanMembers.some(function(m) {
+           return Number(m.usuari_id) === Number(authStore.user.id);
+        });
+        var clan = store.currentClan;
+        if (clan && Number(clan.lider_id) === Number(authStore.user.id)) {
+           isMember = true;
+        }
+        if (!isMember && !this.alreadyExpelled) {
+           this.alreadyExpelled = true;
+           alert("Has estat expulsat del clan.");
+           this.$router.push("/clans");
+        }
+     },
      openEdit: function() {
         this.showEdit = true;
      },

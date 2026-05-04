@@ -103,7 +103,6 @@ export default {
           var createRes = await store.createClan(this.form);
           if (createRes) {
             this.$emit("saved", createRes);
-            this.$router.push('/clans/' + (createRes.clan ? createRes.clan.id : createRes.data.id));
           }
           else this.error = store.error;
         }

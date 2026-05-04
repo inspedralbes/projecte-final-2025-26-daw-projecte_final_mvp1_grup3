@@ -9,23 +9,23 @@
     </div>
     <div v-for="msg in messages" :key="msg.id" class="flex flex-col gap-1">
       <div class="flex items-baseline gap-2">
-         <span class="font-semibold text-sm text-gray-800">{{ msg.usuari ? msg.usuari.nom : 'Usuari' }}</span>
+         <span class="font-semibold text-sm text-gray-800">{{ msg.usuari_nom || msg.usuari?.nom || 'Usuari' }}</span>
          <span class="text-xs text-gray-400">{{ formatDate(msg.created_at) }}</span>
       </div>
-      <div v-if="msg.habit_id && msg.habit" class="bg-blue-50 border border-blue-100 rounded p-4 inline-block max-w-[80%]">
-         <p class="text-sm text-blue-800 font-medium mb-3 flex items-center gap-2">
-           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
-           Ha compartit un hàbit: {{ msg.habit.titol }}
-         </p>
-         <button @click="importHabit(msg.id)" class="text-xs px-3 py-1.5 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors font-medium">Importar Hàbit al Meu Perfil</button>
-      </div>
-      <div v-else-if="msg.plantilla_id && msg.plantilla" class="bg-purple-50 border border-purple-100 rounded p-4 inline-block max-w-[80%]">
-         <p class="text-sm text-purple-800 font-medium mb-3 flex items-center gap-2">
-           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-           Ha compartit una plantilla: {{ msg.plantilla.nom }}
-         </p>
-         <button @click="importPlantilla(msg.id)" class="text-xs px-3 py-1.5 bg-purple-500 text-white rounded hover:bg-purple-600 transition-colors font-medium">Copiar Plantilla</button>
-      </div>
+<div v-if="msg.habit_id && msg.habit" class="bg-blue-50 border border-blue-100 rounded p-4 inline-block max-w-[80%]">
+          <p class="text-sm text-blue-800 font-medium mb-3 flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+            Ha compartit un hàbit: {{ msg.habit.titol }}
+          </p>
+          <button @click="importHabit(msg.id)" class="text-xs px-3 py-1.5 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors font-medium">Importar Hàbit al Meu Perfil</button>
+       </div>
+       <div v-else-if="msg.plantilla_id && msg.plantilla" class="bg-purple-50 border border-purple-100 rounded p-4 inline-block max-w-[80%]">
+          <p class="text-sm text-purple-800 font-medium mb-3 flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+            Ha compartit una plantilla: {{ msg.plantilla.nom }}
+          </p>
+          <button @click="importPlantilla(msg.id)" class="text-xs px-3 py-1.5 bg-purple-500 text-white rounded hover:bg-purple-600 transition-colors font-medium">Copiar Plantilla</button>
+       </div>
       <div v-else class="text-gray-700 bg-gray-50 p-3 rounded-lg rounded-tl-none border inline-block max-w-[80%] whitespace-pre-wrap">
         {{ msg.contingut }}
       </div>
@@ -44,6 +44,7 @@
 
 <script>
 import { useClanChatStore } from "~/stores/useClanChatStore.js";
+import { useClanStore } from "~/stores/useClanStore.js";
 import { format } from "date-fns";
 
 export default {
@@ -52,35 +53,76 @@ export default {
     clanId: {
        type: [Number, String],
        required: true
+    },
+    isLeader: {
+       type: Boolean,
+       default: false
     }
   },
-  data: function() {
-    return {
-       messages: [],
-       newMessage: "",
-       loading: true,
-       sending: false
-    }
-  },
-  mounted: function() {
-     this.loadMessages();
-     // Set up socket listener here if needed
-     if (this.$nuxt.$socket) {
-        this.$nuxt.$socket.on("clan_message", this.onMessageReceived);
+data: function() {
+     return {
+        messages: [],
+        newMessage: "",
+        loading: true,
+        sending: false,
+        lastMemberCount: 0,
+        memberCheckInterval: null
      }
-  },
-  beforeDestroy: function() {
-     if (this.$nuxt.$socket) {
-        this.$nuxt.$socket.off("clan_message", this.onMessageReceived);
-     }
-  },
+   },
+mounted: function() {
+       this.loadMessages();
+       this.lastMemberCount = 0;
+       var self = this;
+       var tryConnect = function() {
+          var nuxtApp = useNuxtApp();
+          if (nuxtApp.$socket && nuxtApp.$socket.connected) {
+             nuxtApp.$socket.emit("join_clan_room", { clan_id: self.clanId });
+             nuxtApp.$socket.on("new_clan_message", self.onMessageReceived);
+             nuxtApp.$socket.on("clan_member_joined", self.onMemberJoined);
+             nuxtApp.$socket.on("clan_member_left", self.onMemberLeft);
+          } else {
+             setTimeout(tryConnect, 1000);
+          }
+       };
+       tryConnect();
+       this.memberCheckInterval = setInterval(function() {
+          var clanStore = useClanStore();
+          clanStore.fetchMembers(self.clanId).then(function() {
+             var currentCount = clanStore.clanMembers.length;
+             if (self.lastMemberCount > 0 && currentCount > self.lastMemberCount) {
+                self.messages.push({
+                   id: Date.now(),
+                   clan_id: self.clanId,
+                   usuari_id: 0,
+                   usuari_nom: "Sistema",
+                   contingut: "Un nou membre s'ha unit al clan",
+                   created_at: new Date().toISOString(),
+                   is_system: true
+                });
+                self.scrollToBottom();
+             }
+             self.lastMemberCount = currentCount;
+          });
+       }, 3000);
+    },
+   beforeDestroy: function() {
+      var nuxtApp = useNuxtApp();
+      if (nuxtApp.$socket && nuxtApp.$socket.connected) {
+         nuxtApp.$socket.emit("leave_clan_room", { clan_id: this.clanId });
+         nuxtApp.$socket.off("new_clan_message", this.onMessageReceived);
+         nuxtApp.$socket.off("clan_member_joined", this.onMemberJoined);
+         nuxtApp.$socket.off("clan_member_left", this.onMemberLeft);
+      }
+      if (this.memberCheckInterval) clearInterval(this.memberCheckInterval);
+   },
   methods: {
     loadMessages: async function() {
        this.loading = true;
        try {
          var store = useClanChatStore();
          await store.fetchMessages(this.clanId, 1);
-         this.messages = store.messages;
+         this.messages = store.messages.slice().reverse();
+         this.lastMemberCount = this.messages.length > 0 ? store.clanMembers ? store.clanMembers.length : 0 : 0;
          this.scrollToBottom();
        } catch(e) {
          console.error(e);
@@ -93,13 +135,23 @@ export default {
        this.sending = true;
        try {
           var store = useClanChatStore();
+          var authStore = useAuthStore();
           var contingut = this.newMessage;
-          var msg = await store.sendMessage(this.clanId, contingut, null, null);
-          if (msg) {
-             this.newMessage = "";
-             store.handleNewMessage(msg);
-             this.messages = store.messages;
-             this.scrollToBottom();
+var msg = await store.sendMessage(this.clanId, contingut, null, null);
+           if (msg) {
+              this.newMessage = "";
+              this.messages.push(msg);
+              this.scrollToBottom();
+             var nuxtApp = useNuxtApp();
+             var authStore = useAuthStore();
+             if (nuxtApp.$socket && nuxtApp.$socket.connected) {
+                nuxtApp.$socket.emit("clan_message", {
+                   clan_id: this.clanId,
+                   message: contingut,
+                   usuari_nom: authStore.user.nom,
+                   created_at: new Date().toISOString()
+                });
+             }
           } else {
              alert(store.error || "Error al enviar missatge");
           }
@@ -110,15 +162,52 @@ export default {
        }
     },
     onMessageReceived: function(message) {
-       // Only add it if it belongs to this clan
-       if (message.clan_id == this.clanId) {
-          var store = useClanChatStore();
-          store.handleNewMessage(message);
-          this.messages = store.messages;
-          this.scrollToBottom();
-       }
-    },
-    scrollToBottom: function() {
+       if (Number(message.clan_id) === Number(this.clanId)) {
+          var exists = this.messages.some(function(m) {
+             return m.id === message.id || (m.contingut === message.message && m.created_at === message.created_at);
+          });
+if (!exists) {
+              this.messages.push({
+                 id: message.id || Date.now(),
+                 clan_id: message.clan_id,
+                 usuari_id: message.sender_id,
+                 usuari_nom: message.usuari_nom,
+                 contingut: message.message,
+                 created_at: message.created_at
+              });
+              this.scrollToBottom();
+           }
+        }
+     },
+     onMemberJoined: function(data) {
+        if (Number(data.clan_id) === Number(this.clanId)) {
+           this.messages.push({
+              id: Date.now(),
+              clan_id: data.clan_id,
+              usuari_id: data.user_id,
+              usuari_nom: "Sistema",
+              contingut: data.user_nom + " s'ha unit al clan",
+              created_at: new Date().toISOString(),
+              is_system: true
+           });
+           this.scrollToBottom();
+        }
+     },
+     onMemberLeft: function(data) {
+        if (Number(data.clan_id) === Number(this.clanId)) {
+           this.messages.push({
+              id: Date.now(),
+              clan_id: data.clan_id,
+              usuari_id: data.user_id,
+              usuari_nom: "Sistema",
+              contingut: data.user_nom + " ha estat expulsat del clan",
+              created_at: new Date().toISOString(),
+              is_system: true
+           });
+           this.scrollToBottom();
+        }
+     },
+     scrollToBottom: function() {
        this.$nextTick(function() {
           var container = this.$refs.chatContainer;
           if (container) {

@@ -48,6 +48,7 @@
 <script>
 import { useClanStore } from "~/stores/useClanStore.js";
 import { useAuthStore } from "~/stores/useAuthStore.js";
+import { useNuxtApp } from "#app";
 import MemberList from "~/components/clans/MemberList.vue";
 import RequestManager from "~/components/clans/RequestManager.vue";
 import ClanChat from "~/components/clans/ClanChat.vue";
@@ -68,41 +69,108 @@ export default {
   data: function() {
     return {
       loading: true,
-      clan: null
+      clan: null,
+      memberCheckInterval: null,
+      previousMemberCount: 0,
+      showShareModal: false,
+      shareType: 'habit',
+      habits: [],
+      plantillas: [],
+      loadingHabits: false,
+      loadingPlantillas: false,
+      modalLoaded: false
+    }
+  },
+  watch: {
+    showShareModal: function(newVal) {
+       if (newVal && !this.modalLoaded) {
+          this.loadHabits();
+          this.loadPlantillas();
+          this.modalLoaded = true;
+       }
     }
   },
   computed: {
     isLeader: function() {
       var authStore = useAuthStore();
-      return this.clan && this.clan.lider_id == authStore.user.id;
+      if (!this.clan || !authStore.user) return false;
+      return Number(this.clan.lider_id) === Number(authStore.user.id);
     },
     isMember: function() {
       var authStore = useAuthStore();
-      if (!this.clan) return false;
-      // We check if current user is in `clanMembers` or has `clan_id`.
-      // The fastest way if `members` is not returned with clan is checking store.clanMembers
+      if (!this.clan || !authStore.user) return false;
+      if (Number(this.clan.lider_id) === Number(authStore.user.id)) return true;
       var store = useClanStore();
       var members = store.clanMembers;
-      if (this.isLeader) return true;
-      var i;
-      for (i = 0; i < members.length; i++) {
-         if (members[i].usuari_id == authStore.user.id) return true;
+      for (var i = 0; i < members.length; i++) {
+         if (Number(members[i].usuari_id) === Number(authStore.user.id)) return true;
       }
       return false;
     }
   },
-  mounted: function() {
-    this.loadClan();
-  },
+mounted: function() {
+     this.loadClan();
+     this.setupSocketListeners();
+     var self = this;
+     this.memberCheckInterval = setInterval(function() {
+        var store = useClanStore();
+        store.fetchMembers(self.clanId);
+     }, 3000);
+   },
+   beforeDestroy: function() {
+     this.removeSocketListeners();
+     if (this.memberCheckInterval) clearInterval(this.memberCheckInterval);
+   },
   methods: {
+    setupSocketListeners: function() {
+       var self = this;
+       var tryConnect = function() {
+          var nuxtApp = useNuxtApp();
+          if (nuxtApp.$socket && nuxtApp.$socket.connected) {
+             nuxtApp.$socket.on("clan_member_joined", function(data) {
+                console.log("Received clan_member_joined", data);
+                if (Number(data.clan_id) === Number(self.clanId)) {
+                   self.reload();
+                }
+             });
+             nuxtApp.$socket.on("clan_member_left", function(data) {
+                console.log("Received clan_member_left", data);
+                if (Number(data.clan_id) === Number(self.clanId)) {
+                   self.reload();
+                }
+             });
+          } else {
+             setTimeout(tryConnect, 1000);
+          }
+       };
+       tryConnect();
+    },
+    removeSocketListeners: function() {
+       var nuxtApp = useNuxtApp();
+       if (nuxtApp.$socket) {
+          nuxtApp.$socket.off("clan_member_joined");
+          nuxtApp.$socket.off("clan_member_left");
+       }
+    },
     loadClan: async function() {
       this.loading = true;
       try {
         var store = useClanStore();
-        // Load members first so we know if they are a member
-        await store.fetchMembers(this.clanId);
         await store.getClan(this.clanId);
         this.clan = store.currentClan;
+        var previousCount = this.previousMemberCount;
+        await store.fetchMembers(this.clanId);
+        this.previousMemberCount = store.clanMembers.length;
+        if (previousCount > 0 && store.clanMembers.length > previousCount) {
+           var nuxtApp = useNuxtApp();
+           if (nuxtApp.$socket && nuxtApp.$socket.connected) {
+              nuxtApp.$socket.emit("clan_member_joined", {
+                 clan_id: this.clanId,
+                 user_id: 0,
+                 user_nom: "Nou membre"
+              });
+           }
+        }
       } catch(e) {
         console.error(e);
       } finally {
@@ -112,29 +180,123 @@ export default {
     reload: function() {
        this.loadClan();
     },
+    shareHabit: async function(habitId) {
+       try {
+          var store = useClanStore();
+          var authStore = useAuthStore();
+          var result = await store.shareHabit(this.clan.id, habitId);
+          if (result) {
+             var nuxtApp = useNuxtApp();
+             if (nuxtApp.$socket && nuxtApp.$socket.connected) {
+                nuxtApp.$socket.emit("clan_member_joined", {
+                   clan_id: this.clan.id,
+                   user_id: authStore.user.id,
+                   user_nom: authStore.user.nom + " (hàbit compartit)"
+                });
+             }
+             alert("Hàbit compartit amb èxit!");
+             this.showShareModal = false;
+          } else {
+             alert(store.error || "Error al compartir hàbit");
+          }
+       } catch(e) {
+          console.error(e);
+          alert("Error al compartir hàbit");
+       }
+    },
+    sharePlantilla: async function(plantillaId) {
+       try {
+          var store = useClanStore();
+          var authStore = useAuthStore();
+          var result = await store.sharePlantilla(this.clan.id, plantillaId);
+          if (result) {
+             var nuxtApp = useNuxtApp();
+             if (nuxtApp.$socket && nuxtApp.$socket.connected) {
+                nuxtApp.$socket.emit("clan_member_joined", {
+                   clan_id: this.clan.id,
+                   user_id: authStore.user.id,
+                   user_nom: authStore.user.nom + " (plantilla compartida)"
+                });
+             }
+             alert("Plantilla compartida amb èxit!");
+             this.showShareModal = false;
+          } else {
+             alert(store.error || "Error al compartir plantilla");
+          }
+       } catch(e) {
+          console.error(e);
+          alert("Error al compartir plantilla");
+       }
+    },
+    loadHabits: function() {
+       var self = this;
+       this.loadingHabits = true;
+       var authStore = useAuthStore();
+       fetch('http://localhost:8000/api/habits', {
+          headers: {
+             'Authorization': 'Bearer ' + authStore.token,
+             'Content-Type': 'application/json'
+          }
+       }).then(function(res) { return res.json(); })
+       .then(function(data) {
+          self.habits = data.data || data;
+       })
+       .catch(function(e) { console.error(e); })
+       .finally(function() { self.loadingHabits = false; });
+    },
+    loadPlantillas: function() {
+       var self = this;
+       this.loadingPlantillas = true;
+       var authStore = useAuthStore();
+       fetch('http://localhost:8000/api/plantillas', {
+          headers: {
+             'Authorization': 'Bearer ' + authStore.token,
+             'Content-Type': 'application/json'
+          }
+       }).then(function(res) { return res.json(); })
+       .then(function(data) {
+          self.plantillas = data.data || data;
+       })
+       .catch(function(e) { console.error(e); })
+       .finally(function() { self.loadingPlantillas = false; });
+    },
     getLeaderName: function() {
        if (!this.clan || !this.clan.lider) return "Líder desconegut";
        return this.clan.lider.nom;
     },
-    joinPublic: async function() {
-       var store = useClanStore();
-       var result = await store.joinPublic(this.clan.id);
-       if (result) {
-          alert("T'has unit al clan amb èxit!");
-          this.reload();
-       } else {
-          alert(store.error || "Error al unir-se al clan");
-       }
-    },
-    requestJoin: async function() {
-       var store = useClanStore();
-       var result = await store.requestJoin(this.clan.id);
-       if (result) {
-          alert("S'ha enviat la sol·licitud per unir-se al clan.");
-       } else {
-          alert(store.error || "Error en enviar la sol·licitud");
-       }
-    },
+joinPublic: async function() {
+        var store = useClanStore();
+        var authStore = useAuthStore();
+        var self = this;
+        var result = await store.joinPublic(this.clan.id);
+        if (result) {
+           alert("T'has unit al clan amb èxit!");
+           var nuxtApp = useNuxtApp();
+           if (nuxtApp.$socket && nuxtApp.$socket.connected) {
+              nuxtApp.$socket.emit("join_clan_room", { clan_id: this.clan.id });
+              setTimeout(function() {
+                 nuxtApp.$socket.emit("clan_member_joined", {
+                    clan_id: self.clan.id,
+                    user_id: authStore.user.id,
+                    user_nom: authStore.user.nom
+                 });
+              }, 500);
+           }
+           await store.fetchMembers(this.clan.id);
+           this.reload();
+        } else {
+           alert(store.error || "Error al unir-se al clan");
+        }
+     },
+     requestJoin: async function() {
+        var store = useClanStore();
+        var result = await store.requestJoin(this.clan.id);
+        if (result) {
+           alert("S'ha enviat la sol·licitud per unir-se al clan.");
+        } else {
+           alert(store.error || "Error en enviar la sol·licitud");
+        }
+     },
     leave: async function() {
        if (!confirm("Vols abandonar el clan?")) return;
        var store = useClanStore();

@@ -45,6 +45,23 @@ class ClanController extends Controller
         return response()->json($clan);
     }
 
+    public function myClan(Request $request): JsonResponse
+    {
+        $userId = $request->user_id;
+        
+        $member = DB::table('clan_members')
+            ->where('usuari_id', $userId)
+            ->first();
+        
+        if (!$member) {
+            return response()->json(['clan' => null]);
+        }
+        
+        $clan = Clan::with(['members.usuari', 'lider'])->find($member->clan_id);
+        
+        return response()->json(['clan' => $clan]);
+    }
+
     public function create(Request $request): JsonResponse
     {
         try {
@@ -150,7 +167,7 @@ class ClanController extends Controller
         $members = DB::table('clan_members')
             ->join('usuaris', 'clan_members.usuari_id', '=', 'usuaris.id')
             ->where('clan_members.clan_id', $id)
-            ->select('clan_members.rol', 'clan_members.data_unio', 'usuaris.id', 'usuaris.nom', 'usuaris.nivell')
+            ->select('clan_members.rol', 'clan_members.data_unio', 'usuaris.id as usuari_id', 'usuaris.nom', 'usuaris.nivell')
             ->get();
 
         return response()->json($members);
@@ -172,7 +189,7 @@ class ClanController extends Controller
         $messages = DB::table('clan_messages')
             ->join('usuaris', 'clan_messages.usuari_id', '=', 'usuaris.id')
             ->where('clan_messages.clan_id', $id)
-            ->select('clan_messages.*', 'usuaris.nom as usuari_nom')
+            ->select('clan_messages.*', 'usuaris.nom as usuari_nom', 'usuaris.id as usuari_id')
             ->orderBy('clan_messages.created_at', 'desc')
             ->paginate(50);
 
@@ -213,7 +230,13 @@ class ClanController extends Controller
                 'created_at' => now(),
             ]);
 
-            return response()->json(['id' => $messageId, 'success' => true], 201);
+            $message = DB::table('clan_messages')
+                ->join('usuaris', 'clan_messages.usuari_id', '=', 'usuaris.id')
+                ->where('clan_messages.id', $messageId)
+                ->select('clan_messages.*', 'usuaris.nom as usuari_nom', 'usuaris.id as usuari_id')
+                ->first();
+
+            return response()->json(['id' => $messageId, 'success' => true, 'message' => $message], 201);
         }
         catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);

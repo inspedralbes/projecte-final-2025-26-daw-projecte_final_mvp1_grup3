@@ -135,13 +135,15 @@ function register(io, socket) {
       }
       var clanId = data.clan_id;
       if (clanId) {
+        var userName = data.usuari_nom || "Usuari";
         io.to("clan_" + clanId).emit("new_clan_message", {
           clan_id: clanId,
           sender_id: userId,
+          usuari_nom: userName,
           message: data.message,
           created_at: data.created_at,
         });
-        console.log("Missatge de clan enviat de " + userId + " al clan " + clanId);
+        console.log("Missatge de clan enviat de " + userId + " (" + userName + ") al clan " + clanId);
       }
     } catch (error) {
       console.error("Error gestionant clan_message:", error);
@@ -228,6 +230,40 @@ function register(io, socket) {
       console.log("Usuari " + userId + " sortit de clan_room " + data.clan_id);
     } catch (error) {
       console.error("Error sortint de clan_room:", error);
+    }
+  });
+
+  socket.on("clan_member_joined", function (data) {
+    try {
+      var userId = socket.decoded_token && socket.decoded_token.user_id;
+      if (!userId || !data.clan_id) {
+        return;
+      }
+      io.to("clan_" + data.clan_id).emit("clan_member_joined", {
+        clan_id: data.clan_id,
+        user_id: data.user_id,
+        user_nom: data.user_nom,
+        message: data.user_nom + " s'ha unit al clan"
+      });
+    } catch (error) {
+      console.error("Error unint member_joined:", error);
+    }
+  });
+
+  socket.on("clan_member_left", function (data) {
+    try {
+      var userId = socket.decoded_token && socket.decoded_token.user_id;
+      if (!userId || !data.clan_id) {
+        return;
+      }
+      io.to("clan_" + data.clan_id).emit("clan_member_left", {
+        clan_id: data.clan_id,
+        user_id: data.user_id,
+        user_nom: data.user_nom,
+        message: data.user_nom + " ha estat expulsat del clan"
+      });
+    } catch (error) {
+      console.error("Error unint member_left:", error);
     }
   });
 }

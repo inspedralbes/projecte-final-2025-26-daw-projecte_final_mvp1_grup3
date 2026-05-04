@@ -63,7 +63,7 @@ export var useClanChatStore = defineStore("clanChat", {
                     throw new Error(errResponse.message || "Error sending message");
                 }
                 var data = await resposta.json();
-                return data.data || data;
+                return data.message || data.data || data;
             } catch (e) {
                 this.error = e.message;
                 return null;

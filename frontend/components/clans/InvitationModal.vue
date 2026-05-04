@@ -67,7 +67,7 @@ export default {
         this.loading = true;
         this.searched = true;
         try {
-           var res = await authFetch("/api/users/search?q=" + encodeURIComponent(this.searchQuery));
+           var res = await authFetch("/api/users?search=" + encodeURIComponent(this.searchQuery));
            if (res.ok) {
               var data = await res.json();
               this.results = data.data || data;

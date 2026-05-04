@@ -1,17 +1,27 @@
 <template>
   <div class="min-h-screen bg-gray-50">
     <HeaderSocial />
-    <div class="max-w-5xl mx-auto px-4 py-8">
+    <div v-if="loading" class="max-w-5xl mx-auto px-4 py-8 text-center">
+       <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+       <p class="text-gray-500 mt-2">Carregant...</p>
+    </div>
+    <div v-else class="max-w-5xl mx-auto px-4 py-8">
        <div class="flex justify-between items-center mb-6">
          <h1 class="text-3xl font-bold text-gray-800">Clans</h1>
-         <button @click="showCreate = !showCreate" class="px-5 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 shadow transition-colors font-medium">
+         <button v-if="!userClanId" @click="showCreate = !showCreate" class="px-5 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 shadow transition-colors font-medium">
             {{ showCreate ? 'Tornar als Clans' : 'Crear Nou Clan' }}
+         </button>
+         <button v-else @click="leaveClan" class="px-5 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 shadow transition-colors font-medium">
+            Abandonar Clan
          </button>
        </div>
        
        <transition name="fade" mode="out-in">
-          <ClanSettings v-if="showCreate" @cancel="showCreate = false" @saved="showCreate = false" />
-          <ClanList v-else />
+          <ClanSettings v-if="showCreate" @cancel="showCreate = false" @saved="onClanCreated" />
+          <ClanList v-else-if="!userClanId" />
+          <div v-else class="text-center py-12">
+             <p class="text-gray-600 mb-4">Ja estas en un clan. Redirigint...</p>
+          </div>
        </transition>
     </div>
   </div>
@@ -22,6 +32,7 @@ import HeaderSocial from "~/components/HeaderSocial.vue";
 import ClanList from "~/components/clans/ClanList.vue";
 import ClanSettings from "~/components/clans/ClanSettings.vue";
 import { useAuthStore } from "~/stores/useAuthStore.js";
+import { useClanStore } from "~/stores/useClanStore.js";
 
 export default {
   name: "ClansIndexPage",
@@ -33,14 +44,44 @@ export default {
   },
   data: function() {
      return {
-        showCreate: false
+        showCreate: false,
+        userClanId: null,
+        loading: true
      }
   },
-  mounted: function() {
+  async mounted() {
      var authStore = useAuthStore();
      if (authStore.user && authStore.user.nivell < 5) {
         alert("Has de ser nivell 5 o superior per accedir als clans.");
         this.$router.push("/social");
+        return;
+     }
+     var store = useClanStore();
+     var myClan = await store.getMyClan();
+     this.loading = false;
+     if (myClan && myClan.id) {
+        this.userClanId = myClan.id;
+        this.$router.push('/clans/' + myClan.id);
+     }
+  },
+  methods: {
+     onClanCreated: function() {
+        var store = useClanStore();
+        this.showCreate = false;
+        if (store.currentClan && store.currentClan.id) {
+           this.$router.push('/clans/' + store.currentClan.id);
+        }
+     },
+     leaveClan: async function() {
+        if (!confirm("Vols abandonar el clan?")) return;
+        var store = useClanStore();
+        if (this.userClanId) {
+           var result = await store.leaveClan(this.userClanId);
+           if (result) {
+              this.userClanId = null;
+              window.location.reload();
+           }
+        }
      }
   }
 }

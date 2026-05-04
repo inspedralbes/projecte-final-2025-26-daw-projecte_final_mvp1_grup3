@@ -5,8 +5,8 @@
     <ul v-else class="space-y-3">
       <li v-for="member in members" :key="member.usuari_id" class="flex justify-between items-center bg-gray-50 p-3 rounded-lg border">
         <div class="flex items-center gap-3">
-          <div class="font-medium text-gray-800">{{ member.usuari ? member.usuari.nom : 'Usuari' }}</div>
-          <span v-if="member.rol === 'Lider'" class="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Líder</span>
+          <div class="font-medium text-gray-800">{{ member.nom || 'Usuari' }}</div>
+          <span v-if="member.rol === 'lider' || member.rol === 'Líder'" class="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Líder</span>
         </div>
         <button v-if="isLeader && member.rol !== 'Lider'" @click="removeMember(member.usuari_id)" class="text-sm text-red-500 hover:text-red-700 font-medium px-2 py-1">
           Expulsar
@@ -18,6 +18,8 @@
 
 <script>
 import { useClanStore } from "~/stores/useClanStore.js";
+import { useAuthStore } from "~/stores/useAuthStore.js";
+import { useNuxtApp } from "#app";
 
 export default {
   name: "MemberList",
@@ -34,11 +36,19 @@ export default {
   data: function() {
     return {
       members: [],
-      loading: false
+      loading: false,
+      refreshInterval: null
     }
   },
   mounted: function() {
     this.loadMembers();
+    var self = this;
+    this.refreshInterval = setInterval(function() {
+      self.loadMembers();
+    }, 3000);
+  },
+  beforeDestroy: function() {
+    if (this.refreshInterval) clearInterval(this.refreshInterval);
   },
   methods: {
     loadMembers: async function() {
@@ -58,8 +68,19 @@ export default {
       
       try {
         var store = useClanStore();
+        var authStore = useAuthStore();
+        var memberToRemove = this.members.find(function(m) { return Number(m.usuari_id) === Number(userId); });
+        var userNom = memberToRemove ? memberToRemove.nom : 'Usuari';
         var success = await store.removeMember(this.clanId, userId);
         if (success) {
+           var nuxtApp = useNuxtApp();
+           if (nuxtApp.$socket && nuxtApp.$socket.connected) {
+              nuxtApp.$socket.emit("clan_member_left", {
+                 clan_id: this.clanId,
+                 user_id: userId,
+                 user_nom: userNom
+              });
+           }
            this.$emit('member-removed');
            this.loadMembers();
         } else {

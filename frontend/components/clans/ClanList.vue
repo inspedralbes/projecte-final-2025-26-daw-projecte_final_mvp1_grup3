@@ -39,6 +39,8 @@
 
 <script>
 import { useClanStore } from "~/stores/useClanStore.js";
+import { useAuthStore } from "~/stores/useAuthStore.js";
+import { useNuxtApp } from "#app";
 
 export default {
   name: "ClanList",
@@ -67,9 +69,14 @@ export default {
     },
     joinClan: async function(id) {
        var store = useClanStore();
+       var authStore = useAuthStore();
        var result = await store.joinPublic(id);
        if (result) {
           alert("T'has unit al clan amb èxit!");
+          var nuxtApp = useNuxtApp();
+          if (nuxtApp.$socket && nuxtApp.$socket.connected) {
+             nuxtApp.$socket.emit("join_clan_room", { clan_id: id });
+          }
           this.$router.push('/clans/' + id);
        } else {
           alert(store.error || "Error al unir-se al clan");

@@ -266,6 +266,38 @@ function register(io, socket) {
       console.error("Error unint member_left:", error);
     }
   });
+
+  socket.on("clan_request_accepted", function (data) {
+    try {
+      var userId = socket.decoded_token && socket.decoded_token.user_id;
+      if (!userId || !data.clan_id || !data.usuari_id) {
+        return;
+      }
+      io.to("user_" + data.usuari_id).emit("clan_request_accepted", {
+        clan_id: data.clan_id,
+        usuari_id: data.usuari_id,
+        message: "La teva sol·licitud d'unió al clan ha estat acceptada"
+      });
+    } catch (error) {
+      console.error("Error unint request_accepted:", error);
+    }
+  });
+
+  socket.on("clan_request_rejected", function (data) {
+    try {
+      var userId = socket.decoded_token && socket.decoded_token.user_id;
+      if (!userId || !data.clan_id || !data.usuari_id) {
+        return;
+      }
+      io.to("user_" + data.usuari_id).emit("clan_request_rejected", {
+        clan_id: data.clan_id,
+        usuari_id: data.usuari_id,
+        message: "La teva sol·licitud d'unió al clan ha estat rebutjada"
+      });
+    } catch (error) {
+      console.error("Error unint request_rejected:", error);
+    }
+  });
 }
 
 module.exports = {

@@ -230,7 +230,7 @@ export var useClanStore = defineStore("clan", {
             this.error = null;
             try {
                 var resposta = await authFetch("/api/clan-requests/" + requestId + "/accept", {
-                    method: "POST"
+                    method: "PUT"
                 });
                 if (!resposta.ok) throw new Error("Error accepting request");
                 var i;
@@ -254,7 +254,7 @@ export var useClanStore = defineStore("clan", {
             this.error = null;
             try {
                 var resposta = await authFetch("/api/clan-requests/" + requestId + "/reject", {
-                    method: "POST"
+                    method: "PUT"
                 });
                 if (!resposta.ok) throw new Error("Error rejecting request");
                 var i;

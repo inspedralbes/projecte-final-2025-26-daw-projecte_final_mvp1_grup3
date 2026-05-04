@@ -26,10 +26,14 @@
       <div v-for="clan in clans" :key="clan.id" class="bg-white rounded-xl shadow p-6 border">
         <h3 class="text-lg font-bold text-gray-800">{{ clan.nom }}</h3>
         <p class="text-sm text-gray-500 mt-1">Membres: {{ clan.membres_count || 0 }} / {{ clan.max_membres }}</p>
+        <p v-if="!clan.es_public" class="text-xs text-purple-600 font-medium mt-1">Privat</p>
         <div class="mt-4 flex justify-between items-center">
           <NuxtLink :to="'/clans/' + clan.id" class="text-blue-500 hover:underline text-sm font-medium">Veure Detalls</NuxtLink>
-          <button @click="joinClan(clan.id)" class="px-4 py-2 bg-green-500 text-white text-sm rounded-lg hover:bg-green-600">
+          <button v-if="clan.es_public" @click="joinClan(clan.id)" class="px-4 py-2 bg-green-500 text-white text-sm rounded-lg hover:bg-green-600">
             Unir-se
+          </button>
+          <button v-else @click="requestJoinClan(clan.id)" class="px-4 py-2 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600">
+            Demanar Accés
           </button>
         </div>
       </div>
@@ -67,7 +71,7 @@ export default {
         this.loading = false;
       }
     },
-    joinClan: async function(id) {
+joinClan: async function(id) {
        var store = useClanStore();
        var authStore = useAuthStore();
        var result = await store.joinPublic(id);
@@ -77,9 +81,18 @@ export default {
           if (nuxtApp.$socket && nuxtApp.$socket.connected) {
              nuxtApp.$socket.emit("join_clan_room", { clan_id: id });
           }
-          this.$router.push('/clans/' + id);
+           this.$router.push('/clans/' + id);
+        } else {
+           alert(store.error || "Error al unir-se al clan");
+        }
+    },
+    requestJoinClan: async function(id) {
+       var store = useClanStore();
+       var result = await store.requestJoin(id);
+       if (result) {
+          alert("S'ha enviat la sol·licitud per unir-se al clan.");
        } else {
-          alert(store.error || "Error al unir-se al clan");
+          alert(store.error || "Error en enviar la sol·licitud");
        }
     }
   }

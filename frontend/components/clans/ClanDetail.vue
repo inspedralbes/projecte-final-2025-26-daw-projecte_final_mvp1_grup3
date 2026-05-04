@@ -17,7 +17,7 @@
            </p>
          </div>
          <div class="flex gap-2">
-            <button v-if="isMember && !isLeader" @click="leave" class="px-4 py-2 border border-red-500 text-red-500 font-medium rounded-lg hover:bg-red-50 transition-colors">Abandonar</button>
+            <button v-if="isMember" @click="leave" class="px-4 py-2 border border-red-500 text-red-500 font-medium rounded-lg hover:bg-red-50 transition-colors">Abandonar Clan</button>
             <button v-if="!isMember && clan.es_public" @click="joinPublic" class="px-4 py-2 bg-green-500 text-white font-medium rounded-lg hover:bg-green-600 transition-colors shadow-sm">Unir-se al Clan</button>
             <button v-if="!isMember && !clan.es_public" @click="requestJoin" class="px-4 py-2 bg-blue-500 text-white font-medium rounded-lg hover:bg-blue-600 transition-colors shadow-sm">Demanar Accés</button>
             <button v-if="isLeader" @click="$emit('edit')" class="px-4 py-2 border border-blue-500 text-blue-500 font-medium rounded-lg hover:bg-blue-50 transition-colors">Editar Settings</button>

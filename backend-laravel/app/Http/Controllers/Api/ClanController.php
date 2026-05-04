@@ -19,8 +19,7 @@ class ClanController extends Controller
             return response()->json(['error' => 'Nivell 5 requerit'], 403);
         }
 
-        $clans = Clan::where('es_public', true)
-            ->withCount('members')
+        $clans = Clan::withCount('members')
             ->orderBy('nom')
             ->paginate(20);
 

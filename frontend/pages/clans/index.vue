@@ -33,6 +33,7 @@ import ClanList from "~/components/clans/ClanList.vue";
 import ClanSettings from "~/components/clans/ClanSettings.vue";
 import { useAuthStore } from "~/stores/useAuthStore.js";
 import { useClanStore } from "~/stores/useClanStore.js";
+import { useNuxtApp } from "#app";
 
 export default {
   name: "ClansIndexPage",
@@ -49,13 +50,41 @@ export default {
         loading: true
      }
   },
-  async mounted() {
+async mounted() {
+     var self = this;
      var authStore = useAuthStore();
      if (authStore.user && authStore.user.nivell < 5) {
         alert("Has de ser nivell 5 o superior per accedir als clans.");
         this.$router.push("/social");
         return;
      }
+     var setupSocketListeners = function() {
+        var nuxtApp = useNuxtApp();
+        if (nuxtApp.$socket && nuxtApp.$socket.connected) {
+           nuxtApp.$socket.on("clan_request_accepted", function(data) {
+              if (Number(data.usuari_id) === Number(authStore.user.id)) {
+                 alert("La teva sol·licitud d'unió al clan ha estat acceptada!");
+                 var store = useClanStore();
+                 store.getMyClan().then(function() {
+                    if (store.currentClan && store.currentClan.id) {
+                       self.userClanId = store.currentClan.id;
+                       self.$router.push('/clans/' + store.currentClan.id);
+                    } else {
+                       self.$router.push('/clans/' + data.clan_id);
+                    }
+                 });
+              }
+           });
+           nuxtApp.$socket.on("clan_request_rejected", function(data) {
+              if (Number(data.usuari_id) === Number(authStore.user.id)) {
+                 alert("La teva sol·licitud d'unió al clan ha estat rebutjada.");
+              }
+           });
+        } else {
+           setTimeout(setupSocketListeners, 1000);
+        }
+     };
+     setupSocketListeners();
      var store = useClanStore();
      var myClan = await store.getMyClan();
      this.loading = false;
@@ -63,7 +92,7 @@ export default {
         this.userClanId = myClan.id;
         this.$router.push('/clans/' + myClan.id);
      }
-  },
+   },
   methods: {
      onClanCreated: function() {
         var store = useClanStore();

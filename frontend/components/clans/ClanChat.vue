@@ -85,25 +85,25 @@ mounted: function() {
           }
        };
        tryConnect();
-       this.memberCheckInterval = setInterval(function() {
-          var clanStore = useClanStore();
-          clanStore.fetchMembers(self.clanId).then(function() {
-             var currentCount = clanStore.clanMembers.length;
-             if (self.lastMemberCount > 0 && currentCount > self.lastMemberCount) {
-                self.messages.push({
-                   id: Date.now(),
-                   clan_id: self.clanId,
-                   usuari_id: 0,
-                   usuari_nom: "Sistema",
-                   contingut: "Un nou membre s'ha unit al clan",
-                   created_at: new Date().toISOString(),
-                   is_system: true
-                });
-                self.scrollToBottom();
-             }
-             self.lastMemberCount = currentCount;
-          });
-       }, 3000);
+this.memberCheckInterval = setInterval(function() {
+           var clanStore = useClanStore();
+           clanStore.fetchMembers(self.clanId).then(function() {
+              var currentCount = clanStore.clanMembers ? clanStore.clanMembers.length : 0;
+              if (currentCount > self.lastMemberCount) {
+                 self.messages.push({
+                    id: Date.now(),
+                    clan_id: self.clanId,
+                    usuari_id: 0,
+                    usuari_nom: "Sistema",
+                    contingut: "Un nou membre s'ha unit al clan",
+                    created_at: new Date().toISOString(),
+                    is_system: true
+                 });
+                 self.scrollToBottom();
+              }
+              self.lastMemberCount = currentCount;
+           });
+        }, 5000);
     },
    beforeDestroy: function() {
       var nuxtApp = useNuxtApp();
@@ -116,20 +116,25 @@ mounted: function() {
       if (this.memberCheckInterval) clearInterval(this.memberCheckInterval);
    },
   methods: {
-    loadMessages: async function() {
+loadMessages: async function() {
        this.loading = true;
        try {
+         var clanStore = useClanStore();
+         await clanStore.fetchMembers(this.clanId);
+         this.lastMemberCount = clanStore.clanMembers ? clanStore.clanMembers.length : 0;
          var store = useClanChatStore();
          await store.fetchMessages(this.clanId, 1);
-         this.messages = store.messages.slice().reverse();
-         this.lastMemberCount = this.messages.length > 0 ? store.clanMembers ? store.clanMembers.length : 0 : 0;
+         this.messages = store.messages;
+         if (this.messages.length > 0 && this.lastMemberCount === 0) {
+            this.lastMemberCount = this.messages.length;
+         }
          this.scrollToBottom();
        } catch(e) {
          console.error(e);
        } finally {
          this.loading = false;
        }
-    },
+     },
     send: async function() {
        if (!this.newMessage.trim() && !this.sending) return;
        this.sending = true;
@@ -161,24 +166,28 @@ var msg = await store.sendMessage(this.clanId, contingut, null, null);
           this.sending = false;
        }
     },
-    onMessageReceived: function(message) {
+onMessageReceived: function(message) {
        if (Number(message.clan_id) === Number(this.clanId)) {
+          var authStore = useAuthStore();
+          if (message.sender_id && Number(message.sender_id) === Number(authStore.user.id)) {
+             return;
+          }
           var exists = this.messages.some(function(m) {
              return m.id === message.id || (m.contingut === message.message && m.created_at === message.created_at);
           });
-if (!exists) {
-              this.messages.push({
-                 id: message.id || Date.now(),
-                 clan_id: message.clan_id,
-                 usuari_id: message.sender_id,
-                 usuari_nom: message.usuari_nom,
-                 contingut: message.message,
-                 created_at: message.created_at
-              });
-              this.scrollToBottom();
-           }
-        }
-     },
+          if (!exists) {
+             this.messages.push({
+                id: message.id || Date.now(),
+                clan_id: message.clan_id,
+                usuari_id: message.sender_id,
+                usuari_nom: message.usuari_nom,
+                contingut: message.message,
+                created_at: message.created_at
+             });
+             this.scrollToBottom();
+          }
+       }
+    },
      onMemberJoined: function(data) {
         if (Number(data.clan_id) === Number(this.clanId)) {
            this.messages.push({

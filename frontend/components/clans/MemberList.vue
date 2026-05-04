@@ -8,9 +8,9 @@
           <div class="font-medium text-gray-800">{{ member.nom || 'Usuari' }}</div>
           <span v-if="member.rol === 'lider' || member.rol === 'Líder'" class="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Líder</span>
         </div>
-        <button v-if="isLeader && member.rol !== 'Lider'" @click="removeMember(member.usuari_id)" class="text-sm text-red-500 hover:text-red-700 font-medium px-2 py-1">
-          Expulsar
-        </button>
+<button v-if="isLeader && member.rol !== 'lider' && member.rol !== 'Líder' && member.usuari_id !== currentUserId" @click="removeMember(member.usuari_id)" class="text-sm text-red-500 hover:text-red-700 font-medium px-2 py-1">
+           Expulsar
+         </button>
       </li>
     </ul>
   </div>
@@ -37,10 +37,13 @@ export default {
     return {
       members: [],
       loading: false,
-      refreshInterval: null
+      refreshInterval: null,
+      currentUserId: null
     }
   },
   mounted: function() {
+    var authStore = useAuthStore();
+    this.currentUserId = authStore.user ? authStore.user.id : null;
     this.loadMembers();
     var self = this;
     this.refreshInterval = setInterval(function() {

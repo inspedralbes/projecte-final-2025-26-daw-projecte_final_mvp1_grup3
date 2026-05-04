@@ -6,7 +6,7 @@
     <ul v-else class="space-y-3">
       <li v-for="req in requests" :key="req.id" class="flex flex-col gap-2 p-3 bg-gray-50 rounded-lg border">
         <div class="text-sm">
-           <span class="font-medium text-gray-800">{{ req.usuari ? req.usuari.nom : 'Usuari' }}</span>
+           <span class="font-medium text-gray-800">{{ req.usuari_nom || 'Usuari' }}</span>
            <span class="text-xs text-gray-500 ml-2 bg-gray-200 px-2 py-1 rounded">{{ req.tipus }}</span>
         </div>
         <div class="flex gap-2 w-full mt-1">
@@ -20,6 +20,7 @@
 
 <script>
 import { useClanStore } from "~/stores/useClanStore.js";
+import { useNuxtApp } from "#app";
 
 export default {
   name: "RequestManager",
@@ -32,11 +33,19 @@ export default {
   data: function() {
     return {
       requests: [],
-      loading: false
+      loading: false,
+      refreshInterval: null
     }
   },
   mounted: function() {
     this.loadRequests();
+    var self = this;
+    this.refreshInterval = setInterval(function() {
+      self.loadRequests();
+    }, 3000);
+  },
+  beforeDestroy: function() {
+    if (this.refreshInterval) clearInterval(this.refreshInterval);
   },
   methods: {
     loadRequests: async function() {
@@ -56,6 +65,16 @@ export default {
          var store = useClanStore();
          var result = await store.acceptRequest(id);
          if (result) {
+            var req = this.requests.find(function(r) { return r.id === id; });
+            if (req && req.usuari_id) {
+               var nuxtApp = useNuxtApp();
+               if (nuxtApp.$socket && nuxtApp.$socket.connected) {
+                  nuxtApp.$socket.emit("clan_request_accepted", {
+                     clan_id: this.clanId,
+                     usuari_id: req.usuari_id
+                  });
+               }
+            }
             this.$emit('request-handled');
             this.loadRequests();
          } else {
@@ -70,6 +89,16 @@ export default {
          var store = useClanStore();
          var result = await store.rejectRequest(id);
          if (result) {
+            var req = this.requests.find(function(r) { return r.id === id; });
+            if (req && req.usuari_id) {
+               var nuxtApp = useNuxtApp();
+               if (nuxtApp.$socket && nuxtApp.$socket.connected) {
+                  nuxtApp.$socket.emit("clan_request_rejected", {
+                     clan_id: this.clanId,
+                     usuari_id: req.usuari_id
+                  });
+               }
+            }
             this.$emit('request-handled');
             this.loadRequests();
          } else {

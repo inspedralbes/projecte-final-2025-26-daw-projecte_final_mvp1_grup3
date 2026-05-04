@@ -13,7 +13,7 @@
              <span v-else class="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full font-medium">Privat</span>
            </h2>
            <p class="text-sm text-gray-500 mt-2">
-             Líder: {{ getLeaderName() }} | Membres: {{ clan.membres_count || 0 }} / {{ clan.max_membres }}
+             Líder: {{ getLeaderName() }} | Membres: {{ clan.members_count || clan.membres_count || 0 }} / {{ clan.max_membres }}
            </p>
          </div>
          <div class="flex gap-2">

@@ -35,7 +35,7 @@ class ClanController extends Controller
             return response()->json(['error' => 'Nivell 5 requerit'], 403);
         }
 
-        $clan = Clan::with(['members.usuari', 'lider'])->find($id);
+        $clan = Clan::with(['members.usuari', 'lider'])->withCount('members')->find($id);
 
         if (!$clan) {
             return response()->json(['error' => 'Clan no trobat'], 404);

@@ -37,7 +37,7 @@
     <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <div v-for="clan in filteredClans" :key="clan.id" class="bg-white rounded-xl shadow p-6 border">
         <h3 class="text-lg font-bold text-gray-800">{{ clan.nom }}</h3>
-        <p class="text-sm text-gray-500 mt-1">Membres: {{ clan.membres_count || 0 }} / {{ clan.max_membres }}</p>
+        <p class="text-sm text-gray-500 mt-1">Membres: {{ clan.members_count || clan.membres_count || 0 }} / {{ clan.max_membres }}</p>
         <p v-if="!clan.es_public" class="text-xs text-purple-600 font-medium mt-1">Privat</p>
         <p v-else class="text-xs text-green-600 font-medium mt-1">Públic</p>
         <div class="mt-4 flex justify-between items-center">

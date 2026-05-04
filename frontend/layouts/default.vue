@@ -2,7 +2,7 @@
   <div class="global-app-container">
     <div class="global-content-wrapper">
       <HeaderUser />
-      <main class="mx-auto max-w-7xl px-4 py-6">
+      <main class="mx-auto w-full min-w-0 max-w-7xl px-3 sm:px-4 py-4 sm:py-6">
         <slot />
       </main>
     </div>

@@ -66,13 +66,8 @@
     </nav>
 
     <!-- Escriptori -->
-    <nav class="hidden lg:flex w-full items-center justify-between px-4">
-
-      <!-- Desktop: logo esquerra -->
-      <NuxtLink to="/home" class="brand">
-        <img :src="logo" alt="Looppy logo" class="logo-img"/>
-        <span class="app-name">Looppy</span>
-      </NuxtLink>
+    <nav class="hidden lg:flex w-full items-center px-4 nav-bar-desktop">
+      <div class="flex-1 min-w-0" aria-hidden="true" />
 
       <!-- Desktop nav -->
       <ul class="desktop-nav">
@@ -94,13 +89,15 @@
       </ul>
 
       <!-- Desktop: idioma + logout -->
-      <div class="desktop-actions">
-        <LanguageSwitcher />
-        <button @click="handleLogout" class="logout-btn" :title="$t('nav.logout')">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-          </svg>
-        </button>
+      <div class="flex-1 min-w-0 flex justify-end">
+        <div class="desktop-actions">
+          <LanguageSwitcher />
+          <button @click="handleLogout" class="logout-btn" :title="$t('nav.logout')">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+          </button>
+        </div>
       </div>
 
     </nav>
@@ -156,10 +153,6 @@
   <transition name="drawer-slide">
     <aside v-if="drawerOpen" class="drawer-panel">
       <div class="drawer-header">
-        <NuxtLink to="/home" class="drawer-brand" @click="drawerOpen = false">
-          <img :src="logo" alt="Looppy logo" class="drawer-logo-img"/>
-          <span class="drawer-app-name">Looppy</span>
-        </NuxtLink>
         <button class="drawer-close" @click="drawerOpen = false" aria-label="Tancar">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -170,7 +163,7 @@
       <!-- User info -->
       <div class="drawer-user">
         <div class="drawer-avatar">
-          <span class="text-2xl">👤</span>
+          <img :src="logo" alt="" class="drawer-avatar-img" width="72" height="72" decoding="async" />
         </div>
         <p class="drawer-username">{{ userName }}</p>
       </div>
@@ -402,6 +395,9 @@ nav {
   .desktop-nav {
     display: flex;
   }
+  .nav-bar-desktop .desktop-nav {
+    flex: 0 1 auto;
+  }
 }
 .desktop-nav li {
   margin: 0;
@@ -410,33 +406,6 @@ nav {
 nav a {
   color: inherit;
   text-decoration: none;
-}
-
-.brand {
-  display: none;
-  align-items: center;
-  gap: 0.5rem;
-  color: inherit;
-  text-decoration: none;
-}
-@media (min-width: 1024px) {
-  .brand {
-    display: inline-flex;
-  }
-}
-.brand:hover {
-  color: #d1d5db;
-}
-.logo-img {
-  width: 3rem;
-  height: 3rem;
-  border-radius: 50%;
-  object-fit: cover;
-  display: block;
-}
-.app-name {
-  font-size: 1.25rem;
-  font-weight: 700;
 }
 
 /* Mobile stats bar (inline, right side) */
@@ -555,25 +524,7 @@ nav a {
 .drawer-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-}
-.drawer-brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  text-decoration: none;
-  color: inherit;
-}
-.drawer-logo-img {
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: 50%;
-  object-fit: cover;
-}
-.drawer-app-name {
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: #1f2937;
+  justify-content: flex-end;
 }
 .drawer-close {
   background: none;
@@ -597,13 +548,21 @@ nav a {
   padding: 1rem 0;
 }
 .drawer-avatar {
-  width: 3.5rem;
-  height: 3.5rem;
+  width: 4.5rem;
+  height: 4.5rem;
   border-radius: 50%;
-  background: linear-gradient(135deg, #60a5fa, #a78bfa);
+  background: #f3f4f6;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+  padding: 0.2rem;
+}
+.drawer-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
 }
 .drawer-username {
   font-weight: 700;

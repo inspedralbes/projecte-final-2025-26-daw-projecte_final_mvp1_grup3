@@ -14,8 +14,13 @@
           </button>
         </div>
 
-        <!-- 1. Detalls -->
-        <HabitFormDetails v-model="formulari" />
+        <!-- 1. Detalls (inclou categoria) -->
+        <HabitFormDetails
+          v-model="formulari"
+          :categories="categories"
+          :colors="colors"
+          @select-category="seleccionarCategoria"
+        />
 
         <!-- 2. Planificació -->
         <HabitFormPlanning 
@@ -24,14 +29,7 @@
           :is-day-selected="isDaySelected"
         />
 
-        <!-- 3. Categoria -->
-        <HabitFormCategory 
-          :categories="categories" 
-          :selected-id="formulari.categoria" 
-          @select="seleccionarCategoria" 
-        />
-
-        <!-- 4. Context extern (opcional) -->
+        <!-- 3. Context extern (opcional) -->
         <div class="bento-card bg-white/95 backdrop-blur-md rounded-3xl p-8 shadow-xl border border-white/50">
           <div class="flex items-center gap-3 mb-4">
             <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center text-lg">🔎</div>
@@ -182,13 +180,6 @@
           </div>
         </div>
 
-        <!-- 4. Estil -->
-        <HabitFormStyle 
-          :colors="colors" 
-          :selected-color="formulari.color" 
-          @update:color="formulari.color = $event" 
-        />
-
         <!-- Botó Enviar -->
         <button data-testid="habit-save-button" @click="guardarHabit" :disabled="estaCarregant" class="w-full bg-green-600 hover:bg-green-700 text-white font-black py-6 rounded-3xl shadow-2xl shadow-green-900/40 transition-all transform hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-4 text-2xl uppercase tracking-widest disabled:opacity-50">
           <span class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">{{ editantHabitId ? "✎" : "＋" }}</span>
@@ -265,8 +256,6 @@
 import { useHabitStore } from "../stores/useHabitStore";
 import HabitFormDetails from "~/components/user/habits/HabitFormDetails.vue";
 import HabitFormPlanning from "~/components/user/habits/HabitFormPlanning.vue";
-import HabitFormCategory from "~/components/user/habits/HabitFormCategory.vue";
-import HabitFormStyle from "~/components/user/habits/HabitFormStyle.vue";
 import { authFetch } from "~/composables/useApi.js";
 import { getEndpointByProvider, getProviderByCategoryId } from "~/utils/habitExternal.js";
 import { useAuthStore } from "~/stores/useAuthStore.js";
@@ -274,9 +263,7 @@ import { useAuthStore } from "~/stores/useAuthStore.js";
 export default {
   components: {
     HabitFormDetails,
-    HabitFormPlanning,
-    HabitFormCategory,
-    HabitFormStyle
+    HabitFormPlanning
   },
   data: function () {
     return {

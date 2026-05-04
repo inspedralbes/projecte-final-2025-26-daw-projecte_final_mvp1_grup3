@@ -35,6 +35,6 @@ describe('Perfil', function () {
   });
 
   it('muestra la sección de la mascota', function () {
-    cy.get('img[alt="Mascota"]').should('be.visible');
+    cy.get('img[alt="El teu monstre"]').should('be.visible');
   });
 });

@@ -1,18 +1,19 @@
 <template>
   <div class="relative w-full min-h-screen pb-12 overflow-y-auto">
-    <!-- Navbar / Header Base -->
-    <div class="w-full p-6 flex justify-between items-center z-20">
-      <div class="flex items-center gap-4">
-        <NuxtLink to="/home" class="bg-white/90 backdrop-blur-sm text-green-700 w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-xl shadow-sm hover:shadow-md hover:bg-white transition-all hover:-translate-x-1">
-          ←
-        </NuxtLink>
-        <h1 class="text-3xl font-extrabold text-white drop-shadow-md">{{ $t('habits.title') }}</h1>
-      </div>
-    </div>
+    <div class="max-w-4xl mx-auto px-6 pt-4 pb-4 space-y-8">
+        <!-- Accés ràpid: llista per editar (modal) -->
+        <div class="flex justify-end">
+          <button
+            type="button"
+            data-testid="habit-open-edit-list-button"
+            class="inline-flex items-center gap-2 rounded-2xl border-2 border-gray-200 bg-white px-5 py-3 text-sm font-bold text-gray-800 shadow-sm transition hover:border-green-300 hover:bg-green-50/80"
+            @click="obrirModalLlistaEditarHabits"
+          >
+            <span aria-hidden="true">✏️</span>
+            {{ $t('habits.edit_list_open_button') }}
+          </button>
+        </div>
 
-    <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <!-- Esquerra: Seccions del formulari -->
-      <div class="lg:col-span-2 space-y-8">
         <!-- 1. Detalls -->
         <HabitFormDetails v-model="formulari" />
 
@@ -200,34 +201,59 @@
         >
           Cancel·lar edició
         </button>
-      </div>
+    </div>
 
-      <!-- Dreta: Llista dels meus hàbits -->
-      <div class="lg:col-span-1">
-        <div class="bento-card bg-white/95 backdrop-blur-md rounded-3xl p-8 shadow-xl border border-white/50 h-full">
-          <div class="flex items-center gap-4 mb-8">
-            <div class="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center text-xl">✨</div>
-            <h2 class="text-xl font-bold text-gray-800 tracking-tight">{{ $t('habits.my_habits') }}</h2>
+    <!-- Modal: triar hàbit per editar -->
+    <div
+      v-if="modalLlistaEditarObert"
+      data-testid="habit-edit-list-modal"
+      class="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 p-4"
+      role="dialog"
+      aria-modal="true"
+      :aria-label="$t('habits.my_habits')"
+      @click.self="tancarModalLlistaEditarHabits"
+    >
+      <div class="w-full max-w-md max-h-[min(85vh,32rem)] flex flex-col rounded-3xl bg-white shadow-2xl border border-gray-100 overflow-hidden" @click.stop>
+        <div class="px-5 py-4 border-b border-gray-100 flex items-start justify-between gap-3 shrink-0">
+          <div class="min-w-0">
+            <h3 class="text-lg font-black text-gray-800">{{ $t('habits.my_habits') }}</h3>
+            <p class="text-xs text-gray-500 mt-1">{{ $t('habits.pick_habit_modal_subtitle') }}</p>
           </div>
-
-          <div v-if="habitStore.habits.length === 0" class="text-center py-20 bg-gray-50/50 rounded-2xl border-2 border-dashed border-gray-200">
-            <p class="text-gray-400 font-bold">{{ $t('habits.no_habits_yet') }}</p>
-            <p class="text-xs text-gray-300 mt-2 uppercase tracking-widest">{{ $t('habits.add_new') }}</p>
+          <button
+            type="button"
+            class="shrink-0 w-10 h-10 rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-200 font-bold text-lg leading-none"
+            :aria-label="$t('habits.cancel')"
+            @click="tancarModalLlistaEditarHabits"
+          >
+            ×
+          </button>
+        </div>
+        <div class="flex-1 min-h-0 overflow-y-auto p-4">
+          <div v-if="habitStore.habits.length === 0" class="text-center py-12 px-4 rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50/50">
+            <p class="text-gray-500 font-bold">{{ $t('habits.no_habits_yet') }}</p>
+            <p class="text-xs text-gray-400 mt-2">{{ $t('habits.add_new') }}</p>
           </div>
-
-          <div v-else class="space-y-4">
-            <div v-for="hàbit in habitStore.habits" :key="hàbit.id" :data-testid="'habit-list-item-' + hàbit.id" class="flex items-center gap-4 p-4 rounded-2xl bg-white border-2 border-gray-50 shadow-sm hover:shadow-lg hover:border-green-100 transition-all cursor-pointer group" @click="obrirModalEdicio(hàbit)">
-              <div :style="{ backgroundColor: hàbit.color || '#10B981' }" class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl text-white shadow-lg shadow-inner transform group-hover:rotate-6 transition-transform">
+          <div v-else class="space-y-2">
+            <button
+              v-for="hàbit in habitStore.habits"
+              :key="hàbit.id"
+              type="button"
+              :data-testid="'habit-list-item-' + hàbit.id"
+              class="w-full flex items-center gap-3 p-3 rounded-2xl border-2 text-left transition border-gray-100 bg-gray-50/50 hover:border-green-400 hover:bg-green-50/50"
+              @click="triarHabitPerEditar(hàbit)"
+            >
+              <div
+                :style="{ backgroundColor: hàbit.color || '#10B981' }"
+                class="w-12 h-12 rounded-xl flex items-center justify-center text-xl text-white shadow-md shrink-0"
+              >
                 {{ hàbit.icona }}
               </div>
-              <div class="flex-1 min-w-0">
-                <h3 class="font-black text-gray-800 truncate text-lg tracking-tight">{{ hàbit.nom }}</h3>
-                <p class="text-xs font-bold text-gray-400 uppercase">{{ obtenerNomCategoria(hàbit.categoriaId) }}</p>
+              <div class="min-w-0 flex-1">
+                <p class="font-black text-gray-800 truncate">{{ hàbit.nom }}</p>
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wide">{{ obtenerNomCategoria(hàbit.categoriaId) }}</p>
               </div>
-              <button @click.stop="eliminarHabit(hàbit.id)" class="w-10 h-10 rounded-xl bg-red-50 text-red-500 flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-red-500 hover:text-white transition-all transform hover:scale-110">
-                ×
-              </button>
-            </div>
+              <span class="text-gray-400 shrink-0 text-sm">→</span>
+            </button>
           </div>
         </div>
       </div>
@@ -256,10 +282,10 @@ export default {
     return {
       socket: null,
       estaCarregant: false,
+      habitGuardarTimeoutId: null,
       errorMissatge: "",
       formulari: {
         nom: "", 
-        motivacio: "", 
         icona: "💧", 
         categoria: "", 
         frequencia: "diaria", 
@@ -300,7 +326,8 @@ export default {
       ],
       colors: [
         "#10B981", "#3B82F6", "#F59E0B", "#EF4444", "#8B5CF6", "#EC4899", "#06B6D4", "#1F2937"
-      ]
+      ],
+      modalLlistaEditarObert: false
     };
   },
   computed: {
@@ -325,13 +352,123 @@ export default {
       return "Cerca...";
     }
   },
-  mounted: function () {
-    this.carregarHabits();
+  mounted: async function () {
+    var self = this;
+    await this.carregarHabits();
+    this.aplicarEditDesDeQuery();
     this.socket = useNuxtApp().$socket;
+    if (this.socket) {
+      this._onHabitActionConfirmed = function (payload) {
+        self.onHabitActionConfirmedSocket(payload);
+      };
+      this.socket.on("habit_action_confirmed", this._onHabitActionConfirmed);
+    }
+  },
+  beforeUnmount: function () {
+    this.clearHabitGuardarPending();
+    if (this.socket && this._onHabitActionConfirmed) {
+      this.socket.off("habit_action_confirmed", this._onHabitActionConfirmed);
+    }
   },
   methods: {
+    clearHabitGuardarPending: function () {
+      if (this.habitGuardarTimeoutId !== null) {
+        clearTimeout(this.habitGuardarTimeoutId);
+        this.habitGuardarTimeoutId = null;
+      }
+    },
+    onHabitActionConfirmedSocket: function (payload) {
+      if (!payload || payload.action == null) {
+        return;
+      }
+      var accio = String(payload.action).toUpperCase();
+      if (accio !== "CREATE" && accio !== "UPDATE" && accio !== "DELETE") {
+        return;
+      }
+      this.clearHabitGuardarPending();
+      this.estaCarregant = false;
+      this.carregarHabits();
+      if (payload.success) {
+        var editId = this.editantHabitId;
+        var deletedId =
+          payload.habit &&
+          typeof payload.habit.id !== "undefined" &&
+          payload.habit.id !== null
+            ? Number(payload.habit.id)
+            : null;
+        if (accio === "CREATE" || accio === "UPDATE") {
+          this.reiniciarFormulari();
+        } else if (
+          accio === "DELETE" &&
+          editId !== null &&
+          deletedId !== null &&
+          Number(editId) === deletedId
+        ) {
+          this.reiniciarFormulari();
+        }
+        return;
+      }
+      if (this.$swal) {
+        var text;
+        if (payload.error === "SOCKET_AUTH") {
+          text = this.$t("habits.habit_socket_auth_failed");
+        } else if (payload.message) {
+          text = payload.message;
+        } else {
+          text = this.$t("habits.habit_save_failed_text");
+        }
+        this.$swal.fire({
+          icon: "error",
+          title: this.$t("habits.habit_save_failed_title"),
+          text: text
+        });
+      }
+    },
     carregarHabits: async function () {
       await this.habitStore.obtenirHabitsDesDeApi();
+    },
+    obtenerNomCategoria: function (id) {
+      if (id === null || id === undefined || id === "") {
+        return "";
+      }
+      var nid = Number(id);
+      var cat = this.categories.find(function (c) {
+        return Number(c.id) === nid;
+      });
+      return cat ? this.$t("habits.categories." + cat.key) : "";
+    },
+    obrirModalLlistaEditarHabits: async function () {
+      await this.carregarHabits();
+      this.modalLlistaEditarObert = true;
+    },
+    tancarModalLlistaEditarHabits: function () {
+      this.modalLlistaEditarObert = false;
+    },
+    triarHabitPerEditar: function (habit) {
+      this.obrirModalEdicio(habit);
+      this.modalLlistaEditarObert = false;
+      if (typeof window !== "undefined") {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    },
+    /**
+     * Obre el formulari en mode edició si la URL inclou ?edit=<id> (p. ex. després d'enllaços o e2e).
+     */
+    aplicarEditDesDeQuery: function () {
+      var q = this.$route.query.edit;
+      if (q === undefined || q === null || q === "") {
+        return;
+      }
+      var id = parseInt(String(q), 10);
+      if (Number.isNaN(id)) {
+        return;
+      }
+      var habit = this.habitStore.habits.find(function (h) {
+        return Number(h.id) === id;
+      });
+      if (habit) {
+        this.obrirModalEdicio(habit);
+      }
     },
     seleccionarCategoria: function (id) {
       var self = this;
@@ -372,10 +509,6 @@ export default {
       }
 
       aplicarCanviCategoria();
-    },
-    obtenerNomCategoria: function (id) {
-      var cat = this.categories.find(function(c) { return c.id === id; });
-      return cat ? this.$t('habits.categories.' + cat.key) : "";
     },
     isDaySelected: function (index) {
       return this.formulari.dies_setmana[index];
@@ -496,11 +629,58 @@ export default {
       return null;
     },
     guardarHabit: function () {
-      if (!this.formulari.nom || !this.formulari.categoria) return;
+      if (!this.formulari.nom || !String(this.formulari.nom).trim()) {
+        if (this.$swal) {
+          this.$swal.fire({
+            icon: "warning",
+            title: this.$t("habits.habit_name"),
+            text: this.$t("habits.habit_name_required_text")
+          });
+        }
+        return;
+      }
+      if (!this.formulari.categoria) {
+        if (this.$swal) {
+          this.$swal.fire({
+            icon: "warning",
+            title: this.$t("habits.category"),
+            text: this.$t("habits.select_category_notice")
+          });
+        }
+        return;
+      }
+      var socket = this.socket || (typeof useNuxtApp === "function" ? useNuxtApp().$socket : null);
+      if (!socket || !socket.connected) {
+        if (this.$swal) {
+          this.$swal.fire({
+            icon: "error",
+            title: this.$t("habits.socket_offline_title"),
+            text: this.$t("habits.socket_offline_text")
+          });
+        }
+        return;
+      }
       var metadata = this.construirMetadataHabit();
       var esEdicio = this.editantHabitId !== null;
       this.estaCarregant = true;
-      this.socket.emit("habit_action", {
+      this.clearHabitGuardarPending();
+      var self = this;
+      this.habitGuardarTimeoutId = setTimeout(function () {
+        self.habitGuardarTimeoutId = null;
+        if (!self.estaCarregant) {
+          return;
+        }
+        self.estaCarregant = false;
+        self.carregarHabits();
+        if (self.$swal) {
+          self.$swal.fire({
+            icon: "warning",
+            title: self.$t("habits.habit_save_timeout_title"),
+            text: self.$t("habits.habit_save_timeout_text")
+          });
+        }
+      }, 15000);
+      socket.emit("habit_action", {
         action: esEdicio ? "UPDATE" : "CREATE",
         habit_id: esEdicio ? this.editantHabitId : null,
         habit_data: {
@@ -517,16 +697,10 @@ export default {
           metadata: metadata
         }
       });
-      setTimeout(function() { 
-        this.estaCarregant = false; 
-        this.carregarHabits(); 
-        this.reiniciarFormulari();
-      }.bind(this), 1000);
     },
     obrirModalEdicio: function (habit) {
       this.editantHabitId = habit.id;
       this.formulari.nom = habit.nom || "";
-      this.formulari.motivacio = "";
       this.formulari.icona = habit.icona || "💧";
       this.formulari.categoria = habit.categoriaId || "";
       this.formulari.frequencia = habit.frequenciaTipus || "diaria";
@@ -567,7 +741,6 @@ export default {
     reiniciarFormulari: function () {
       this.editantHabitId = null;
       this.formulari.nom = "";
-      this.formulari.motivacio = "";
       this.formulari.icona = "💧";
       this.formulari.categoria = "";
       this.formulari.frequencia = "diaria";
@@ -588,13 +761,6 @@ export default {
       this.detallExercici.carregant = false;
       this.manualExtern.titol = "";
       this.manualExtern.url_imatge = "";
-    },
-    eliminarHabit: function (id) {
-      this.socket.emit("habit_action", {
-        action: "DELETE",
-        habit_id: id
-      });
-      setTimeout(function() { this.carregarHabits(); }.bind(this), 500);
     }
   }
 };

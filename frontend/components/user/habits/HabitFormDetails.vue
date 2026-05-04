@@ -18,16 +18,6 @@
         />
       </div>
 
-      <div>
-        <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3 px-1">{{ $t('habits.motivation') }}</label>
-        <textarea 
-          :value="modelValue.motivacio" 
-          @input="$emit('update:modelValue', { ...modelValue, motivacio: $event.target.value })"
-          :placeholder="$t('habits.motivation_placeholder')" 
-          class="w-full bg-gray-50/50 border-2 border-gray-100 rounded-2xl px-6 py-4 focus:outline-none focus:ring-4 focus:ring-green-500/10 focus:border-green-500 focus:bg-white transition-all font-bold resize-none h-32"
-        ></textarea>
-      </div>
-
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3 px-1">{{ $t('habits.difficulty') }}</label>

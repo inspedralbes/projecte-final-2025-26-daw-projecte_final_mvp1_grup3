@@ -1,36 +1,27 @@
 <template>
-  <div class="relative w-full min-h-screen pb-12 overflow-y-auto">
+  <div class="home-page-root relative w-full min-h-screen pb-24 lg:pb-12 overflow-y-auto">
     <!-- El header ja el proporciona el layout default.vue -->
 
     <!-- Contenedor Principal Bento -->
-    <div class="max-w-7xl mx-auto px-6 grid grid-cols-12 gap-6 pb-20">
-      
-      <!-- COSTAT ESQUERRE: Missions i Perfil -->
-      <div class="col-span-12 lg:col-span-3 space-y-6">
-        <div class="bento-card bg-white/95 backdrop-blur-md rounded-3xl p-6 shadow-xl border border-white/50">
-          <UserHomeHomeMissionCard
-            :missio-diaria="missioDiaria"
-            :missio-completada="missioCompletada"
-            :missio-progres="missioProgres"
-            :missio-objectiu="missioObjectiu"
-          />
-          <div class="h-px bg-gray-100 my-4"></div>
-          <UserHomeHomeProfileCard
-            :user="user"
-            :nivell="nivell"
-            :xp-actual-nivel="xpActualNivel"
-            :xp-objetivo-nivel="xpObjetivoNivel"
-            :percentatge-nivell="percentatgeNivell"
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 grid grid-cols-12 gap-3 lg:gap-6 lg:items-start lg:content-start pb-16 lg:pb-20">
+
+      <!-- CENTRE: sense sticky → el monstre creua el scroll amb el fons natural (no queda pinat sol) -->
+      <div class="col-span-12 lg:col-span-6 order-3 lg:order-2 lg:row-span-1 h-fit max-h-none space-y-4 lg:space-y-6 lg:self-start lg:z-[5]">
+        <!-- Mobile: monstre sobre el fons global (imatge dalt + verd #7EB356 sota) -->
+        <div class="lg:hidden relative w-full flex justify-center px-2 pt-0 pb-1 overflow-visible">
+          <img
+            v-if="imatgeMascota"
+            :src="imatgeMascota"
+            alt="El teu monstre"
+            class="w-[93vw] max-w-[408px] h-auto max-h-[21rem] sm:max-h-[24rem] object-contain object-bottom drop-shadow-[0_14px_28px_rgba(0,0,0,0.35)] select-none -translate-y-3 sm:-translate-y-4"
+            decoding="async"
+            draggable="false"
           />
         </div>
-        <UserHomeHomeLogrosCard :ultims-logros="ultimsLogros" @obrir-modal-logros="obrirModalLogros" />
-        <UserHomeHomeRouletteSection :classe-icona-ruleta="classeIconaRuleta" @obrir-modal-ruleta="obrirModalRuleta" />
-      </div>
 
-      <!-- CENTRE: El teu Monstre -->
-      <div class="col-span-12 lg:col-span-6 space-y-6">
-        <div class="bento-card bg-white/95 backdrop-blur-md rounded-3xl p-8 shadow-2xl border border-white/50 flex flex-col items-center relative min-h-[500px]">
-          <div class="flex items-center justify-between w-full mb-6 relative z-10">
+        <!-- Desktop: sense imatge d'escenari; monstre sobre el mateix bloc (el fons de l'app es veu lateralment si cal) -->
+        <div class="hidden lg:flex bento-card rounded-3xl p-8 flex-col items-center relative w-full min-h-0 bg-white/95 backdrop-blur-md shadow-2xl border border-white/50 shrink-0">
+          <div class="flex shrink-0 items-center justify-between w-full mb-6 relative z-10">
             <div>
               <h2 class="text-2xl font-black text-gray-800 tracking-tight">
                 {{ $t('home.monster_title') }}
@@ -42,39 +33,92 @@
             <UserHomeHomeStreakSection :ratxa="ratxa" :ratxa-maxima="ratxaMaxima" :xp-total="xpTotal" :monedes="monedes" />
           </div>
 
-          <!-- Imatge Monstre en Escenari -->
-          <div class="flex-1 w-full flex items-center justify-center relative">
-            <div class="w-full h-full rounded-2xl overflow-hidden shadow-inner relative" :style="estilFons">
-              <div class="absolute inset-0 bg-black/5"></div>
-              <div class="relative w-full h-full flex items-center justify-center p-8">
-                <img
-                  v-if="imatgeMascota"
-                  :src="imatgeMascota"
-                  alt="El teu monstre"
-                  class="w-48 h-48 lg:w-64 lg:h-64 object-contain drop-shadow-[0_20px_20px_rgba(0,0,0,0.3)] animate-float"
-                />
-              </div>
+          <div class="w-full flex flex-col items-center justify-start relative pt-2 shrink-0">
+            <div class="flex justify-center w-full px-2 pb-2 -mt-1">
+              <img
+                v-if="imatgeMascota"
+                :src="imatgeMascota"
+                alt="El teu monstre"
+                class="h-[min(32rem,78vh)] w-[min(32rem,94vw)] max-h-[min(32rem,78vh)] max-w-[min(32rem,94vw)] object-contain object-bottom drop-shadow-[0_20px_20px_rgba(0,0,0,0.28)] -translate-y-3 lg:-translate-y-5"
+                decoding="async"
+                draggable="false"
+              />
             </div>
           </div>
 
-          <p class="text-center text-gray-500 font-medium text-sm mt-6 max-w-sm">
+          <p class="text-center text-gray-500 font-medium text-sm mt-6 max-w-sm shrink-0">
             {{ $t('home.monster_subtitle') }}
           </p>
         </div>
       </div>
 
-      <!-- COSTAT DRET: Clima + Hàbits -->
-      <div class="col-span-12 lg:col-span-3 space-y-6">
-        <WeatherWidget
-          :dades="weatherGlobal"
-          :carregant="weatherCarregant"
-          :mode="weatherMode"
-          :ciutat="weatherCiutat"
-          @update:ciutat="weatherCiutat = $event"
-          @refresh="carregarClima"
-          @use-geo="usarGeolocal"
-          @switch-manual="passarAManual"
-        />
+      <!-- Separador mobile entre missions i monstre -->
+      <div class="col-span-12 order-2 lg:hidden flex items-center gap-3 px-2 -mt-1">
+        <div class="flex-1 h-px bg-white/40"></div>
+        <span class="text-xs text-white/70 font-semibold whitespace-nowrap">{{ $t('home.monster_title') }}</span>
+        <div class="flex-1 h-px bg-white/40"></div>
+      </div>
+
+      <!-- COSTAT ESQUERRE -->
+      <div class="col-span-12 lg:col-span-3 order-1 lg:order-1 lg:self-start space-y-2 lg:space-y-6 pt-1 lg:pt-0">
+        <div class="grid grid-cols-2 gap-1.5 items-stretch w-full lg:block lg:space-y-6">
+          <div class="bento-card rounded-xl lg:rounded-3xl p-0 lg:p-6 lg:bg-white/95 lg:backdrop-blur-md lg:shadow-xl lg:border lg:border-white/50 min-w-0 w-full h-full lg:h-auto self-stretch overflow-hidden lg:overflow-visible">
+            <UserHomeHomeMissionCard
+              :missio-diaria="missioDiaria"
+              :missio-completada="missioCompletada"
+              :missio-progres="missioProgres"
+              :missio-objectiu="missioObjectiu"
+            />
+            <!-- Perfil: solo visible en desktop -->
+            <div class="hidden lg:block">
+              <div class="h-px bg-gray-100 my-4"></div>
+              <UserHomeHomeProfileCard
+                :user="user"
+                :nivell="nivell"
+                :xp-actual-nivel="xpActualNivel"
+                :xp-objetivo-nivel="xpObjetivoNivel"
+                :percentatge-nivell="percentatgeNivell"
+              />
+            </div>
+          </div>
+          <!-- Ruleta al home (mobil); ja no al menú hamburguesa -->
+          <div class="min-w-0 h-full lg:hidden flex">
+            <UserHomeHomeRouletteSection
+              compact
+              :classe-icona-ruleta="classeIconaRuleta"
+              @obrir-modal-ruleta="obrirModalRuleta"
+            />
+          </div>
+        </div>
+        <div class="hidden lg:block">
+          <UserHomeHomeLogrosCard :ultims-logros="ultimsLogros" @obrir-modal-logros="obrirModalLogros" />
+        </div>
+        <div class="hidden lg:block">
+          <UserHomeHomeRouletteSection :classe-icona-ruleta="classeIconaRuleta" @obrir-modal-ruleta="obrirModalRuleta" />
+        </div>
+      </div>
+
+      <!-- Separador mobile entre monstre i hàbits -->
+      <div class="col-span-12 order-4 lg:hidden flex items-center gap-3 px-2">
+        <div class="flex-1 h-px bg-white/40"></div>
+        <span class="text-xs text-white/70 font-semibold whitespace-nowrap">{{ $t('home.habits_title') || 'Els teus hàbits' }}</span>
+        <div class="flex-1 h-px bg-white/40"></div>
+      </div>
+
+      <!-- COSTAT DRET: només aquesta columna allarga la pàgina cap avall -->
+      <div class="col-span-12 lg:col-span-3 order-5 lg:order-3 lg:self-start space-y-4 lg:space-y-6">
+        <div class="hidden lg:block">
+          <WeatherWidget
+            :dades="weatherGlobal"
+            :carregant="weatherCarregant"
+            :mode="weatherMode"
+            :ciutat="weatherCiutat"
+            @update:ciutat="weatherCiutat = $event"
+            @refresh="carregarClima"
+            @use-geo="usarGeolocal"
+            @switch-manual="passarAManual"
+          />
+        </div>
         <UserHomeHomeHabitsSection
           :habits="habitsDelDia"
           :esta-carregant="estaCarregantHabits"
@@ -150,7 +194,6 @@ import UserHomeHomeStreakSection from "~/components/user/home/HomeStreakSection.
 import UserHomeHomeHabitsSection from "~/components/user/home/HomeHabitsSection.vue";
 import WeatherWidget from "~/components/user/home/WeatherWidget.vue";
 import { authFetch } from "~/composables/useApi.js";
-import bosqueImg from "~/assets/img/Bosque.png";
 import mascotaImg from "~/assets/img/Mascota.png";
 
 export default {
@@ -191,11 +234,6 @@ export default {
       weatherLon: null,
       weatherCarregant: false,
       ruletaProcessant: false,
-      estilFons: {
-        backgroundImage: "url(" + bosqueImg + ")",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }
     };
   },
   computed: {
@@ -248,6 +286,25 @@ export default {
     self.inicialitzarSocket();
 
     self.inicialitzarClima();
+
+    self._onLoopyWeatherCity = function () {
+      var c = (localStorage.getItem("loopy_weather_city") || "").trim();
+      if (c) {
+        self.weatherCiutat = c;
+      }
+      self.weatherMode = "manual";
+      self.weatherLat = null;
+      self.weatherLon = null;
+      self.carregarClima();
+    };
+    if (typeof window !== "undefined") {
+      window.addEventListener("loopy-weather-city-changed", self._onLoopyWeatherCity);
+    }
+  },
+  beforeUnmount: function () {
+    if (typeof window !== "undefined" && this._onLoopyWeatherCity) {
+      window.removeEventListener("loopy-weather-city-changed", this._onLoopyWeatherCity);
+    }
   },
   watch: {
     weatherCiutat: function (nova) {
@@ -375,13 +432,13 @@ export default {
         }
         var resposta = await authFetch(url, {});
         var dades = await resposta.json();
-        if (resposta.ok) {
+        if (resposta.ok && dades && typeof dades === "object") {
           self.weatherGlobal = dades;
-          if (dades.city && self.weatherMode !== "geo") {
+          if (dades.ok === true && dades.city && self.weatherMode !== "geo") {
             self.weatherCiutat = dades.city;
           }
         } else {
-          self.weatherGlobal = null;
+          self.weatherGlobal = { ok: false };
         }
       } catch (e) {
         self.weatherGlobal = null;
@@ -913,12 +970,9 @@ export default {
 </script>
 
 <style scoped>
-.animate-float {
-  animation: float 6s ease-in-out infinite;
-}
-@keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-20px); }
-  100% { transform: translateY(0px); }
+/* Bloc CSS vàlid: en alguns builds Docker/Vite un SFC sense <style> pot deixar descriptors antics
+   i PostCSS arriba a interpretar el template com CSS (error "Unknown word $t"). */
+.home-page-root {
+  isolation: isolate;
 }
 </style>

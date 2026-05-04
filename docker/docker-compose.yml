@@ -86,6 +86,8 @@ services:
       CACHE_DRIVER: redis
       SESSION_DRIVER: redis
       QUEUE_CONNECTION: redis
+      # OpenWeather: definir OPENWEATHER_API_KEY (i opcionalment OPENWEATHER_API_URL) només a
+      # backend-laravel/.env. No injectar ací: ${OPENWEATHER_API_KEY:-} buit sobreescriu el .env del volum.
     volumes:
       - ../backend-laravel:/var/www
       - ../database:/var/database:ro

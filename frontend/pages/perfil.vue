@@ -44,7 +44,10 @@
                 <p class="text-3xl font-black text-blue-700 mt-1">{{ user.nivell }}</p>
               </div>
               <div class="bg-purple-50/50 p-4 rounded-2xl text-center border border-purple-100 shadow-sm">
-                <p class="text-[10px] text-purple-500 font-black uppercase tracking-widest">{{ $t('home.coins') }}</p>
+                <p class="text-[10px] text-purple-500 font-black uppercase tracking-widest flex items-center justify-center gap-1.5">
+                  <img :src="coinLoopy" alt="" class="h-4 w-4 object-contain shrink-0 coin-pixel" width="16" height="16" aria-hidden="true" />
+                  <span>{{ $t('home.coins') }}</span>
+                </p>
                 <p class="text-3xl font-black text-purple-700 mt-1">{{ user.monedes }}</p>
               </div>
             </div>
@@ -146,6 +149,7 @@
 <script setup>
 import bosqueImg from "~/assets/img/Bosque.png";
 import mascotaImg from "~/assets/img/Mascota.png";
+import coinLoopy from "~/assets/img/coin-loopy.png";
 import { useAuthStore } from "~/stores/useAuthStore";
 import { authFetch, getBaseUrl } from "~/composables/useApi.js";
 
@@ -198,5 +202,8 @@ onMounted(function() {
   0% { transform: translateY(0px); }
   50% { transform: translateY(-20px); }
   100% { transform: translateY(0px); }
+}
+.coin-pixel {
+  image-rendering: pixelated;
 }
 </style>

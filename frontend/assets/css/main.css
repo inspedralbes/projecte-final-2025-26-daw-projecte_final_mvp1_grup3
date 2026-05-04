@@ -170,15 +170,39 @@
     }
 
     /* ==== GLOBAL APP LAYOUT ==== */
+    /*
+      Dalt: FonsAplicacio1 (sense cover: 100vw auto = sense zoom en allargar la pàgina).
+      Baix: color continu #7EB356 (mateix to que el verd del prat de la imatge).
+    */
     .global-app-container {
-        @apply min-h-screen bg-cover bg-center bg-fixed relative;
-        background-image: url('../img/fondo_login.png');
+        @apply min-h-screen relative;
         font-family: 'Fredoka', sans-serif;
+        background-color: #7eb356;
+        background-image: url('../img/FonsAplicacio1.png');
+        background-position: top center;
+        background-size: 100vw auto;
+        background-repeat: no-repeat;
+        background-attachment: scroll;
     }
 
     .global-app-container::before {
         content: "";
-        @apply absolute inset-0 bg-white/10 backdrop-blur-[2px] pointer-events-none;
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        pointer-events: none;
+    }
+
+    @media (min-width: 1024px) {
+        .global-app-container::before {
+            @apply bg-white/10 backdrop-blur-[2px];
+        }
+    }
+
+    /* Onboarding: sense foto / sense blur */
+    .global-app-container.onboarding-page {
+        background-image: none;
+        background-color: #f7faf5;
     }
 
     /* Onboarding: contingut net sense desenfocament del fons */

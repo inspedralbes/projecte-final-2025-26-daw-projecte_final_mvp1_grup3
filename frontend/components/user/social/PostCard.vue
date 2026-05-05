@@ -9,7 +9,10 @@
       <div class="flex-1 min-w-0">
         <div class="flex items-center justify-between">
           <div>
-            <span class="font-semibold text-gray-800">{{ post.user?.nom }}</span>
+            <span
+              class="font-semibold text-gray-800 cursor-pointer hover:text-blue-600 hover:underline transition-colors"
+              @click="openProfile"
+            >{{ post.user?.nom }}</span>
             <span class="text-gray-500 text-sm ml-2">{{ formatDate(post.created_at) }}</span>
           </div>
           <div class="relative" v-if="isOwner">
@@ -66,6 +69,12 @@
           </button>
         </div>
 
+        <UserSocialPublicProfileView
+          v-if="showProfile"
+          :user-id="post.user_id"
+          @close="showProfile = false"
+        />
+
         <div v-if="showComments" class="mt-4 border-t pt-4">
           <UserSocialCommentForm :post-id="post.id" @submitted="onCommentSubmitted" />
           <UserSocialCommentList :post-id="post.id" :initial-comments="post.comments || []" />
@@ -89,6 +98,7 @@ export default {
     return {
       showMenu: false,
       showComments: false,
+      showProfile: false,
       commentsCount: this.post.comments_count || 0
     };
   },
@@ -104,6 +114,11 @@ export default {
     }
   },
   methods: {
+    openProfile: function () {
+      if (this.post.user_id) {
+        this.showProfile = true;
+      }
+    },
     getInitials: function (name) {
       if (!name) return "?";
       return name

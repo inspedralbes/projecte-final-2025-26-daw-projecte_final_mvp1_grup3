@@ -1,7 +1,7 @@
 <template>
   <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" @click.self="$emit('close')">
-    <div class="bg-white rounded-2xl shadow-xl max-w-md w-full mx-4 overflow-hidden">
-      <div class="p-6 text-center relative">
+    <div class="bg-white rounded-2xl shadow-xl max-w-sm w-full mx-4 overflow-hidden">
+      <div class="p-6 relative">
         <button
           @click="$emit('close')"
           class="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600"
@@ -11,36 +11,46 @@
           </svg>
         </button>
 
-        <div v-if="loading" class="py-8 text-gray-500">{{ $t('home.loading') }}</div>
+        <div v-if="loading" class="py-12 text-center text-gray-500">
+          <div class="animate-spin inline-block rounded-full h-8 w-8 border-b-2 border-blue-500 mb-2"></div>
+          <p>{{ $t('home.loading') }}</p>
+        </div>
+
         <div v-else-if="profile" class="space-y-4">
-          <div class="w-20 h-20 mx-auto rounded-full bg-blue-100 flex items-center justify-center">
-            <span class="text-blue-600 font-bold text-3xl">{{ profile.nom.charAt(0) }}</span>
-          </div>
-
-          <div>
+          <!-- Avatar + Name -->
+          <div class="text-center">
+            <div class="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mb-3">
+              <span class="text-white font-bold text-3xl">{{ profile.nom.charAt(0).toUpperCase() }}</span>
+            </div>
             <h2 class="text-2xl font-bold text-gray-800">{{ profile.nom }}</h2>
-            <p class="text-gray-500">Nivell {{ profile.nivell }}</p>
+            <p class="text-purple-500 font-semibold">{{ $t('home.level') || 'Nivell' }} {{ profile.nivell }}</p>
           </div>
 
-          <div class="grid grid-cols-2 gap-4 py-4 border-t border-b border-gray-100">
-            <div class="text-center col-span-2">
-              <p class="text-2xl font-bold text-purple-600">{{ profile.nivell }}</p>
-              <p class="text-xs text-gray-500 uppercase">Nivel</p>
+          <!-- Stats: streak + max streak -->
+          <div class="grid grid-cols-2 gap-3">
+            <div class="bg-orange-50 rounded-xl p-3 text-center border border-orange-100">
+              <p class="text-2xl font-bold text-orange-500">🔥 {{ profile.streak }}</p>
+              <p class="text-xs text-gray-500 mt-1">{{ $t('home.streak') || 'Ratxa actual' }}</p>
+            </div>
+            <div class="bg-amber-50 rounded-xl p-3 text-center border border-amber-100">
+              <p class="text-2xl font-bold text-amber-500">⭐ {{ profile.streak_maxima }}</p>
+              <p class="text-xs text-gray-500 mt-1">{{ $t('home.streak_max') || 'Màxima ratxa' }}</p>
             </div>
           </div>
 
-          <div class="mt-4">
-            <div class="rounded-2xl bg-gray-50 overflow-hidden flex items-center justify-center border border-gray-100">
-              <img :src="imatgeMascota" alt="Monstruo" class="w-40 h-40 object-contain" />
-            </div>
+          <!-- Monster -->
+          <div class="rounded-2xl bg-gradient-to-br from-blue-50 to-purple-50 overflow-hidden flex flex-col items-center justify-center border border-gray-100 p-4">
+            <p class="text-xs text-gray-400 uppercase tracking-widest mb-2">{{ $t('home.monster_title') || 'Monstre' }}</p>
+            <img :src="imatgeMascota" alt="Monstre" class="w-32 h-32 object-contain drop-shadow-md" />
           </div>
 
-          <div v-if="profile.logros_showcase && profile.logros_showcase.length > 0" class="mt-4">
-            <p class="text-xs text-gray-500 uppercase tracking-widest mb-2">Logros en Exposición</p>
+          <!-- Logros showcase -->
+          <div v-if="profile.logros_showcase && profile.logros_showcase.length > 0">
+            <p class="text-xs text-gray-500 uppercase tracking-widest mb-2 text-center">Logros</p>
             <div class="flex flex-wrap justify-center gap-2">
-              <div 
-                v-for="logro in profile.logros_showcase" 
-                :key="logro.id" 
+              <div
+                v-for="logro in profile.logros_showcase"
+                :key="logro.id"
                 class="px-3 py-2 rounded-xl bg-purple-50 border border-purple-100 text-center"
               >
                 <p class="text-sm font-bold text-purple-700">🏆 {{ logro.nom }}</p>
@@ -48,8 +58,9 @@
             </div>
           </div>
         </div>
-        <div v-else class="py-8 text-red-500">
-          {{ $t('profile.error') }}
+
+        <div v-else class="py-8 text-center text-red-500">
+          {{ $t('profile.error') || 'Error carregant el perfil' }}
         </div>
       </div>
     </div>
@@ -57,30 +68,30 @@
 </template>
 
 <script>
-import { authFetch } from "~/composables/useApi.js";
+import { authFetch } from "~/utils/authFetch.js";
 import mascotaImg from "~/assets/img/Mascota.png";
 
 export default {
   name: "PublicProfileView",
   props: {
     userId: {
-      type: Number,
+      type: [Number, String],
       required: true,
     },
   },
   emits: ["close"],
-  data() {
+  data: function() {
     return {
       profile: null,
       loading: true,
       imatgeMascota: mascotaImg,
     };
   },
-  async mounted() {
+  mounted: async function() {
     await this.fetchProfile();
   },
   methods: {
-    async fetchProfile() {
+    fetchProfile: async function() {
       this.loading = true;
       try {
         var resposta = await authFetch("/api/users/" + this.userId + "/profile", {});

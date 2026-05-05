@@ -8,7 +8,10 @@
     <div class="flex-1">
       <div class="bg-gray-50 rounded-lg px-4 py-2">
         <div class="flex items-center gap-2">
-          <span class="font-semibold text-sm text-gray-800">{{ comment.user?.nom }}</span>
+          <span
+            class="font-semibold text-sm text-gray-800 cursor-pointer hover:text-blue-600 hover:underline transition-colors"
+            @click="openProfile"
+          >{{ comment.user?.nom }}</span>
           <span class="text-xs text-gray-500">{{ formatDate(comment.created_at) }}</span>
         </div>
         <p class="text-gray-700 text-sm mt-1">{{ comment.content }}</p>
@@ -45,6 +48,12 @@
       </div>
     </div>
   </div>
+
+  <UserSocialPublicProfileView
+    v-if="showProfile"
+    :user-id="comment.user_id"
+    @close="showProfile = false"
+  />
 </template>
 
 <script>
@@ -56,10 +65,16 @@ export default {
   },
   data: function () {
     return {
-      showReply: false
+      showReply: false,
+      showProfile: false
     };
   },
   methods: {
+    openProfile: function () {
+      if (this.comment.user_id) {
+        this.showProfile = true;
+      }
+    },
     getInitials: function (name) {
       if (!name) return "?";
       return name

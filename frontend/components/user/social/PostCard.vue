@@ -2,9 +2,24 @@
   <div class="bg-white rounded-2xl sm:rounded-3xl shadow-sm border border-gray-100 p-4">
     <div class="flex items-start gap-3">
       <div class="flex-shrink-0">
-        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold">
-          {{ getInitials(post.user?.nom) }}
-        </div>
+        <button
+          type="button"
+          @click="openProfile"
+          class="w-14 h-14 rounded-full overflow-hidden shadow-inner p-0 border-0 bg-transparent cursor-pointer"
+        >
+          <div class="w-full h-full rounded-full overflow-hidden" :style="avatarBackgroundStyle">
+            <div class="w-full h-full rounded-full border border-gray-200 bg-white/20 p-1 flex items-center justify-center">
+              <img
+                :src="mascotaImg"
+                alt="Monstre del perfil"
+                class="w-full h-full object-contain"
+                :style="monsterStyle"
+                decoding="async"
+                draggable="false"
+              />
+            </div>
+          </div>
+        </button>
       </div>
       <div class="flex-1 min-w-0">
         <div class="flex items-center justify-between">
@@ -87,6 +102,8 @@
 <script>
 import { useSocialStore } from "~/stores/useSocialStore.js";
 import { useAuthStore } from "~/stores/useAuthStore.js";
+import mascotaImg from "~/assets/img/Mascota.png";
+import bosqueImg from "~/assets/img/Bosque.png";
 
 export default {
   name: "PostCard",
@@ -99,18 +116,29 @@ export default {
       showMenu: false,
       showComments: false,
       showProfile: false,
-      commentsCount: this.post.comments_count || 0
+      commentsCount: this.post.comments_count || 0,
+      mascotaImg: mascotaImg
     };
-  },
-  watch: {
-    'post.comments_count': function (newVal) {
-      this.commentsCount = newVal || 0;
-    }
   },
   computed: {
     isOwner: function () {
       var authStore = useAuthStore();
       return this.post.user_id === authStore.user?.id;
+    },
+    monsterStyle: function () {
+      return {};
+    },
+    avatarBackgroundStyle: function () {
+      return {
+        backgroundImage: "url(" + bosqueImg + ")",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      };
+    }
+  },
+  watch: {
+    'post.comments_count': function (newVal) {
+      this.commentsCount = newVal || 0;
     }
   },
   methods: {

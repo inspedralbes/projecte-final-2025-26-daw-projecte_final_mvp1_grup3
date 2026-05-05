@@ -1,9 +1,24 @@
 <template>
   <div :class="['flex gap-3', depth > 0 ? 'ml-8 mt-3' : 'mt-4']">
     <div class="flex-shrink-0">
-      <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-sm font-bold">
-        {{ getInitials(comment.user?.nom) }}
-      </div>
+      <button
+        type="button"
+        @click="openProfile"
+        class="w-12 h-12 rounded-full overflow-hidden shadow-inner p-0 border-0 bg-transparent cursor-pointer"
+      >
+        <div class="w-full h-full rounded-full overflow-hidden" :style="avatarBackgroundStyle">
+          <div class="w-full h-full rounded-full border border-gray-200 bg-white/20 p-1 flex items-center justify-center">
+            <img
+              :src="mascotaImg"
+              alt="Monstre del perfil"
+              class="w-full h-full object-contain"
+              :style="monsterStyle"
+              decoding="async"
+              draggable="false"
+            />
+          </div>
+        </div>
+      </button>
     </div>
     <div class="flex-1">
       <div class="bg-gray-50 rounded-lg px-4 py-2">
@@ -57,6 +72,9 @@
 </template>
 
 <script>
+import mascotaImg from "~/assets/img/Mascota.png";
+import bosqueImg from "~/assets/img/Bosque.png";
+
 export default {
   name: "CommentItem",
   props: {
@@ -66,8 +84,21 @@ export default {
   data: function () {
     return {
       showReply: false,
-      showProfile: false
+      showProfile: false,
+      mascotaImg: mascotaImg
     };
+  },
+  computed: {
+    avatarBackgroundStyle: function () {
+      return {
+        backgroundImage: "url(" + bosqueImg + ")",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      };
+    },
+    monsterStyle: function () {
+      return {};
+    }
   },
   methods: {
     openProfile: function () {

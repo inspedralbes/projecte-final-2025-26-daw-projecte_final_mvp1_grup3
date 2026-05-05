@@ -2,6 +2,20 @@ import { defineStore } from "pinia";
 import { authFetch } from "~/composables/useApi.js";
 import { useAuthStore } from "~/stores/useAuthStore.js";
 
+function dedupeById(items) {
+  var seen = {};
+  var result = [];
+  for (var i = 0; i < (items ? items.length : 0); i++) {
+    var item = items[i];
+    if (!item || item.id == null) continue;
+    if (!seen[item.id]) {
+      seen[item.id] = true;
+      result.push(item);
+    }
+  }
+  return result;
+}
+
 export var useFriendshipStore = defineStore("friendship", {
   state: function () {
     return {
@@ -107,7 +121,7 @@ export var useFriendshipStore = defineStore("friendship", {
           throw new Error("Error en obtenir llista d amics");
         }
         var dades = await resposta.json();
-        this.friends = dades.data || dades || [];
+        this.friends = dedupeById(dades.data || dades || []);
         return this.friends;
       } catch (e) {
         this.error = e.message;
@@ -128,7 +142,7 @@ export var useFriendshipStore = defineStore("friendship", {
           throw new Error("Error en obtenir sol·licituds pendents");
         }
         var dades = await resposta.json();
-        this.pendingRequests = dades.data || dades || [];
+        this.pendingRequests = dedupeById(dades.data || dades || []);
         return this.pendingRequests;
       } catch (e) {
         this.error = e.message;

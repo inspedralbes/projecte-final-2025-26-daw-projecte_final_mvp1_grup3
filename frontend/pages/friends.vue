@@ -170,14 +170,24 @@ export default {
     filteredUsers() {
       var self = this;
       var friendsIds = {};
+      var pendingIds = {};
       var allFriends = this.friendshipStore?.friends || [];
       for (var i = 0; i < allFriends.length; i++) {
         if (allFriends[i] && allFriends[i].friend && allFriends[i].friend.id) {
           friendsIds[allFriends[i].friend.id] = true;
         }
       }
+      var allPending = this.friendshipStore?.pendingRequests || [];
+      for (var j = 0; j < allPending.length; j++) {
+        if (allPending[j] && allPending[j].requester && allPending[j].requester.id) {
+          pendingIds[allPending[j].requester.id] = true;
+        }
+        if (allPending[j] && allPending[j].addressee && allPending[j].addressee.id) {
+          pendingIds[allPending[j].addressee.id] = true;
+        }
+      }
       var users = this.allUsers.filter(function(user) {
-        return user.id && !friendsIds[user.id];
+        return user.id && !friendsIds[user.id] && !pendingIds[user.id];
       });
       if (!this.searchQuery) {
         return users;

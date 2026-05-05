@@ -2,6 +2,7 @@
 -- ESTRUCTURA FINAL DE LA BASE DE DATOS (ESENCIAL)
 -- ==========================================================
 
+DROP TABLE IF EXISTS DAILY_SNAPSHOTS CASCADE;
 DROP TABLE IF EXISTS ADMIN_NOTIFICACIONS CASCADE;
 DROP TABLE IF EXISTS ADMIN_LOGS CASCADE;
 DROP TABLE IF EXISTS ADMIN_CONFIGURACIO CASCADE;
@@ -91,6 +92,8 @@ CREATE TABLE CATEGORIES (
     nom VARCHAR(100) NOT NULL
 );
 
+ALTER TABLE CATEGORIES ADD COLUMN color VARCHAR(20) DEFAULT '#6B7280';
+
 -- 4. HÁBITOS Y PLANTILLAS
 -- ----------------------------------------------------------
 
@@ -116,6 +119,8 @@ CREATE TABLE HABITS (
     icona VARCHAR(50),
     color VARCHAR(20)
 );
+
+ALTER TABLE HABITS ADD COLUMN metadata JSONB;
 
 CREATE TABLE PLANTILLA_HABIT (
     plantilla_id INT REFERENCES PLANTILLES(id) ON DELETE CASCADE,
@@ -272,4 +277,21 @@ CREATE INDEX idx_friendships_addressee ON FRIENDSHIPS(addressee_id);
 CREATE INDEX idx_friendships_status ON FRIENDSHIPS(status);
 CREATE INDEX idx_private_messages_sender ON PRIVATE_MESSAGES(sender_id);
 CREATE INDEX idx_private_messages_receiver ON PRIVATE_MESSAGES(receiver_id);
+
+-- 8. CALENDARI (ARXIU D'AVENTURES)
+-- ----------------------------------------------------------
+
+CREATE TABLE DAILY_SNAPSHOTS (
+    id SERIAL PRIMARY KEY,
+    usuari_id INT REFERENCES USUARIS(id) ON DELETE CASCADE,
+    data DATE NOT NULL,
+    mascota_json JSONB,
+    habits_json JSONB,
+    economia_json JSONB,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(usuari_id, data)
+);
+
+CREATE INDEX idx_daily_snapshots_usuari ON DAILY_SNAPSHOTS(usuari_id);
+CREATE INDEX idx_daily_snapshots_data ON DAILY_SNAPSHOTS(data);
 

@@ -10,6 +10,7 @@ use App\Models\RegistreActivitat;
 use App\Models\User;
 use App\Models\UsuariHabit;
 use App\Services\MissionService;
+use App\Support\GamificationConstants;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -24,32 +25,6 @@ use Illuminate\Support\Facades\Validator;
  */
 class HabitService
 {
-    /**
-     * Map de dificultat -> XP (segons regles de gamificació).
-     */
-    private const XP_PER_DIFICULTAT = [
-        'facil' => 100,
-        'media' => 250,
-        'dificil' => 400,
-    ];
-    /**
-     * Map de dificultat -> monedes.
-     */
-    private const MONEDES_PER_DIFICULTAT = [
-        'facil' => 2,
-        'media' => 5,
-        'dificil' => 10,
-    ];
-
-    /**
-     * XP per defecte si la dificultat no es reconeix.
-     */
-    private const XP_DEFECTE = 100;
-    /**
-     * Monedes per defecte si la dificultat no es reconeix.
-     */
-    private const MONEDES_DEFECTE = 2;
-
     /**
      * Configuració de nivell.
      */
@@ -428,17 +403,17 @@ class HabitService
     private function calcularXPSegonsDificultat(?string $dificultat): int
     {
         if ($dificultat === null || $dificultat === '') {
-            return self::XP_DEFECTE;
+            return GamificationConstants::XP_DEFECTE;
         }
 
         $clau = strtolower(trim($dificultat));
-        $mapXp = self::XP_PER_DIFICULTAT;
+        $mapXp = GamificationConstants::XP_PER_DIFICULTAT;
 
         if (array_key_exists($clau, $mapXp)) {
             return $mapXp[$clau];
         }
 
-        return self::XP_DEFECTE;
+        return GamificationConstants::XP_DEFECTE;
     }
 
     /**
@@ -449,17 +424,17 @@ class HabitService
     private function calcularMonedesSegonsDificultat(?string $dificultat): int
     {
         if ($dificultat === null || $dificultat === '') {
-            return self::MONEDES_DEFECTE;
+            return GamificationConstants::MONEDES_DEFECTE;
         }
 
         $clau = strtolower(trim($dificultat));
-        $mapMonedes = self::MONEDES_PER_DIFICULTAT;
+        $mapMonedes = GamificationConstants::MONEDES_PER_DIFICULTAT;
 
         if (array_key_exists($clau, $mapMonedes)) {
             return $mapMonedes[$clau];
         }
 
-        return self::MONEDES_DEFECTE;
+        return GamificationConstants::MONEDES_DEFECTE;
     }
 
     /**

@@ -29,38 +29,17 @@
 
       <!-- CENTRE: El teu Monstre -->
       <div class="col-span-12 lg:col-span-6 space-y-6">
-        <div class="bento-card bg-white/95 backdrop-blur-md rounded-3xl p-8 shadow-2xl border border-white/50 flex flex-col items-center relative min-h-[500px]">
-          <div class="flex items-center justify-between w-full mb-6 relative z-10">
-            <div>
-              <h2 class="text-2xl font-black text-gray-800 tracking-tight">
-                {{ $t('home.monster_title') }}
-              </h2>
-              <div class="flex items-center gap-2 mt-1">
-                <span class="bg-green-100 text-green-700 px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider">{{ $t('home.level') }} {{ nivell }}</span>
-              </div>
-            </div>
-            <UserHomeHomeStreakSection :ratxa="ratxa" :ratxa-maxima="ratxaMaxima" :xp-total="xpTotal" :monedes="monedes" />
-          </div>
-
-          <!-- Imatge Monstre en Escenari -->
-          <div class="flex-1 w-full flex items-center justify-center relative">
-            <div class="w-full h-full rounded-2xl overflow-hidden shadow-inner relative" :style="estilFons">
-              <div class="absolute inset-0 bg-black/5"></div>
-              <div class="relative w-full h-full flex items-center justify-center p-8">
-                <img
-                  v-if="imatgeMascota"
-                  :src="imatgeMascota"
-                  alt="El teu monstre"
-                  class="w-48 h-48 lg:w-64 lg:h-64 object-contain drop-shadow-[0_20px_20px_rgba(0,0,0,0.3)] animate-float"
-                />
-              </div>
-            </div>
-          </div>
-
-          <p class="text-center text-gray-500 font-medium text-sm mt-6 max-w-sm">
-            {{ $t('home.monster_subtitle') }}
-          </p>
-        </div>
+        <UserHomeHomeMonsterPanel
+          :readonly="false"
+          :nivell="nivell"
+          :xp-total="xpTotal"
+          :xp-actual-nivel="xpActualNivel"
+          :xp-objetivo-nivel="xpObjetivoNivel"
+          :ratxa="ratxa"
+          :ratxa-maxima="ratxaMaxima"
+          :monedes="monedes"
+          @calendari="anarAlCalendari"
+        />
       </div>
 
       <!-- COSTAT DRET: Clima + Hàbits -->
@@ -146,12 +125,10 @@ import UserHomeHomeMissionCard from "~/components/user/home/HomeMissionCard.vue"
 import UserHomeHomeProfileCard from "~/components/user/home/HomeProfileCard.vue";
 import UserHomeHomeLogrosCard from "~/components/user/home/HomeLogrosCard.vue";
 import UserHomeHomeRouletteSection from "~/components/user/home/HomeRouletteSection.vue";
-import UserHomeHomeStreakSection from "~/components/user/home/HomeStreakSection.vue";
+import UserHomeHomeMonsterPanel from "~/components/user/home/HomeMonsterPanel.vue";
 import UserHomeHomeHabitsSection from "~/components/user/home/HomeHabitsSection.vue";
 import WeatherWidget from "~/components/user/home/WeatherWidget.vue";
 import { authFetch } from "~/composables/useApi.js";
-import bosqueImg from "~/assets/img/Bosque.png";
-import mascotaImg from "~/assets/img/Mascota.png";
 
 export default {
   components: {
@@ -164,7 +141,7 @@ export default {
     UserHomeHomeProfileCard,
     UserHomeHomeLogrosCard,
     UserHomeHomeRouletteSection,
-    UserHomeHomeStreakSection,
+    UserHomeHomeMonsterPanel,
     UserHomeHomeHabitsSection,
     WeatherWidget
   },
@@ -174,7 +151,6 @@ export default {
       procesantHabits: [],
       estaCarregantHabits: false,
       errorMissatge: "",
-      imatgeMascota: mascotaImg,
       esObertModalLogros: false,
       esObertModalRuleta: false,
       esObertModalHabit: false,
@@ -191,11 +167,6 @@ export default {
       weatherLon: null,
       weatherCarregant: false,
       ruletaProcessant: false,
-      estilFons: {
-        backgroundImage: "url(" + bosqueImg + ")",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }
     };
   },
   computed: {
@@ -388,6 +359,9 @@ export default {
       } finally {
         self.weatherCarregant = false;
       }
+    },
+    anarAlCalendari: function () {
+      navigateTo("/calendar");
     },
     logout: async function() {
       await useAuthStore().logout();
@@ -912,13 +886,3 @@ export default {
 };
 </script>
 
-<style scoped>
-.animate-float {
-  animation: float 6s ease-in-out infinite;
-}
-@keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-20px); }
-  100% { transform: translateY(0px); }
-}
-</style>

@@ -14,7 +14,7 @@ class Categoria extends Model
      *
      * @var string
      */
-    protected $table = 'preguntes_registre';
+    protected $table = 'categories';
 
     /**
      * Indica si el model ha de tenir timestamps.
@@ -30,6 +30,7 @@ class Categoria extends Model
      */
     protected $fillable = [
         'nom',
+        'color',
     ];
 
     //================================ MÈTODES / FUNCIONS ===========

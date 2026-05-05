@@ -9,6 +9,7 @@ var socketHandler = require('./socketHandler');
 var feedbackSubscriber = require('./subscribers/feedbackSubscriber');
 var jwtAuth = require('./middleware/jwtAuth');
 var onboardingHandlers = require('./handlers/user/onboardingHandlers');
+var snapshotQueue = require('./queues/snapshotQueue');
 
 var PORT = process.env.PORT || 3001;
 var GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
@@ -77,7 +78,10 @@ async function bootstrap() {
   // 2. Escolta esdeveniments dels clients (Sockets)
   socketHandler.init(io);
 
-  // 3. Arrencar servidor
+  // 3. Inicialitzar scheduler de snapshots diaris
+  snapshotQueue.initSnapshotScheduler();
+
+  // 4. Arrencar servidor
   server.listen(PORT, '0.0.0.0', function () {
     console.log('Servidor Node actiu al port', PORT);
   });

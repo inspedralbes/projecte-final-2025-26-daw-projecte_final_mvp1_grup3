@@ -1,0 +1,37 @@
+schema: spec-driven
+created: 2026-04-30
+
+agents:
+  # Frontend
+  frontend-nuxt:
+    file: agents/frontend/AgentNuxt.md
+    scope: Pàgines del calendari (mensual i diària), components de cel·la i modal detalls
+  frontend-tailwind:
+    file: agents/frontend/AgentTailwind.md
+    scope: Estil claymorphism de les vistes, cel·les de dia, targetes d'hàbit i modal
+  frontend-pinia:
+    file: agents/frontend/AgentPinia.md
+    scope: Store del calendari (snapshots carregats, mes/dia actiu, filtres de categoria)
+  frontend-javascript:
+    file: agents/frontend/AgentJavascript.md
+    scope: Lògica de navegació temporal, composables useCalendar i useSnapshot
+  frontend-socket:
+    file: agents/frontend/AgentSocket.md
+    scope: Feedback en temps real si cal (confirmació de snapshot guardat)
+  # Backend
+  backend-laravel:
+    file: agents/backend/AgentLaravel.md
+    scope: API endpoints de snapshots (GET per dia/mes), Command del cron job diari 23:59
+  backend-node:
+    file: agents/backend/AgentNode.md
+    scope: Worker de la cua que dispara el job de snapshot diari via Redis
+  backend-redis:
+    file: agents/backend/AgentRedis.md
+    scope: Cua/bus per encuar el job de snapshot i comunicar Node → Laravel
+  backend-socket:
+    file: agents/backend/AgentSocket.md
+    scope: Emissió de confirmació un cop el snapshot s'ha desat correctament
+  # Dades
+  database:
+    file: agents/database/AgentDatabase.md
+    scope: Model DAILY_SNAPSHOTS (PostgreSQL), estructura de camps JSON i índexs

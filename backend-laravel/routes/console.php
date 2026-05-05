@@ -19,3 +19,8 @@ Schedule::command('ratxes:reset-diary')
 Schedule::command('habits:partial-xp')
     ->dailyAt('00:05')
     ->timezone('Europe/Madrid');
+
+// Snapshot diari a les 23:59 (Europe/Madrid)
+Schedule::command('snapshot:run')
+    ->dailyAt('23:59')
+    ->timezone('Europe/Madrid');

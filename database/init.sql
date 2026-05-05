@@ -1,5 +1,8 @@
 -- ==========================================================
 -- ESTRUCTURA FINAL DE LA BASE DE DATOS (ESENCIAL)
+-- S'executa només en crear el volum Postgres (docker-entrypoint-initdb.d).
+-- Si ja tens una BD antiga sense alguna taula, o bé recrees el volum
+-- (docker compose down -v) o bé afegeixes les taules/columnes manualment.
 -- ==========================================================
 
 DROP TABLE IF EXISTS DAILY_SNAPSHOTS CASCADE;
@@ -127,8 +130,6 @@ CREATE TABLE HABITS (
     color VARCHAR(20),
     metadata JSONB
 );
-
-ALTER TABLE HABITS ADD COLUMN metadata JSONB;
 
 CREATE TABLE PLANTILLA_HABIT (
     plantilla_id INT REFERENCES PLANTILLES(id) ON DELETE CASCADE,

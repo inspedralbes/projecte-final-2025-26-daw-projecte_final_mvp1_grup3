@@ -22,8 +22,12 @@
       </div>
       
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Límit de membres (màxim 20)</label>
-        <input v-model.number="form.max_membres" type="number" min="2" max="20" required class="w-full px-4 py-2 border rounded-lg" />
+        <label class="block text-sm font-medium text-gray-700 mb-1">Límit de membres</label>
+        <select v-model.number="form.max_membres" required class="w-full px-4 py-2 border rounded-lg">
+          <option :value="10">10 membres</option>
+          <option :value="15">15 membres</option>
+          <option :value="20">20 membres</option>
+        </select>
       </div>
 
       <div class="pt-4 flex justify-end gap-2">
@@ -39,7 +43,6 @@
 
 <script>
 import { useClanStore } from "~/stores/useClanStore.js";
-import { authFetch } from "~/utils/authFetch.js";
 
 export default {
   name: "ClanSettings",

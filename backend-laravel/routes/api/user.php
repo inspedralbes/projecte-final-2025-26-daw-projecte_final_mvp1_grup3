@@ -84,9 +84,7 @@ Route::middleware('ensure.user')->group(function () {
     Route::put('/friends/accept/{id}', [FriendshipController::class, 'acceptRequest']);
     Route::put('/friends/reject/{id}', [FriendshipController::class, 'rejectRequest']);
     Route::get('/friends', [FriendshipController::class, 'getFriendsList']);
-Route::get('/friends/pending', [FriendshipController::class, 'getPendingRequests']);
-
-// Chat routes are outside middleware now
+    Route::get('/friends/pending', [FriendshipController::class, 'getPendingRequests']);
 
     Route::get('/clans', [ClanController::class, 'index']);
     Route::post('/clans', [ClanController::class, 'create']);

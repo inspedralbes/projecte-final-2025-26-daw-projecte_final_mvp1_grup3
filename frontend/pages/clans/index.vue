@@ -113,9 +113,17 @@ async mounted() {
      }
    },
   methods: {
-     onClanCreated: function() {
+     onClanCreated: function (payload) {
         var store = useClanStore();
         this.showCreate = false;
+        var clan = payload && (payload.clan || payload.data || payload);
+        var id = clan && clan.id;
+        if (id) {
+           store.currentClan = clan;
+           this.userClanId = id;
+           this.$router.push('/clans/' + id);
+           return;
+        }
         if (store.currentClan && store.currentClan.id) {
            this.$router.push('/clans/' + store.currentClan.id);
         }

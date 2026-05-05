@@ -81,16 +81,37 @@ export var useClanStore = defineStore("clan", {
             this.loading = true;
             this.error = null;
             try {
+                var payload = Object.assign({}, clanData);
+                if (payload.max_membres != null) {
+                    var m = parseInt(payload.max_membres, 10);
+                    if ([10, 15, 20].indexOf(m) === -1) {
+                        m = 10;
+                    }
+                    payload.max_membres = m;
+                }
                 var resposta = await authFetch("/api/clans", {
                     method: "POST",
-                    body: JSON.stringify(clanData)
+                    body: JSON.stringify(payload)
                 });
                 if (!resposta.ok) {
-                    var errResponse = await resposta.json();
-                    throw new Error(errResponse.message || "Error creating clan");
+                    var errResponse = await resposta.json().catch(function () { return {}; });
+                    var msg = errResponse.error || errResponse.message;
+                    if (!msg && errResponse.errors) {
+                        var keys = Object.keys(errResponse.errors);
+                        if (keys.length && errResponse.errors[keys[0]] && errResponse.errors[keys[0]][0]) {
+                            msg = errResponse.errors[keys[0]][0];
+                        }
+                    }
+                    throw new Error(msg || "Error creating clan");
                 }
                 var data = await resposta.json();
-                this.clans.push(data.clan || data.data || data);
+                var clan = data.clan || data.data || data;
+                if (clan && clan.id) {
+                    this.currentClan = clan;
+                }
+                if (clan) {
+                    this.clans.push(clan);
+                }
                 return data;
             } catch (e) {
                 this.error = e.message;

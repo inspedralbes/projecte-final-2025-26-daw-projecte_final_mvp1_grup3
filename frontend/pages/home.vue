@@ -62,17 +62,10 @@
         </div>
       </div>
 
-      <!-- Separador mobile entre missions i monstre -->
-      <div class="col-span-12 order-2 lg:hidden flex items-center gap-3 px-2 -mt-1">
-        <div class="flex-1 h-px bg-white/40"></div>
-        <span class="text-xs text-white/70 font-semibold whitespace-nowrap">{{ $t('home.monster_title') }}</span>
-        <div class="flex-1 h-px bg-white/40"></div>
-      </div>
-
       <!-- COSTAT ESQUERRE -->
       <div class="col-span-12 lg:col-span-3 order-1 lg:order-1 lg:self-start space-y-2 lg:space-y-6 pt-1 lg:pt-0">
-        <div class="grid grid-cols-2 gap-1.5 items-stretch w-full lg:block lg:space-y-6">
-          <div class="bento-card rounded-xl lg:rounded-3xl p-0 lg:p-6 lg:bg-white/95 lg:backdrop-blur-md lg:shadow-xl lg:border lg:border-white/50 min-w-0 w-full h-full lg:h-auto self-stretch overflow-hidden lg:overflow-visible">
+        <div class="grid grid-cols-4 gap-1 items-stretch w-full lg:block lg:space-y-6">
+          <div class="col-span-2 bento-card rounded-xl lg:rounded-3xl p-0 lg:p-6 lg:bg-white/95 lg:backdrop-blur-md lg:shadow-xl lg:border lg:border-white/50 min-w-0 w-full h-full lg:h-auto self-stretch overflow-hidden lg:overflow-visible">
             <UserHomeHomeMissionCard
               :missio-diaria="missioDiaria"
               :missio-completada="missioCompletada"
@@ -92,13 +85,27 @@
             </div>
           </div>
           <!-- Ruleta al home (mobil); ja no al menú hamburguesa -->
-          <div class="min-w-0 h-full lg:hidden flex">
+          <div class="col-span-1 min-w-0 h-full lg:hidden flex">
             <UserHomeHomeRouletteSection
               compact
               :classe-icona-ruleta="classeIconaRuleta"
               @obrir-modal-ruleta="obrirModalRuleta"
             />
           </div>
+          <button
+            type="button"
+            class="col-span-1 min-w-0 h-full lg:hidden flex items-center justify-center transition-transform hover:scale-105 active:scale-95"
+            :title="$t('nav.calendar') || 'Calendari'"
+            @click="anarAlCalendari"
+          >
+            <img
+              :src="imatgeCalendari"
+              alt="Calendari"
+              class="w-16 h-16 sm:w-[4.5rem] sm:h-[4.5rem] object-contain select-none"
+              decoding="async"
+              draggable="false"
+            />
+          </button>
         </div>
         <div class="hidden lg:block">
           <UserHomeHomeLogrosCard :ultims-logros="ultimsLogros" @obrir-modal-logros="obrirModalLogros" />
@@ -204,6 +211,7 @@ import UserHomeHomeHabitsSection from "~/components/user/home/HomeHabitsSection.
 import WeatherWidget from "~/components/user/home/WeatherWidget.vue";
 import { authFetch } from "~/composables/useApi.js";
 import mascotaImg from "~/assets/img/Mascota.png";
+import calendarImg from "~/assets/img/calendar-loopy.png";
 
 export default {
   components: {
@@ -242,6 +250,7 @@ export default {
       weatherCarregant: false,
       ruletaProcessant: false,
       imatgeMascota: mascotaImg,
+      imatgeCalendari: calendarImg,
     };
   },
   computed: {

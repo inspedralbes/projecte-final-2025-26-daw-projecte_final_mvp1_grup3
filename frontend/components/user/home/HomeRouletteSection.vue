@@ -1,10 +1,10 @@
 <template>
   <div
-    class="bg-white flex items-center justify-center cursor-pointer transition"
+    class="flex items-center justify-center cursor-pointer transition-transform hover:scale-105 active:scale-95"
     :class="[
       compact
-        ? 'rounded-lg p-1.5 flex-col gap-0.5 w-full h-full min-h-[4rem] sm:min-h-[4.25rem] border border-gray-100 justify-center shadow-md'
-        : 'rounded-2xl p-4 shadow-lg',
+        ? 'w-full h-full min-h-[4rem] sm:min-h-[4.25rem]'
+        : 'p-2',
       classeIconaRuleta
     ]"
     @click="$emit('obrir-modal-ruleta')"
@@ -14,28 +14,29 @@
     @keydown.enter="$emit('obrir-modal-ruleta')"
     @keydown.space.prevent="$emit('obrir-modal-ruleta')"
   >
-    <span
-      :class="compact ? 'text-xl leading-none select-none' : 'text-2xl leading-none select-none'"
-      aria-hidden="true"
-    >🎰</span>
-    <span
-      :class="
-        compact
-          ? 'text-[9px] font-bold text-center leading-tight text-gray-800'
-          : 'text-sm font-bold'
-      "
-    >
-      {{ $t('home.roulette') }}
-    </span>
+    <img
+      :src="rouletteIcon"
+      alt="Ruleta"
+      :class="compact ? 'w-16 h-16 sm:w-[4.5rem] sm:h-[4.5rem] object-contain select-none' : 'w-24 h-24 object-contain select-none'"
+      decoding="async"
+      draggable="false"
+    />
   </div>
 </template>
 
 <script>
+import rouletteIcon from '~/assets/img/roulette-loopy.png'
+
 export default {
   name: 'HomeRouletteSection',
   props: {
     classeIconaRuleta: { type: String, default: '' },
     compact: { type: Boolean, default: false }
+  },
+  data: function () {
+    return {
+      rouletteIcon: rouletteIcon
+    };
   }
 };
 </script>

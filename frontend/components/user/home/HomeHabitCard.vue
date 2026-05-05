@@ -11,10 +11,12 @@
     <div class="p-3 lg:p-4 flex items-center gap-3">
       <!-- Color indicator -->
       <div
-        class="w-8 h-8 lg:w-10 lg:h-10 rounded-full flex-shrink-0"
+        class="w-8 h-8 lg:w-10 lg:h-10 rounded-full flex-shrink-0 flex items-center justify-center text-white text-sm lg:text-base"
         :class="completatAvui ? 'opacity-50' : ''"
         :style="{ backgroundColor: colorIndicador }"
-      ></div>
+      >
+        <span aria-hidden="true">{{ iconaCategoria }}</span>
+      </div>
 
       <div class="flex-1 min-w-0">
         <p class="font-semibold text-gray-800 text-sm lg:text-base">{{ habit.nom }}</p>
@@ -57,6 +59,17 @@ var CATEGORY_COLORS = {
   8: '#fb923c'  // taronja clar (esport)
 };
 
+var CATEGORY_ICONS = {
+  1: '🏃',
+  2: '💧',
+  3: '📚',
+  4: '🎨',
+  5: '💬',
+  6: '🧘',
+  7: '🌳',
+  8: '⚽'
+};
+
 export default {
   name: 'HomeHabitCard',
   props: {
@@ -70,6 +83,10 @@ export default {
     colorIndicador: function () {
       var catId = this.habit.categoriaId || this.habit.categoria_id;
       return CATEGORY_COLORS[catId] || '#94a3b8';
+    },
+    iconaCategoria: function () {
+      var catId = this.habit.categoriaId || this.habit.categoria_id;
+      return CATEGORY_ICONS[catId] || '✅';
     }
   }
 };

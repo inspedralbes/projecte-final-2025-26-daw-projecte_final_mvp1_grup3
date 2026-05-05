@@ -17,11 +17,11 @@
             <span class="stat-value">{{ gameStore.ratxa }}</span>
           </div>
           <div class="stat-item">
-            <img :src="xpIcon" alt="" class="stat-icon-img" width="18" height="18" />
+            <img :src="xpIcon" alt="" class="stat-icon-img" width="22" height="22" />
             <span class="stat-value">{{ gameStore.xpTotal }}</span>
           </div>
           <div class="stat-item">
-            <img :src="coinIcon" alt="" class="stat-icon-img" width="18" height="18" />
+            <img :src="coinIcon" alt="" class="stat-icon-img" width="22" height="22" />
             <span class="stat-value">{{ gameStore.monedes }}</span>
           </div>
         </div>
@@ -423,21 +423,21 @@ nav a {
 .stat-item {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.45rem;
 }
 .stat-icon {
-  font-size: 1.05rem;
+  font-size: 1.35rem;
   line-height: 1;
 }
 .stat-icon-img {
-  width: 1.125rem;
-  height: 1.125rem;
+  width: 1.4rem;
+  height: 1.4rem;
   object-fit: contain;
   flex-shrink: 0;
   image-rendering: pixelated;
 }
 .stat-value {
-  font-size: 0.875rem;
+  font-size: 1rem;
   font-weight: 700;
   color: #374151;
 }

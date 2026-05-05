@@ -279,6 +279,7 @@ CREATE INDEX idx_friendships_addressee ON FRIENDSHIPS(addressee_id);
 CREATE INDEX idx_friendships_status ON FRIENDSHIPS(status);
 CREATE INDEX idx_private_messages_sender ON PRIVATE_MESSAGES(sender_id);
 CREATE INDEX idx_private_messages_receiver ON PRIVATE_MESSAGES(receiver_id);
+CREATE INDEX idx_private_messages_conversation ON PRIVATE_MESSAGES(sender_id, receiver_id);
 
 -- CLANS tables
 CREATE TABLE CLANS (

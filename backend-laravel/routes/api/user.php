@@ -22,6 +22,15 @@ use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
+| RutesChat PÚBLIQUES (fora del middleware d'autenticació)
+|--------------------------------------------------------------------------
+*/
+Route::post('/chat/{receiverId}', [ChatController::class, 'sendMessageDebug']);
+Route::get('/chat/{friendId}', [ChatController::class, 'getChatHistoryDebug']);
+Route::put('/chat/{friendId}/read', [ChatController::class, 'markAsReadDebug']);
+
+/*
+|--------------------------------------------------------------------------
 | Rutes usuari (middleware ensure.user)
 |--------------------------------------------------------------------------
 */
@@ -67,14 +76,9 @@ Route::middleware('ensure.user')->group(function () {
     Route::put('/friends/accept/{id}', [FriendshipController::class, 'acceptRequest']);
     Route::put('/friends/reject/{id}', [FriendshipController::class, 'rejectRequest']);
     Route::get('/friends', [FriendshipController::class, 'getFriendsList']);
-    Route::get('/friends/pending', [FriendshipController::class, 'getPendingRequests']);
+Route::get('/friends/pending', [FriendshipController::class, 'getPendingRequests']);
 
-    Route::post('/chat/{receiverId}', [ChatController::class, 'sendMessage']);
-    Route::get('/chat/{friendId}', [ChatController::class, 'getChatHistory']);
-    Route::put('/chat/{friendId}/read', [ChatController::class, 'markAsRead']);
-    Route::post('/webrtc-signal', [WebRTCSignalController::class, 'handleSignal']);
-    Route::get('/webrtc-rooms/{friendId}', [WebRTCSignalController::class, 'getRoom']);
-    Route::post('/webrtc-rooms/{friendId}/join', [WebRTCSignalController::class, 'joinRoom']);
+// Chat routes are outside middleware now
 
     Route::get('/clans', [ClanController::class, 'index']);
     Route::post('/clans', [ClanController::class, 'create']);

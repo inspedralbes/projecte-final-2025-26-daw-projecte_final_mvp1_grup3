@@ -2,11 +2,6 @@
   <div class="min-h-screen bg-gray-50 pb-20">
     <HeaderSocial />
     <div class="max-w-6xl mx-auto px-4 py-8 relative">
-       <NuxtLink to="/clans" class="inline-flex items-center text-blue-500 hover:text-blue-700 mb-6 font-medium transition-colors">
-         <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-         Tornar als Clans
-       </NuxtLink>
-       
        <transition name="fade" mode="out-in">
           <ClanSettings v-if="showEdit" :clan="clanData" @cancel="showEdit = false" @saved="onSaved" />
           <ClanDetail v-else :clan-id="clanId" @edit="openEdit" ref="clanDetail" />

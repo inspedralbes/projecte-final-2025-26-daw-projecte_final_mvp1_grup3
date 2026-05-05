@@ -74,15 +74,57 @@ function register(io, socket) {
       }
       var receiverId = data.receiver_id;
       if (receiverId) {
-        io.to("user_" + receiverId).emit("new_private_message", {
+        var roomName = [userId, receiverId].sort().join("_");
+        io.to("chat_" + roomName).emit("new_private_message", {
           sender_id: userId,
+          receiver_id: receiverId,
           message: data.message,
-          created_at: data.created_at,
+          created_at: data.created_at
         });
-        console.log("Missatge privat enviat de " + userId + " a " + receiverId);
+        console.log("Missatge privat enviat a chat_" + roomName);
       }
     } catch (error) {
       console.error("Error gestionant private_message:", error);
+    }
+  });
+
+  socket.on("join_private_chat", async function (data) {
+    try {
+      var userId = socket.decoded_token && socket.decoded_token.user_id;
+      if (!userId) {
+        console.warn("join_private_chat: usuari no autenticat");
+        socket.emit("chat_error", { error: "No autenticat" });
+        return;
+      }
+      var friendId = data.friend_id;
+      if (!friendId) {
+        socket.emit("chat_error", { error: "friend_id requerit" });
+        return;
+      }
+      var roomName = [userId, friendId].sort().join("_");
+      socket.join("chat_" + roomName);
+      socket.emit("chat_joined", { room: "chat_" + roomName });
+      console.log("Usuari " + userId + " unit a chat_" + roomName);
+    } catch (error) {
+      console.error("Error gestionant join_private_chat:", error);
+    }
+  });
+
+  socket.on("typing_status", function (data) {
+    try {
+      var userId = socket.decoded_token && socket.decoded_token.user_id;
+      if (!userId) return;
+      var friendId = data.friend_id;
+      var isTyping = data.is_typing === true;
+      if (friendId) {
+        var roomName = [userId, friendId].sort().join("_");
+        io.to("chat_" + roomName).emit("typing_indicator", {
+          user_id: userId,
+          is_typing: isTyping
+        });
+      }
+    } catch (error) {
+      console.error("Error gestionant typing_status:", error);
     }
   });
 

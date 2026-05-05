@@ -19,44 +19,51 @@
         <div v-else-if="profile" class="space-y-4">
           <!-- Avatar + Name -->
           <div class="text-center">
-            <div class="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mb-3">
-              <span class="text-white font-bold text-3xl">{{ profile.nom.charAt(0).toUpperCase() }}</span>
+            <div class="w-24 h-24 mx-auto rounded-full overflow-hidden mb-3 shadow-inner" :style="avatarBackgroundStyle">
+              <div class="w-full h-full rounded-full bg-white/20 border border-gray-200 p-1 flex items-center justify-center">
+                <img
+                  :src="imatgeMascota"
+                  alt="Monstre del perfil"
+                  class="w-full h-full object-contain"
+                  decoding="async"
+                  draggable="false"
+                />
+              </div>
             </div>
             <h2 class="text-2xl font-bold text-gray-800">{{ profile.nom }}</h2>
             <p class="text-purple-500 font-semibold">{{ $t('home.level') || 'Nivell' }} {{ profile.nivell }}</p>
           </div>
 
-          <!-- Stats: streak + max streak -->
+          <!-- Stats: streak + logros -->
           <div class="grid grid-cols-2 gap-3">
-            <div class="bg-orange-50 rounded-xl p-3 text-center border border-orange-100">
+            <div class="bg-orange-50 rounded-xl p-3 text-center border border-orange-100 min-h-[8rem] flex flex-col justify-center gap-2">
               <p class="text-2xl font-bold text-orange-500">🔥 {{ profile.streak }}</p>
-              <p class="text-xs text-gray-500 mt-1">{{ $t('home.streak') || 'Ratxa actual' }}</p>
+              <p class="text-xs text-gray-500">{{ $t('home.streak') || 'Ratxa actual' }}</p>
             </div>
-            <div class="bg-amber-50 rounded-xl p-3 text-center border border-amber-100">
-              <p class="text-2xl font-bold text-amber-500">⭐ {{ profile.streak_maxima }}</p>
-              <p class="text-xs text-gray-500 mt-1">{{ $t('home.streak_max') || 'Màxima ratxa' }}</p>
+            <div class="bg-amber-50 rounded-xl p-3 text-center border border-amber-100 min-h-[8rem] flex flex-col justify-center gap-2">
+              <p class="text-2xl font-bold text-amber-500">🏅</p>
+              <p class="text-xs text-gray-500">Medallas</p>
+              <div v-if="profile.logros_showcase && profile.logros_showcase.length > 0" class="mt-2 space-y-1 max-h-20 overflow-y-auto px-2">
+                <p
+                  v-for="logro in profile.logros_showcase.slice(0,4)"
+                  :key="logro.id"
+                  class="text-sm font-bold text-amber-700"
+                >
+                  {{ logro.nom }}
+                </p>
+                <p v-if="profile.logros_showcase.length > 4" class="text-[10px] text-gray-500">+{{ profile.logros_showcase.length - 4 }} más</p>
+              </div>
+              <p v-else class="text-sm font-bold text-amber-500 mt-2">Sin logros</p>
             </div>
           </div>
 
           <!-- Monster -->
-          <div class="rounded-2xl bg-gradient-to-br from-blue-50 to-purple-50 overflow-hidden flex flex-col items-center justify-center border border-gray-100 p-4">
-            <p class="text-xs text-gray-400 uppercase tracking-widest mb-2">{{ $t('home.monster_title') || 'Monstre' }}</p>
-            <img :src="imatgeMascota" alt="Monstre" class="w-32 h-32 object-contain drop-shadow-md" />
-          </div>
-
-          <!-- Logros showcase -->
-          <div v-if="profile.logros_showcase && profile.logros_showcase.length > 0">
-            <p class="text-xs text-gray-500 uppercase tracking-widest mb-2 text-center">Logros</p>
-            <div class="flex flex-wrap justify-center gap-2">
-              <div
-                v-for="logro in profile.logros_showcase"
-                :key="logro.id"
-                class="px-3 py-2 rounded-xl bg-purple-50 border border-purple-100 text-center"
-              >
-                <p class="text-sm font-bold text-purple-700">🏆 {{ logro.nom }}</p>
-              </div>
+          <div class="rounded-2xl overflow-hidden flex flex-col items-center justify-center p-5" :style="avatarBackgroundStyle">
+            <div class="w-44 h-44 rounded-full p-2 flex items-center justify-center">
+              <img :src="imatgeMascota" alt="Monstre" class="w-full h-full object-contain drop-shadow-md" />
             </div>
           </div>
+
         </div>
 
         <div v-else class="py-8 text-center text-red-500">
@@ -70,6 +77,7 @@
 <script>
 import { authFetch } from "~/utils/authFetch.js";
 import mascotaImg from "~/assets/img/Mascota.png";
+import bosqueImg from "~/assets/img/Bosque.png";
 
 export default {
   name: "PublicProfileView",
@@ -86,6 +94,15 @@ export default {
       loading: true,
       imatgeMascota: mascotaImg,
     };
+  },
+  computed: {
+    avatarBackgroundStyle: function() {
+      return {
+        backgroundImage: "url(" + bosqueImg + ")",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      };
+    }
   },
   mounted: async function() {
     await this.fetchProfile();

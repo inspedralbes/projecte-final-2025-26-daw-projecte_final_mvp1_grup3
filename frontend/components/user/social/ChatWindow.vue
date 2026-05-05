@@ -20,15 +20,15 @@
 
       <div ref="messagesContainer" class="flex-1 overflow-y-auto p-4 space-y-3 min-h-[300px]">
         <div v-if="loading" class="text-center py-8 text-gray-500">Carregant...</div>
-        <div v-else-if="messages.length === 0" class="text-center py-8 text-gray-500">
+        <div v-else-if="!messages || messages.length === 0" class="text-center py-8 text-gray-500">
           No tens missatges
         </div>
         <div
-          v-for="(msg, index) in messages"
-          :key="index"
+          v-for="msg in messages"
+          :key="msg.id || msg.created_at"
           :class="['max-w-[80%] rounded-2xl px-4 py-2', msg.sender_id === currentUserId ? 'ml-auto bg-blue-500 text-white' : 'bg-gray-100 text-gray-800']"
         >
-          <p class="text-sm">{{ msg.contingut }}</p>
+          <p class="text-sm">{{ msg.contingut || '...' }}</p>
           <p :class="['text-xs mt-1', msg.sender_id === currentUserId ? 'text-blue-100' : 'text-gray-400']">
             {{ formatTime(msg.created_at) }}
           </p>
@@ -61,97 +61,97 @@
 <script>
 import { useChatStore } from "~/stores/useChatStore.js";
 import { useAuthStore } from "~/stores/useAuthStore.js";
+import { authFetch } from "~/utils/authFetch.js";
 
 export default {
   name: "ChatWindow",
   props: {
-    friendId: {
-      type: Number,
-      required: true,
-    },
-    friendName: {
-      type: String,
-      required: true,
-    },
+    friendId: { type: Number, required: true },
+    friendName: { type: String, required: true },
   },
   emits: ["close"],
   data() {
     return {
       newMessage: "",
       sending: false,
-      pollingInterval: null,
+      pollInterval: null,
     };
   },
   computed: {
     messages() {
       var chatStore = useChatStore();
-      var msgs = chatStore.messages[this.friendId] || [];
-      return msgs.slice();
+      if (!chatStore.messages) return [];
+      var msgs = chatStore.messages[this.friendId];
+      if (!msgs) return [];
+      if (!Array.isArray(msgs)) return [];
+      return msgs;
     },
     loading() {
       return useChatStore().loading;
     },
     currentUserId() {
-      return useAuthStore().user?.id;
+      var auth = useAuthStore();
+      return auth && auth.user ? auth.user.id : null;
     },
   },
   async mounted() {
-    var chatStore = useChatStore();
-    await chatStore.fetchChatHistory(this.friendId);
-    var self = this;
-    this.$nextTick(function() {
-      self.scrollToBottom();
-    });
+    await this.loadMessages();
     this.startPolling();
   },
   beforeUnmount() {
     this.stopPolling();
   },
   methods: {
-    startPolling() {
-      var self = this;
-      this.pollNewMessages();
-      this.pollingInterval = setInterval(function() {
-        self.pollNewMessages();
-      }, 2000);
-    },
-    stopPolling() {
-      if (this.pollingInterval) {
-        clearInterval(this.pollingInterval);
-        this.pollingInterval = null;
+    async loadMessages() {
+      var chatStore = useChatStore();
+      try {
+        var url = "/api/chat/" + this.friendId;
+        if (this.currentUserId) url += "?user_id=" + this.currentUserId;
+        var resposta = await authFetch(url, {});
+        if (resposta.ok) {
+          var dades = await resposta.json();
+          var msgs = [];
+          if (Array.isArray(dades)) msgs = dades;
+          else if (Array.isArray(dades.data)) msgs = dades.data;
+          else if (Array.isArray(dades.messages)) msgs = dades.messages;
+          
+          chatStore.messages[this.friendId] = msgs;
+          this.$nextTick(() => this.scrollToBottom());
+        }
+      } catch (e) {
+        console.error("Error carregant missatges:", e);
       }
     },
-    async pollNewMessages() {
-      var chatStore = useChatStore();
-      var oldLength = chatStore.messages[this.friendId] ? chatStore.messages[this.friendId].length : 0;
-      await chatStore.fetchChatHistory(this.friendId);
-      var newLength = chatStore.messages[this.friendId] ? chatStore.messages[this.friendId].length : 0;
-      if (newLength > oldLength) {
-        var self = this;
-        this.$nextTick(function() {
-          self.scrollToBottom();
-        });
+    startPolling() {
+      var self = this;
+      this.loadMessages();
+      this.pollInterval = setInterval(function() {
+        self.loadMessages();
+      }, 500);
+    },
+    stopPolling() {
+      if (this.pollInterval) {
+        clearInterval(this.pollInterval);
+        this.pollInterval = null;
       }
     },
     async sendMessage() {
-      if (!this.newMessage.trim()) return;
+      if (!this.newMessage.trim() || !this.currentUserId) return;
       this.sending = true;
-      var messageText = this.newMessage;
-      var now = new Date().toISOString();
+      var text = this.newMessage;
+      var userId = this.currentUserId;
       this.newMessage = "";
+      
       try {
-        var chatStore = useChatStore();
-        await chatStore.sendMessage(this.friendId, messageText);
-        chatStore.addMessage(this.friendId, {
-          sender_id: this.currentUserId,
-          receiver_id: this.friendId,
-          contingut: messageText,
-          created_at: now,
+        var resposta = await authFetch("/api/chat/" + this.friendId, {
+          method: "POST",
+          body: JSON.stringify({ contingut: text, sender_id: userId })
         });
-        var self = this;
-        this.$nextTick(function() {
-          self.scrollToBottom();
-        });
+        if (!resposta.ok) {
+          var err = await resposta.json();
+          throw new Error(err.error || "Error enviant missatge");
+        }
+        await this.loadMessages();
       } catch (e) {
         alert(e.message);
       } finally {
@@ -160,12 +160,7 @@ export default {
     },
     scrollToBottom() {
       var container = this.$refs.messagesContainer;
-      if (container) {
-        var self = this;
-        this.$nextTick(function() {
-          container.scrollTop = container.scrollHeight;
-        });
-      }
+      if (container) container.scrollTop = container.scrollHeight;
     },
     formatTime(dateStr) {
       if (!dateStr) return "";

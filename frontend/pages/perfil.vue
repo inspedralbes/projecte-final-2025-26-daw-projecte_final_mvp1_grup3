@@ -66,12 +66,21 @@
           <div class="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100">
             <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center text-xl shadow-sm">🏅</div>
             <h2 class="text-xl font-bold text-gray-800 tracking-tight">{{ $t('perfil.achievements') }}</h2>
+            <span v-if="user && user.logros && user.logros.length > 0" class="ml-auto text-xs text-gray-400">Click para seleccionar (max 3)</span>
           </div>
           
           <div v-if="user && user.logros && user.logros.length > 0" class="grid grid-cols-5 gap-3">
-            <div v-for="logro in user.logros" :key="logro.id" class="group relative flex flex-col items-center">
-              <div class="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center text-[20px] shadow-sm group-hover:scale-110 transition-all border border-amber-100 cursor-pointer">
-                🏆
+            <div 
+              v-for="logro in user.logros" 
+              :key="logro.id" 
+              class="group relative flex flex-col items-center cursor-pointer"
+              @click="toggleShowcaseLogro(logro.id)"
+            >
+              <div 
+                class="w-12 h-12 rounded-2xl flex items-center justify-center text-[20px] shadow-sm transition-all border-2"
+                :class="showcaseLogros.includes(logro.id) ? 'bg-purple-100 border-purple-500 text-purple-600' : 'bg-amber-50 border-amber-100 hover:border-purple-300'"
+              >
+                {{ showcaseLogros.includes(logro.id) ? '⭐' : '🏆' }}
               </div>
               <div class="absolute bottom-full mb-3 hidden group-hover:block bg-gray-900/95 text-white text-[10px] py-2 px-3 rounded-xl whitespace-nowrap z-20 shadow-xl border border-white/20">
                 <p class="font-bold text-amber-400">{{ logro.nom }}</p>
@@ -84,6 +93,16 @@
             <div class="text-[40px] mb-2 opacity-20">🏆</div>
             <p class="text-xs font-black uppercase tracking-widest">{{ $t('perfil.no_achievements') }}</p>
           </div>
+
+          <button 
+            v-if="showcaseChanged" 
+            @click="guardarShowcase" 
+            :disabled="guardantShowcase"
+            class="mt-6 w-full py-3 px-6 rounded-2xl font-bold text-white transition-all"
+            :class="guardantShowcase ? 'bg-gray-400 cursor-wait' : 'bg-purple-600 hover:bg-purple-700'"
+          >
+            {{ guardantShowcase ? 'Guardando...' : 'Guardar Selección' }}
+          </button>
         </div>
       </div>
 
@@ -155,6 +174,10 @@ var user = ref(null);
 var loading = ref(true);
 var logs = ref([]);
 var loadingLogs = ref(true);
+var showcaseLogros = ref([]);
+var guardantShowcase = ref(false);
+var showcaseChanged = ref(false);
+var originalShowcase = ref([]);
 
 var imatgeMascota = mascotaImg;
 var estilFons = {
@@ -173,7 +196,13 @@ onMounted(function() {
   loadingLogs.value = true;
   var profilePromise = authFetch(getBaseUrl() + '/api/user/profile')
     .then(function(r) { return r.json(); })
-    .then(function(d) { user.value = d.data || d; });
+    .then(function(d) { 
+      user.value = d.data || d; 
+      if (user.value.logros_showcase) {
+        originalShowcase.value = user.value.logros_showcase.map(function(l) { return l.id; });
+        showcaseLogros.value = [].concat(originalShowcase.value);
+      }
+    });
   var logsPromise = authFetch(getBaseUrl() + '/api/habits/logs')
     .then(function(r) { return r.json(); })
     .then(function(d) { logs.value = d.data || d || []; });
@@ -188,6 +217,39 @@ onMounted(function() {
       loadingLogs.value = false;
     });
 });
+
+function toggleShowcaseLogro(logroId) {
+  var idx = showcaseLogros.value.indexOf(logroId);
+  if (idx > -1) {
+    showcaseLogros.value.splice(idx, 1);
+  } else if (showcaseLogros.value.length < 3) {
+    showcaseLogros.value.push(logroId);
+  }
+  showcaseChanged.value = true;
+}
+
+function guardarShowcase() {
+  guardantShowcase.value = true;
+  authFetch(getBaseUrl() + '/api/users/self/showcase', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ logros: showcaseLogros.value }),
+  })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      guardantShowcase.value = false;
+      if (d.success) {
+        alert('¡Logros guardados!');
+      } else {
+        alert(d.error || 'Error al guardar');
+      }
+    })
+    .catch(function(err) {
+      guardantShowcase.value = false;
+      console.error("Error guardant showcase:", err);
+      alert('Error al guardar');
+    });
+}
 </script>
 
 <style scoped>

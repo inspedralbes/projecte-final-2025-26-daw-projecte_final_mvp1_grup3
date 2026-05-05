@@ -14,6 +14,9 @@
         <li v-if="showSimpleNav">
           <NuxtLink to="/friends" class="nav-link" :class="{ active: isFriendsPage }">{{ $t('nav.friends') }}</NuxtLink>
         </li>
+        <li v-if="showSimpleNav">
+          <NuxtLink to="/clans" class="nav-link" :class="{ active: isClansPage }">Clans</NuxtLink>
+        </li>
         <li v-if="!showSimpleNav">
           <NuxtLink to="/home" class="nav-link">{{ $t('nav.home') }}</NuxtLink> 
         </li>
@@ -28,6 +31,9 @@
         </li>
         <li v-if="!showSimpleNav">
           <NuxtLink to="/friends" class="nav-link">{{ $t('nav.friends') }}</NuxtLink>
+        </li>
+        <li v-if="!showSimpleNav">
+          <NuxtLink to="/clans" class="nav-link">Clans</NuxtLink>
         </li>
         <li v-if="!showSimpleNav">
           <NuxtLink to="/perfil" class="nav-link">{{ $t('nav.profile') }}</NuxtLink>
@@ -69,13 +75,16 @@ export default {
   },
   computed: {
     showSimpleNav() {
-      return this.$route.path === '/social' || this.$route.path === '/friends'
+      return this.$route.path === '/social' || this.$route.path === '/friends' || this.$route.path.startsWith('/clans')
     },
     isForumPage() {
       return this.$route.path === '/social'
     },
     isFriendsPage() {
       return this.$route.path === '/friends'
+    },
+    isClansPage() {
+      return this.$route.path.startsWith('/clans')
     },
   },
   methods: {

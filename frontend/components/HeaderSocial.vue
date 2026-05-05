@@ -8,6 +8,9 @@
         <li>
           <NuxtLink to="/friends" class="nav-link" :class="{ active: isFriendsPage }">{{ $t('nav.friends') }}</NuxtLink>
         </li>
+        <li>
+          <NuxtLink to="/clans" class="nav-link" :class="{ active: isClansPage }">{{ $t('nav.clans') }}</NuxtLink>
+        </li>
       </ul>
     </nav>
   </header>
@@ -22,6 +25,9 @@ export default {
     },
     isFriendsPage: function () {
       return this.$route.path === '/friends';
+    },
+    isClansPage: function () {
+      return this.$route.path === '/clans' || this.$route.path.startsWith('/clans/');
     }
   }
 };

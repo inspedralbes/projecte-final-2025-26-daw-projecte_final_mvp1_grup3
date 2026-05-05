@@ -1,16 +1,15 @@
 <template>
   <div class="space-y-6">
-    <div class="flex justify-between items-center">
-      <h2 class="text-2xl font-bold text-gray-800">Clans</h2>
-      <div class="flex gap-2">
-        <input 
-          v-model="searchQuery" 
+    <div class="flex flex-col sm:flex-row sm:justify-end sm:items-center gap-3">
+      <div class="flex gap-2 w-full sm:w-auto sm:min-w-[280px]">
+        <input
+          v-model="searchQuery"
+          type="text"
+          placeholder="Cercar clans..."
+          class="flex-1 min-w-0 px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           @keyup.enter="search"
-          type="text" 
-          placeholder="Cercar clans..." 
-          class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
-        <button @click="search" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+        <button type="button" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 shrink-0" @click="search">
           Cercar
         </button>
       </div>

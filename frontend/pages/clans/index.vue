@@ -1,28 +1,47 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <HeaderSocial />
-    <div v-if="loading" class="max-w-5xl mx-auto px-4 py-8 text-center">
-       <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
-       <p class="text-gray-500 mt-2">Carregant...</p>
-    </div>
-    <div v-else class="max-w-5xl mx-auto px-4 py-8">
-       <div class="flex justify-between items-center mb-6">
-         <h1 class="text-3xl font-bold text-gray-800">Clans</h1>
-         <button v-if="!userClanId" @click="showCreate = !showCreate" class="px-5 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 shadow transition-colors font-medium">
-            {{ showCreate ? 'Tornar als Clans' : 'Crear Nou Clan' }}
-         </button>
-         <button v-else @click="leaveClan" class="px-5 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 shadow transition-colors font-medium">
-            Abandonar Clan
-         </button>
-       </div>
-       
-       <transition name="fade" mode="out-in">
-          <ClanSettings v-if="showCreate" @cancel="showCreate = false" @saved="onClanCreated" />
-          <ClanList v-else-if="!userClanId" />
-          <div v-else class="text-center py-12">
-             <p class="text-gray-600 mb-4">Ja estas en un clan. Redirigint...</p>
+  <!-- Mateixa caixa blanca arrodonida que /social i /friends (HeaderSocial dins la card) -->
+  <div class="min-h-screen overflow-x-hidden pb-24 lg:pb-8">
+    <div class="w-full max-w-5xl mx-auto min-w-0 box-border px-2 sm:px-4 md:px-6 pt-2 sm:pt-3">
+      <div
+        class="rounded-2xl sm:rounded-3xl overflow-hidden bg-white shadow-md border border-gray-100"
+      >
+        <HeaderSocial />
+        <div class="px-3 sm:px-5 py-4 sm:py-6">
+          <div v-if="loading" class="text-center py-10">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+            <p class="text-gray-500 mt-2">Carregant...</p>
           </div>
-       </transition>
+          <template v-else>
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+              <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">{{ $t('nav.clans') }}</h1>
+              <button
+                v-if="!userClanId"
+                type="button"
+                @click="showCreate = !showCreate"
+                class="px-5 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 shadow transition-colors font-medium shrink-0"
+              >
+                {{ showCreate ? 'Tornar als Clans' : 'Crear Nou Clan' }}
+              </button>
+              <button
+                v-else
+                type="button"
+                @click="leaveClan"
+                class="px-5 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 shadow transition-colors font-medium shrink-0"
+              >
+                Abandonar Clan
+              </button>
+            </div>
+
+            <transition name="fade" mode="out-in">
+              <ClanSettings v-if="showCreate" @cancel="showCreate = false" @saved="onClanCreated" />
+              <ClanList v-else-if="!userClanId" />
+              <div v-else class="text-center py-12">
+                <p class="text-gray-600 mb-4">Ja estas en un clan. Redirigint...</p>
+              </div>
+            </transition>
+          </template>
+        </div>
+      </div>
     </div>
   </div>
 </template>

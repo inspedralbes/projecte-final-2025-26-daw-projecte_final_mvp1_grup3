@@ -17,7 +17,7 @@
             <span class="stat-value">{{ gameStore.ratxa }}</span>
           </div>
           <div class="stat-item">
-            <span class="stat-icon">⭐</span>
+            <img :src="xpIcon" alt="" class="stat-icon-img" width="18" height="18" />
             <span class="stat-value">{{ gameStore.xpTotal }}</span>
           </div>
           <div class="stat-item">
@@ -225,6 +225,7 @@
 import { ref, computed, onMounted } from 'vue'
 import logo from '~/assets/img/LogoLoopy.png'
 import coinIcon from '~/assets/img/coin-loopy.png'
+import xpIcon from '~/assets/img/xp-loopy.png'
 import LanguageSwitcher from './LanguageSwitcher.vue'
 import { useAuthStore } from '~/stores/useAuthStore'
 import { useGameStore } from '~/stores/gameStore.js'

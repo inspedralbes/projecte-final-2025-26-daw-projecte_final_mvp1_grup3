@@ -17,7 +17,7 @@
             v-if="!showEdit && isLeader"
             type="button"
             @click="showInvite = true"
-            class="fixed bottom-8 right-8 bg-green-500 text-white rounded-full p-4 shadow-lg hover:bg-green-600 transition-transform transform hover:scale-105 group"
+            class="fixed z-[55] right-4 sm:right-6 lg:right-8 bottom-[calc(6.25rem+env(safe-area-inset-bottom))] lg:bottom-8 bg-green-500 text-white rounded-full p-4 shadow-lg hover:bg-green-600 transition-transform transform hover:scale-105 group touch-manipulation"
             title="Convidar Usuari"
           >
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>

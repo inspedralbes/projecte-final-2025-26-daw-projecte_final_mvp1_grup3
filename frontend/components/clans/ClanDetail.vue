@@ -302,6 +302,15 @@ joinPublic: async function() {
        var store = useClanStore();
        var result = await store.leaveClan(this.clan.id);
        if (result) {
+          var authStore = useAuthStore();
+          var nuxtApp = useNuxtApp();
+          if (nuxtApp.$socket && nuxtApp.$socket.connected) {
+             nuxtApp.$socket.emit("clan_member_left", {
+                clan_id: this.clan.id,
+                user_id: authStore.user.id,
+                user_nom: authStore.user.nom
+             });
+          }
           this.$router.push('/clans');
        } else {
           alert(store.error || "Error al abandonar el clan");

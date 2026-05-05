@@ -140,7 +140,24 @@ class ClanController extends Controller
             }
 
             if ($clan->lider_id === $userId) {
-                return response()->json(['error' => 'El líder no pot sortir, ha de transferir o dissoldre'], 400);
+                $nextMember = DB::table('clan_members')
+                    ->where('clan_id', $id)
+                    ->where('usuari_id', '!=', $userId)
+                    ->orderBy('data_unio', 'asc')
+                    ->first();
+
+                if ($nextMember) {
+                    DB::table('clan_members')
+                        ->where('clan_id', $id)
+                        ->where('usuari_id', $nextMember->usuari_id)
+                        ->update(['rol' => 'lider']);
+                    
+                    $clan->lider_id = $nextMember->usuari_id;
+                    $clan->save();
+                } else {
+                    $clan->delete();
+                    return response()->json(['success' => true]);
+                }
             }
 
             DB::table('clan_members')

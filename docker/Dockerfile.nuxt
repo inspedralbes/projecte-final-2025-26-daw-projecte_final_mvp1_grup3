@@ -1,5 +1,5 @@
-# Frontend Nuxt 3.11.2
-FROM mirror.gcr.io/library/node:20.18.3-alpine
+# Frontend Nuxt — Node >=20.19 evita EBADENGINE amb Nitro/Vite recents
+FROM mirror.gcr.io/library/node:20.19.4-alpine
 
 WORKDIR /app
 
@@ -8,9 +8,8 @@ RUN apk add --no-cache python3 make g++
 # Inclou package-lock.json al context (no l'excloguis a .dockerignore) per a npm ci
 COPY package.json package-lock.json* ./
 
-# Una sola capa RUN: menys passos d'exportació d'imatge
-RUN if [ -f package-lock.json ]; then npm ci --legacy-peer-deps; else npm install --legacy-peer-deps; fi \
-    && npm install -D tailwindcss@3.3.6 postcss@8 autoprefixer@10
+# package-lock.json ha d'estar generat amb `npm install --legacy-peer-deps` (mateixa versió Node si és possible)
+RUN if [ -f package-lock.json ]; then npm ci --legacy-peer-deps; else npm install --legacy-peer-deps; fi
 
 COPY . .
 

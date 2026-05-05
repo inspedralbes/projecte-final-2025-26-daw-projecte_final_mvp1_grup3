@@ -53,8 +53,6 @@ class User extends Model implements JWTSubject
         'logros_showcase',
     ];
 
-    protected $casts = [];
-
     //================================ MÈTODES / FUNCIONS ===========
 
     /**

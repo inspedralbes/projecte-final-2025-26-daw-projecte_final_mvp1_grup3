@@ -1,23 +1,36 @@
 <template>
-  <div class="bento-card bg-white/95 backdrop-blur-md rounded-3xl p-8 shadow-xl border border-white/50">
-    <div class="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100">
-      <div class="w-12 h-12 bg-orange-100 text-orange-600 rounded-2xl flex items-center justify-center text-2xl shadow-sm">📂</div>
-      <h2 class="text-xl font-bold text-gray-800 tracking-tight">{{ $t('habits.category') }}</h2>
-    </div>
-
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-      <button 
-        v-for="cat in categories" 
-        :key="cat.id" 
+  <div :class="embedded ? null : 'bento-card bg-white/95 backdrop-blur-md rounded-3xl p-4 sm:p-5 shadow-xl border border-white/50'">
+    <label
+      for="habit-category-select"
+      :class="
+        embedded
+          ? 'block text-xs font-black text-gray-400 uppercase tracking-widest mb-3 px-1'
+          : 'sr-only'
+      "
+    >{{ $t('habits.category') }}</label>
+    <select
+      id="habit-category-select"
+      data-testid="habit-category-select"
+      class="habit-category-select w-full bg-gray-50/50 border-2 rounded-2xl font-bold text-gray-800 focus:outline-none focus:ring-4 focus:ring-green-500/10 focus:border-green-500 focus:bg-white transition-all cursor-pointer border-gray-100"
+      :class="
+        [
+          normalizedSelected === '' ? 'text-gray-500' : 'text-gray-800',
+          embedded ? 'px-6 py-4' : 'px-4 py-3 sm:px-5 sm:py-3.5 text-sm sm:text-base'
+        ]
+      "
+      :value="normalizedSelected"
+      @change="onChange"
+    >
+      <option value="" disabled>{{ $t('habits.category_select_placeholder') }}</option>
+      <option
+        v-for="cat in categories"
+        :key="cat.id"
+        :value="String(cat.id)"
         :data-testid="'habit-category-' + cat.key"
-        type="button" 
-        @click="$emit('select', cat.id)" 
-        :class="['p-6 rounded-2xl flex flex-col items-center justify-center gap-3 transition-all transform hover:scale-105 active:scale-95 border-2', selectedId === cat.id ? 'border-green-500 bg-green-50 shadow-md ring-4 ring-green-500/5' : 'bg-gray-50/50 border-gray-100 hover:border-green-200']"
       >
-        <span class="text-4xl shadow-sm">{{ cat.icona }}</span>
-        <span class="text-sm font-bold text-gray-700">{{ $t('habits.categories.' + cat.key) }}</span>
-      </button>
-    </div>
+        {{ cat.icona }} {{ $t('habits.categories.' + cat.key) }}
+      </option>
+    </select>
   </div>
 </template>
 
@@ -26,8 +39,42 @@ export default {
   name: 'HabitFormCategory',
   props: {
     categories: { type: Array, required: true },
-    selectedId: { type: [Number, String], default: '' }
+    selectedId: { type: [Number, String], default: '' },
+    /** Sense tarja pròpia; per usar dins HabitFormDetails */
+    embedded: { type: Boolean, default: false }
   },
-  emits: ['select']
+  emits: ['select'],
+  computed: {
+    normalizedSelected: function () {
+      var s = this.selectedId;
+      if (s === '' || s === null || s === undefined) {
+        return '';
+      }
+      return String(s);
+    }
+  },
+  methods: {
+    onChange: function (e) {
+      var v = e.target.value;
+      if (v === '') {
+        return;
+      }
+      var n = parseInt(v, 10);
+      if (!Number.isNaN(n)) {
+        this.$emit('select', n);
+      }
+    }
+  }
 };
 </script>
+
+<style scoped>
+.habit-category-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1.25rem;
+  padding-right: 2.75rem;
+}
+</style>

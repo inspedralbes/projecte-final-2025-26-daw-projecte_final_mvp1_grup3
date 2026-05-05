@@ -866,7 +866,10 @@ class HabitService
         }
 
         if (array_key_exists('metadata', $habitData)) {
-            $dades['metadata'] = $this->normalitzarMetadata($habitData['metadata']);
+            $meta = $this->normalitzarMetadata($habitData['metadata']);
+            if ($meta !== null) {
+                $dades['metadata'] = $meta;
+            }
         }
 
         return $dades;

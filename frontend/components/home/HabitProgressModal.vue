@@ -1,9 +1,14 @@
 <template>
   <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="tancar"></div>
+    <div
+      class="absolute inset-0 bg-black/60 backdrop-blur-sm"
+      :class="potCompletar ? 'cursor-default' : ''"
+      @click="gestionarClickBackdrop"
+    ></div>
 
     <div class="bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl relative">
       <button
+        v-if="!potCompletar"
         @click="tancar"
         class="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-600"
         title="Tancar"
@@ -67,6 +72,7 @@
             {{ $t('habits.complete_habit') }}
           </button>
           <button
+            v-if="!potCompletar"
             class="w-full py-3 rounded-xl font-bold text-gray-600 border border-gray-200 hover:bg-gray-50"
             @click="tancar"
           >
@@ -106,7 +112,16 @@ export default {
     }
   },
   methods: {
+    gestionarClickBackdrop: function () {
+      if (this.potCompletar) {
+        return;
+      }
+      this.tancar();
+    },
     tancar: function () {
+      if (this.potCompletar) {
+        return;
+      }
       this.$emit("close");
     },
     sumar: function () {

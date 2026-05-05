@@ -5,6 +5,9 @@ namespace App\Console\Commands\QueueHandlers;
 //================================ NAMESPACES / IMPORTS ============
 
 use App\Services\HabitService;
+use App\Services\RedisFeedbackService;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 //================================ PROPIETATS / ATRIBUTS ==========
 
@@ -19,11 +22,17 @@ class HabitQueueHandler
      */
     private HabitService $habitService;
 
+    /**
+     * @var RedisFeedbackService
+     */
+    private RedisFeedbackService $feedbackService;
+
     //================================ MÈTODES / FUNCIONS ===========
 
-    public function __construct(HabitService $habitService)
+    public function __construct(HabitService $habitService, RedisFeedbackService $feedbackService)
     {
         $this->habitService = $habitService;
+        $this->feedbackService = $feedbackService;
     }
 
     /**
@@ -33,6 +42,27 @@ class HabitQueueHandler
      */
     public function handle(array $dades): void
     {
-        $this->habitService->processarAccioHabit($dades);
+        try {
+            $this->habitService->processarAccioHabit($dades);
+        } catch (Throwable $e) {
+            Log::error('HabitQueueHandler: error processant cua habits_queue', [
+                'error' => $e->getMessage(),
+                'class' => $e::class,
+            ]);
+            $userId = isset($dades['user_id']) ? (int) $dades['user_id'] : 0;
+            if ($userId < 1) {
+                return;
+            }
+            $action = isset($dades['action']) ? strtoupper((string) $dades['action']) : 'UNKNOWN';
+            $missatgeUsuari = config('app.debug')
+                ? $e->getMessage()
+                : 'No s\'ha pogut processar l\'acció de l\'hàbit.';
+            $this->feedbackService->publicarPayload([
+                'action' => $action,
+                'user_id' => $userId,
+                'success' => false,
+                'message' => $missatgeUsuari,
+            ]);
+        }
     }
 }

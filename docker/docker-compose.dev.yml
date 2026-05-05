@@ -1,0 +1,196 @@
+# Loopy - Entorno de DESARROLLO (Local)
+# Usa este archivo para programar en tu ordenador:
+# Comando: docker compose -f docker-compose.dev.yml up -d
+
+services:
+  postgres:
+    image: postgres:16.2-alpine
+    container_name: loopy-postgres-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-loopy}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-loopy_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-loopy_db}
+    ports:
+      - "${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+      - ../database/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+      - ../database/insert.sql:/docker-entrypoint-initdb.d/02-insert.sql:ro
+
+  redis:
+    image: redis:7.2.4-alpine
+    container_name: loopy-redis-dev
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6380}:6379"
+    volumes:
+      - redis_data_dev:/data
+
+  adminer:
+    image: adminer:4.8.1
+    container_name: loopy-adminer-dev
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+    depends_on:
+      - postgres
+
+  backend-laravel:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.laravel
+    container_name: loopy-laravel-dev
+    restart: unless-stopped
+    working_dir: /var/www
+    ports:
+      - "8000:8000"
+    environment:
+      APP_NAME: Loopy
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_KEY: ${APP_KEY:-base64:AAAAAAAAAAAAAAAAAAAAAA==}
+      APP_URL: http://localhost:8000
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${POSTGRES_DB:-loopy_db}
+      DB_USERNAME: ${POSTGRES_USER:-loopy}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-loopy_secret}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_CLIENT: predis
+      REDIS_READ_TIMEOUT: 60
+      REDIS_READ_WRITE_TIMEOUT: 60
+      REDIS_PREFIX: ""
+      JWT_SECRET: ${JWT_SECRET:-4b2e95c71827e0f29601e4566112841c47b7fe53eab506fb3884be7e8735c623}
+      CACHE_DRIVER: redis
+      SESSION_DRIVER: redis
+      QUEUE_CONNECTION: redis
+    volumes:
+      - ../backend-laravel:/var/www
+      - ../database:/var/database:ro
+    depends_on:
+      - postgres
+      - redis
+    command: php artisan serve --host=0.0.0.0 --port=8000
+
+  backend-laravel-worker:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.laravel
+    container_name: loopy-laravel-worker-dev
+    restart: unless-stopped
+    working_dir: /var/www
+    entrypoint: []
+    environment:
+      APP_NAME: Loopy
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_KEY: ${APP_KEY:-base64:AAAAAAAAAAAAAAAAAAAAAA==}
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${POSTGRES_DB:-loopy_db}
+      DB_USERNAME: ${POSTGRES_USER:-loopy}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-loopy_secret}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_CLIENT: predis
+    volumes:
+      - ../backend-laravel:/var/www
+      - ../database:/var/database:ro
+    depends_on:
+      - postgres
+      - redis
+    command: [ "php", "artisan", "habits:redis-worker" ]
+
+  backend-laravel-scheduler:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.laravel
+    container_name: loopy-laravel-scheduler-dev
+    restart: unless-stopped
+    working_dir: /var/www
+    entrypoint: []
+    environment:
+      APP_NAME: Loopy
+      APP_ENV: local
+      APP_DEBUG: "true"
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${POSTGRES_DB:-loopy_db}
+      DB_USERNAME: ${POSTGRES_USER:-loopy}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-loopy_secret}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_CLIENT: predis
+    volumes:
+      - ../backend-laravel:/var/www
+      - ../database:/var/database:ro
+    depends_on:
+      - postgres
+      - redis
+    command: [ "php", "artisan", "schedule:work" ]
+
+  backend-node:
+    build:
+      context: ../backend-node
+      dockerfile: ../docker/Dockerfile.node
+    container_name: loopy-node-dev
+    restart: unless-stopped
+    working_dir: /app
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: ${JWT_SECRET:-4b2e95c71827e0f29601e4566112841c47b7fe53eab506fb3884be7e8735c623}
+      LARAVEL_URL: http://backend-laravel:8000
+    volumes:
+      - ../backend-node:/app
+      - node_modules_dev:/app/node_modules
+    depends_on:
+      - redis
+    command: npm run dev
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: ../docker/Dockerfile.nuxt
+      args:
+        API_URL: ${API_URL:-http://localhost:8000}
+        SOCKET_URL: ${SOCKET_URL:-http://localhost:3001}
+    container_name: loopy-nuxt-dev
+    restart: unless-stopped
+    working_dir: /app
+    ports:
+      - "3000:3000"
+      - "24678:24678" # HMR para Vite/Nuxt
+    environment:
+      NODE_ENV: development
+      NUXT_HOST: 0.0.0.0
+      NUXT_PORT: 3000
+      SOCKET_URL: http://localhost:3001
+      API_URL: http://localhost:8000
+      NUXT_PUBLIC_SOCKET_URL: http://localhost:3001
+      NUXT_PUBLIC_API_URL: http://localhost:8000
+      NITRO_PORT: 3000
+    volumes:
+      - ../frontend:/app
+      - /app/node_modules
+      - /app/.nuxt
+    depends_on:
+      - backend-node
+      - backend-laravel
+    command: npm run dev
+
+volumes:
+  postgres_data_dev:
+  redis_data_dev:
+  node_modules_dev:

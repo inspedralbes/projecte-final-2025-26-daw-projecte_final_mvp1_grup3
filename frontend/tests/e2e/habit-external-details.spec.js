@@ -87,7 +87,7 @@ test('flux e2e: vincular recurs extern, editar i veure detalls a home', async ({
 
   await page.goto('/habits');
   await page.getByTestId('habit-name-input').fill(nomHabit);
-  await page.getByTestId('habit-category-reading').click();
+  await page.getByTestId('habit-category-select').selectOption('4');
   await page.getByTestId('external-search-input').fill('atomic');
   await page.getByTestId('external-search-button').click();
   await expect(page.getByTestId('external-result-item').first()).toBeVisible();
@@ -108,9 +108,9 @@ test('flux e2e: vincular recurs extern, editar i veure detalls a home', async ({
   const habitCreatObjecte = habitsDespresCrear.find((h) => h.titol === nomHabit);
   expect(habitCreatObjecte.metadata.tipus_api).toBe('google_books');
 
-  await page.goto('/habits');
-  await page.getByTestId(`habit-list-item-${habitCreatObjecte.id}`).click();
-  await page.getByTestId('habit-category-home').click();
+  await page.goto(`/habits?edit=${habitCreatObjecte.id}`);
+  await expect(page.getByTestId('habit-name-input')).toHaveValue(nomHabit, { timeout: 15000 });
+  await page.getByTestId('habit-category-select').selectOption('7');
   await page.getByRole('button', { name: /sí, canviar|sí|si/i }).click();
   await page.getByTestId('manual-title-input').fill(titolManual);
   await page.getByTestId('manual-image-input').fill(urlManual);

@@ -124,7 +124,8 @@ CREATE TABLE HABITS (
     objectiu_vegades INT DEFAULT 1,
     unitat VARCHAR(50),
     icona VARCHAR(50),
-    color VARCHAR(20)
+    color VARCHAR(20),
+    metadata JSONB
 );
 
 ALTER TABLE HABITS ADD COLUMN metadata JSONB;

@@ -11,6 +11,36 @@ var habitQueue = require("../../queues/habitQueue");
 //==============================================================================
 
 /**
+ * ID d'usuari al socket: claim `user_id` (Laravel custom) o `sub` estàndard JWT.
+ *
+ * @param {object|null} decoded - Payload JWT verificat
+ * @returns {string|number|null}
+ */
+function resolveSocketUserId(decoded) {
+  if (!decoded) {
+    return null;
+  }
+  var id =
+    decoded.user_id != null && decoded.user_id !== ""
+      ? decoded.user_id
+      : decoded.sub;
+  if (id == null || id === "") {
+    return null;
+  }
+  return id;
+}
+
+function emitAuthFailure(socket, payload) {
+  var action =
+    payload && typeof payload.action === "string" ? payload.action : "UNKNOWN";
+  socket.emit("habit_action_confirmed", {
+    action: action,
+    success: false,
+    error: "SOCKET_AUTH"
+  });
+}
+
+/**
  * Registra els listeners d'esdeveniments d'hàbits.
  * habit_action, habit_completed, habit_progress, habit_complete → habits_queue
  *
@@ -20,9 +50,10 @@ var habitQueue = require("../../queues/habitQueue");
 function register(io, socket) {
   socket.on("habit_action", async function (payload) {
     try {
-      var userId = socket.decoded_token && socket.decoded_token.user_id;
+      var userId = resolveSocketUserId(socket.decoded_token);
       if (!userId) {
         console.warn("habit_action: usuari no autenticat");
+        emitAuthFailure(socket, payload);
         return;
       }
       socket.join("user_" + userId);
@@ -34,7 +65,7 @@ function register(io, socket) {
 
   socket.on("habit_completed", async function (data) {
     try {
-      var userId = socket.decoded_token && socket.decoded_token.user_id;
+      var userId = resolveSocketUserId(socket.decoded_token);
       if (!userId) {
         console.warn("habit_completed: usuari no autenticat");
         return;
@@ -49,7 +80,7 @@ function register(io, socket) {
 
   socket.on("habit_progress", async function (data) {
     try {
-      var userId = socket.decoded_token && socket.decoded_token.user_id;
+      var userId = resolveSocketUserId(socket.decoded_token);
       if (!userId) {
         console.warn("habit_progress: usuari no autenticat");
         return;
@@ -64,7 +95,7 @@ function register(io, socket) {
 
   socket.on("habit_complete", async function (data) {
     try {
-      var userId = socket.decoded_token && socket.decoded_token.user_id;
+      var userId = resolveSocketUserId(socket.decoded_token);
       if (!userId) {
         console.warn("habit_complete: usuari no autenticat");
         return;

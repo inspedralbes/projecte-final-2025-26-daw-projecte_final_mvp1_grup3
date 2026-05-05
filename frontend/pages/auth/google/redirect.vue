@@ -40,11 +40,7 @@ onMounted(async () => {
         authStore.desmarcarOnboardingPendent();
       }
     } else if (code) {
-      // Si rebem ?code al frontend, fem redirecció de navegador al callback backend.
-      // Evitem fetch aquí perquè el callback backend redirigeix i això pot donar CORS.
-      const config = useRuntimeConfig();
-      const base = (config.public.apiUrl || "").replace(/\/$/, "");
-      window.location.href = `${base}/api/auth/google/callback?code=${encodeURIComponent(code)}`;
+      window.location.href = `http://localhost:8000/api/auth/google/callback?code=${encodeURIComponent(code)}`;
       return;
     } else {
       throw new Error("No s'ha rebut token ni codi de Google.");

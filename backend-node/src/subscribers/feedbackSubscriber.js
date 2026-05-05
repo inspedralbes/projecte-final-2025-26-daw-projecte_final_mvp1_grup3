@@ -36,12 +36,16 @@ async function init(io) {
 
   console.log("feedbackSubscriber: Attempting to connect to Redis at host:", host, "port:", port);
 
-  subscriber = redis.createClient({
+  var redisOpts = {
     socket: {
       host: host,
       port: port
     }
-  });
+  };
+  if (process.env.REDIS_PASSWORD) {
+    redisOpts.password = process.env.REDIS_PASSWORD;
+  }
+  subscriber = redis.createClient(redisOpts);
 
   subscriber.on("error", function (err) {
     console.error("Error Redis Subscriber:", err);

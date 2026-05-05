@@ -20,12 +20,16 @@ async function getClient() {
 
   console.log('plantillaQueue: Attempting to connect to Redis at host:', host, 'port:', port); // Debug log
 
-  client = redis.createClient({
+  var redisOpts = {
     socket: {
       host: host,
       port: port
     }
-  });
+  };
+  if (process.env.REDIS_PASSWORD) {
+    redisOpts.password = process.env.REDIS_PASSWORD;
+  }
+  client = redis.createClient(redisOpts);
 
   client.on('error', function (err) {
     console.error('Error Redis Client (plantillaQueue):', err);

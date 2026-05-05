@@ -1,8 +1,11 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <HeaderSocial />
-
-    <div class="max-w-2xl mx-auto px-4 py-6">
+  <div class="min-h-screen overflow-x-hidden pb-24 lg:pb-8">
+    <div class="max-w-2xl mx-auto min-w-0 px-2 sm:px-4 md:px-6 pt-2 sm:pt-3">
+      <div
+        class="rounded-2xl sm:rounded-3xl overflow-hidden bg-white shadow-md border border-gray-100"
+      >
+        <HeaderSocial />
+        <div class="px-3 sm:px-5 py-4 sm:py-6">
       <h1 class="text-2xl font-bold text-gray-800 mb-6">{{ $t('friends.title') }}</h1>
 
       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-6">
@@ -109,6 +112,9 @@
               {{ $t('friends.send_request') }}
             </button>
           </div>
+        </div>
+      </div>
+
         </div>
       </div>
 

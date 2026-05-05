@@ -1,0 +1,8 @@
+{
+  "success": true,
+  "data": [
+    { "nom": "Pepito", "valor": "3200 XP" },
+    { "nom": "Maria", "valor": "2800 XP" },
+    { "nom": "Jordi", "valor": "2100 XP" }
+  ]
+}

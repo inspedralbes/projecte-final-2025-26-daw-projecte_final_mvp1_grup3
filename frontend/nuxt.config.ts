@@ -1,7 +1,7 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2024-04-03',
-  devtools: { enabled: true },
+  devtools: { enabled: false },
   modules: [
     '@pinia/nuxt',
     '@nuxtjs/i18n',
@@ -40,20 +40,6 @@ export default defineNuxtConfig({
     host: '0.0.0.0',
     port: 3000,
   },
-  // HMR al mateix port que el dev server (3000): evita ws://localhost:24678 i ERR_EMPTY_RESPONSE amb Docker.
-  vite: {
-    server: {
-      hmr: {
-        protocol: 'ws',
-        host: 'localhost',
-        port: 3000,
-        clientPort: 3000,
-      },
-      watch: {
-        usePolling: true,
-      },
-    },
-  },
   runtimeConfig: {
     public: {
       socketUrl: process.env.SOCKET_URL || 'http://localhost:3001',
@@ -65,7 +51,11 @@ export default defineNuxtConfig({
       hmr: {
         protocol: 'ws',
         host: 'localhost',
-        port: 24678,
+        port: 3000,
+        clientPort: 3000,
+      },
+      watch: {
+        usePolling: true,
       },
     },
   },

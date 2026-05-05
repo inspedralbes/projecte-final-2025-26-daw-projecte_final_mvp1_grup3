@@ -1,0 +1,16 @@
+{
+  "nivell": 5,
+  "xp_total": 2500,
+  "xp_actual_nivel": 500,
+  "xp_objetivo_nivel": 1000,
+  "ratxa": 3,
+  "ratxa_maxima": 10,
+  "monedes": 120,
+  "canSpinRoulette": true,
+  "ruleta_ultima_tirada": null,
+  "missio_diaria": {
+    "id": 1,
+    "titol": "Completa 2 hàbits avui",
+    "completada": false
+  }
+}

@@ -14,5 +14,17 @@ RUN if [ -f package-lock.json ]; then npm ci --legacy-peer-deps; else npm instal
 
 COPY . .
 
+ARG API_URL
+ARG SOCKET_URL
+ENV API_URL=$API_URL
+ENV SOCKET_URL=$SOCKET_URL
+ENV NUXT_PUBLIC_API_URL=$API_URL
+ENV NUXT_PUBLIC_SOCKET_URL=$SOCKET_URL
+
+RUN npm run build
+
+RUN mkdir -p .output/server/chunks && \
+    ln -s /app/.output/public /app/.output/server/chunks/public
+
 EXPOSE 3000
-CMD ["npm", "run", "dev"]
+CMD ["node", ".output/server/index.mjs"]

@@ -34,7 +34,7 @@
              </div>
           </div>
           <div class="space-y-6">
-             <MemberList :clan-id="clan.id" :is-leader="isLeader" @member-removed="reload" />
+             <MemberList :key="memberListKey" :clan-id="clan.id" :is-leader="isLeader" @member-removed="reload" @view-profile="viewProfile" />
              <RequestManager v-if="isLeader" :clan-id="clan.id" @request-handled="reload" />
           </div>
        </div>
@@ -42,6 +42,12 @@
     <div v-else class="text-center py-12 text-red-500">
        No s'ha pogut carregar el clan o no existeix.
     </div>
+    
+    <PublicProfileView
+      v-if="showProfile"
+      :user-id="profileUserId"
+      @close="showProfile = false"
+    />
   </div>
 </template>
 
@@ -52,13 +58,15 @@ import { useNuxtApp } from "#app";
 import MemberList from "~/components/clans/MemberList.vue";
 import RequestManager from "~/components/clans/RequestManager.vue";
 import ClanChat from "~/components/clans/ClanChat.vue";
+import PublicProfileView from "~/components/user/social/PublicProfileView.vue";
 
 export default {
   name: "ClanDetail",
   components: {
     MemberList,
     RequestManager,
-    ClanChat
+    ClanChat,
+    PublicProfileView
   },
   props: {
     clanId: {
@@ -70,7 +78,7 @@ export default {
     return {
       loading: true,
       clan: null,
-      memberCheckInterval: null,
+      memberListKey: 0,
       previousMemberCount: 0,
       showShareModal: false,
       shareType: 'habit',
@@ -78,7 +86,9 @@ export default {
       plantillas: [],
       loadingHabits: false,
       loadingPlantillas: false,
-      modalLoaded: false
+      modalLoaded: false,
+      showProfile: false,
+      profileUserId: null
     }
   },
   watch: {
@@ -111,15 +121,9 @@ export default {
 mounted: function() {
      this.loadClan();
      this.setupSocketListeners();
-     var self = this;
-     this.memberCheckInterval = setInterval(function() {
-        var store = useClanStore();
-        store.fetchMembers(self.clanId);
-     }, 3000);
    },
    beforeDestroy: function() {
      this.removeSocketListeners();
-     if (this.memberCheckInterval) clearInterval(this.memberCheckInterval);
    },
   methods: {
     setupSocketListeners: function() {
@@ -158,19 +162,8 @@ mounted: function() {
         var store = useClanStore();
         await store.getClan(this.clanId);
         this.clan = store.currentClan;
-        var previousCount = this.previousMemberCount;
         await store.fetchMembers(this.clanId);
         this.previousMemberCount = store.clanMembers.length;
-        if (previousCount > 0 && store.clanMembers.length > previousCount) {
-           var nuxtApp = useNuxtApp();
-           if (nuxtApp.$socket && nuxtApp.$socket.connected) {
-              nuxtApp.$socket.emit("clan_member_joined", {
-                 clan_id: this.clanId,
-                 user_id: 0,
-                 user_nom: "Nou membre"
-              });
-           }
-        }
       } catch(e) {
         console.error(e);
       } finally {
@@ -178,7 +171,14 @@ mounted: function() {
       }
     },
     reload: function() {
+       this.memberListKey += 1;
        this.loadClan();
+    },
+    viewProfile: function(userId) {
+       if (userId && typeof userId === 'number') {
+         this.profileUserId = userId;
+         this.showProfile = true;
+       }
     },
     shareHabit: async function(habitId) {
        try {

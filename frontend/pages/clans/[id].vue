@@ -89,13 +89,35 @@ mounted: function() {
           var nuxtApp = useNuxtApp();
           var authStore = useAuthStore();
           if (nuxtApp.$socket && nuxtApp.$socket.connected) {
+             nuxtApp.$socket.on("clan_member_joined", function(data) {
+                console.log("Page received clan_member_joined", data);
+                if (Number(data.clan_id) === Number(self.clanId)) {
+                   if (self.$refs.clanDetail && typeof self.$refs.clanDetail.reload === 'function') {
+                      self.$refs.clanDetail.reload();
+                   }
+                }
+             });
+             nuxtApp.$socket.on("clan_request_accepted", function(data) {
+                console.log("Page received clan_request_accepted", data);
+                if (Number(data.clan_id) === Number(self.clanId)) {
+                   if (self.$refs.clanDetail && typeof self.$refs.clanDetail.reload === 'function') {
+                      self.$refs.clanDetail.reload();
+                   }
+                }
+             });
              nuxtApp.$socket.on("clan_member_left", function(data) {
                 console.log("Page received clan_member_left", data);
-                if (Number(data.clan_id) === Number(self.clanId) && Number(data.user_id) === Number(authStore.user.id)) {
-                   if (!self.alreadyExpelled) {
-                      self.alreadyExpelled = true;
-                      alert("Has estat expulsat del clan.");
-                      self.$router.push("/clans");
+                if (Number(data.clan_id) === Number(self.clanId)) {
+                   if (Number(data.user_id) === Number(authStore.user.id)) {
+                      if (!self.alreadyExpelled) {
+                         self.alreadyExpelled = true;
+                         alert("Has estat expulsat del clan.");
+                         self.$router.push("/clans");
+                      }
+                   } else {
+                      if (self.$refs.clanDetail && typeof self.$refs.clanDetail.reload === 'function') {
+                         self.$refs.clanDetail.reload();
+                      }
                    }
                 }
              });
@@ -108,6 +130,8 @@ mounted: function() {
      removeSocketListener: function() {
        var nuxtApp = useNuxtApp();
        if (nuxtApp.$socket) {
+          nuxtApp.$socket.off("clan_member_joined");
+          nuxtApp.$socket.off("clan_request_accepted");
           nuxtApp.$socket.off("clan_member_left");
        }
      },

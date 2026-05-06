@@ -1,6 +1,8 @@
 import { io } from 'socket.io-client';
 import { useFriendshipStore } from '~/stores/useFriendshipStore.js';
 import { useChatStore } from '~/stores/useChatStore.js';
+import { useClanStore } from '~/stores/useClanStore.js';
+import { useAuthStore } from '~/stores/useAuthStore.js';
 
 /**
  * Plugin de Socket.io per a Nuxt 3.
@@ -56,6 +58,30 @@ export default defineNuxtPlugin(function (nuxtApp) {
         var friendshipStore = useFriendshipStore();
         if (friendshipStore) {
             friendshipStore.fetchFriendsList();
+        }
+    });
+
+    socket.on('clan_member_joined', function (data) {
+        console.log('[Socket] Clan member joined:', data);
+        var clanStore = useClanStore();
+        if (clanStore && data && data.clan_id) {
+            clanStore.fetchMembers(data.clan_id);
+        }
+    });
+
+    socket.on('clan_request_accepted', function (data) {
+        console.log('[Socket] Clan request accepted:', data);
+        var clanStore = useClanStore();
+        if (clanStore && data && data.clan_id) {
+            clanStore.fetchMembers(data.clan_id);
+        }
+    });
+
+    socket.on('clan_member_left', function (data) {
+        console.log('[Socket] Clan member left:', data);
+        var clanStore = useClanStore();
+        if (clanStore && data && data.clan_id) {
+            clanStore.fetchMembers(data.clan_id);
         }
     });
 

@@ -33,19 +33,11 @@ export default {
   data: function() {
     return {
       requests: [],
-      loading: false,
-      refreshInterval: null
+      loading: false
     }
   },
   mounted: function() {
     this.loadRequests();
-    var self = this;
-    this.refreshInterval = setInterval(function() {
-      self.loadRequests();
-    }, 3000);
-  },
-  beforeDestroy: function() {
-    if (this.refreshInterval) clearInterval(this.refreshInterval);
   },
   methods: {
     loadRequests: async function() {
@@ -72,6 +64,11 @@ export default {
                   nuxtApp.$socket.emit("clan_request_accepted", {
                      clan_id: this.clanId,
                      usuari_id: req.usuari_id
+                  });
+                  nuxtApp.$socket.emit("clan_member_joined", {
+                     clan_id: this.clanId,
+                     user_id: req.usuari_id,
+                     user_nom: req.usuari_nom
                   });
                }
             }

@@ -136,6 +136,7 @@
             @switch-manual="passarAManual"
           />
         </div>
+        <HomeCreateHabitDropdown @habit-creat="refrescarDespresCrearHabit" />
         <UserHomeHomeHabitsSection
           :habits="habitsDelDia"
           :esta-carregant="estaCarregantHabits"
@@ -208,6 +209,7 @@ import UserHomeHomeProfileCard from "~/components/user/home/HomeProfileCard.vue"
 import UserHomeHomeLogrosCard from "~/components/user/home/HomeLogrosCard.vue";
 import UserHomeHomeRouletteSection from "~/components/user/home/HomeRouletteSection.vue";
 import UserHomeHomeHabitsSection from "~/components/user/home/HomeHabitsSection.vue";
+import HomeCreateHabitDropdown from "~/components/user/home/HomeCreateHabitDropdown.vue";
 import WeatherWidget from "~/components/user/home/WeatherWidget.vue";
 import { authFetch } from "~/composables/useApi.js";
 import mascotaImg from "~/assets/img/Mascota.png";
@@ -225,6 +227,7 @@ export default {
     UserHomeHomeLogrosCard,
     UserHomeHomeRouletteSection,
     UserHomeHomeHabitsSection,
+    HomeCreateHabitDropdown,
     WeatherWidget
   },
   data: function () {
@@ -331,6 +334,14 @@ export default {
     }
   },
   methods: {
+    refrescarDespresCrearHabit: function () {
+      var self = this;
+      self.estaCarregantHabits = true;
+      self.gameStore.carregarDadesHome()
+        .finally(function () {
+          self.estaCarregantHabits = false;
+        });
+    },
     /**
      * Punt d'entrada al carregar la pàgina.
      * Si el navegador té el permís concedit, getCurrentPosition torna ràpid

@@ -14,6 +14,7 @@ use App\Support\GamificationConstants;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
 
 //================================ PROPIETATS / ATRIBUTS ==========
@@ -867,12 +868,40 @@ class HabitService
 
         if (array_key_exists('metadata', $habitData)) {
             $meta = $this->normalitzarMetadata($habitData['metadata']);
-            if ($meta !== null) {
-                $dades['metadata'] = $meta;
+            $columnaMetadata = $this->obtenirColumnaMetadataHabits();
+            if ($meta !== null && $columnaMetadata !== null) {
+                $dades[$columnaMetadata] = $meta;
             }
         }
 
         return $dades;
+    }
+
+    /**
+     * Compatibilitat d'esquema: alguns entorns antics guarden la columna com "metadada".
+     */
+    private function obtenirColumnaMetadataHabits(): ?string
+    {
+        static $columna = null;
+        static $inicialitzat = false;
+
+        if ($inicialitzat) {
+            return $columna;
+        }
+
+        $inicialitzat = true;
+
+        if (Schema::hasColumn('habits', 'metadata')) {
+            $columna = 'metadata';
+            return $columna;
+        }
+
+        if (Schema::hasColumn('habits', 'metadada')) {
+            $columna = 'metadada';
+            return $columna;
+        }
+
+        return null;
     }
 
     /**

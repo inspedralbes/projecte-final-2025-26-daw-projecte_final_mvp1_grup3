@@ -35,10 +35,12 @@ class Habit extends Model
         'icona',
         'color',
         'metadata',
+        'metadada',
     ];
 
     protected $casts = [
         'metadata' => 'array',
+        'metadada' => 'array',
     ];
 
     //================================ MÈTODES / FUNCIONS ===========
@@ -111,5 +113,31 @@ class Habit extends Model
     public function registresActivitat(): HasMany
     {
         return $this->hasMany(RegistreActivitat::class , 'habit_id');
+    }
+
+    /**
+     * Compatibilitat antiga: alguns entorns conserven la columna "metadada".
+     */
+    public function getMetadataAttribute($value): ?array
+    {
+        if (is_array($value)) {
+            return $value;
+        }
+
+        if (!empty($value) && is_string($value)) {
+            $decoded = json_decode($value, true);
+            return is_array($decoded) ? $decoded : null;
+        }
+
+        $legacy = $this->attributes['metadada'] ?? null;
+        if (is_array($legacy)) {
+            return $legacy;
+        }
+        if (!empty($legacy) && is_string($legacy)) {
+            $decodedLegacy = json_decode($legacy, true);
+            return is_array($decodedLegacy) ? $decodedLegacy : null;
+        }
+
+        return null;
     }
 }

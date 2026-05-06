@@ -72,21 +72,62 @@
 
       <div v-if="colors && colors.length">
         <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3 px-1" for="habit-color-select">{{ $t('habits.color') }}</label>
-        <select
+        <button
           id="habit-color-select"
           data-testid="habit-color-select"
-          class="habit-color-select w-full bg-gray-50/50 border-2 rounded-2xl px-6 py-4 focus:outline-none focus:ring-4 focus:ring-green-500/10 focus:border-green-500 focus:bg-white transition-all appearance-none cursor-pointer font-bold text-gray-800"
-          :value="modelValue.color"
+          type="button"
+          class="w-full bg-gray-50/50 border-2 rounded-2xl px-6 py-4 focus:outline-none focus:ring-4 focus:ring-green-500/10 focus:border-green-500 focus:bg-white transition-all cursor-pointer font-bold text-gray-800 flex items-center justify-between"
           :style="colorSelectOutlineStyle"
-          @change="onColorChange"
+          @click="obrirSelectorColor"
         >
-          <option v-for="c in colorsForSelect" :key="c" :value="c">
-            {{ colorOptionLabel(c) }}
-          </option>
-        </select>
+          <span>{{ colorOptionLabel(modelValue.color) }}</span>
+          <span class="text-gray-400 text-lg leading-none">⌄</span>
+        </button>
       </div>
     </div>
   </div>
+
+  <Teleport to="body">
+    <Transition name="color-backdrop">
+      <div
+        v-if="selectorColorObert"
+        class="fixed inset-0 z-[84] bg-black/40"
+        @click="tancarSelectorColor"
+      ></div>
+    </Transition>
+
+    <Transition name="color-sheet">
+      <div
+        v-if="selectorColorObert"
+        class="fixed left-0 right-0 bottom-0 z-[85] bg-white rounded-t-3xl shadow-2xl border-t border-gray-200 max-h-[70vh] flex flex-col"
+      >
+        <div class="px-4 pt-3 pb-2 border-b border-gray-100 flex items-center justify-between">
+          <h3 class="text-base font-black text-gray-800">{{ $t('habits.color') }}</h3>
+          <button
+            type="button"
+            class="w-9 h-9 rounded-full bg-gray-100 text-gray-600 text-xl font-bold"
+            @click="tancarSelectorColor"
+          >
+            ×
+          </button>
+        </div>
+
+        <div class="overflow-y-auto p-4 space-y-2 pb-[max(1rem,env(safe-area-inset-bottom))]">
+          <button
+            v-for="c in colorsForSelect"
+            :key="c"
+            type="button"
+            class="w-full flex items-center justify-between rounded-2xl border-2 px-4 py-3 text-left transition"
+            :class="modelValue.color === c ? 'bg-emerald-50 border-emerald-500' : 'bg-white border-gray-100 hover:border-emerald-200'"
+            @click="seleccionarColor(c)"
+          >
+            <span class="font-semibold text-gray-800">{{ colorOptionLabel(c) }}</span>
+            <span class="inline-flex w-6 h-6 rounded-full border-2 border-white shadow" :style="{ backgroundColor: c }"></span>
+          </button>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <script>
@@ -114,6 +155,11 @@ export default {
     colors: { type: Array, default: function () { return []; } }
   },
   emits: ['update:modelValue', 'select-category'],
+  data: function () {
+    return {
+      selectorColorObert: false
+    }
+  },
   computed: {
     dailyGoalValue: function () {
       var v = parseInt(this.modelValue.objectiuVegades, 10)
@@ -146,20 +192,39 @@ export default {
       var k = HEX_SWATCH_KEYS[hex]
       return k ? this.$t('habits.' + k) : hex
     },
-    onColorChange: function (e) {
-      this.$emit('update:modelValue', { ...this.modelValue, color: e.target.value })
+    obrirSelectorColor: function () {
+      this.selectorColorObert = true
+    },
+    tancarSelectorColor: function () {
+      this.selectorColorObert = false
+    },
+    seleccionarColor: function (colorHex) {
+      this.$emit('update:modelValue', { ...this.modelValue, color: colorHex })
+      this.tancarSelectorColor()
     }
   }
 }
 </script>
 
 <style scoped>
-.habit-color-select {
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 1rem center;
-  background-size: 1.25rem;
-  padding-right: 2.75rem;
+.color-backdrop-enter-active,
+.color-backdrop-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.color-backdrop-enter-from,
+.color-backdrop-leave-to {
+  opacity: 0;
+}
+
+.color-sheet-enter-active,
+.color-sheet-leave-active {
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+.color-sheet-enter-from,
+.color-sheet-leave-to {
+  transform: translateY(100%);
+  opacity: 0.98;
 }
 </style>

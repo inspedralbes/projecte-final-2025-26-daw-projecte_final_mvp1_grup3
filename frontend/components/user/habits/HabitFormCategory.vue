@@ -8,30 +8,63 @@
           : 'sr-only'
       "
     >{{ $t('habits.category') }}</label>
-    <select
+    <button
       id="habit-category-select"
       data-testid="habit-category-select"
-      class="habit-category-select w-full bg-gray-50/50 border-2 rounded-2xl font-bold text-gray-800 focus:outline-none focus:ring-4 focus:ring-green-500/10 focus:border-green-500 focus:bg-white transition-all cursor-pointer border-gray-100"
-      :class="
-        [
-          normalizedSelected === '' ? 'text-gray-500' : 'text-gray-800',
-          embedded ? 'px-6 py-4' : 'px-4 py-3 sm:px-5 sm:py-3.5 text-sm sm:text-base'
-        ]
-      "
-      :value="normalizedSelected"
-      @change="onChange"
+      type="button"
+      class="w-full bg-gray-50/50 border-2 rounded-2xl font-bold text-gray-800 focus:outline-none focus:ring-4 focus:ring-green-500/10 focus:border-green-500 focus:bg-white transition-all cursor-pointer border-gray-100 flex items-center justify-between"
+      :class="[embedded ? 'px-6 py-4' : 'px-4 py-3 sm:px-5 sm:py-3.5 text-sm sm:text-base']"
+      @click="obrirSelector"
     >
-      <option value="" disabled>{{ $t('habits.category_select_placeholder') }}</option>
-      <option
-        v-for="cat in categories"
-        :key="cat.id"
-        :value="String(cat.id)"
-        :data-testid="'habit-category-' + cat.key"
-      >
-        {{ cat.icona }} {{ $t('habits.categories.' + cat.key) }}
-      </option>
-    </select>
+      <span :class="normalizedSelected === '' ? 'text-gray-500' : 'text-gray-800'">
+        {{ etiquetaSeleccionada }}
+      </span>
+      <span class="text-gray-400 text-lg leading-none">⌄</span>
+    </button>
   </div>
+
+  <Teleport to="body">
+    <Transition name="category-backdrop">
+      <div
+        v-if="selectorObert"
+        class="fixed inset-0 z-[82] bg-black/40"
+        @click="tancarSelector"
+      ></div>
+    </Transition>
+
+    <Transition name="category-sheet">
+      <div
+        v-if="selectorObert"
+        class="fixed left-0 right-0 bottom-0 z-[83] bg-white rounded-t-3xl shadow-2xl border-t border-gray-200 max-h-[78vh] flex flex-col"
+      >
+        <div class="px-4 pt-3 pb-2 border-b border-gray-100 flex items-center justify-between">
+          <h3 class="text-base font-black text-gray-800">{{ $t('habits.category_select_placeholder') }}</h3>
+          <button
+            type="button"
+            class="w-9 h-9 rounded-full bg-gray-100 text-gray-600 text-xl font-bold"
+            @click="tancarSelector"
+          >
+            ×
+          </button>
+        </div>
+
+        <div class="overflow-y-auto p-4 space-y-2 pb-[max(1rem,env(safe-area-inset-bottom))]">
+          <button
+            v-for="cat in categories"
+            :key="cat.id"
+            type="button"
+            class="w-full flex items-center justify-between rounded-2xl border-2 px-4 py-3 text-left transition"
+            :class="String(cat.id) === normalizedSelected ? 'border-green-500 bg-green-50' : 'border-gray-100 bg-white hover:border-green-200'"
+            :data-testid="'habit-category-' + cat.key"
+            @click="seleccionarCategoria(cat.id)"
+          >
+            <span class="font-semibold text-gray-800">{{ cat.icona }} {{ $t('habits.categories.' + cat.key) }}</span>
+            <span v-if="String(cat.id) === normalizedSelected" class="text-green-600 font-black">✓</span>
+          </button>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <script>
@@ -44,6 +77,11 @@ export default {
     embedded: { type: Boolean, default: false }
   },
   emits: ['select'],
+  data: function () {
+    return {
+      selectorObert: false
+    };
+  },
   computed: {
     normalizedSelected: function () {
       var s = this.selectedId;
@@ -51,30 +89,57 @@ export default {
         return '';
       }
       return String(s);
+    },
+    etiquetaSeleccionada: function () {
+      if (this.normalizedSelected === '') {
+        return this.$t('habits.category_select_placeholder');
+      }
+      var current = (this.categories || []).find(function (cat) {
+        return String(cat.id) === this.normalizedSelected;
+      }, this);
+      if (!current) {
+        return this.$t('habits.category_select_placeholder');
+      }
+      return current.icona + ' ' + this.$t('habits.categories.' + current.key);
     }
   },
   methods: {
-    onChange: function (e) {
-      var v = e.target.value;
-      if (v === '') {
-        return;
-      }
-      var n = parseInt(v, 10);
+    obrirSelector: function () {
+      this.selectorObert = true;
+    },
+    tancarSelector: function () {
+      this.selectorObert = false;
+    },
+    seleccionarCategoria: function (id) {
+      var n = parseInt(String(id), 10);
       if (!Number.isNaN(n)) {
         this.$emit('select', n);
       }
+      this.tancarSelector();
     }
   }
 };
 </script>
 
 <style scoped>
-.habit-category-select {
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 1rem center;
-  background-size: 1.25rem;
-  padding-right: 2.75rem;
+.category-backdrop-enter-active,
+.category-backdrop-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.category-backdrop-enter-from,
+.category-backdrop-leave-to {
+  opacity: 0;
+}
+
+.category-sheet-enter-active,
+.category-sheet-leave-active {
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+.category-sheet-enter-from,
+.category-sheet-leave-to {
+  transform: translateY(100%);
+  opacity: 0.98;
 }
 </style>

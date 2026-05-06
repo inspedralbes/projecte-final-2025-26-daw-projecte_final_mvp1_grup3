@@ -58,8 +58,16 @@
           class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex items-center justify-between"
         >
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-              <span class="text-blue-600 font-semibold">{{ req.requester.nom.charAt(0) }}</span>
+            <div class="w-10 h-10 rounded-full overflow-hidden shadow-inner" :style="avatarBackgroundStyle">
+              <div class="w-full h-full rounded-full border border-gray-200 bg-white/20 p-1 flex items-center justify-center">
+                <img
+                  :src="mascotaImg"
+                  alt="Monstre del perfil"
+                  class="w-full h-full object-contain"
+                  decoding="async"
+                  draggable="false"
+                />
+              </div>
             </div>
             <div>
               <p class="font-medium text-gray-800">{{ req.requester.nom }}</p>
@@ -96,8 +104,16 @@
             class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex items-center justify-between"
           >
             <div @click="viewProfile(user.id)" class="flex items-center gap-3 cursor-pointer">
-              <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                <span class="text-blue-600 font-semibold">{{ user.nom.charAt(0) }}</span>
+              <div class="w-10 h-10 rounded-full overflow-hidden shadow-inner" :style="avatarBackgroundStyle">
+                <div class="w-full h-full rounded-full border border-gray-200 bg-white/20 p-1 flex items-center justify-center">
+                  <img
+                    :src="mascotaImg"
+                    alt="Monstre del perfil"
+                    class="w-full h-full object-contain"
+                    decoding="async"
+                    draggable="false"
+                  />
+                </div>
               </div>
               <div>
                 <p class="font-medium text-gray-800">{{ user.nom }}</p>
@@ -141,6 +157,8 @@ import HeaderSocial from "~/components/HeaderSocial.vue";
 import FriendCard from "~/components/user/social/FriendCard.vue";
 import ChatWindow from "~/components/user/social/ChatWindow.vue";
 import PublicProfileView from "~/components/user/social/PublicProfileView.vue";
+import mascotaImg from "~/assets/img/Mascota.png";
+import bosqueImg from "~/assets/img/Bosque.png";
 
 export default {
   name: "FriendsScreen",
@@ -153,6 +171,8 @@ export default {
   data() {
     return {
       friendshipStore: useFriendshipStore(),
+      mascotaImg: mascotaImg,
+      bosqueImg: bosqueImg,
       activeTab: "amigos",
       searchQuery: "",
       allUsers: [],
@@ -212,6 +232,13 @@ export default {
     pendingCount() {
       return (this.friendshipStore?.pendingRequests || []).length;
     },
+    avatarBackgroundStyle() {
+      return {
+        backgroundImage: "url(" + this.bosqueImg + ")",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      };
+    }
   },
   async mounted() {
     if (this.friendshipStore) {

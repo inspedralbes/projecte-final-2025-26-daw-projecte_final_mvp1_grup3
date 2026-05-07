@@ -195,6 +195,7 @@ function register(io, socket) {
   socket.on("clan_request_notify", function (data) {
     try {
       var userId = socket.decoded_token && socket.decoded_token.user_id;
+      console.log(">>> clan_request_notify rebut:", data, "userId:", userId);
       if (!userId) {
         console.warn("clan_request_notify: usuari no autenticat");
         return;
@@ -207,7 +208,9 @@ function register(io, socket) {
           usuari_id: userId,
           created_at: data.created_at,
         });
-        console.log("Notificació de sol·licitud de clan a líder " + leaderId);
+        console.log(">>> Notificació de sol·licitud de clan a líder " + leaderId + " (sala user_" + leaderId + ")");
+      } else {
+        console.warn(">>> clan_request_notify: leader_id no proporcionat");
       }
     } catch (error) {
       console.error("Error gestionant clan_request_notify:", error);
@@ -275,17 +278,17 @@ function register(io, socket) {
     }
   });
 
-  socket.on("clan_member_joined", function (data) {
+socket.on("clan_member_joined", function (data) {
     try {
       var userId = socket.decoded_token && socket.decoded_token.user_id;
-      if (!userId || !data.clan_id) {
+      if (!data.clan_id || !data.user_id) {
         return;
       }
       io.to("clan_" + data.clan_id).emit("clan_member_joined", {
         clan_id: data.clan_id,
         user_id: data.user_id,
         user_nom: data.user_nom,
-        message: data.user_nom + " s'ha unit al clan"
+        created_at: data.created_at
       });
     } catch (error) {
       console.error("Error unint member_joined:", error);

@@ -118,9 +118,22 @@ joinClan: async function(id) {
     },
     requestJoinClan: async function(id) {
        var store = useClanStore();
+       var authStore = useAuthStore();
+       var clan = this.clans.find(function(c) { return c.id === id; });
        var result = await store.requestJoin(id);
+       console.log(">>> requestJoinClan result:", result, "clan:", clan);
        if (result) {
           alert("S'ha enviat la sol·licitud per unir-se al clan.");
+          var nuxtApp = useNuxtApp();
+          console.log(">>> Emitint clan_request_notifydesde ClanList, socket:", nuxtApp.$socket && nuxtApp.$socket.connected);
+          if (nuxtApp.$socket && nuxtApp.$socket.connected && clan) {
+             nuxtApp.$socket.emit("clan_request_notify", {
+                clan_id: id,
+                clan_nom: clan.nom,
+                leader_id: clan.lider_id,
+                usuari_nom: authStore.user.nom
+             });
+          }
        } else {
           alert(store.error || "Error en enviar la sol·licitud");
        }

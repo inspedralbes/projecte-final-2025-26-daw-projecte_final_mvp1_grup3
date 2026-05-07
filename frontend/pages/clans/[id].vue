@@ -6,32 +6,46 @@
       >
         <HeaderSocial />
         <div class="px-3 sm:px-5 py-4 sm:py-8 relative">
-          <transition name="fade" mode="out-in">
-            <ClanSettings v-if="showEdit" :clan="clanData" @cancel="showEdit = false" @saved="onSaved" />
-            <ClanDetail v-else :clan-id="clanId" @edit="openEdit" ref="clanDetail" />
-          </transition>
+          <div v-if="loading" class="text-center py-8">Carregant...</div>
+          <div v-else-if="clan">
+            <div class="mb-6">
+              <h1 class="text-2xl font-bold text-gray-800">{{ clan.nom }}</h1>
+              <p class="text-sm text-gray-500 mt-1">{{ clan.descripcio || 'Sense descripció' }}</p>
+              <div class="flex gap-2 mt-2">
+                <span v-if="clan.es_public" class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">Públic</span>
+                <span v-else class="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded">Privat</span>
+                <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">{{ memberCount }} membres</span>
+              </div>
+            </div>
 
-          <InvitationModal :show="showInvite" :clan-id="clanId" :clan-name="clanName" @close="showInvite = false" />
+            <div v-if="isMember" class="flex gap-2 mb-4">
+              <button @click="showInvite = true" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-sm font-medium">
+                Convidar Amic
+              </button>
+              <button v-if="!isLeader" @click="leaveClan" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sm font-medium">
+                Sortir del Clan
+              </button>
+            </div>
 
-          <button
-            v-if="!showEdit && isLeader"
-            type="button"
-            @click="showInvite = true"
-            class="fixed bottom-8 right-8 bg-green-500 text-white rounded-full p-4 shadow-lg hover:bg-green-600 transition-transform transform hover:scale-105 group"
-            title="Convidar Usuari"
-          >
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
-          </button>
+            <MemberList :clan-id="clanId" :is-leader="isLeader" />
+            
+            <RequestManager v-if="isLeader" :clan-id="clanId" />
+
+            <ClanChat v-if="isMember" :clan-id="clanId" />
+          </div>
         </div>
       </div>
     </div>
+
+    <InvitationModal :show="showInvite" :clan-id="clanId" :clan-name="clanName" @close="showInvite = false" />
   </div>
 </template>
 
 <script>
 import HeaderSocial from "~/components/HeaderSocial.vue";
-import ClanDetail from "~/components/clans/ClanDetail.vue";
-import ClanSettings from "~/components/clans/ClanSettings.vue";
+import MemberList from "~/components/clans/MemberList.vue";
+import RequestManager from "~/components/clans/RequestManager.vue";
+import ClanChat from "~/components/clans/ClanChat.vue";
 import InvitationModal from "~/components/clans/InvitationModal.vue";
 import { useAuthStore } from "~/stores/useAuthStore.js";
 import { useNuxtApp } from "#app";
@@ -42,134 +56,173 @@ export default {
   middleware: ["auth"],
   components: {
     HeaderSocial,
-    ClanDetail,
-    ClanSettings,
+    MemberList,
+    RequestManager,
+    ClanChat,
     InvitationModal
   },
-data: function() {
-     return {
-        showEdit: false,
-        showInvite: false,
-        checkInterval: null,
-        alreadyExpelled: false
-     }
-   },
-  computed: {
-     clanId: function() {
-        return this.$route.params.id;
-     },
-     clanData: function() {
-        var store = useClanStore();
-        return store.currentClan;
-     },
-     isLeader: function() {
-        var authStore = useAuthStore();
-        return this.clanData && this.clanData.lider_id == authStore.user.id;
-     },
-     clanName: function() {
-        return this.clanData ? this.clanData.nom : 'Clan';
-     }
+  data: function() {
+    return {
+      loading: true,
+      showInvite: false,
+      alreadyExpelled: false
+    }
   },
-mounted: function() {
-     var authStore = useAuthStore();
-     if (authStore.user && authStore.user.nivell < 5) {
-        alert("Has de ser nivell 5 o superior per accedir als clans.");
-        this.$router.push("/social");
-     }
-     this.checkMembership();
-     this.setupSocketListener();
-   },
-   beforeUnmount: function() {
-     this.removeSocketListener();
-   },
+  computed: {
+    clanId: function() {
+      return this.$route.params.id;
+    },
+    clan: function() {
+      var store = useClanStore();
+      return store.currentClan;
+    },
+    clanName: function() {
+      return this.clan ? this.clan.nom : 'Clan';
+    },
+    memberCount: function() {
+      var store = useClanStore();
+      return store.clanMembers.length;
+    },
+    isLeader: function() {
+      var authStore = useAuthStore();
+      return this.clan && this.clan.lider_id == authStore.user.id;
+    },
+    isMember: function() {
+      var authStore = useAuthStore();
+      var store = useClanStore();
+      return store.clanMembers.some(function(m) {
+        return Number(m.usuari_id) === Number(authStore.user.id);
+      }) || this.isLeader;
+    }
+  },
+  mounted: function() {
+    var authStore = useAuthStore();
+    if (authStore.user && authStore.user.nivell < 5) {
+      alert("Has de ser nivell 5 o superior per accedir als clans.");
+      this.$router.push("/social");
+    }
+    this.loadClan();
+    this.setupSocketListener();
+  },
+  watch: {
+    $route: function() {
+      this.loadClan();
+    }
+  },
+  beforeUnmount: function() {
+    this.removeSocketListener();
+  },
   methods: {
-     setupSocketListener: function() {
-       var self = this;
-       var tryConnect = function() {
-          var nuxtApp = useNuxtApp();
-          var authStore = useAuthStore();
-          if (nuxtApp.$socket && nuxtApp.$socket.connected) {
-             nuxtApp.$socket.on("clan_member_joined", function(data) {
-                console.log("Page received clan_member_joined", data);
-                if (Number(data.clan_id) === Number(self.clanId)) {
-                   if (self.$refs.clanDetail && typeof self.$refs.clanDetail.reload === 'function') {
-                      self.$refs.clanDetail.reload();
-                   }
-                }
-             });
-             nuxtApp.$socket.on("clan_request_accepted", function(data) {
-                console.log("Page received clan_request_accepted", data);
-                if (Number(data.clan_id) === Number(self.clanId)) {
-                   if (self.$refs.clanDetail && typeof self.$refs.clanDetail.reload === 'function') {
-                      self.$refs.clanDetail.reload();
-                   }
-                }
-             });
-             nuxtApp.$socket.on("clan_member_left", function(data) {
-                console.log("Page received clan_member_left", data);
-                if (Number(data.clan_id) === Number(self.clanId)) {
-                   if (Number(data.user_id) === Number(authStore.user.id)) {
-                      if (!self.alreadyExpelled) {
-                         self.alreadyExpelled = true;
-                         alert("Has estat expulsat del clan.");
-                         self.$router.push("/clans");
-                      }
-                   } else {
-                      if (self.$refs.clanDetail && typeof self.$refs.clanDetail.reload === 'function') {
-                         self.$refs.clanDetail.reload();
-                      }
-                   }
-                }
-             });
-          } else {
-             setTimeout(tryConnect, 1000);
-          }
-       };
-       tryConnect();
-     },
-     removeSocketListener: function() {
-       var nuxtApp = useNuxtApp();
-       if (nuxtApp.$socket) {
-          nuxtApp.$socket.off("clan_member_joined");
-          nuxtApp.$socket.off("clan_request_accepted");
-          nuxtApp.$socket.off("clan_member_left");
-       }
-     },
-     checkMembership: async function() {
+    loadClan: async function() {
+      this.loading = true;
+      try {
         var store = useClanStore();
-        await store.fetchMembers(this.clanId);
         var authStore = useAuthStore();
+        
+        if (!authStore.user || !authStore.user.id) {
+          await new Promise(function(resolve) { setTimeout(resolve, 500); });
+          if (!authStore.user || !authStore.user.id) {
+            return;
+          }
+        }
+        
+        var clanId = this.clanId;
+        await store.fetchClan(clanId);
+        await store.fetchMembers(clanId);
+        
         var isMember = store.clanMembers.some(function(m) {
-           return Number(m.usuari_id) === Number(authStore.user.id);
+          return Number(m.usuari_id) === Number(authStore.user.id);
         });
         var clan = store.currentClan;
         if (clan && Number(clan.lider_id) === Number(authStore.user.id)) {
-           isMember = true;
+          isMember = true;
         }
         if (!isMember && !this.alreadyExpelled) {
-           this.alreadyExpelled = true;
-           alert("Has estat expulsat del clan.");
-           this.$router.push("/clans");
+          this.alreadyExpelled = true;
+          alert("Has estat expulsat del clan.");
+          this.$router.push("/clans");
+          return;
         }
-     },
-     openEdit: function() {
-        this.showEdit = true;
-     },
-     onSaved: function() {
-        this.showEdit = false;
-        if (this.$refs.clanDetail) {
-           this.$refs.clanDetail.loadClan();
+        var nuxtApp = useNuxtApp();
+        if (nuxtApp.$socket && nuxtApp.$socket.connected) {
+          nuxtApp.$socket.emit("join_clan_room", { clan_id: clanId });
         }
-     }
+      } catch(e) {
+        console.error(e);
+      } finally {
+        this.loading = false;
+      }
+    },
+    leaveClan: async function() {
+      if (!confirm("Vols sortir del clan?")) return;
+      try {
+        var store = useClanStore();
+        var authStore = useAuthStore();
+        var result = await store.leaveClan(this.clanId);
+        if (result) {
+          alert("Has sortit del clan.");
+          var nuxtApp = useNuxtApp();
+          if (nuxtApp.$socket && nuxtApp.$socket.connected) {
+            nuxtApp.$socket.emit("clan_member_left", {
+              clan_id: this.clanId,
+              user_id: authStore.user.id,
+              user_nom: authStore.user.nom
+            });
+          }
+          this.$router.push("/clans");
+        } else {
+          alert(store.error || "Error al sortir del clan");
+        }
+      } catch(e) {
+        console.error(e);
+      }
+    },
+    setupSocketListener: function() {
+      var self = this;
+      var tryConnect = function() {
+        var nuxtApp = useNuxtApp();
+        var authStore = useAuthStore();
+        if (nuxtApp.$socket && nuxtApp.$socket.connected) {
+          nuxtApp.$socket.on("clan_member_joined", function(data) {
+            console.log("Page received clan_member_joined", data);
+            if (Number(data.clan_id) === Number(self.clanId)) {
+              self.loadClan();
+            }
+          });
+          nuxtApp.$socket.on("clan_request_accepted", function(data) {
+            console.log("Page received clan_request_accepted", data);
+            if (Number(data.clan_id) === Number(self.clanId)) {
+              self.loadClan();
+            }
+          });
+          nuxtApp.$socket.on("clan_member_left", function(data) {
+            console.log("Page received clan_member_left", data);
+            if (Number(data.clan_id) === Number(self.clanId)) {
+              if (Number(data.user_id) === Number(authStore.user.id)) {
+                if (!self.alreadyExpelled) {
+                  self.alreadyExpelled = true;
+                  alert("Has estat expulsat del clan.");
+                  self.$router.push("/clans");
+                }
+              } else {
+                self.loadClan();
+              }
+            }
+          });
+        } else {
+          setTimeout(tryConnect, 1000);
+        }
+      };
+      tryConnect();
+    },
+    removeSocketListener: function() {
+      var nuxtApp = useNuxtApp();
+      if (nuxtApp.$socket) {
+        nuxtApp.$socket.off("clan_member_joined");
+        nuxtApp.$socket.off("clan_request_accepted");
+        nuxtApp.$socket.off("clan_member_left");
+      }
+    }
   }
 }
 </script>
-
-<style scoped>
-.fade-enter-active, .fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-.fade-enter, .fade-leave-to {
-  opacity: 0;
-}
-</style>

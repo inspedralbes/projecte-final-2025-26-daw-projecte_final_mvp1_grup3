@@ -32,12 +32,21 @@ export default {
   },
   data: function() {
     return {
-      requests: [],
       loading: false
+    }
+  },
+  computed: {
+    requests: function() {
+      var store = useClanStore();
+      return store.pendingRequests || [];
     }
   },
   mounted: function() {
     this.loadRequests();
+    this.setupSocketListener();
+  },
+  beforeUnmount: function() {
+    this.removeSocketListener();
   },
   methods: {
     loadRequests: async function() {
@@ -45,11 +54,28 @@ export default {
       try {
         var store = useClanStore();
         await store.fetchPendingRequests(this.clanId);
-        this.requests = store.pendingRequests;
       } catch(e) {
         console.error(e);
       } finally {
         this.loading = false;
+      }
+    },
+    setupSocketListener: function() {
+      var nuxtApp = useNuxtApp();
+      if (nuxtApp.$socket) {
+        nuxtApp.$socket.on("clan_request_received", this.handleNewRequest);
+      }
+    },
+    removeSocketListener: function() {
+      var nuxtApp = useNuxtApp();
+      if (nuxtApp.$socket) {
+        nuxtApp.$socket.off("clan_request_received", this.handleNewRequest);
+      }
+    },
+    handleNewRequest: function(data) {
+      console.log("Nova sol·licitud rebuda via socket:", data);
+      if (data && data.clan_id == this.clanId) {
+        this.loadRequests();
       }
     },
     accept: async function(id) {

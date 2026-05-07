@@ -69,6 +69,14 @@ export default defineNuxtPlugin(function (nuxtApp) {
         }
     });
 
+    socket.on('clan_request_received', function (data) {
+        console.log('[Socket] Nova sol·licitud de clan rebuda:', data);
+        var clanStore = useClanStore();
+        if (clanStore && data && data.clan_id) {
+            clanStore.fetchPendingRequests(data.clan_id);
+        }
+    });
+
     socket.on('clan_request_accepted', function (data) {
         console.log('[Socket] Clan request accepted:', data);
         var clanStore = useClanStore();

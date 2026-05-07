@@ -1,5 +1,8 @@
 <template>
-  <div class="global-app-container" :class="{ 'focus-route-layout': isFocusRoute }">
+  <div v-if="isFocusRoute" class="focus-route-only">
+    <slot />
+  </div>
+  <div v-else class="global-app-container" :class="{ 'focus-route-layout': isFocusRoute }">
     <div class="global-content-wrapper">
       <HeaderUser />
       <main class="mx-auto w-full min-w-0 max-w-7xl px-3 sm:px-4 py-4 sm:py-6">
@@ -18,21 +21,13 @@ const isFocusRoute = computed(() => route.path.startsWith("/focus/"));
 </script>
 
 <style scoped>
-/* Ensure the container takes full height */
-.global-app-container {
+.focus-route-only {
+  width: 100%;
   min-height: 100vh;
 }
 
-@media (max-width: 767px) {
-  .focus-route-layout .layout-header-wrap {
-    display: none;
-  }
-
-  .focus-route-layout .focus-main {
-    width: 100%;
-    max-width: none;
-    padding: 0;
-    margin: 0;
-  }
+/* Ensure the container takes full height */
+.global-app-container {
+  min-height: 100vh;
 }
 </style>

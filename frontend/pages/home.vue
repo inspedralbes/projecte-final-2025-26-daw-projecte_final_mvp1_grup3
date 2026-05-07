@@ -214,6 +214,7 @@ import UserHomeHomeHabitsSection from "~/components/user/home/HomeHabitsSection.
 import HomeCreateHabitDropdown from "~/components/user/home/HomeCreateHabitDropdown.vue";
 import WeatherWidget from "~/components/user/home/WeatherWidget.vue";
 import { authFetch } from "~/composables/useApi.js";
+import { flushPendingFocusEvents } from "~/composables/user/useFocusEventQueue.js";
 import mascotaImg from "~/assets/img/Mascota.png";
 import calendarImg from "~/assets/img/calendar-loopy.png";
 

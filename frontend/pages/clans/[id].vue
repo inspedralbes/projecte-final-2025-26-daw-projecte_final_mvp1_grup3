@@ -22,7 +22,7 @@
               <button @click="showInvite = true" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-sm font-medium">
                 Convidar Amic
               </button>
-              <button v-if="!isLeader" @click="leaveClan" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sm font-medium">
+              <button @click="leaveClan" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sm font-medium">
                 Sortir del Clan
               </button>
             </div>
@@ -175,6 +175,7 @@ export default {
       try {
         var store = useClanStore();
         var authStore = useAuthStore();
+        console.log(">>> leaveClan: emitting clan_member_left");
         var result = await store.leaveClan(this.clanId);
         if (result) {
           alert("Has sortit del clan.");
@@ -200,20 +201,7 @@ export default {
         var nuxtApp = useNuxtApp();
         var authStore = useAuthStore();
         if (nuxtApp.$socket && nuxtApp.$socket.connected) {
-          nuxtApp.$socket.on("clan_member_joined", function(data) {
-            console.log("Page received clan_member_joined", data);
-            if (Number(data.clan_id) === Number(self.clanId)) {
-              self.loadClan();
-            }
-          });
-          nuxtApp.$socket.on("clan_request_accepted", function(data) {
-            console.log("Page received clan_request_accepted", data);
-            if (Number(data.clan_id) === Number(self.clanId)) {
-              self.loadClan();
-            }
-          });
           nuxtApp.$socket.on("clan_member_left", function(data) {
-            console.log("Page received clan_member_left", data);
             if (Number(data.clan_id) === Number(self.clanId)) {
               if (Number(data.user_id) === Number(authStore.user.id)) {
                 if (!self.alreadyExpelled) {
@@ -221,8 +209,6 @@ export default {
                   alert("Has estat expulsat del clan.");
                   self.$router.push("/clans");
                 }
-              } else {
-                self.loadClan();
               }
             }
           });
@@ -235,8 +221,6 @@ export default {
     removeSocketListener: function() {
       var nuxtApp = useNuxtApp();
       if (nuxtApp.$socket) {
-        nuxtApp.$socket.off("clan_member_joined");
-        nuxtApp.$socket.off("clan_request_accepted");
         nuxtApp.$socket.off("clan_member_left");
       }
     }

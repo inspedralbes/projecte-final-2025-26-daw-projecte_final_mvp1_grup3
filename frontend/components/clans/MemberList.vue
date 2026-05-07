@@ -70,9 +70,35 @@ export default {
     }
   },
   mounted: function() {
+    var self = this;
     var authStore = useAuthStore();
     this.currentUserId = authStore.user ? authStore.user.id : null;
     this.loadMembers();
+    var tryConnect = function() {
+      var nuxtApp = useNuxtApp();
+      if (nuxtApp.$socket && nuxtApp.$socket.connected) {
+        nuxtApp.$socket.on("clan_member_left", function(data) {
+          if (Number(data.clan_id) === Number(self.clanId)) {
+            self.loadMembers();
+          }
+        });
+        nuxtApp.$socket.on("clan_member_joined", function(data) {
+          if (Number(data.clan_id) === Number(self.clanId)) {
+            self.loadMembers();
+          }
+        });
+      } else {
+        setTimeout(tryConnect, 1000);
+      }
+    };
+    tryConnect();
+  },
+  beforeUnmount: function() {
+    var nuxtApp = useNuxtApp();
+    if (nuxtApp.$socket) {
+      nuxtApp.$socket.off("clan_member_left");
+      nuxtApp.$socket.off("clan_member_joined");
+    }
   },
   methods: {
     loadMembers: async function() {

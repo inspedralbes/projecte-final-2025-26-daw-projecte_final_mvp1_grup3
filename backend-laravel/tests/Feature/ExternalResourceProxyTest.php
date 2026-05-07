@@ -127,6 +127,54 @@ class ExternalResourceProxyTest extends TestCase
         $respostaYoutube->assertStatus(502)->assertJson(['ok' => false]);
     }
 
+    public function test_videos_proxy_returns_duration_in_mm_ss_format(): void
+    {
+        config()->set('services.youtube.api_key', 'test-key');
+        config()->set('services.youtube.base_url', 'https://youtube.test');
+
+        Http::fake([
+            'https://youtube.test/search*' => Http::response([
+                'items' => [
+                    [
+                        'id' => ['videoId' => 'vid-1'],
+                        'snippet' => [
+                            'title' => 'LoFi Session',
+                            'thumbnails' => [
+                                'medium' => ['url' => 'https://img.test/vid1.jpg'],
+                            ],
+                        ],
+                    ],
+                ],
+            ], 200),
+            'https://youtube.test/videos*' => Http::response([
+                'items' => [
+                    [
+                        'id' => 'vid-1',
+                        'contentDetails' => [
+                            'duration' => 'PT3M7S',
+                        ],
+                    ],
+                ],
+            ], 200),
+        ]);
+
+        $response = $this->getJson('/api/external/videos?q=lofi');
+
+        $response->assertOk();
+        $response->assertJson([
+            'ok' => true,
+            'items' => [
+                [
+                    'api_id' => 'vid-1',
+                    'titol' => 'LoFi Session',
+                    'url_imatge' => 'https://img.test/vid1.jpg',
+                    'duracio' => '3:07',
+                    'tipus_api' => 'youtube',
+                ],
+            ],
+        ]);
+    }
+
     public function test_exercise_detail_proxy_returns_normalized_data(): void
     {
         config()->set('services.wger.base_url', 'https://wger.test');

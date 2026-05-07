@@ -102,6 +102,29 @@ class SnapshotService
               AND uh.actiu = true
         ", [$data, $user->id]);
 
+        $focusPerHabit = DB::select("
+            SELECT ra.habit_id,
+                   SUM(CASE WHEN ra.focus_mode = '25_5' THEN COALESCE(ra.focus_minutes, 0) ELSE 0 END) AS minutes_25_5,
+                   SUM(CASE WHEN ra.focus_mode = '50_10' THEN COALESCE(ra.focus_minutes, 0) ELSE 0 END) AS minutes_50_10,
+                   MAX(CASE WHEN ra.focus_session = true AND ra.acabado = true THEN 1 ELSE 0 END) AS completed_with_focus
+            FROM registre_activitat ra
+            INNER JOIN habits h ON h.id = ra.habit_id
+            INNER JOIN usuaris_habits uh ON uh.habit_id = h.id
+            WHERE uh.usuari_id = ?
+              AND uh.actiu = true
+              AND DATE(ra.data) = ?
+            GROUP BY ra.habit_id
+        ", [$user->id, $data]);
+
+        $focusMap = [];
+        foreach ($focusPerHabit as $focusRow) {
+            $focusMap[(int) $focusRow->habit_id] = [
+                'minutes_25_5' => (int) $focusRow->minutes_25_5,
+                'minutes_50_10' => (int) $focusRow->minutes_50_10,
+                'completed_with_focus' => ((int) $focusRow->completed_with_focus) === 1,
+            ];
+        }
+
         $resultat = [];
         foreach ($habitsActius as $habit) {
             $metadata = null;
@@ -110,6 +133,16 @@ class SnapshotService
                 if (json_last_error() === JSON_ERROR_NONE) {
                     $metadata = $decoded;
                 }
+            }
+
+            $focusInfo = $focusMap[(int) $habit->id] ?? [
+                'minutes_25_5' => 0,
+                'minutes_50_10' => 0,
+                'completed_with_focus' => false,
+            ];
+            $predominantFocusMode = null;
+            if ($focusInfo['minutes_25_5'] > 0 || $focusInfo['minutes_50_10'] > 0) {
+                $predominantFocusMode = $focusInfo['minutes_50_10'] > $focusInfo['minutes_25_5'] ? '50_10' : '25_5';
             }
 
             $element = [
@@ -121,6 +154,8 @@ class SnapshotService
                 'categoria_id' => $habit->categoria_id,
                 'metadata' => $metadata,
                 'acabado' => (bool) $habit->acabado,
+                'completed_with_focus' => $focusInfo['completed_with_focus'],
+                'predominant_focus_mode' => $predominantFocusMode,
             ];
             $resultat[] = $element;
         }

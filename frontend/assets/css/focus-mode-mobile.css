@@ -1,0 +1,463 @@
+@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=Comfortaa:wght@400;500;600;700&display=swap");
+
+.focus-mobile-screen {
+  --focus-design-width: 402;
+  --focus-design-height: 747;
+  width: min(100vw, 402px);
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 18px 10px 24px;
+  color: #faf9f9;
+  font-family: "Comfortaa", "Inter", "SF Pro Display", "Segoe UI", sans-serif;
+  background-color: #82af30;
+  background-image: url("~/assets/img/Fondo_ModoFocus.png");
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.focus-topbar {
+  width: min(100%, 360px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+  position: relative;
+  z-index: 3;
+}
+
+.focus-icon-btn {
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: #faf9f9;
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.focus-topbar.is-search-open {
+  width: min(100%, 380px);
+  justify-content: flex-start;
+}
+
+.focus-search-bar {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: auto;
+  transition: width 220ms ease, transform 220ms ease;
+}
+
+.focus-search-bar.is-open {
+  width: min(100%, 380px);
+  margin-left: 0;
+}
+
+.focus-search-btn {
+  flex-shrink: 0;
+  transition: transform 220ms ease;
+}
+
+.focus-search-btn.is-open {
+  transform: translateX(0);
+}
+
+.focus-search-input {
+  width: 100%;
+  min-width: 0;
+  height: 38px;
+  border: 0;
+  background: transparent;
+  color: #faf9f9;
+  padding: 0 10px 8px 10px;
+  font-size: 1.05rem;
+  outline: none;
+  font-family: "Comfortaa", "Inter", "SF Pro Display", "Segoe UI", sans-serif;
+}
+
+.focus-search-input::placeholder {
+  color: rgba(250, 249, 249, 0.7);
+}
+
+.focus-search-input-wrap {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  padding-bottom: 2px;
+}
+
+.focus-search-line {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 4px;
+  pointer-events: none;
+}
+
+.focus-search-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1;
+}
+
+.focus-search-results {
+  position: absolute;
+  top: 68px;
+  left: 0;
+  right: 0;
+  width: min(100%, 380px);
+  margin: 0 auto;
+  padding: 20px 6px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  z-index: 2;
+  max-height: calc(100vh - 110px);
+  overflow: auto;
+}
+
+.focus-search-hint {
+  margin: 10px 12px 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: rgba(250, 249, 249, 0.9);
+}
+
+.focus-search-item {
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: #faf9f9;
+  display: grid;
+  grid-template-columns: 18px 1fr 36px;
+  align-items: center;
+  gap: 12px;
+  padding: 0 10px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.focus-search-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(250, 249, 249, 0.95);
+}
+
+.focus-search-text {
+  display: block;
+  min-width: 0;
+}
+
+.focus-search-title {
+  display: block;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.15;
+  font-family: "Comfortaa", "Inter", "SF Pro Display", "Segoe UI", sans-serif;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.focus-search-meta {
+  display: block;
+  margin-top: 2px;
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: "Comfortaa", "Inter", "SF Pro Display", "Segoe UI", sans-serif;
+  opacity: 0.95;
+}
+
+.focus-search-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+}
+
+.focus-main-content {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.focus-main-timer {
+  margin: 22px 0 0;
+  font-size: clamp(4.8rem, 23vw, 6.2rem);
+  font-weight: 700;
+  line-height: 0.84;
+  color: #faf9f9;
+  letter-spacing: -0.02em;
+  font-family: "Bricolage Grotesque", "Comfortaa", sans-serif;
+}
+
+.focus-daily-sets {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.focus-daily-set-dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #16420a;
+  opacity: 0.35;
+}
+
+.focus-daily-set-dot.is-completed {
+  opacity: 1;
+}
+
+.focus-creature-wrap {
+  position: relative;
+  width: min(350px, calc(100vw - 20px));
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 12px auto 0;
+}
+
+.focus-ring {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.focus-ring-track {
+  fill: none;
+  stroke: #faf9f9;
+  stroke-width: 3;
+}
+
+.focus-ring-progress {
+  fill: none;
+  stroke: #16420a;
+  stroke-linecap: round;
+  stroke-width: 3;
+  transition: stroke-dashoffset 0.35s linear;
+}
+
+.focus-ring-marker {
+  fill: #16420a;
+}
+
+.focus-creature {
+  position: absolute;
+  width: 64%;
+  max-width: 236px;
+  transform: translateY(8px);
+}
+
+.focus-creature img {
+  width: 100%;
+  display: block;
+}
+
+.focus-player {
+  width: min(100%, 360px);
+  margin-top: 8px;
+}
+
+.focus-player-track-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.focus-track-play-btn {
+  width: 62px;
+  height: 62px;
+  border: none;
+  background: transparent;
+  padding: 0;
+  color: #faf9f9;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.focus-track-name {
+  text-align: center;
+  margin: 0;
+  font-size: 1.45rem;
+  font-weight: 500;
+  color: #faf9f9;
+}
+
+.focus-player-progress {
+  flex: 1;
+  appearance: none;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(to right, #16420a 0%, #16420a 58%, #faf9f9 58%, #faf9f9 100%);
+  outline: none;
+}
+
+.focus-player-progress-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.focus-track-progress-time {
+  margin: 0;
+  color: #faf9f9;
+  font-family: "Comfortaa", "Inter", "SF Pro Display", "Segoe UI", sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1;
+  text-align: left;
+  width: 100%;
+  padding-left: 60px;
+}
+
+.focus-player-progress::-webkit-slider-thumb {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: none;
+  background: #16420a;
+  cursor: pointer;
+}
+
+.focus-player-progress::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: none;
+  background: #16420a;
+  cursor: pointer;
+}
+
+.focus-player-controls {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+
+.focus-media-btn {
+  width: 50px;
+  height: 50px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: #faf9f9;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.focus-media-btn-main {
+  width: 70px;
+  height: 70px;
+  background: #faf9f9;
+  color: #16420a;
+  font-size: 34px;
+  box-shadow: 0 2px 10px rgba(22, 66, 10, 0.18);
+}
+
+.focus-player-meta {
+  min-width: 128px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.focus-player-time {
+  margin: 0;
+  font-size: 1.9rem;
+  font-weight: 275;
+  line-height: 1;
+  color: #faf9f9;
+}
+
+.focus-phase-label {
+  margin: 2px 0 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #faf9f9;
+  font-family: "Bricolage Grotesque", "Comfortaa", sans-serif;
+}
+
+.focus-media-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.focus-mode-btn {
+  width: 126px;
+  border-radius: 12px;
+  padding: 8px 8px;
+  border: 2px solid #faf9f9;
+  background: transparent;
+  color: #faf9f9;
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.1;
+  cursor: pointer;
+  font-family: "Bricolage Grotesque", "Comfortaa", sans-serif;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.focus-mode-btn-multiline {
+  display: inline-block;
+  line-height: 1.02;
+}
+
+.focus-mode-btn.is-active {
+  background: #faf9f9;
+  color: #16420a;
+}
+
+.focus-audio-embed {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+@media (min-width: 768px) {
+  .focus-mobile-screen {
+    max-width: 402px;
+    border-left: 1px solid rgba(250, 249, 249, 0.25);
+    border-right: 1px solid rgba(250, 249, 249, 0.25);
+  }
+}

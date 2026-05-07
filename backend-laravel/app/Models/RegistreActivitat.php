@@ -26,6 +26,9 @@ class RegistreActivitat extends Model
         'valor',
         'acabado',
         'xp_guanyada',
+        'focus_minutes',
+        'focus_mode',
+        'focus_session',
     ];
 
     protected function casts(): array
@@ -34,6 +37,8 @@ class RegistreActivitat extends Model
             'data' => 'datetime',
             'acabado' => 'boolean',
             'valor' => 'integer',
+            'focus_minutes' => 'integer',
+            'focus_session' => 'boolean',
         ];
     }
 

@@ -51,7 +51,10 @@ async function pushToLaravel(action, userId, data) {
     plantilla_id: data.plantilla_id || null,
     selected_habits: data.selected_habits || null,
     valor: data.valor,
-    data: data.data
+    data: data.data,
+    focus_mode: data.focus_mode || null,
+    focus_minutes: data.focus_minutes || 0,
+    focus_event: data.focus_event || null
   };
   var payload = JSON.stringify(payloadObj);
 

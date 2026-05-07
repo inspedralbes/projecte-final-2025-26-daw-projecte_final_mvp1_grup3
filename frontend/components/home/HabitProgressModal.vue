@@ -1,5 +1,5 @@
 <template>
-  <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div v-if="isOpen" data-testid="habit-progress-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
     <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="tancar"></div>
 
     <div class="bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl relative">
@@ -43,6 +43,7 @@
 
         <div class="flex items-center gap-6">
           <button
+            data-testid="habit-progress-minus"
             class="w-10 h-10 rounded-full bg-gray-100 text-gray-600 font-bold hover:bg-gray-200"
             @click="restar"
           >
@@ -50,6 +51,7 @@
           </button>
           <span class="text-sm text-gray-600">{{ progress }}/{{ objectiu }}</span>
           <button
+            data-testid="habit-progress-plus"
             class="w-10 h-10 rounded-full bg-indigo-600 text-white font-bold hover:bg-indigo-700"
             @click="sumar"
           >
@@ -59,6 +61,7 @@
 
         <div class="w-full flex flex-col gap-3 pt-2">
           <button
+            data-testid="habit-progress-confirm"
             class="w-full py-3 rounded-xl font-bold text-white transition-all"
             :class="potCompletar ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-300 cursor-not-allowed'"
             :disabled="!potCompletar"

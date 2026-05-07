@@ -65,5 +65,18 @@ class SnapshotSchemaVerificationTest extends TestCase
         $this->assertTrue($categoriesColor);
         $this->assertTrue($habitsMetadata);
     }
+
+    public function test_registre_activitat_contains_focus_tracking_columns(): void
+    {
+        $columnes = DB::table('information_schema.columns')
+            ->where('table_schema', 'public')
+            ->where('table_name', 'registre_activitat')
+            ->pluck('column_name')
+            ->toArray();
+
+        $this->assertContains('focus_minutes', $columnes);
+        $this->assertContains('focus_mode', $columnes);
+        $this->assertContains('focus_session', $columnes);
+    }
 }
 

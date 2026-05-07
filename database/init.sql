@@ -148,7 +148,10 @@ CREATE TABLE REGISTRE_ACTIVITAT (
     data TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     valor INT DEFAULT 0,
     acabado BOOLEAN DEFAULT TRUE,
-    xp_guanyada INT DEFAULT 0
+    xp_guanyada INT DEFAULT 0,
+    focus_minutes INT DEFAULT 0,
+    focus_mode VARCHAR(10),
+    focus_session BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE RATXES (

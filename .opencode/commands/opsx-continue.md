@@ -31,6 +31,15 @@ Continue working on a change by creating the next artifact.
    - `artifacts`: Array of artifacts with their status ("done", "ready", "blocked")
    - `isComplete`: Boolean indicating if all artifacts are complete
 
+   **Status bug workaround (required):**
+   - In `spec-driven`, `openspec status` may keep `specs` as `ready` even when specs are already created and valid.
+   - If `specs` is `ready`, before choosing it:
+     1. Read `proposal.md` and collect capabilities from "New Capabilities" and "Modified Capabilities".
+     2. Verify files exist at `openspec/changes/<name>/specs/<capability>/spec.md` for every listed capability.
+     3. Run `openspec validate "<name>" --type change --strict --json`.
+   - If all spec files exist and strict validation passes, treat `specs` as effectively complete for selection purposes and continue with the next artifact (typically `tasks`).
+   - In output, explicitly note: "OpenSpec status bug detected: specs treated as complete via file+validation check."
+
 3. **Act based on status**:
 
    ---
@@ -43,8 +52,8 @@ Continue working on a change by creating the next artifact.
 
    ---
 
-   **If artifacts are ready to create** (status shows artifacts with `status: "ready"`):
-   - Pick the FIRST artifact with `status: "ready"` from the status output
+  **If artifacts are ready to create** (status shows artifacts with `status: "ready"`):
+  - Pick the FIRST artifact with `status: "ready"` from the status output, applying the status-bug workaround above first
    - Get its instructions:
      ```bash
      openspec instructions <artifact-id> --change "<name>" --json

@@ -1,6 +1,7 @@
 <template>
   <div
     class="bg-white rounded-xl shadow transition-all hover:shadow-md overflow-hidden"
+    :data-testid="'home-habit-card-' + habit.id"
     :class="climaAdvers ? 'ring-1 ring-orange-200' : ''"
   >
     <div v-if="climaAdvers" class="flex items-center gap-1.5 bg-orange-50 border-b border-orange-100 px-3 py-1">
@@ -17,6 +18,7 @@
       </div>
       <div class="flex flex-col gap-2">
         <button
+          data-testid="habit-progress-button"
           class="px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed min-w-[110px]"
           :disabled="estaProcessant"
           @click="$emit('obrir-modal', habit)"

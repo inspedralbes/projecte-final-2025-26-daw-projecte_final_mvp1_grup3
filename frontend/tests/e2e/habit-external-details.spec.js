@@ -1,4 +1,4 @@
-const { expect, test } = require('@playwright/test');
+import { expect, test } from '@playwright/test';
 
 const apiUrl = process.env.E2E_API_URL || 'http://localhost:8000';
 

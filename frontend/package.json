@@ -10,6 +10,7 @@
     "preview": "nuxt preview",
     "test:unit": "vitest run tests/unit/useCalendar.spec.js",
     "test:e2e": "playwright test",
+    "test:e2e:focus": "node scripts/run-focus-e2e.mjs",
     "test:e2e:headed": "playwright test --headed"
   },
   "dependencies": {

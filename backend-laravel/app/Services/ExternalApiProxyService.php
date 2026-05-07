@@ -523,12 +523,31 @@ class ExternalApiProxyService
 
             $payload = $response->json();
             $resultats = isset($payload['items']) && is_array($payload['items']) ? $payload['items'] : [];
+            $videoIds = [];
+
+            foreach ($resultats as $resultatId) {
+                if (!is_array($resultatId)) {
+                    continue;
+                }
+                $idData = isset($resultatId['id']) && is_array($resultatId['id']) ? $resultatId['id'] : [];
+                if (isset($idData['videoId']) && $idData['videoId'] !== '') {
+                    $videoIds[] = (string) $idData['videoId'];
+                }
+            }
+
+            $duracionsPerVideo = $this->obtenirDuracionsYoutube($baseUrl, $apiKey, $videoIds);
             $items = [];
 
             foreach ($resultats as $resultat) {
                 $idData = isset($resultat['id']) && is_array($resultat['id']) ? $resultat['id'] : [];
                 $snippet = isset($resultat['snippet']) && is_array($resultat['snippet']) ? $resultat['snippet'] : [];
                 $thumbnails = isset($snippet['thumbnails']) && is_array($snippet['thumbnails']) ? $snippet['thumbnails'] : [];
+                $videoId = isset($idData['videoId']) ? (string) $idData['videoId'] : '';
+                $duracio = '';
+
+                if ($videoId !== '' && isset($duracionsPerVideo[$videoId])) {
+                    $duracio = (string) $duracionsPerVideo[$videoId];
+                }
 
                 $urlImatge = '';
                 if (isset($thumbnails['medium']['url'])) {
@@ -538,9 +557,10 @@ class ExternalApiProxyService
                 }
 
                 $items[] = [
-                    'api_id' => isset($idData['videoId']) ? (string) $idData['videoId'] : '',
+                    'api_id' => $videoId,
                     'titol' => isset($snippet['title']) ? (string) $snippet['title'] : 'Video',
                     'url_imatge' => $urlImatge,
+                    'duracio' => $duracio,
                     'tipus_api' => 'youtube',
                 ];
             }
@@ -559,6 +579,88 @@ class ExternalApiProxyService
                 'items' => [],
             ];
         }
+    }
+
+    /**
+     * @param array<int, string> $videoIds
+     * @return array<string, string>
+     */
+    private function obtenirDuracionsYoutube(string $baseUrl, string $apiKey, array $videoIds): array
+    {
+        if (count($videoIds) === 0) {
+            return [];
+        }
+
+        try {
+            $response = Http::timeout(5)
+                ->retry(1, 200)
+                ->get($baseUrl . '/videos', [
+                    'part' => 'contentDetails',
+                    'id' => implode(',', $videoIds),
+                    'maxResults' => 50,
+                    'key' => $apiKey,
+                ]);
+
+            if (!$response->successful()) {
+                return [];
+            }
+
+            $payload = $response->json();
+            $resultats = isset($payload['items']) && is_array($payload['items']) ? $payload['items'] : [];
+            $duracionsPerVideo = [];
+
+            foreach ($resultats as $item) {
+                if (!is_array($item)) {
+                    continue;
+                }
+                $id = isset($item['id']) ? (string) $item['id'] : '';
+                $contentDetails = isset($item['contentDetails']) && is_array($item['contentDetails']) ? $item['contentDetails'] : [];
+                $duracioIso = isset($contentDetails['duration']) ? (string) $contentDetails['duration'] : '';
+                $duracioFormatejada = $this->formatDuracioYoutube($duracioIso);
+                if ($id !== '' && $duracioFormatejada !== '') {
+                    $duracionsPerVideo[$id] = $duracioFormatejada;
+                }
+            }
+
+            return $duracionsPerVideo;
+        } catch (\Throwable $e) {
+            Log::warning('Error obtenint duracions de YouTube', ['error' => $e->getMessage()]);
+            return [];
+        }
+    }
+
+    private function formatDuracioYoutube(string $duracioIso): string
+    {
+        if ($duracioIso === '') {
+            return '';
+        }
+
+        $coincidencies = [];
+        $teMatch = preg_match('/^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/', $duracioIso, $coincidencies);
+        if ($teMatch !== 1) {
+            return '';
+        }
+
+        $hores = 0;
+        if (isset($coincidencies[1]) && $coincidencies[1] !== '') {
+            $hores = (int) $coincidencies[1];
+        }
+
+        $minuts = 0;
+        if (isset($coincidencies[2]) && $coincidencies[2] !== '') {
+            $minuts = (int) $coincidencies[2];
+        }
+
+        $segons = 0;
+        if (isset($coincidencies[3]) && $coincidencies[3] !== '') {
+            $segons = (int) $coincidencies[3];
+        }
+
+        if ($hores > 0) {
+            return $hores . ':' . str_pad((string) $minuts, 2, '0', STR_PAD_LEFT) . ':' . str_pad((string) $segons, 2, '0', STR_PAD_LEFT);
+        }
+
+        return $minuts . ':' . str_pad((string) $segons, 2, '0', STR_PAD_LEFT);
     }
 
     /**

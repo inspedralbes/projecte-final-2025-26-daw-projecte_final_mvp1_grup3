@@ -53,6 +53,9 @@ class CalendarSnapshotApiTest extends TestCase
             'valor' => 1,
             'acabado' => true,
             'xp_guanyada' => 100,
+            'focus_minutes' => 30,
+            'focus_mode' => '25_5',
+            'focus_session' => true,
         ]);
 
         return [
@@ -104,7 +107,11 @@ class CalendarSnapshotApiTest extends TestCase
         $this->assertArrayHasKey('categoria_id', $habit);
         $this->assertArrayHasKey('metadata', $habit);
         $this->assertArrayHasKey('acabado', $habit);
+        $this->assertArrayHasKey('completed_with_focus', $habit);
+        $this->assertArrayHasKey('predominant_focus_mode', $habit);
         $this->assertTrue($habit['acabado']);
+        $this->assertTrue((bool) $habit['completed_with_focus']);
+        $this->assertSame('25_5', $habit['predominant_focus_mode']);
 
         $this->assertSame(100, (int) $json['economia_json']['xp_guanyada_avui']);
         $this->assertSame(2, (int) $json['economia_json']['monedes_guanyades_avui']);

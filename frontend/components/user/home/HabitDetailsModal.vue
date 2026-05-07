@@ -48,6 +48,19 @@
           <p class="text-xs text-amber-600 uppercase font-bold">Context clima (Llar)</p>
           <p class="text-sm font-semibold text-gray-800 mt-1">{{ weatherText }}</p>
         </div>
+
+        <div class="pt-2">
+          <button
+            data-testid="start-focus-session-button"
+            class="w-full px-4 py-3 rounded-2xl font-bold text-sm transition"
+            :class="isCompletedToday ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-indigo-600 text-white hover:bg-indigo-700'"
+            :disabled="isCompletedToday"
+            @click="$emit('start-focus', habit)"
+          >
+            <span v-if="isCompletedToday">Hàbit completat avui</span>
+            <span v-else>Iniciar sessió de focus</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -61,7 +74,8 @@ export default {
   props: {
     isOpen: { type: Boolean, default: false },
     habit: { type: Object, default: null },
-    weatherContext: { type: Object, default: null }
+    weatherContext: { type: Object, default: null },
+    isCompletedToday: { type: Boolean, default: false }
   },
   computed: {
     metadata: function () {

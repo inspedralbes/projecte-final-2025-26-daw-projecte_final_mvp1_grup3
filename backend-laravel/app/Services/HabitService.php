@@ -123,6 +123,30 @@ class HabitService
                 $success = false;
                 $message = 'No s\'ha pogut actualitzar el progrés.';
             }
+        } elseif ($accio === 'FOCUS_UPDATE') {
+            $focusData = [
+                'habit_id' => $habitId,
+                'user_id' => $usuariId,
+                'mode' => isset($dades['focus_mode']) ? (string) $dades['focus_mode'] : (isset($dades['mode']) ? (string) $dades['mode'] : null),
+                'minutes' => isset($dades['focus_minutes']) ? (int) $dades['focus_minutes'] : (isset($dades['minutes']) ? (int) $dades['minutes'] : 0),
+                'event' => isset($dades['focus_event']) ? (string) $dades['focus_event'] : (isset($dades['event']) ? (string) $dades['event'] : null),
+                'data' => isset($dades['data']) ? $dades['data'] : null,
+            ];
+            $resultatFocus = $this->processarActualitzacioFocus($focusData);
+            $habitModel = Habit::find($habitId);
+            $success = (bool) ($resultatFocus['success'] ?? false);
+            if (isset($resultatFocus['progress'])) {
+                $progress = (int) $resultatFocus['progress'];
+            }
+            if (isset($resultatFocus['completed_today'])) {
+                $completedToday = (bool) $resultatFocus['completed_today'];
+            }
+            if (isset($resultatFocus['xp_update']) && is_array($resultatFocus['xp_update'])) {
+                $xpUpdate = $resultatFocus['xp_update'];
+            }
+            if ($success !== true) {
+                $message = $resultatFocus['message'] ?? 'No s\'ha pogut processar la sessió de focus.';
+            }
         } elseif ($accio === 'COMPLETE') {
             $resultatComplete = $this->processarConfirmacioHabit([
                 'habit_id' => $habitId,
@@ -228,6 +252,92 @@ class HabitService
         }
 
         $this->feedbackService->publicarPayload($payload);
+    }
+
+    /**
+     * Processa una actualització de sessió focus i completa l'hàbit si arriba a l'objectiu.
+     *
+     * @param array<string,mixed> $dades
+     * @return array<string,mixed>
+     */
+    private function processarActualitzacioFocus(array $dades): array
+    {
+        $habitId = isset($dades['habit_id']) ? (int) $dades['habit_id'] : 0;
+        $usuariId = isset($dades['user_id']) ? (int) $dades['user_id'] : 0;
+        $focusMode = isset($dades['mode']) ? strtolower((string) $dades['mode']) : null;
+        $minutes = isset($dades['minutes']) ? (int) $dades['minutes'] : 0;
+        $event = isset($dades['event']) ? strtolower((string) $dades['event']) : 'update';
+        $marcaTemps = isset($dades['data']) && $dades['data'] !== null ? Carbon::parse((string) $dades['data']) : Carbon::now();
+
+        if ($habitId <= 0 || $usuariId <= 0) {
+            return ['success' => false, 'message' => 'Dades de focus invàlides.'];
+        }
+
+        $habit = Habit::find($habitId);
+        if (!$habit || !$this->usuariTeAccesHabit($habitId, $usuariId)) {
+            return ['success' => false, 'message' => 'No autoritzat per aquest hàbit.'];
+        }
+
+        if (!in_array($focusMode, ['25_5', '50_10'], true)) {
+            $focusMode = null;
+        }
+
+        if ($minutes < 0) {
+            $minutes = 0;
+        }
+
+        $registreFocus = RegistreActivitat::create([
+            'habit_id' => $habitId,
+            'data' => $marcaTemps,
+            'valor' => 0,
+            'acabado' => false,
+            'xp_guanyada' => 0,
+            'focus_minutes' => $minutes,
+            'focus_mode' => $focusMode,
+            'focus_session' => true,
+        ]);
+
+        $avui = $marcaTemps->copy()->startOfDay();
+        $totalFocusMinutes = (int) RegistreActivitat::where('habit_id', $habitId)
+            ->whereDate('data', $avui)
+            ->sum('focus_minutes');
+
+        $completedToday = $this->habitCompletatAvui($habitId, $avui);
+        $objectiu = (int) ($habit->objectiu_vegades ?? 1);
+        $unitat = strtolower((string) ($habit->unitat ?? 'vegades'));
+
+        $llindarMinutes = $unitat === 'minuts' ? $objectiu : $objectiu;
+        if ($llindarMinutes <= 0) {
+            $llindarMinutes = 1;
+        }
+
+        $xpUpdate = null;
+        if ($completedToday === false && $totalFocusMinutes >= $llindarMinutes) {
+            $resultatComplete = $this->processarConfirmacioHabit([
+                'habit_id' => $habitId,
+                'user_id' => $usuariId,
+                'data' => $marcaTemps->toDateTimeString(),
+            ]);
+            if (($resultatComplete['success'] ?? false) === true) {
+                $completedToday = true;
+                // Perquè el calendari pugui marcar `completed_with_focus`,
+                // la fila de sessió de focus que ha disparat el completat també
+                // ha de quedar amb `acabado=true`.
+                $registreFocus->acabado = true;
+                $registreFocus->save();
+                if (isset($resultatComplete['xp_update']) && is_array($resultatComplete['xp_update'])) {
+                    $xpUpdate = $resultatComplete['xp_update'];
+                }
+            }
+        }
+
+        return [
+            'success' => true,
+            'event' => $event,
+            'progress' => $totalFocusMinutes,
+            'completed_today' => $completedToday,
+            'xp_update' => $xpUpdate,
+        ];
     }
 
     /**

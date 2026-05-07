@@ -76,6 +76,27 @@ function register(io, socket) {
       console.error("Error gestionant habit_complete:", error);
     }
   });
+
+  socket.on("habit_focus_update", async function (data) {
+    try {
+      var userId = socket.decoded_token && socket.decoded_token.user_id;
+      if (!userId) {
+        console.warn("habit_focus_update: usuari no autenticat");
+        return;
+      }
+      socket.join("user_" + userId);
+      var payload = {
+        habit_id: data && data.habit_id ? data.habit_id : null,
+        focus_mode: data && data.mode ? data.mode : null,
+        focus_minutes: data && data.minutes ? data.minutes : 0,
+        focus_event: data && data.event ? data.event : "update",
+        data: data && data.data ? data.data : null
+      };
+      await habitQueue.pushToLaravel("FOCUS_UPDATE", userId, payload);
+    } catch (error) {
+      console.error("Error gestionant habit_focus_update:", error);
+    }
+  });
 }
 
 //==============================================================================

@@ -86,7 +86,9 @@
       :is-open="esObertModalDetalls"
       :habit="habitDetallsSeleccionat"
       :weather-context="weatherContextDetalls"
+      :is-completed-today="habitDetallsCompletatAvui"
       @close="tancarModalDetallsHabit"
+      @start-focus="iniciarSessioFocus"
     />
 
     <StreakBrokenModal
@@ -129,6 +131,7 @@ import UserHomeHomeMonsterPanel from "~/components/user/home/HomeMonsterPanel.vu
 import UserHomeHomeHabitsSection from "~/components/user/home/HomeHabitsSection.vue";
 import WeatherWidget from "~/components/user/home/WeatherWidget.vue";
 import { authFetch } from "~/composables/useApi.js";
+import { flushPendingFocusEvents } from "~/composables/user/useFocusEventQueue.js";
 
 export default {
   components: {
@@ -206,6 +209,13 @@ export default {
     progresModal: function () { return this.habitSeleccionat ? this.obtenirProgres(this.habitSeleccionat.id) : 0; },
     objectiuModal: function () { return this.habitSeleccionat ? this.habitSeleccionat.objectiuVegades || 1 : 1; },
     unitatModal: function () { return this.habitSeleccionat ? this.habitSeleccionat.unitat || "vegades" : "vegades" }
+    ,
+    habitDetallsCompletatAvui: function () {
+      if (!this.habitDetallsSeleccionat || !this.habitDetallsSeleccionat.id) {
+        return false;
+      }
+      return this.habitCompletatAvui(this.habitDetallsSeleccionat.id);
+    }
   },
   mounted: function () {
     var self = this;
@@ -409,6 +419,18 @@ export default {
       this.habitDetallsSeleccionat = null;
       this.weatherContextDetalls = null;
     },
+    iniciarSessioFocus: function (habit) {
+      var habitTarget = habit || this.habitDetallsSeleccionat;
+      if (!habitTarget || !habitTarget.id) {
+        return;
+      }
+      if (this.habitCompletatAvui(habitTarget.id)) {
+        this.mostrarAvis("Aquest hàbit ja està completat avui.");
+        return;
+      }
+      this.tancarModalDetallsHabit();
+      navigateTo("/focus/" + habitTarget.id);
+    },
 
     /**
      * Tanca el modal de ratxa trencada.
@@ -541,6 +563,15 @@ export default {
       var self = this;
       self.socket = useNuxtApp().$socket;
       if (!self.socket) return;
+
+      if (self.socket.connected) {
+        flushPendingFocusEvents(self.socket);
+      }
+
+      self.socket.on("connect", function () {
+        flushPendingFocusEvents(self.socket);
+      });
+
       self.socket.on("habit_action_confirmed", function (payload) {
         if (!payload || payload.success !== true) {
           if (payload && payload.message) {

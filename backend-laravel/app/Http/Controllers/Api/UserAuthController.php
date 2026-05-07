@@ -9,6 +9,7 @@ use App\Models\Administrador;
 use App\Models\Ratxa;
 use App\Models\User;
 use App\Services\AuthService;
+use App\Services\WelcomeEmailService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -31,9 +32,12 @@ class UserAuthController extends Controller
 
     private AuthService $authService;
 
-    public function __construct(AuthService $authService)
+    private WelcomeEmailService $welcomeEmailService;
+
+    public function __construct(AuthService $authService, WelcomeEmailService $welcomeEmailService)
     {
         $this->authService = $authService;
+        $this->welcomeEmailService = $welcomeEmailService;
     }
 
     //================================ MÈTODES / FUNCIONS ===========
@@ -59,6 +63,8 @@ class UserAuthController extends Controller
         }
 
         $token = JWTAuth::fromUser($usuari);
+
+        $this->welcomeEmailService->enviarSiPrimeraConnexio($usuari);
 
         return $this->authService->crearRespostaLoginUsuari($usuari, $token);
     }
@@ -96,6 +102,9 @@ class UserAuthController extends Controller
         ]);
 
         $token = JWTAuth::fromUser($usuari);
+
+        $this->welcomeEmailService->enviarSiPrimeraConnexio($usuari);
+
         $resposta = $this->authService->crearRespostaLoginUsuari($usuari, $token, true);
 
         return $resposta->setStatusCode(201);
@@ -211,6 +220,8 @@ class UserAuthController extends Controller
             }
 
             $token = JWTAuth::fromUser($usuari);
+
+            $this->welcomeEmailService->enviarSiPrimeraConnexio($usuari);
 
             $frontendUrl = env('GOOGLE_FRONTEND_REDIRECT', 'http://localhost:3000/auth/google/redirect');
             $redirectUrl = $frontendUrl . '?token=' . $token . '&onboarding=' . ($requiresOnboarding ? '1' : '0');

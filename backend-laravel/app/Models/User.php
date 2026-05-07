@@ -27,6 +27,7 @@ class User extends Model implements JWTSubject
     public $timestamps = false;
 
     protected $casts = [
+        'primer_login_correu_enviat_at' => 'datetime',
     ];
 
     protected $hidden = [
@@ -51,6 +52,7 @@ class User extends Model implements JWTSubject
         'data_prohibicio',
         'motiu_prohibicio',
         'logros_showcase',
+        'primer_login_correu_enviat_at',
     ];
 
     //================================ MÈTODES / FUNCIONS ===========

@@ -1,6 +1,15 @@
 <?php
 
 return [
+    'welcome_email_enabled' => filter_var(
+        env('WELCOME_EMAIL_ENABLED', true),
+        FILTER_VALIDATE_BOOLEAN
+    ),
+
+    'resend' => [
+        'key' => env('RESEND_KEY'),
+    ],
+
     'google' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),

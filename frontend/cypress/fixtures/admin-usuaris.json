@@ -1,0 +1,11 @@
+{
+  "success": true,
+  "data": {
+    "data": [
+      { "id": 1, "nom": "Pepito", "email": "pepito@test.com", "nivell": 8, "prohibit": false },
+      { "id": 2, "nom": "Maria", "email": "maria@test.com", "nivell": 6, "prohibit": false },
+      { "id": 3, "nom": "Jordi", "email": "jordi@test.com", "nivell": 4, "prohibit": true },
+      { "id": 4, "nom": "Anna", "email": "anna@test.com", "nivell": 3, "prohibit": false }
+    ]
+  }
+}

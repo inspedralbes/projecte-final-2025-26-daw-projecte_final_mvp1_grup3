@@ -26,6 +26,9 @@ class User extends Model implements JWTSubject
 
     public $timestamps = false;
 
+    protected $casts = [
+    ];
+
     protected $hidden = [
         'contrasenya_hash',
     ];
@@ -47,9 +50,8 @@ class User extends Model implements JWTSubject
         'prohibit',
         'data_prohibicio',
         'motiu_prohibicio',
+        'logros_showcase',
     ];
-
-    protected $casts = [];
 
     //================================ MÈTODES / FUNCIONS ===========
 

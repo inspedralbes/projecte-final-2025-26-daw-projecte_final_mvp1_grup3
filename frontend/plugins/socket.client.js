@@ -1,5 +1,6 @@
 import { io } from 'socket.io-client';
 import { useFriendshipStore } from '~/stores/useFriendshipStore.js';
+import { useChatStore } from '~/stores/useChatStore.js';
 
 /**
  * Plugin de Socket.io per a Nuxt 3.
@@ -19,6 +20,7 @@ export default defineNuxtPlugin(function (nuxtApp) {
     });
 
     var authRefreshRetried = false;
+    var typingCallbacks = [];
 
     // Listener global per a confirmacions d'admin
     socket.on('admin_action_confirmed', function (payload) {
@@ -75,6 +77,34 @@ export default defineNuxtPlugin(function (nuxtApp) {
         authRefreshRetried = false;
     });
 
+    socket.on('new_private_message', function (data) {
+        console.log('[Socket] Nou missatge privat:', data);
+        var chatStore = useChatStore();
+        if (chatStore && data.sender_id) {
+            chatStore.receiveMessage(data.sender_id, {
+                id: data.id || Date.now(),
+                sender_id: data.sender_id,
+                receiver_id: data.receiver_id,
+                contingut: data.message,
+                created_at: data.created_at || new Date().toISOString()
+            });
+        }
+    });
+
+    socket.on('typing_indicator', function (data) {
+        console.log('[Socket] Typing indicator:', data);
+        typingCallbacks.forEach(function(cb) { cb(data); });
+    });
+
+    function onTypingIndicator(callback) {
+        typingCallbacks.push(callback);
+    }
+
+    function removeTypingCallback(callback) {
+        var idx = typingCallbacks.indexOf(callback);
+        if (idx > -1) typingCallbacks.splice(idx, 1);
+    }
+
     // Connecta quan el token està disponible
     function tryConnect() {
         var auth = useAuthStore();
@@ -105,7 +135,9 @@ export default defineNuxtPlugin(function (nuxtApp) {
     return {
         provide: {
             socket: socket,
-            updateSocketAuth: updateSocketAuth
+            updateSocketAuth: updateSocketAuth,
+            onTypingIndicator: onTypingIndicator,
+            removeTypingCallback: removeTypingCallback
         }
     };
 });

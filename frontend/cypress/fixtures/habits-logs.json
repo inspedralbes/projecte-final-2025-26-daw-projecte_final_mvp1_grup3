@@ -1,0 +1,5 @@
+[
+  { "dia": "2026-05-01", "habit_id": 1, "titol": "Beure Aigua", "progreso_diario": 4, "objectiu_vegades": 4, "unitat": "gots", "completado": true, "xp_ganada": 50, "monedes_ganadas": 2 },
+  { "dia": "2026-05-01", "habit_id": 2, "titol": "Fer Exercici", "progreso_diario": 1, "objectiu_vegades": 1, "unitat": "vegades", "completado": true, "xp_ganada": 100, "monedes_ganadas": 5 },
+  { "dia": "2026-04-30", "habit_id": 1, "titol": "Beure Aigua", "progreso_diario": 3, "objectiu_vegades": 4, "unitat": "gots", "completado": false, "xp_ganada": 0, "monedes_ganadas": 0 }
+]

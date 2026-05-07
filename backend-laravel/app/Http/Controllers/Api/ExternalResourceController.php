@@ -130,10 +130,7 @@ class ExternalResourceController extends Controller
 
         $resultat = $this->externalApiProxyService->obtenirContextClima($city, $lat, $lon);
 
-        if ($resultat['ok'] !== true) {
-            return response()->json($resultat, 502);
-        }
-
+        // 200 + ok:false: el front pot llegir el cos sense tractar-ho com a error HTTP (evita 502 a DevTools).
         return response()->json($resultat);
     }
 }

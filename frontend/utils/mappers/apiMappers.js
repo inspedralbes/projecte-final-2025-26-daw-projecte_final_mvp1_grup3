@@ -50,7 +50,9 @@ function mapHabitFromApi(hàbit) {
     usuariId: hàbit.usuari_id || null,
     plantillaId: hàbit.plantilla_id || null,
     categoriaId: hàbit.categoria_id || null,
-    metadata: (hàbit.metadata && typeof hàbit.metadata === "object") ? hàbit.metadata : null,
+    metadata: (hàbit.metadata && typeof hàbit.metadata === "object")
+      ? hàbit.metadata
+      : ((hàbit.metadada && typeof hàbit.metadada === "object") ? hàbit.metadada : null),
     completat: !!hàbit.completat,
     descripcio: (hàbit.frequencia_tipus || "") + " - Dificultat: " + (hàbit.dificultat || ""),
     recompensaXP: XP_PER_DIFICULTAT[hàbit.dificultat] || XP_BASE,
@@ -76,7 +78,9 @@ function mapHabitFromApiForHome(h) {
     unitat: h.unitat || "",
     categoriaId: h.categoria_id || null,
     frequenciaTipus: h.frequencia_tipus || "",
-    metadata: (h.metadata && typeof h.metadata === "object") ? h.metadata : null
+    metadata: (h.metadata && typeof h.metadata === "object")
+      ? h.metadata
+      : ((h.metadada && typeof h.metadada === "object") ? h.metadada : null)
   };
 }
 

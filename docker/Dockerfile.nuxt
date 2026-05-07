@@ -1,5 +1,5 @@
-# Frontend Nuxt 3.11.2
-FROM mirror.gcr.io/library/node:20.18.3-alpine
+# Frontend Nuxt — Node >=20.19 evita EBADENGINE amb Nitro/Vite recents
+FROM mirror.gcr.io/library/node:20.19.4-alpine
 
 WORKDIR /app
 
@@ -8,10 +8,22 @@ RUN apk add --no-cache python3 make g++
 # Inclou package-lock.json al context (no l'excloguis a .dockerignore) per a npm ci
 COPY package.json package-lock.json* ./
 
-# Instal·la exactament les deps del projecte (inclou les devDependencies ja definides al package.json).
+# package-lock.json ha d'estar generat amb `npm install --legacy-peer-deps` (mateixa versió Node si és possible)
 RUN if [ -f package-lock.json ]; then npm ci --legacy-peer-deps; else npm install --legacy-peer-deps; fi
 
 COPY . .
 
+ARG API_URL
+ARG SOCKET_URL
+ENV API_URL=$API_URL
+ENV SOCKET_URL=$SOCKET_URL
+ENV NUXT_PUBLIC_API_URL=$API_URL
+ENV NUXT_PUBLIC_SOCKET_URL=$SOCKET_URL
+
+RUN npm run build
+
+RUN mkdir -p .output/server/chunks && \
+    ln -s /app/.output/public /app/.output/server/chunks/public
+
 EXPOSE 3000
-CMD ["npm", "run", "dev"]
+CMD ["node", ".output/server/index.mjs"]

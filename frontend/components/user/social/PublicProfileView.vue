@@ -23,13 +23,28 @@
           </div>
 
           <div class="grid grid-cols-2 gap-4 py-4 border-t border-b border-gray-100">
-            <div class="text-center">
-              <p class="text-2xl font-bold text-blue-600">{{ profile.xp_total }}</p>
-              <p class="text-xs text-gray-500 uppercase">{{ $t('profile.xp_total') }}</p>
+            <div class="text-center col-span-2">
+              <p class="text-2xl font-bold text-purple-600">{{ profile.nivell }}</p>
+              <p class="text-xs text-gray-500 uppercase">Nivel</p>
             </div>
-            <div class="text-center">
-              <p class="text-2xl font-bold text-green-600">{{ profile.streak }}</p>
-              <p class="text-xs text-gray-500 uppercase">{{ $t('profile.streak') }}</p>
+          </div>
+
+          <div class="mt-4">
+            <div class="rounded-2xl bg-gray-50 overflow-hidden flex items-center justify-center border border-gray-100">
+              <img :src="imatgeMascota" alt="Monstruo" class="w-40 h-40 object-contain" />
+            </div>
+          </div>
+
+          <div v-if="profile.logros_showcase && profile.logros_showcase.length > 0" class="mt-4">
+            <p class="text-xs text-gray-500 uppercase tracking-widest mb-2">Logros en Exposición</p>
+            <div class="flex flex-wrap justify-center gap-2">
+              <div 
+                v-for="logro in profile.logros_showcase" 
+                :key="logro.id" 
+                class="px-3 py-2 rounded-xl bg-purple-50 border border-purple-100 text-center"
+              >
+                <p class="text-sm font-bold text-purple-700">🏆 {{ logro.nom }}</p>
+              </div>
             </div>
           </div>
         </div>
@@ -43,6 +58,7 @@
 
 <script>
 import { authFetch } from "~/composables/useApi.js";
+import mascotaImg from "~/assets/img/Mascota.png";
 
 export default {
   name: "PublicProfileView",
@@ -57,6 +73,7 @@ export default {
     return {
       profile: null,
       loading: true,
+      imatgeMascota: mascotaImg,
     };
   },
   async mounted() {

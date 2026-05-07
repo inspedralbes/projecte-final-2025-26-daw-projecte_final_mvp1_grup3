@@ -10,12 +10,14 @@
     "preview": "nuxt preview",
     "test:unit": "vitest run tests/unit/useCalendar.spec.js",
     "test:e2e": "playwright test",
-    "test:e2e:focus": "node scripts/run-focus-e2e.mjs",
-    "test:e2e:headed": "playwright test --headed"
+    "test:e2e:headed": "playwright test --headed",
+    "cy:open": "cypress open",
+    "cy:run": "cypress run"
   },
   "dependencies": {
     "@nuxtjs/i18n": "^8.3.1",
     "@pinia/nuxt": "^0.5.4",
+    "date-fns": "^4.1.0",
     "nuxt": "3.10.3",
     "pinia": "^2.1.7",
     "socket.io-client": "^4.7.4",
@@ -26,9 +28,10 @@
   "devDependencies": {
     "@playwright/test": "^1.58.2",
     "@types/node": "^25.2.3",
-    "autoprefixer": "^10.4.17",
-    "postcss": "^8.4.32",
-    "tailwindcss": "^3.4.1",
+    "autoprefixer": "^10.5.0",
+    "cypress": "^15.14.2",
+    "postcss": "^8.5.14",
+    "tailwindcss": "^3.3.6",
     "vitest": "^4.1.5"
   },
   "overrides": {

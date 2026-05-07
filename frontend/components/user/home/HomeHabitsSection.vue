@@ -1,6 +1,6 @@
 <template>
   <div class="space-y-6">
-    <div class="flex items-center justify-between">
+    <div class="hidden lg:flex items-center justify-between">
       <h2 class="text-lg font-bold text-gray-800">{{ $t('home.habits_title') }}</h2>
       <NuxtLink to="/habits" class="text-blue-500 text-xs font-semibold hover:underline">
         {{ $t('home.see_all') }}

@@ -1,20 +1,28 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <HeaderSocial />
+  <div class="w-full min-w-0 min-h-screen overflow-x-hidden pb-24 lg:pb-8">
+    <!-- Rounded shell: header + body share one card (full-bleed header had square top corners before) -->
+    <div
+      class="w-full max-w-2xl mx-auto min-w-0 box-border px-2 sm:px-4 md:px-6 pt-2 sm:pt-3"
+    >
+      <div
+        class="rounded-2xl sm:rounded-3xl overflow-hidden bg-white shadow-md border border-gray-100"
+      >
+        <HeaderSocial />
+        <div class="px-3 sm:px-5 py-4 sm:py-6">
+      <h1 class="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6">{{ $t('social.title') }}</h1>
 
-    <div class="max-w-2xl mx-auto px-4 py-6">
-      <h1 class="text-2xl font-bold text-gray-800 mb-6">{{ $t('social.title') }}</h1>
-
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
+      <div
+        class="w-full max-w-full min-w-0 box-border bg-gray-50/90 rounded-2xl sm:rounded-3xl shadow-sm border border-gray-100/90 p-3 sm:p-5 mb-5 sm:mb-6"
+      >
         <textarea
           v-model="newPostContent"
           :placeholder="$t('social.whats_new')"
           rows="3"
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 resize-none"
+          class="w-full max-w-full min-w-0 box-border px-3 py-2.5 border border-gray-300 rounded-xl sm:rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 resize-none text-base leading-relaxed"
         ></textarea>
 
         <!-- Preview de l'adjunt -->
-        <div v-if="selectedAttachment" class="mt-2 p-2 bg-blue-50 rounded-lg border border-blue-100 flex items-center justify-between">
+        <div v-if="selectedAttachment" class="mt-2 p-2 bg-blue-50 rounded-xl sm:rounded-2xl border border-blue-100 flex items-center justify-between">
           <div class="flex items-center gap-2">
             <div :class="['w-8 h-8 rounded-lg flex items-center justify-center text-white', selectedAttachment.type === 'habit' ? 'bg-blue-500' : 'bg-purple-500']">
               <svg v-if="selectedAttachment.type === 'habit'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -36,23 +44,25 @@
           </button>
         </div>
 
-        <div class="flex justify-between items-center mt-3">
-          <div class="flex items-center gap-2">
+        <div
+          class="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-2"
+        >
+          <div class="flex items-center gap-2 min-w-0">
             <button
               @click="showAttachmentSelector = true"
-              class="p-2 text-gray-500 hover:text-blue-500 hover:bg-blue-50 rounded-full transition-all"
+              class="p-2 shrink-0 text-gray-500 hover:text-blue-500 hover:bg-blue-50 rounded-full transition-all"
               :title="$t('social.add_attachment') || 'Adjuntar hàbit o plantilla'"
             >
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
               </svg>
             </button>
-            <span class="text-xs text-gray-400">{{ newPostContent.length }}/500</span>
+            <span class="text-xs text-gray-400 tabular-nums">{{ newPostContent.length }}/500</span>
           </div>
           <button
             @click="createPost"
             :disabled="!newPostContent.trim() || posting"
-            class="px-4 py-2 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="w-full sm:w-auto shrink-0 px-4 py-2.5 sm:py-2 text-sm sm:text-base bg-blue-500 text-white rounded-xl sm:rounded-2xl font-medium hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
           >
             {{ posting ? $t('home.loading') : $t('social.post') }}
           </button>
@@ -94,6 +104,8 @@
         @close="showAttachmentSelector = false"
         @selected="onAttachmentSelected"
       />
+        </div>
+      </div>
     </div>
   </div>
 </template>

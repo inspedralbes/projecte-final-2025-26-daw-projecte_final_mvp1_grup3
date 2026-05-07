@@ -1,5 +1,18 @@
 import { defineStore } from 'pinia';
 
+var API_BASE_FALLBACK = 'http://localhost:8000';
+
+function getApiBase() {
+  try {
+    var config = useRuntimeConfig();
+    var url = config.public.apiUrl;
+    if (url && typeof url === 'string' && url.startsWith('http')) {
+      return url.replace(/\/$/, '');
+    }
+  } catch (e) {}
+  return API_BASE_FALLBACK;
+}
+
 /**
  * Store d'autenticació JWT.
  * Gestiona login de usuaris i admins, token i cookies.
@@ -69,8 +82,7 @@ export var useAuthStore = defineStore('auth', {
      * Login d'usuari. POST /api/auth/login
      */
     loginUser: async function (email, contrasenya) {
-      var config = useRuntimeConfig();
-      var base = (config.public.apiUrl || '').replace(/\/$/, '');
+      var base = getApiBase();
       var url = base + '/api/auth/login';
       var resposta = await fetch(url, {
         method: 'POST',
@@ -93,8 +105,7 @@ export var useAuthStore = defineStore('auth', {
      * Login d'admin. POST /api/admin/auth/login
      */
     loginAdmin: async function (email, contrasenya) {
-      var config = useRuntimeConfig();
-      var base = (config.public.apiUrl || '').replace(/\/$/, '');
+      var base = getApiBase();
       var url = base + '/api/admin/auth/login';
       var resposta = await fetch(url, {
         method: 'POST',
@@ -117,8 +128,7 @@ export var useAuthStore = defineStore('auth', {
      * Login amb Google. GET /api/auth/google/callback?code=...
      */
     loginWithGoogle: async function (code) {
-      var config = useRuntimeConfig();
-      var base = (config.public.apiUrl || "").replace(/\/$/, "");
+      var base = getApiBase();
       var url = base + "/api/auth/google/callback?code=" + encodeURIComponent(code);
       var resposta = await fetch(url, {
         method: "GET",
@@ -140,8 +150,7 @@ export var useAuthStore = defineStore('auth', {
      */
 
     logout: async function () {
-      var config = useRuntimeConfig();
-      var base = (config.public.apiUrl || '').replace(/\/$/, '');
+      var base = getApiBase();
       var url = base + '/api/auth/logout';
       try {
         await fetch(url, {
@@ -299,8 +308,7 @@ export var useAuthStore = defineStore('auth', {
      * Refresca la sessió a través de l'API.
      */
     refrescarSessio: async function () {
-      var config = useRuntimeConfig();
-      var base = (config.public.apiUrl || '').replace(/\/$/, '');
+      var base = getApiBase();
       var url = base + '/api/auth/refresh';
       var headers = { Accept: 'application/json' };
       if (this.token) {

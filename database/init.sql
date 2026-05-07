@@ -1,5 +1,8 @@
 -- ==========================================================
 -- ESTRUCTURA FINAL DE LA BASE DE DATOS (ESENCIAL)
+-- S'executa només en crear el volum Postgres (docker-entrypoint-initdb.d).
+-- Si ja tens una BD antiga sense alguna taula, o bé recrees el volum
+-- (docker compose down -v) o bé afegeixes les taules/columnes manualment.
 -- ==========================================================
 
 DROP TABLE IF EXISTS DAILY_SNAPSHOTS CASCADE;
@@ -7,6 +10,9 @@ DROP TABLE IF EXISTS ADMIN_NOTIFICACIONS CASCADE;
 DROP TABLE IF EXISTS ADMIN_LOGS CASCADE;
 DROP TABLE IF EXISTS ADMIN_CONFIGURACIO CASCADE;
 DROP TABLE IF EXISTS REPORTS CASCADE;
+DROP TABLE IF EXISTS SOCIAL_LIKES CASCADE;
+DROP TABLE IF EXISTS SOCIAL_COMMENTS CASCADE;
+DROP TABLE IF EXISTS SOCIAL_POSTS CASCADE;
 DROP TABLE IF EXISTS PREGUNTES_REGISTRE CASCADE;
 DROP TABLE IF EXISTS REGISTRE_ACTIVITAT CASCADE;
 DROP TABLE IF EXISTS RATXES CASCADE;
@@ -20,6 +26,10 @@ DROP TABLE IF EXISTS LOGROS_MEDALLES CASCADE;
 DROP TABLE IF EXISTS MISSIOS_DIARIES CASCADE;
 DROP TABLE IF EXISTS USUARIS CASCADE;
 DROP TABLE IF EXISTS ADMINISTRADORS CASCADE;
+DROP TABLE IF EXISTS CLAN_MESSAGES CASCADE;
+DROP TABLE IF EXISTS CLAN_REQUESTS CASCADE;
+DROP TABLE IF EXISTS CLAN_MEMBERS CASCADE;
+DROP TABLE IF EXISTS CLANS CASCADE;
 
 
 -- 1. ACCESO E IDENTIDAD
@@ -77,6 +87,9 @@ ALTER TABLE MISSIOS_DIARIES ADD COLUMN parametres JSONB;
 -- Añadimos la FK a USUARIS ahora que existe la tabla de misiones
 ALTER TABLE USUARIS ADD CONSTRAINT fk_usuari_missio FOREIGN KEY (missio_diaria_id) REFERENCES MISSIOS_DIARIES(id) ON DELETE SET NULL;
 
+-- Columna para mostrar los 3 logros seleccionados en el perfil
+ALTER TABLE USUARIS ADD COLUMN logros_showcase INT[] DEFAULT ARRAY[]::INT[];
+
 CREATE TABLE USUARIS_LOGROS (
     usuari_id INT REFERENCES USUARIS(id) ON DELETE CASCADE,
     logro_id INT REFERENCES LOGROS_MEDALLES(id) ON DELETE CASCADE,
@@ -117,10 +130,9 @@ CREATE TABLE HABITS (
     objectiu_vegades INT DEFAULT 1,
     unitat VARCHAR(50),
     icona VARCHAR(50),
-    color VARCHAR(20)
+    color VARCHAR(20),
+    metadata JSONB
 );
-
-ALTER TABLE HABITS ADD COLUMN metadata JSONB;
 
 CREATE TABLE PLANTILLA_HABIT (
     plantilla_id INT REFERENCES PLANTILLES(id) ON DELETE CASCADE,
@@ -280,6 +292,56 @@ CREATE INDEX idx_friendships_addressee ON FRIENDSHIPS(addressee_id);
 CREATE INDEX idx_friendships_status ON FRIENDSHIPS(status);
 CREATE INDEX idx_private_messages_sender ON PRIVATE_MESSAGES(sender_id);
 CREATE INDEX idx_private_messages_receiver ON PRIVATE_MESSAGES(receiver_id);
+CREATE INDEX idx_private_messages_conversation ON PRIVATE_MESSAGES(sender_id, receiver_id);
+
+-- CLANS tables
+CREATE TABLE CLANS (
+    id SERIAL PRIMARY KEY,
+    nom VARCHAR(100) NOT NULL,
+    categoria_id INT REFERENCES CATEGORIES(id) ON DELETE SET NULL,
+    es_public BOOLEAN DEFAULT TRUE,
+    max_membres INT NOT NULL CHECK (max_membres IN (10, 15, 20)),
+    lider_id INT NOT NULL REFERENCES USUARIS(id) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE CLAN_MEMBERS (
+    clan_id INT NOT NULL REFERENCES CLANS(id) ON DELETE CASCADE,
+    usuari_id INT NOT NULL REFERENCES USUARIS(id) ON DELETE CASCADE,
+    rol VARCHAR(20) DEFAULT 'miembro' CHECK (rol IN ('lider', 'miembro')),
+    data_unio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (clan_id, usuari_id)
+);
+
+CREATE TABLE CLAN_REQUESTS (
+    id SERIAL PRIMARY KEY,
+    clan_id INT NOT NULL REFERENCES CLANS(id) ON DELETE CASCADE,
+    usuari_id INT NOT NULL REFERENCES USUARIS(id) ON DELETE CASCADE,
+    tipus VARCHAR(20) NOT NULL CHECK (tipus IN ('solicitud', 'invitacion')),
+    estat VARCHAR(20) DEFAULT 'pendent' CHECK (estat IN ('pendent', 'acceptat', 'rebutjat')),
+    invitador_id INT REFERENCES USUARIS(id) ON DELETE SET NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE CLAN_MESSAGES (
+    id SERIAL PRIMARY KEY,
+    clan_id INT NOT NULL REFERENCES CLANS(id) ON DELETE CASCADE,
+    usuari_id INT NOT NULL REFERENCES USUARIS(id) ON DELETE CASCADE,
+    contingut TEXT NOT NULL,
+    habit_id INT REFERENCES HABITS(id) ON DELETE SET NULL,
+    plantilla_id INT REFERENCES PLANTILLES(id) ON DELETE SET NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_clans_lider ON CLANS(lider_id);
+CREATE INDEX idx_clans_public ON CLANS(es_public);
+CREATE INDEX idx_clan_members_usuari ON CLAN_MEMBERS(usuari_id);
+CREATE INDEX idx_clan_requests_clan ON CLAN_REQUESTS(clan_id);
+CREATE INDEX idx_clan_requests_usuari ON CLAN_REQUESTS(usuari_id);
+CREATE INDEX idx_clan_requests_estat ON CLAN_REQUESTS(estat);
+CREATE INDEX idx_clan_messages_clan ON CLAN_MESSAGES(clan_id);
+CREATE INDEX idx_clan_messages_usuari ON CLAN_MESSAGES(usuari_id);
 
 -- 8. CALENDARI (ARXIU D'AVENTURES)
 -- ----------------------------------------------------------

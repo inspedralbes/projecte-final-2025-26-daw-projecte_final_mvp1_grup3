@@ -1,10 +1,8 @@
 <template>
   <div class="global-app-container" :class="{ 'focus-route-layout': isFocusRoute }">
     <div class="global-content-wrapper">
-      <div class="layout-header-wrap">
-        <HeaderUser />
-      </div>
-      <main :class="isFocusRoute ? 'focus-main' : 'mx-auto max-w-7xl px-4 py-6'">
+      <HeaderUser />
+      <main class="mx-auto w-full min-w-0 max-w-7xl px-3 sm:px-4 py-4 sm:py-6">
         <slot />
       </main>
     </div>

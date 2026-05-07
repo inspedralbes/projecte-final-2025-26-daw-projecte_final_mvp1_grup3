@@ -32,20 +32,21 @@ export default {
   },
   data: function() {
     return {
-      requests: [],
-      loading: false,
-      refreshInterval: null
+      loading: false
+    }
+  },
+  computed: {
+    requests: function() {
+      var store = useClanStore();
+      return store.pendingRequests || [];
     }
   },
   mounted: function() {
     this.loadRequests();
-    var self = this;
-    this.refreshInterval = setInterval(function() {
-      self.loadRequests();
-    }, 3000);
+    this.setupSocketListener();
   },
-  beforeDestroy: function() {
-    if (this.refreshInterval) clearInterval(this.refreshInterval);
+  beforeUnmount: function() {
+    this.removeSocketListener();
   },
   methods: {
     loadRequests: async function() {
@@ -53,25 +54,52 @@ export default {
       try {
         var store = useClanStore();
         await store.fetchPendingRequests(this.clanId);
-        this.requests = store.pendingRequests;
       } catch(e) {
         console.error(e);
       } finally {
         this.loading = false;
       }
     },
+    setupSocketListener: function() {
+      var nuxtApp = useNuxtApp();
+      if (nuxtApp.$socket) {
+        nuxtApp.$socket.on("clan_request_received", this.handleNewRequest);
+      }
+    },
+    removeSocketListener: function() {
+      var nuxtApp = useNuxtApp();
+      if (nuxtApp.$socket) {
+        nuxtApp.$socket.off("clan_request_received", this.handleNewRequest);
+      }
+    },
+    handleNewRequest: function(data) {
+      console.log("Nova sol·licitud rebuda via socket:", data);
+      if (data && data.clan_id == this.clanId) {
+        this.loadRequests();
+      }
+    },
     accept: async function(id) {
+       console.log(">>> RequestManager.accept, id:", id, "requests:", this.requests);
+       var req = this.requests.find(function(r) { return r.id === id; });
+       console.log(">>> req found:", req);
        try {
          var store = useClanStore();
          var result = await store.acceptRequest(id);
+         console.log(">>> acceptRequest result:", result);
          if (result) {
-            var req = this.requests.find(function(r) { return r.id === id; });
             if (req && req.usuari_id) {
                var nuxtApp = useNuxtApp();
+               console.log(">>> Emitting clan_request_accepted, socket:", nuxtApp.$socket && nuxtApp.$socket.connected);
                if (nuxtApp.$socket && nuxtApp.$socket.connected) {
                   nuxtApp.$socket.emit("clan_request_accepted", {
                      clan_id: this.clanId,
-                     usuari_id: req.usuari_id
+                     usuari_id: req.usuari_id,
+                     usuari_nom: req.usuari_nom
+                  });
+                  nuxtApp.$socket.emit("clan_member_joined", {
+                     clan_id: this.clanId,
+                     user_id: req.usuari_id,
+                     user_nom: req.usuari_nom
                   });
                }
             }

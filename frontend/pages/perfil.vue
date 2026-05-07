@@ -64,8 +64,17 @@
 
         <div v-else-if="user" class="space-y-6">
           <div class="flex items-center gap-6">
-            <div class="w-20 h-20 rounded-3xl bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-3xl font-black shadow-lg">
-              {{ user.nom ? user.nom.charAt(0) : 'U' }}
+            <div class="w-20 h-20 rounded-3xl overflow-hidden shadow-lg border border-gray-200 bg-white/20" :style="avatarBackgroundStyle">
+              <div class="w-full h-full p-1 flex items-center justify-center">
+                <img
+                  v-if="imatgeMascota"
+                  :src="imatgeMascota"
+                  alt="Monstre del perfil"
+                  class="w-full h-full object-contain"
+                  decoding="async"
+                  draggable="false"
+                />
+              </div>
             </div>
             <div class="min-w-0">
               <h3 class="text-2xl font-black text-gray-800 truncate tracking-tight">{{ user.nom }}</h3>
@@ -174,6 +183,7 @@
 <script setup>
 import mascotaImg from "~/assets/img/Mascota.png";
 import coinLoopy from "~/assets/img/coin-loopy.png";
+import bosqueImg from "~/assets/img/Bosque.png";
 import { authFetch, getBaseUrl } from "~/composables/useApi.js";
 
 var user = ref(null);
@@ -186,6 +196,13 @@ var showcaseChanged = ref(false);
 var originalShowcase = ref([]);
 
 var imatgeMascota = mascotaImg;
+var avatarBackgroundStyle = computed(function() {
+  return {
+    backgroundImage: "url(" + bosqueImg + ")",
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+  };
+});
 
 var xpPercent = computed(function() {
   if (!user.value || !user.value.xp_total) return 0;

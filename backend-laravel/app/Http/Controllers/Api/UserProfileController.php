@@ -13,10 +13,10 @@ class UserProfileController extends Controller
     public function getPublicProfile(int $id): JsonResponse
     {
         $user = User::findOrFail($id);
-        
+
         $logrosShowcase = [];
         $showcaseValue = $user->logros_showcase;
-        
+
         if ($showcaseValue && $showcaseValue !== '{}') {
             $showcaseIds = str_replace(['{', '}'], ['', ''], $showcaseValue);
             $showcaseIds = array_filter(array_map('intval', explode(',', $showcaseIds)));
@@ -36,12 +36,17 @@ class UserProfileController extends Controller
             }
         }
 
+        $ratxa = \DB::table('ratxes')->where('usuari_id', $id)->first();
+        $ratxaActual = $ratxa ? $ratxa->ratxa_actual : 0;
+        $ratxaMaxima = $ratxa ? $ratxa->ratxa_maxima : 0;
+
         $response = [
             'id' => $user->id,
             'nom' => $user->nom,
             'nivell' => $user->nivell,
             'xp_total' => $user->xp_total,
-            'streak' => $user->xp_actual_nivel,
+            'streak' => $ratxaActual,
+            'streak_maxima' => $ratxaMaxima,
             'logros_showcase' => $logrosShowcase,
         ];
 
@@ -59,17 +64,17 @@ class UserProfileController extends Controller
     {
         try {
             $user = User::findOrFail($request->user_id);
-            
+
             $logroIds = $request->input('logros', []);
-            
+
             if (!is_array($logroIds)) {
                 return response()->json(['error' => 'Invalid format'], 400);
             }
-            
+
             if (count($logroIds) > 3) {
                 return response()->json(['error' => 'Maximum 3 logros'], 400);
             }
-            
+
             $user->logros_showcase = '{' . implode(',', $logroIds) . '}';
             $user->save();
 

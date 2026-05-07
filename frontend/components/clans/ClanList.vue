@@ -85,8 +85,29 @@ export default {
       return clans;
     }
   },
-  mounted: function() {
+mounted: function() {
+    var self = this;
     this.search();
+    var tryConnect = function() {
+      var nuxtApp = useNuxtApp();
+      if (nuxtApp.$socket && nuxtApp.$socket.connected) {
+        nuxtApp.$socket.on("clan_created", function(data) {
+          self.clans.unshift(data);
+        });
+        nuxtApp.$socket.on("clan_deleted", function(data) {
+          self.clans = self.clans.filter(function(c) { return Number(c.id) !== Number(data.clan_id); });
+        });
+        nuxtApp.$socket.on("clan_member_joined", function(data) {
+          var clanItem = self.clans.find(function(c) { return Number(c.id) === Number(data.clan_id); });
+          if (clanItem) {
+            clanItem.members_count = (clanItem.members_count || clanItem.membres_count || 0) + 1;
+          }
+        });
+      } else {
+        setTimeout(tryConnect, 1000);
+      }
+    };
+    tryConnect();
   },
   methods: {
     search: async function() {
@@ -102,6 +123,7 @@ export default {
       }
     },
 joinClan: async function(id) {
+       var self = this;
        var store = useClanStore();
        var authStore = useAuthStore();
        var result = await store.joinPublic(id);
@@ -110,6 +132,15 @@ joinClan: async function(id) {
           var nuxtApp = useNuxtApp();
           if (nuxtApp.$socket && nuxtApp.$socket.connected) {
              nuxtApp.$socket.emit("join_clan_room", { clan_id: id });
+             nuxtApp.$socket.emit("clan_member_joined", { 
+               clan_id: id,
+               user_id: authStore.user.id,
+               user_nom: authStore.user.nom
+             });
+          }
+          var clanItem = this.clans.find(function(c) { return Number(c.id) === Number(id); });
+          if (clanItem) {
+             clanItem.members_count = (clanItem.members_count || clanItem.membres_count || 0) + 1;
           }
            this.$router.push('/clans/' + id);
         } else {
@@ -118,9 +149,22 @@ joinClan: async function(id) {
     },
     requestJoinClan: async function(id) {
        var store = useClanStore();
+       var authStore = useAuthStore();
+       var clan = this.clans.find(function(c) { return c.id === id; });
        var result = await store.requestJoin(id);
+       console.log(">>> requestJoinClan result:", result, "clan:", clan);
        if (result) {
           alert("S'ha enviat la sol·licitud per unir-se al clan.");
+          var nuxtApp = useNuxtApp();
+          console.log(">>> Emitint clan_request_notifydesde ClanList, socket:", nuxtApp.$socket && nuxtApp.$socket.connected);
+          if (nuxtApp.$socket && nuxtApp.$socket.connected && clan) {
+             nuxtApp.$socket.emit("clan_request_notify", {
+                clan_id: id,
+                clan_nom: clan.nom,
+                leader_id: clan.lider_id,
+                usuari_nom: authStore.user.nom
+             });
+          }
        } else {
           alert(store.error || "Error en enviar la sol·licitud");
        }

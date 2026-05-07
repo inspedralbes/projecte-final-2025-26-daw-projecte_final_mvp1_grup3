@@ -8,8 +8,19 @@
        Carregant missatges...
     </div>
     <div v-for="msg in messages" :key="msg.id" class="flex flex-col gap-1">
-      <div class="flex items-baseline gap-2">
-         <span class="font-semibold text-sm text-gray-800">{{ msg.usuari_nom || msg.usuari?.nom || 'Usuari' }}</span>
+      <div class="flex items-center gap-2 pb-1">
+        <div class="w-8 h-8 rounded-full overflow-hidden shadow-inner" :style="avatarBackgroundStyle">
+          <div class="w-full h-full rounded-full border border-gray-200 bg-white/20 p-0.5 flex items-center justify-center">
+            <img
+              :src="mascotaImg"
+              alt="Monstre del perfil"
+              class="w-full h-full object-contain"
+              decoding="async"
+              draggable="false"
+            />
+          </div>
+        </div>
+        <span class="font-semibold text-sm text-gray-800">{{ msg.usuari_nom || msg.usuari?.nom || 'Usuari' }}</span>
          <span class="text-xs text-gray-400">{{ formatDate(msg.created_at) }}</span>
       </div>
 <div v-if="msg.habit_id && msg.habit" class="bg-blue-50 border border-blue-100 rounded p-4 inline-block max-w-[80%]">
@@ -43,6 +54,8 @@
 </template>
 
 <script>
+import mascotaImg from "~/assets/img/Mascota.png";
+import bosqueImg from "~/assets/img/Bosque.png";
 import { useClanChatStore } from "~/stores/useClanChatStore.js";
 import { useClanStore } from "~/stores/useClanStore.js";
 import { format } from "date-fns";
@@ -66,9 +79,18 @@ data: function() {
         loading: true,
         sending: false,
         lastMemberCount: 0,
-        memberCheckInterval: null
+        mascotaImg: mascotaImg
      }
    },
+  computed: {
+    avatarBackgroundStyle: function() {
+      return {
+        backgroundImage: "url(" + bosqueImg + ")",
+        backgroundSize: "cover",
+        backgroundPosition: "center"
+      };
+    }
+  },
 mounted: function() {
        this.loadMessages();
        this.lastMemberCount = 0;
@@ -85,25 +107,6 @@ mounted: function() {
           }
        };
        tryConnect();
-this.memberCheckInterval = setInterval(function() {
-           var clanStore = useClanStore();
-           clanStore.fetchMembers(self.clanId).then(function() {
-              var currentCount = clanStore.clanMembers ? clanStore.clanMembers.length : 0;
-              if (currentCount > self.lastMemberCount) {
-                 self.messages.push({
-                    id: Date.now(),
-                    clan_id: self.clanId,
-                    usuari_id: 0,
-                    usuari_nom: "Sistema",
-                    contingut: "Un nou membre s'ha unit al clan",
-                    created_at: new Date().toISOString(),
-                    is_system: true
-                 });
-                 self.scrollToBottom();
-              }
-              self.lastMemberCount = currentCount;
-           });
-        }, 5000);
     },
    beforeDestroy: function() {
       var nuxtApp = useNuxtApp();
@@ -113,7 +116,6 @@ this.memberCheckInterval = setInterval(function() {
          nuxtApp.$socket.off("clan_member_joined", this.onMemberJoined);
          nuxtApp.$socket.off("clan_member_left", this.onMemberLeft);
       }
-      if (this.memberCheckInterval) clearInterval(this.memberCheckInterval);
    },
   methods: {
 loadMessages: async function() {

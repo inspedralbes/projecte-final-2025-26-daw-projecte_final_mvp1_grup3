@@ -2,14 +2,32 @@
   <div class="bg-white rounded-2xl sm:rounded-3xl shadow-sm border border-gray-100 p-4">
     <div class="flex items-start gap-3">
       <div class="flex-shrink-0">
-        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold">
-          {{ getInitials(post.user?.nom) }}
-        </div>
+        <button
+          type="button"
+          @click="openProfile"
+          class="w-14 h-14 rounded-full overflow-hidden shadow-inner p-0 border-0 bg-transparent cursor-pointer"
+        >
+          <div class="w-full h-full rounded-full overflow-hidden" :style="avatarBackgroundStyle">
+            <div class="w-full h-full rounded-full border border-gray-200 bg-white/20 p-1 flex items-center justify-center">
+              <img
+                :src="mascotaImg"
+                alt="Monstre del perfil"
+                class="w-full h-full object-contain"
+                :style="monsterStyle"
+                decoding="async"
+                draggable="false"
+              />
+            </div>
+          </div>
+        </button>
       </div>
       <div class="flex-1 min-w-0">
         <div class="flex items-center justify-between">
           <div>
-            <span class="font-semibold text-gray-800">{{ post.user?.nom }}</span>
+            <span
+              class="font-semibold text-gray-800 cursor-pointer hover:text-blue-600 hover:underline transition-colors"
+              @click="openProfile"
+            >{{ post.user?.nom }}</span>
             <span class="text-gray-500 text-sm ml-2">{{ formatDate(post.created_at) }}</span>
           </div>
           <div class="relative" v-if="isOwner">
@@ -66,6 +84,12 @@
           </button>
         </div>
 
+        <UserSocialPublicProfileView
+          v-if="showProfile"
+          :user-id="post.user_id"
+          @close="showProfile = false"
+        />
+
         <div v-if="showComments" class="mt-4 border-t pt-4">
           <UserSocialCommentForm :post-id="post.id" @submitted="onCommentSubmitted" />
           <UserSocialCommentList :post-id="post.id" :initial-comments="post.comments || []" />
@@ -78,6 +102,8 @@
 <script>
 import { useSocialStore } from "~/stores/useSocialStore.js";
 import { useAuthStore } from "~/stores/useAuthStore.js";
+import mascotaImg from "~/assets/img/Mascota.png";
+import bosqueImg from "~/assets/img/Bosque.png";
 
 export default {
   name: "PostCard",
@@ -89,21 +115,38 @@ export default {
     return {
       showMenu: false,
       showComments: false,
-      commentsCount: this.post.comments_count || 0
+      showProfile: false,
+      commentsCount: this.post.comments_count || 0,
+      mascotaImg: mascotaImg
     };
+  },
+  computed: {
+    isOwner: function () {
+      var authStore = useAuthStore();
+      return this.post.user_id === authStore.user?.id;
+    },
+    monsterStyle: function () {
+      return {};
+    },
+    avatarBackgroundStyle: function () {
+      return {
+        backgroundImage: "url(" + bosqueImg + ")",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      };
+    }
   },
   watch: {
     'post.comments_count': function (newVal) {
       this.commentsCount = newVal || 0;
     }
   },
-  computed: {
-    isOwner: function () {
-      var authStore = useAuthStore();
-      return this.post.user_id === authStore.user?.id;
-    }
-  },
   methods: {
+    openProfile: function () {
+      if (this.post.user_id) {
+        this.showProfile = true;
+      }
+    },
     getInitials: function (name) {
       if (!name) return "?";
       return name

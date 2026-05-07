@@ -52,8 +52,19 @@ export var useSocialStore = defineStore("social", {
         var nouPost = await resposta.json();
         var postResult = nouPost.data || nouPost;
         
-        this.posts.push(postResult);
-        this.recentPostIds.push(postResult.id);
+        var existingIndex = this.posts.findIndex(function (p) {
+          return p.id === postResult.id;
+        });
+
+        if (existingIndex === -1) {
+          this.posts.unshift(postResult);
+        } else {
+          this.posts[existingIndex] = postResult;
+        }
+
+        if (!this.recentPostIds.includes(postResult.id)) {
+          this.recentPostIds.push(postResult.id);
+        }
         
         return nouPost;
       } catch (e) {

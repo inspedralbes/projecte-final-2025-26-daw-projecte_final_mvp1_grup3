@@ -33,9 +33,6 @@
 </template>
 
 <script>
-import mascotaImg from "~/assets/img/Mascota.png";
-import bosqueImg from "~/assets/img/Bosque.png";
-
 export default {
   name: "FriendCard",
   props: {
@@ -45,20 +42,6 @@ export default {
     },
   },
   emits: ["open-chat", "view-profile"],
-  data: function () {
-    return {
-      mascotaImg: mascotaImg,
-    };
-  },
-  computed: {
-    avatarBackgroundStyle: function () {
-      return {
-        backgroundImage: "url(" + bosqueImg + ")",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      };
-    }
-  },
   setup(props) {
     return {};
   },

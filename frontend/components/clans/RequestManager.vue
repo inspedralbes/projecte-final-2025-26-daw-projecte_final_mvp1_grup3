@@ -79,17 +79,22 @@ export default {
       }
     },
     accept: async function(id) {
+       console.log(">>> RequestManager.accept, id:", id, "requests:", this.requests);
+       var req = this.requests.find(function(r) { return r.id === id; });
+       console.log(">>> req found:", req);
        try {
          var store = useClanStore();
          var result = await store.acceptRequest(id);
+         console.log(">>> acceptRequest result:", result);
          if (result) {
-            var req = this.requests.find(function(r) { return r.id === id; });
             if (req && req.usuari_id) {
                var nuxtApp = useNuxtApp();
+               console.log(">>> Emitting clan_request_accepted, socket:", nuxtApp.$socket && nuxtApp.$socket.connected);
                if (nuxtApp.$socket && nuxtApp.$socket.connected) {
                   nuxtApp.$socket.emit("clan_request_accepted", {
                      clan_id: this.clanId,
-                     usuari_id: req.usuari_id
+                     usuari_id: req.usuari_id,
+                     usuari_nom: req.usuari_nom
                   });
                   nuxtApp.$socket.emit("clan_member_joined", {
                      clan_id: this.clanId,

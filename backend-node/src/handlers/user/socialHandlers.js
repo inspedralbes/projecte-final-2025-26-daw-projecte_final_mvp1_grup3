@@ -315,6 +315,7 @@ socket.on("clan_member_joined", function (data) {
   socket.on("clan_request_accepted", function (data) {
     try {
       var userId = socket.decoded_token && socket.decoded_token.user_id;
+      console.log(">>> clan_request_accepted rebut:", data, "de userId:", userId);
       if (!userId || !data.clan_id || !data.usuari_id) {
         return;
       }
@@ -322,6 +323,13 @@ socket.on("clan_member_joined", function (data) {
         clan_id: data.clan_id,
         usuari_id: data.usuari_id,
         message: "La teva sol·licitud d'unió al clan ha estat acceptada"
+      });
+      console.log(">>> Emitint clan_member_joined a clan_", data.clan_id);
+      io.to("clan_" + data.clan_id).emit("clan_member_joined", {
+        clan_id: data.clan_id,
+        user_id: data.usuari_id,
+        user_nom: data.usuari_nom,
+        created_at: data.created_at
       });
     } catch (error) {
       console.error("Error unint request_accepted:", error);

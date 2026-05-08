@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\ExternalResourceController;
 use App\Http\Controllers\Api\LogroReadController;
 use App\Http\Controllers\Api\OnboardingHabitAssignController;
 use App\Http\Controllers\Api\PlantillaReadController;
+use App\Http\Controllers\Api\ShopController;
 use App\Http\Controllers\Api\SocialPostController;
 use App\Http\Controllers\Api\SocialCommentController;
 use App\Http\Controllers\Api\SocialLikeController;
@@ -99,6 +100,11 @@ Route::middleware('ensure.user')->group(function () {
     Route::post('/clans/{id}/share/plantilla', [ClanController::class, 'sharePlantilla']);
     Route::post('/clans/{id}/import/habit/{messageId}', [ClanController::class, 'importHabit']);
     Route::post('/clans/{id}/import/plantilla/{messageId}', [ClanController::class, 'importPlantilla']);
+
+    Route::get('/shop', [ShopController::class, 'index']);
+    Route::post('/shop/comprar/{itemId}', [ShopController::class, 'comprar']);
+    Route::post('/shop/equipar/{usuariItemId}', [ShopController::class, 'equipar']);
+    Route::post('/shop/usar/{usuariItemId}', [ShopController::class, 'usarConsumible']);
 
     Route::post('/clans/{id}/join', [ClanRequestController::class, 'joinPublic']);
     Route::post('/clans/{id}/request', [ClanRequestController::class, 'requestJoin']);

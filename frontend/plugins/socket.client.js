@@ -3,6 +3,8 @@ import { useFriendshipStore } from '~/stores/useFriendshipStore.js';
 import { useChatStore } from '~/stores/useChatStore.js';
 import { useClanStore } from '~/stores/useClanStore.js';
 import { useAuthStore } from '~/stores/useAuthStore.js';
+import { useShopStore } from '~/stores/useShopStore.js';
+import { useGameStore } from '~/stores/gameStore.js';
 
 /**
  * Plugin de Socket.io per a Nuxt 3.
@@ -90,6 +92,31 @@ export default defineNuxtPlugin(function (nuxtApp) {
         var clanStore = useClanStore();
         if (clanStore && data && data.clan_id) {
             clanStore.fetchMembers(data.clan_id);
+        }
+    });
+
+    socket.on('shop_event', function (data) {
+        console.log('[Socket] shop_event:', data);
+        var shopStore = useShopStore();
+        if (shopStore) {
+            shopStore.aplicarEvent(data);
+        }
+    });
+
+    // Mantenim sincronitzat el saldo i la ratxa quan arriba un update_xp
+    // generat per la botiga (compra/consum). Altres orígens (hàbits, ruleta)
+    // tenen els seus propis consumidors a home.vue, pero aquí cobrim tota la
+    // sessió per a una sincronització fiable de monedes a les pàgines /shop
+    // i /inventari.
+    socket.on('update_xp', function (data) {
+        if (!data) return;
+        try {
+            var gameStore = useGameStore();
+            if (gameStore && typeof gameStore.actualitzarDesDeXpUpdate === 'function') {
+                gameStore.actualitzarDesDeXpUpdate(data);
+            }
+        } catch (_) {
+            // Silent fallback si el store encara no està disponible.
         }
     });
 

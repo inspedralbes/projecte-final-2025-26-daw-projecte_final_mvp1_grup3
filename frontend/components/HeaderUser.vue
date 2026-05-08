@@ -67,7 +67,13 @@
 
     <!-- Escriptori -->
     <nav class="hidden lg:flex w-full items-center px-4 nav-bar-desktop">
-      <div class="flex-1 min-w-0" aria-hidden="true" />
+      <div class="flex-1 min-w-0 flex justify-start">
+        <button class="hamburger-btn hamburger-btn-desktop" @click="drawerOpen = !drawerOpen" aria-label="Menu">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </div>
 
       <!-- Desktop nav -->
       <ul class="desktop-nav">
@@ -170,6 +176,18 @@
 
       <div class="drawer-divider"></div>
 
+      <!-- Drawer nav: Inventari (Botiga va al footer / barra inferior) -->
+      <nav class="drawer-nav">
+        <NuxtLink to="/inventari" class="drawer-nav-link" @click="drawerOpen = false">
+          <svg xmlns="http://www.w3.org/2000/svg" class="drawer-nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7H4a1 1 0 00-1 1v11a2 2 0 002 2h14a2 2 0 002-2V8a1 1 0 00-1-1zM8 7V5a4 4 0 018 0v2" />
+          </svg>
+          <span>{{ $t('nav.inventory') }}</span>
+        </NuxtLink>
+      </nav>
+
+      <div class="drawer-divider"></div>
+
       <!-- Actions -->
       <div class="drawer-actions">
         <div class="drawer-action-row">
@@ -205,6 +223,12 @@
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
       </svg>
       <span class="tab-label">{{ $t('nav.forum') }}</span>
+    </NuxtLink>
+    <NuxtLink to="/shop" class="tab-item">
+      <svg xmlns="http://www.w3.org/2000/svg" class="tab-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 10-8 0v4M5 9h14l-1.4 11.2A2 2 0 0115.6 22H8.4a2 2 0 01-1.99-1.8L5 9z" />
+      </svg>
+      <span class="tab-label">{{ $t('nav.shop') }}</span>
     </NuxtLink>
     <NuxtLink to="/perfil" class="tab-item">
       <svg xmlns="http://www.w3.org/2000/svg" class="tab-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -466,7 +490,12 @@ nav a {
   color: #dc2626;
 }
 
-/* Hamburger: visible on mobile, hidden on lg+ */
+/* Hamburger: sempre visible (mòbil + escriptori).
+   El botó del nav mòbil està dins de <nav class="lg:hidden">, així
+   queda ocult en pantalles grans. El botó del nav escriptori
+   (.hamburger-btn-desktop) està dins de <nav class="hidden lg:flex">,
+   així queda ocult en mòbil. Resultat: sempre hi ha exactament un
+   botó hamburguesa visible. */
 .hamburger-btn {
   display: flex;
   align-items: center;
@@ -481,11 +510,6 @@ nav a {
 }
 .hamburger-btn:hover {
   background-color: rgba(243, 244, 246, 0.5);
-}
-@media (min-width: 1024px) {
-  .hamburger-btn {
-    display: none;
-  }
 }
 
 /* ===== Drawer overlay + panel ===== */
@@ -508,12 +532,7 @@ nav a {
   display: flex;
   flex-direction: column;
   padding: 1rem;
-}
-@media (min-width: 1024px) {
-  .drawer-overlay,
-  .drawer-panel {
-    display: none !important;
-  }
+  overflow-y: auto;
 }
 
 .drawer-header {
@@ -570,6 +589,45 @@ nav a {
   height: 1px;
   background: #e5e7eb;
   margin: 0.5rem 0;
+}
+
+.drawer-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.25rem 0;
+}
+.drawer-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.625rem 0.75rem;
+  border-radius: 0.75rem;
+  color: #374151;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: background-color 0.15s, color 0.15s, transform 0.15s;
+}
+.drawer-nav-link:hover {
+  background-color: #f3f4f6;
+  transform: translateX(2px);
+}
+.drawer-nav-link.router-link-active {
+  background-color: #ecfccb;
+  color: #568039;
+}
+.drawer-nav-icon {
+  width: 1.4rem;
+  height: 1.4rem;
+  flex-shrink: 0;
+}
+.drawer-nav-icon-img {
+  width: 1.4rem;
+  height: 1.4rem;
+  object-fit: contain;
+  flex-shrink: 0;
+  image-rendering: pixelated;
 }
 
 .drawer-actions {
@@ -658,12 +716,14 @@ nav a {
   align-items: center;
   justify-content: center;
   gap: 0.25rem;
-  padding: 0.4rem 0.5rem;
+  padding: 0.4rem 0.35rem;
   border-radius: 0.75rem;
   color: #6b7280;
   text-decoration: none;
   transition: color 0.15s;
-  min-width: 3.85rem;
+  min-width: 2.85rem;
+  flex: 1 1 0;
+  min-height: 0;
 }
 .tab-item:hover,
 .tab-item.router-link-active {
@@ -673,6 +733,14 @@ nav a {
 .tab-icon {
   width: 1.65rem;
   height: 1.65rem;
+}
+
+.tab-icon-img {
+  width: 1.65rem;
+  height: 1.65rem;
+  object-fit: contain;
+  flex-shrink: 0;
+  image-rendering: pixelated;
 }
 
 .tab-label {

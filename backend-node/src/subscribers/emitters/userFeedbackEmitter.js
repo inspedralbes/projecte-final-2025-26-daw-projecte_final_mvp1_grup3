@@ -42,7 +42,16 @@ function emit(io, payload) {
     io.to("user_" + userId).emit("roulette_result", payload.roulette_result);
   }
 
+  if (payload.shop_event) {
+    io.to("user_" + userId).emit("shop_event", payload.shop_event);
+    console.log("shop_event '" + payload.shop_event.kind + "' enviat a la sala user_" + userId);
+  }
+
   if (payload.action === "PARTIAL_XP") {
+    return;
+  }
+
+  if (type === "SHOP") {
     return;
   }
 

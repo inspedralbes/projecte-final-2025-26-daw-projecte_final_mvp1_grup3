@@ -291,3 +291,8 @@ INSERT INTO ADMIN_LOGS (administrador_id, accio, detall, ip) VALUES
 INSERT INTO ADMIN_NOTIFICACIONS (administrador_id, tipus, titol, descripcio) VALUES
 (1, 'sistema', 'Benvingut al panell', 'Benvingut al nou sistema d''administració de Loopy.'),
 (1, 'alerta', 'Nou usuari registrat', 'L''usuari Rosalia Vila s''ha unit a la plataforma.');
+
+-- 7. BOTIGA_ITEMS (catàleg inicial de la tenda Loopy)
+INSERT INTO BOTIGA_ITEMS (nom, descripcio, preu, tipus, imatge, metadata) VALUES
+('Gorra Monster', 'Una gorra exclusiva per a la teva mascota', 200, 'skin', '/img/items/gorra_monster.png', '{"slot":"cap","skin_key":"gorra_monster"}'),
+('Recuperador de Ratxa', 'Restaura la teva ratxa actual al màxim assolit', 50, 'consumible', '/img/items/recuperador_racha.png', '{"effect":"restore_streak"}');

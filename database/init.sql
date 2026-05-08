@@ -6,6 +6,8 @@
 -- ==========================================================
 
 DROP TABLE IF EXISTS DAILY_SNAPSHOTS CASCADE;
+DROP TABLE IF EXISTS USUARIS_ITEMS CASCADE;
+DROP TABLE IF EXISTS BOTIGA_ITEMS CASCADE;
 DROP TABLE IF EXISTS ADMIN_NOTIFICACIONS CASCADE;
 DROP TABLE IF EXISTS ADMIN_LOGS CASCADE;
 DROP TABLE IF EXISTS ADMIN_CONFIGURACIO CASCADE;
@@ -359,4 +361,31 @@ CREATE TABLE DAILY_SNAPSHOTS (
 
 CREATE INDEX idx_daily_snapshots_usuari ON DAILY_SNAPSHOTS(usuari_id);
 CREATE INDEX idx_daily_snapshots_data ON DAILY_SNAPSHOTS(data);
+
+-- 9. BOTIGA (TIENDA LOOPY)
+-- ----------------------------------------------------------
+
+CREATE TABLE BOTIGA_ITEMS (
+    id SERIAL PRIMARY KEY,
+    nom VARCHAR(100) NOT NULL,
+    descripcio TEXT,
+    preu INT NOT NULL CHECK (preu >= 0),
+    tipus VARCHAR(20) NOT NULL CHECK (tipus IN ('skin', 'consumible')),
+    imatge VARCHAR(255),
+    metadata JSONB DEFAULT '{}'::JSONB,
+    actiu BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE USUARIS_ITEMS (
+    id SERIAL PRIMARY KEY,
+    usuari_id INT NOT NULL REFERENCES USUARIS(id) ON DELETE CASCADE,
+    item_id INT NOT NULL REFERENCES BOTIGA_ITEMS(id) ON DELETE CASCADE,
+    comprat_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    equipat BOOLEAN DEFAULT FALSE,
+    consumit_at TIMESTAMP NULL
+);
+
+CREATE INDEX idx_usuaris_items_usuari ON USUARIS_ITEMS(usuari_id);
+CREATE INDEX idx_usuaris_items_equipat ON USUARIS_ITEMS(usuari_id, equipat);
 

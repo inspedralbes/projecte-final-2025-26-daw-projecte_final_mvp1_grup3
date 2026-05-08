@@ -49,10 +49,12 @@
         <div class="absolute inset-0 bg-black/5"></div>
         <div class="relative w-full h-full flex items-center justify-center p-8">
           <img
-            v-if="imatgeMascota"
-            :src="imatgeMascota"
+            v-if="imatgeMascotaActual"
+            :src="imatgeMascotaActual"
             alt="El teu monstre"
             class="w-48 h-48 lg:w-64 lg:h-64 object-contain drop-shadow-[0_20px_20px_rgba(0,0,0,0.3)] animate-float"
+            :class="{ 'animate-equipped': animacioEquipat }"
+            @error="onMascotaError"
           />
         </div>
       </div>
@@ -79,6 +81,12 @@
 import UserHomeHomeStreakSection from "~/components/user/home/HomeStreakSection.vue";
 import bosqueImg from "~/assets/img/Bosque.png";
 import mascotaImg from "~/assets/img/Mascota.png";
+import { useShopStore } from "~/stores/useShopStore.js";
+
+// La imatge alternativa amb la "Gorra Monster" es serveix des de /public
+// per no trencar el build mentre l'asset encara no estigui pujat. Si no
+// existeix, el handler @error reverteix a la mascota base.
+var MASCOTA_GORRA_URL = "/img/Mascota_Gorra.png";
 
 export default {
   name: "UserHomeHomeMonsterPanel",
@@ -134,6 +142,8 @@ export default {
   data: function () {
     return {
       imatgeMascota: mascotaImg,
+      mascotaGorraDisponible: true,
+      animacioEquipat: false,
       estilFons: {
         backgroundImage: "url(" + bosqueImg + ")",
         backgroundSize: "cover",
@@ -191,10 +201,80 @@ export default {
       }
       return "ring-2 ring-orange-200/80 ring-inset";
     },
+    /**
+     * Imatge de la mascota a mostrar tenint en compte la skin equipada
+     * a través del shopStore. Per a la vista readonly (calendari) sempre
+     * usem la imatge base perquè la skin actual no aplica al passat.
+     */
+    imatgeMascotaActual: function () {
+      if (this.readonly) {
+        return this.imatgeMascota;
+      }
+      var shopStore;
+      try {
+        shopStore = useShopStore();
+      } catch (_) {
+        return this.imatgeMascota;
+      }
+      var skinKey = shopStore && shopStore.skinEquipat ? shopStore.skinEquipat : null;
+      if (skinKey === "gorra_monster" && this.mascotaGorraDisponible) {
+        return MASCOTA_GORRA_URL;
+      }
+      return this.imatgeMascota;
+    },
+  },
+  mounted: function () {
+    var self = this;
+    if (!this.readonly) {
+      try {
+        var shopStore = useShopStore();
+        if (shopStore && shopStore.inventari.length === 0 && !shopStore.loading) {
+          shopStore.carregarBotiga();
+        }
+      } catch (_) {
+        // Silent fallback en SSR o si el store encara no està disponible.
+      }
+    }
+    var nuxtApp;
+    try {
+      nuxtApp = useNuxtApp();
+    } catch (_) {
+      nuxtApp = null;
+    }
+    var socket = nuxtApp && nuxtApp.$socket ? nuxtApp.$socket : null;
+    if (!socket) {
+      return;
+    }
+    this._shopHandler = function (data) {
+      if (!data) return;
+      if (data.kind === "equipped" || data.kind === "unequipped") {
+        self.animacioEquipat = true;
+        setTimeout(function () { self.animacioEquipat = false; }, 800);
+      }
+    };
+    socket.on("shop_event", this._shopHandler);
+  },
+  beforeUnmount: function () {
+    var nuxtApp;
+    try {
+      nuxtApp = useNuxtApp();
+    } catch (_) {
+      nuxtApp = null;
+    }
+    var socket = nuxtApp && nuxtApp.$socket ? nuxtApp.$socket : null;
+    if (socket && this._shopHandler) {
+      socket.off("shop_event", this._shopHandler);
+    }
   },
   methods: {
     onCalendari: function () {
       this.$emit("calendari");
+    },
+    onMascotaError: function () {
+      // Fallback si /img/Mascota_Gorra.png no existeix encara.
+      if (this.mascotaGorraDisponible) {
+        this.mascotaGorraDisponible = false;
+      }
     },
   },
 };
@@ -213,6 +293,24 @@ export default {
   }
   100% {
     transform: translateY(0px);
+  }
+}
+
+.animate-equipped {
+  animation: equipped-bounce 0.8s ease-out;
+}
+@keyframes equipped-bounce {
+  0% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.15) rotate(-5deg);
+  }
+  60% {
+    transform: scale(0.95) rotate(3deg);
+  }
+  100% {
+    transform: scale(1);
   }
 }
 </style>

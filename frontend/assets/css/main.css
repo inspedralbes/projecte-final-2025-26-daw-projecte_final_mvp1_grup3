@@ -210,6 +210,28 @@
         display: none;
     }
 
+    /*
+      Botiga: mateix patró que el fons global.
+      Dalt: Fondo_Tienda (sense cover: 100vw auto = manté la proporció,
+            cobreix l'amplada i s'ancora a la part superior).
+      Baix: color continu que coincideix amb la gespa de la part baixa
+            de la imatge, perquè en fer scroll la foto pugi i no es vegi
+            cap tall lleig.
+    */
+    .global-app-container.shop-page-bg {
+        background-color: #82af30;
+        background-image: url('../img/Fondo_Tienda.png');
+        background-position: top center;
+        background-size: 100vw auto;
+        background-repeat: no-repeat;
+        background-attachment: scroll;
+    }
+
+    /* Botiga: anul·lem el blur global perquè la mascota es vegi nítida */
+    .global-app-container.shop-page-bg::before {
+        display: none;
+    }
+
     .global-content-wrapper {
         @apply relative z-10;
     }

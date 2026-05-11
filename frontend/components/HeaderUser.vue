@@ -1,6 +1,6 @@
 <template>
-  <!-- Top header -->
-  <header class="w-full p-3">
+  <!-- Top header (ocult a /calendar*: només barra inferior + footer layout) -->
+  <header v-if="!isCalendarRoute" class="w-full p-3">
     <!-- Mòbil: hamburguesa | stats al centre | clima a la dreta -->
     <nav class="w-full lg:hidden">
       <div class="flex w-full items-center gap-1 px-1 min-h-[2.75rem]">
@@ -240,7 +240,8 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import logo from '~/assets/img/LogoLoopy.png'
 import coinIcon from '~/assets/img/coin-loopy.png'
 import xpIcon from '~/assets/img/xp-loopy.png'
@@ -260,6 +261,9 @@ const HEADER_WEATHER_EMOJI = {
   Fog: '🌫️',
   Haze: '🌫️'
 }
+
+const route = useRoute()
+const isCalendarRoute = computed(() => String(route.path || '').startsWith('/calendar'))
 
 const authStore = useAuthStore()
 const gameStore = useGameStore()
@@ -355,9 +359,15 @@ async function loadHeaderWeather() {
   }
 }
 
-onMounted(function () {
-  loadHeaderWeather()
-})
+watch(
+  isCalendarRoute,
+  function (cal) {
+    if (!cal) {
+      loadHeaderWeather()
+    }
+  },
+  { immediate: true }
+)
 
 function openWeatherCityModal() {
   if (typeof window !== 'undefined') {

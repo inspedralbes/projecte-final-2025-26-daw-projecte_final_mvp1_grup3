@@ -208,7 +208,7 @@
     /* Onboarding: sense foto / sense blur */
     .global-app-container.onboarding-page {
         background-image: none;
-        background-color: #f7faf5;
+        background-color: #FAF9F9;
     }
 
     /* Onboarding: contingut net sense desenfocament del fons */
@@ -235,6 +235,20 @@
 
     /* Botiga: anul·lem el blur global perquè la mascota es vegi nítida */
     .global-app-container.shop-page-bg::before {
+        display: none;
+    }
+
+    /* Calendari: il·lustració vertical (mòbil), mateix patró anchura que la botiga */
+    .global-app-container.calendar-page-bg {
+        background-color: #82af30;
+        background-image: url('../img/1-Img-Fons-Calendari.png');
+        background-position: top center;
+        background-size: 120vw auto;
+        background-repeat: no-repeat;
+        background-attachment: scroll;
+    }
+
+    .global-app-container.calendar-page-bg::before {
         display: none;
     }
 

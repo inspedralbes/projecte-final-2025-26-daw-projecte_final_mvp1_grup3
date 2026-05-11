@@ -59,13 +59,13 @@ describe('Navegación y Auth Guards', function () {
     cy.intercept('GET', '**/socket.io/**', { statusCode: 200, body: '' });
     cy.visit('/home');
 
-    cy.get('a[href="/perfil"]').click();
+    cy.get('a[href="/perfil"]:visible').first().click();
     cy.url().should('include', '/perfil');
 
-    cy.get('a[href="/plantilles"]').click();
+    cy.get('a[href="/plantilles"]:visible').first().click();
     cy.url().should('include', '/plantilles');
 
-    cy.get('a[href="/home"]').first().click();
+    cy.get('a[href="/home"]:visible').first().click();
     cy.url().should('include', '/home');
   });
 

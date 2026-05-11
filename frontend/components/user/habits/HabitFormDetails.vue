@@ -1,11 +1,6 @@
 <template>
   <div class="bento-card bg-white/95 backdrop-blur-md rounded-3xl p-8 shadow-xl border border-white/50">
-    <div class="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100">
-      <div class="w-12 h-12 bg-green-100 text-green-600 rounded-2xl flex items-center justify-center text-2xl shadow-sm">✍️</div>
-      <h2 class="text-xl font-bold text-gray-800 tracking-tight">{{ $t('habits.details') }}</h2>
-    </div>
-
-    <div class="space-y-6">
+    <div class="space-y-5">
       <div>
         <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3 px-1">{{ $t('habits.habit_name') }}</label>
         <input 
@@ -18,7 +13,7 @@
         />
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
         <div>
           <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3 px-1">{{ $t('habits.difficulty') }}</label>
           <select 
@@ -51,7 +46,7 @@
             <button
               type="button"
               data-testid="habit-daily-goal-plus"
-              class="daily-goal-step-btn daily-goal-step-btn--plus flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-0 bg-indigo-600 text-lg font-bold text-white shadow-md transition hover:bg-indigo-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+              class="daily-goal-step-btn daily-goal-step-btn--plus flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-0 bg-gray-100 text-lg font-bold text-gray-600 shadow-sm transition hover:bg-gray-200 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
               :disabled="dailyGoalValue >= 99"
               :aria-label="$t('habits.daily_goal_increase')"
               @click="bumpObjectiu(1)"

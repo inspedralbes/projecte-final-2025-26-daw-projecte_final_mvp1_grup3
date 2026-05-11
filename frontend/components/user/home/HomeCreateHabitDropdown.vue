@@ -256,7 +256,10 @@ export default {
         dificultat: "facil",
         unitat: "vegades",
         color: "#10B981",
-        dies_setmana: [true, true, true, true, true, true, true]
+        dies_setmana: [true, true, true, true, true, true, true],
+        dataFinalitzacio: "",
+        repeticio_interval: 1,
+        dies_mes: []
       },
       recursExternSeleccionat: null,
       cercaExterna: {
@@ -325,6 +328,9 @@ export default {
       this.formulari.unitat = "vegades";
       this.formulari.color = "#10B981";
       this.formulari.dies_setmana = [true, true, true, true, true, true, true];
+      this.formulari.dataFinalitzacio = "";
+      this.formulari.repeticio_interval = 1;
+      this.formulari.dies_mes = [];
       this.recursExternSeleccionat = null;
       this.cercaExterna.query = "";
       this.cercaExterna.resultats = [];

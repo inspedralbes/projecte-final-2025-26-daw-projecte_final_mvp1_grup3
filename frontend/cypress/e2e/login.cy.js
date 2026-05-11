@@ -15,7 +15,10 @@ describe('Login', function () {
   });
 
   it('muestra error con campos vacíos', function () {
-    cy.get('form').submit();
+    // Asegura que Vue ya está hidratado antes de enviar
+    cy.get('input[type="email"]').type('a').clear();
+    cy.get('input[type="password"]').type('a').clear();
+    cy.get('form button[type="submit"]').click();
     cy.get('.login-error-msg').should('be.visible');
   });
 
@@ -37,7 +40,7 @@ describe('Login', function () {
 
     cy.get('input[type="email"]').type('test@example.com');
     cy.get('input[type="password"]').type('password123');
-    cy.get('form').submit();
+    cy.get('form button[type="submit"]').click();
 
     cy.wait('@loginUser');
     cy.url().should('include', '/home');
@@ -65,7 +68,7 @@ describe('Login', function () {
 
     cy.get('input[type="email"]').type('admin@looppy.cat');
     cy.get('input[type="password"]').type('adminpass');
-    cy.get('form').submit();
+    cy.get('form button[type="submit"]').click();
 
     cy.wait('@loginAdmin');
     cy.url().should('include', '/admin');
@@ -84,7 +87,7 @@ describe('Login', function () {
 
     cy.get('input[type="email"]').type('wrong@example.com');
     cy.get('input[type="password"]').type('wrongpassword');
-    cy.get('form').submit();
+    cy.get('form button[type="submit"]').click();
 
     cy.get('.login-error-msg').should('be.visible');
   });

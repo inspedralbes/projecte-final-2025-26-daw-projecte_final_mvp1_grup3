@@ -1,6 +1,6 @@
 <template>
   <div class="relative w-full min-h-screen pb-12 overflow-y-auto">
-    <div class="max-w-4xl mx-auto px-6 pt-4 pb-4 space-y-8">
+    <div class="max-w-4xl mx-auto px-6 pt-4 pb-4 space-y-6">
         <!-- Accés ràpid: llista per editar (modal) -->
         <div class="flex justify-end">
           <button
@@ -281,7 +281,10 @@ export default {
         objectiuVegades: 1, 
         unitat: "vegades",
         dificultat: "facil",
-        dies_setmana: [true, true, true, true, true, true, true]
+        dies_setmana: [true, true, true, true, true, true, true],
+        dataFinalitzacio: "",
+        repeticio_interval: 1,
+        dies_mes: []
       },
       editantHabitId: null,
       categoriaAnterior: null,
@@ -699,6 +702,8 @@ export default {
       this.formulari.dies_setmana = Array.isArray(habit.diesSetmana) && habit.diesSetmana.length > 0
         ? habit.diesSetmana
         : [true, true, true, true, true, true, true];
+      this.formulari.dataFinalitzacio = habit.dataFinalitzacio || "";
+      this.formulari.repeticio_interval = habit.repeticioInterval || 1;
 
       this.categoriaAnterior = this.formulari.categoria;
       this.cercaExterna.query = "";
@@ -737,6 +742,9 @@ export default {
       this.formulari.unitat = "vegades";
       this.formulari.dificultat = "facil";
       this.formulari.dies_setmana = [true, true, true, true, true, true, true];
+      this.formulari.dataFinalitzacio = "";
+      this.formulari.repeticio_interval = 1;
+      this.formulari.dies_mes = [];
 
       this.categoriaAnterior = null;
       this.recursExternSeleccionat = null;

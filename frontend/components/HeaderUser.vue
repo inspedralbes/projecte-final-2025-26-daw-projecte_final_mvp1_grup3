@@ -34,10 +34,10 @@
             </template>
             <template v-else-if="headerWeather && headerWeather.ok === true">
               <p
-                class="flex-1 min-w-0 text-left text-[11px] font-semibold text-gray-800 leading-snug line-clamp-2"
-                :title="headerWeatherCity"
+                class="flex-1 min-w-0 text-center text-sm font-black text-gray-900 leading-none tabular-nums"
+                :title="headerDateShort"
               >
-                {{ headerWeatherCity }}
+                {{ headerDateShort }}
               </p>
               <div class="flex flex-row items-center justify-end shrink-0 gap-0.5">
                 <span class="text-lg leading-none" aria-hidden="true">{{ headerWeatherEmoji }}</span>
@@ -281,6 +281,13 @@ const headerWeatherTemp = computed(() => {
   const t = headerWeather.value?.temp
   if (t === null || t === undefined || Number.isNaN(Number(t))) return '—'
   return String(Math.round(Number(t))) + '°'
+})
+
+const headerDateShort = computed(() => {
+  var now = new Date()
+  var day = String(now.getDate()).padStart(2, '0')
+  var month = String(now.getMonth() + 1).padStart(2, '0')
+  return day + '/' + month
 })
 
 /** Nom de la ciutat que retorna l'API (OpenWeather / reverse geocoding). */

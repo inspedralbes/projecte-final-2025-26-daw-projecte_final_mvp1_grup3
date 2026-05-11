@@ -4,6 +4,12 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+    html, body {
+        font-family: 'Fredoka', sans-serif;
+    }
+}
+
 @layer components {
     /* ==== LOGIN PAGE ==== */
 

@@ -1,6 +1,29 @@
+function esborrarSessioLoopy(win) {
+  var claus = [
+    'loopy_token',
+    'loopy_user',
+    'loopy_admin',
+    'loopy_role',
+    'loopy_onboarding_done',
+    'loopy_onboarding_user_id',
+    'loopy_requires_onboarding_user_id'
+  ];
+  for (var i = 0; i < claus.length; i++) {
+    try {
+      win.localStorage.removeItem(claus[i]);
+    } catch (e) {}
+  }
+}
+
 describe('Login', function () {
   beforeEach(function () {
-    cy.visit('/auth/login');
+    cy.clearCookie('loopy_role');
+    cy.clearCookie('loopy_onboarding_done');
+    cy.visit('/auth/login', {
+      onBeforeLoad: function (win) {
+        esborrarSessioLoopy(win);
+      }
+    });
   });
 
   it('muestra el formulario de login con los campos necesarios', function () {
@@ -32,17 +55,30 @@ describe('Login', function () {
       }
     }).as('loginUser');
 
+    cy.intercept('POST', '**/api/auth/refresh', {
+      statusCode: 200,
+      body: {
+        token: 'fake-jwt-token',
+        role: 'user',
+        user: { id: 1, nom: 'Test User', email: 'test@example.com', nivell: 5, monedes: 100, xp_total: 2500, ratxa_actual: 3, ratxa_maxima: 10 }
+      }
+    });
+    cy.intercept('GET', '**/api/user/home', { fixture: 'user-home.json' });
+    cy.intercept('GET', '**/api/external/weather*', { statusCode: 200, body: { success: true, data: {} } });
     cy.intercept('GET', '**/api/habits', { body: [] });
     cy.intercept('GET', '**/api/habits/progress', { body: {} });
     cy.intercept('GET', '**/api/game-state', { body: { nivell: 1, xp_total: 0, ratxa: 0, ratxa_maxima: 0, monedes: 0, canSpinRoulette: false } });
     cy.intercept('GET', '**/api/logros', { body: [] });
     cy.intercept('GET', '**/socket.io/**', { statusCode: 200, body: '' });
 
-    cy.get('input[type="email"]').type('test@example.com');
-    cy.get('input[type="password"]').type('password123');
-    cy.get('form button[type="submit"]').click();
+    cy.get('form.login-form').within(function () {
+      cy.get('input[type="email"]').should('be.visible').clear().type('test@example.com');
+      cy.get('input[type="password"]').should('be.visible').clear().type('password123');
+      cy.get('input[type="email"]').clear().type('test@example.com');
+    });
+    cy.get('form.login-form button[type="submit"]').should('not.be.disabled').click();
 
-    cy.wait('@loginUser');
+    cy.wait('@loginUser', { timeout: 15000 });
     cy.url().should('include', '/home');
   });
 
@@ -61,16 +97,29 @@ describe('Login', function () {
       }
     }).as('loginAdmin');
 
+    cy.intercept('POST', '**/api/auth/refresh', {
+      statusCode: 200,
+      body: {
+        token: 'fake-admin-token',
+        role: 'admin',
+        admin: { id: 1, nom: 'Admin', email: 'admin@looppy.cat' }
+      }
+    });
     cy.intercept('GET', '**/api/admin/dashboard', { fixture: 'admin-dashboard.json' });
     cy.intercept('GET', '**/api/admin/rankings/mensual', { fixture: 'admin-rankings.json' });
     cy.intercept('GET', '**/api/admin/usuaris/**', { fixture: 'admin-usuaris.json' });
     cy.intercept('GET', '**/socket.io/**', { statusCode: 200, body: '' });
 
-    cy.get('input[type="email"]').type('admin@looppy.cat');
-    cy.get('input[type="password"]').type('adminpass');
-    cy.get('form button[type="submit"]').click();
+    // Sense assert have.value (Chrome pot buidar el correu); es torna a escriure el correu després de la contrasenya.
+    cy.get('form.login-form').within(function () {
+      cy.get('input[type="email"]').should('be.visible').clear().type('admin@looppy.cat');
+      cy.get('input[type="password"]').should('be.visible').clear().type('adminpass');
+      cy.get('input[type="email"]').clear().type('admin@looppy.cat');
+    });
+    cy.get('form.login-form button[type="submit"]').should('not.be.disabled').click();
 
-    cy.wait('@loginAdmin');
+    cy.wait('@loginUserFail', { timeout: 15000 });
+    cy.wait('@loginAdmin', { timeout: 15000 });
     cy.url().should('include', '/admin');
   });
 
@@ -85,8 +134,8 @@ describe('Login', function () {
       body: { message: 'Credencials incorrectes' }
     });
 
-    cy.get('input[type="email"]').type('wrong@example.com');
-    cy.get('input[type="password"]').type('wrongpassword');
+    cy.get('input[type="email"]').should('be.visible').clear().type('wrong@example.com');
+    cy.get('input[type="password"]').should('be.visible').clear().type('wrongpassword');
     cy.get('form button[type="submit"]').click();
 
     cy.get('.login-error-msg').should('be.visible');

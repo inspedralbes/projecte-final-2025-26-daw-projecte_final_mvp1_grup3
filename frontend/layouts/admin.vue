@@ -51,7 +51,7 @@
 
       <!-- Footer SideBar -->
       <div class="p-6 border-t border-gray-100 bg-gray-50/50">
-        <button type="button" @click="sortir" class="flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-black text-red-500 hover:bg-red-50 transition-all uppercase tracking-widest w-full text-left">
+        <button id="btn-admin-logout" type="button" data-cy="admin-logout" @click="sortir" class="flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-black text-red-500 hover:bg-red-50 transition-all uppercase tracking-widest w-full text-left">
           <div class="w-2 h-2 rounded-full bg-red-400"></div>
           Sortir
         </button>
@@ -71,19 +71,34 @@
 /**
  * Layout d'Administració (Desktop).
  */
-import { computed } from 'vue';
+import { onBeforeUnmount, onMounted } from 'vue';
 
-var route = useRoute();
-
-function sortir() {
+async function sortir() {
   var nuxtApp = useNuxtApp();
-  useAuthStore().logout().then(function () {
+  try {
+    await useAuthStore().logout();
+  } catch (e) {}
+  try {
     if (nuxtApp.$socket) {
       nuxtApp.$socket.disconnect();
     }
-    navigateTo('/auth/login');
-  });
+  } catch (e) {}
+  if (typeof window !== 'undefined') {
+    window.location.assign('/auth/login');
+  }
 }
+
+onMounted(function () {
+  if (typeof window !== 'undefined') {
+    window.__loopyAdminSortir = sortir;
+  }
+});
+
+onBeforeUnmount(function () {
+  if (typeof window !== 'undefined' && window.__loopyAdminSortir === sortir) {
+    delete window.__loopyAdminSortir;
+  }
+});
 
 var menuPrincipal = [
   { nom: 'Dashboard', ruta: '/admin' },

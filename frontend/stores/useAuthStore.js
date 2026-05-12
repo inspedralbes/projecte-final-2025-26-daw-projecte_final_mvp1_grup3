@@ -169,8 +169,10 @@ export var useAuthStore = defineStore('auth', {
       this.role = null;
       this.isAuthenticated = false;
       this.requiresOnboarding = false;
-      var onboardingCookie = useCookie('loopy_onboarding_done');
-      onboardingCookie.value = null;
+      try {
+        var onboardingCookie = useCookie('loopy_onboarding_done');
+        onboardingCookie.value = null;
+      } catch (e) {}
       if (typeof window !== 'undefined') {
         localStorage.removeItem('loopy_token');
         localStorage.removeItem('loopy_user');
@@ -179,6 +181,7 @@ export var useAuthStore = defineStore('auth', {
         localStorage.removeItem('loopy_onboarding_done');
         localStorage.removeItem('loopy_onboarding_user_id');
         localStorage.removeItem('loopy_requires_onboarding_user_id');
+        document.cookie = 'loopy_role=; Path=/; Max-Age=0; SameSite=Lax';
       }
     },
 

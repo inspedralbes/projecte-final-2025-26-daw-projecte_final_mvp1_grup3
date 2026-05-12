@@ -15,7 +15,7 @@
         <p class="login-subtitle">{{ $t('create_account') }}</p>
       </div>
 
-      <form class="login-form mt-6 space-y-4" @submit.prevent>
+      <form class="login-form mt-6 space-y-4" novalidate @submit.prevent>
         <div v-if="errorMissatge" class="login-error-msg">
           {{ errorMissatge }}
         </div>
@@ -71,7 +71,7 @@
               <p class="text-white/90 font-medium mb-10 text-lg leading-relaxed drop-shadow-sm">
                 {{ $t('quiz.quiz_description') }}
               </p>
-              <button @click="iniciarOnboarding" class="bg-white text-[#3a5826] px-10 py-4 rounded-2xl font-black text-lg hover:bg-green-50 hover:scale-105 active:scale-95 transition-all shadow-[0_8px_20px_rgba(0,0,0,0.15)] uppercase tracking-wider relative z-20 cursor-pointer">
+              <button type="button" data-cy="registre-iniciar-quiz" @click="iniciarOnboarding" class="bg-white text-[#3a5826] px-10 py-4 rounded-2xl font-black text-lg hover:bg-green-50 hover:scale-105 active:scale-95 transition-all shadow-[0_8px_20px_rgba(0,0,0,0.15)] uppercase tracking-wider relative z-20 cursor-pointer">
                 {{ $t('quiz.start_test') }}
               </button>
             </div>
@@ -155,8 +155,18 @@ export default {
       errorMissatge: "",
       estaCarregant: false,
       formulari: { nom: "", email: "", contrasenya: "", confirmacio: "" },
-      mapaCategories: { gym: 1, nutrition: 2, study: 3, reading: 4, wellness: 5, smoking: 6, cleaning: 7, hobby: 8 }
+      mapaCategories: { gym: 1, nutrition: 2, study: 3, reading: 4, wellness: 5, smoking: 6, cleaning: 7, hobby: 8 },
+      apiBaseResolt: "http://localhost:8000"
     };
+  },
+  mounted: function () {
+    var self = this;
+    try {
+      var c = useRuntimeConfig();
+      self.apiBaseResolt = (c.public.apiUrl || "http://localhost:8000").replace(/\/$/, "");
+    } catch (e) {
+      self.apiBaseResolt = "http://localhost:8000";
+    }
   },
   computed: {
     pregunta: function () {
@@ -171,7 +181,7 @@ export default {
       var self = this;
       self.estaCarregant = true;
       try {
-        var base = (self.$config.public.apiUrl || "").replace(/\/$/, "");
+        var base = self.apiBaseResolt || "http://localhost:8000";
         var resposta = await fetch(base + "/api/onboarding/questions");
         var dades = await resposta.json();
         if (dades && dades.success) {
@@ -190,7 +200,7 @@ export default {
       self.categoriaSeleccionada = categoria;
       var idCategoria = self.mapaCategories[categoria];
       try {
-        var base = (self.$config.public.apiUrl || "").replace(/\/$/, "");
+        var base = self.apiBaseResolt || "http://localhost:8000";
         var resposta = await fetch(base + "/api/preguntes-registre/" + idCategoria);
         var dades = await resposta.json();
         if (dades && dades.preguntes) {
@@ -218,6 +228,10 @@ export default {
         self.errorMissatge = this.$t('error_all_fields_required');
         return;
       }
+      if (self.formulari.contrasenya.length < 6) {
+        self.errorMissatge = this.$t('error_password_short');
+        return;
+      }
       if (self.formulari.contrasenya !== self.formulari.confirmacio) {
         self.errorMissatge = this.$t('error_password_mismatch');
         return;
@@ -225,8 +239,7 @@ export default {
       self.errorMissatge = "";
       self.estaCarregant = true;
       try {
-        var config = useRuntimeConfig();
-        var base = (config.public.apiUrl || "").replace(/\/$/, "");
+        var base = self.apiBaseResolt || "http://localhost:8000";
         var resposta = await fetch(base + "/api/auth/register", {
           method: "POST",
           headers: { "Content-Type": "application/json", Accept: "application/json" },

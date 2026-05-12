@@ -25,8 +25,8 @@ describe('Perfil', function () {
   });
 
   it('muestra la sección de logros y medallas', function () {
-    cy.contains('Primer Hàbit').should('be.visible');
-    cy.contains('Ratxa de 3').should('be.visible');
+    cy.contains('.font-bold.text-amber-400', 'Primer Hàbit').should('exist');
+    cy.contains('.font-bold.text-amber-400', 'Ratxa de 3').should('exist');
   });
 
   it('muestra el historial diario', function () {

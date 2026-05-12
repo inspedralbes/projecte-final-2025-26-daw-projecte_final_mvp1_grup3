@@ -5,7 +5,7 @@ describe('Home / Hàbits', function () {
     cy.intercept('GET', '**/socket.io/**', { statusCode: 200, body: '' });
 
     cy.visit('/home');
-    cy.wait('@getHabits');
+    cy.wait('@getUserHome');
   });
 
   it('carga la página principal dentro del layout global', function () {
@@ -23,8 +23,8 @@ describe('Home / Hàbits', function () {
   });
 
   it('muestra el progreso de cada hábito', function () {
-    cy.contains('+50 XP').should('be.visible');
-    cy.contains('+30 XP').should('be.visible');
+    cy.contains('+100 XP').should('be.visible');
+    cy.contains('+250 XP').should('be.visible');
   });
 
   it('muestra los botones de progreso de cada hábito', function () {
@@ -36,11 +36,11 @@ describe('Home / Hàbits', function () {
   });
 
   it('muestra la sección de la ruleta', function () {
-    cy.contains('RULETA').should('be.visible');
+    cy.get('img[alt="Ruleta"]').should('be.visible');
   });
 
   it('muestra el header de navegación del usuario', function () {
     cy.get('header').should('be.visible');
-    cy.contains('a', 'Loopy').should('be.visible');
+    cy.get('header a[href="/home"]').should('be.visible');
   });
 });

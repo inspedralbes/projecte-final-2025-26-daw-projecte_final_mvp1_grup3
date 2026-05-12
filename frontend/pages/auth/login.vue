@@ -15,17 +15,17 @@
         <p class="login-subtitle">{{ $t('login_subtitle') }}</p>
       </div>
 
-      <form class="login-form" @submit.prevent="ferLogin">
+      <form class="login-form" novalidate @submit.prevent="ferLogin">
         <div v-if="errorMissatge" class="login-error-msg">
           {{ errorMissatge }}
         </div>
         
         <div>
-          <input v-model="formulari.email" type="email" :placeholder="$t('email')" class="login-input" />
+          <input v-model="formulari.email" type="email" autocomplete="username" :placeholder="$t('email')" class="login-input" />
         </div>
 
         <div>
-          <input v-model="formulari.contrasenya" type="password" :placeholder="$t('password')" class="login-input" />
+          <input v-model="formulari.contrasenya" type="password" autocomplete="current-password" :placeholder="$t('password')" class="login-input" />
         </div>
 
         <div class="pt-4">

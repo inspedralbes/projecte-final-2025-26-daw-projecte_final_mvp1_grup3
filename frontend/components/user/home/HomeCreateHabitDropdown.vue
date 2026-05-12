@@ -1,15 +1,18 @@
 <template>
-  <section class="lg:hidden px-2">
-    <div class="rounded-2xl border border-white/40 bg-white/20 backdrop-blur-sm p-2">
-      <button
-        type="button"
-        class="w-full h-11 rounded-xl border-2 border-dashed border-white/60 text-white text-2xl font-black flex items-center justify-center transition hover:bg-white/15"
-        :aria-expanded="formulariObert ? 'true' : 'false'"
-        @click="toggleFormulari"
-      >
-        <span aria-hidden="true">{{ formulariObert ? "−" : "+" }}</span>
-      </button>
-    </div>
+  <section class="lg:hidden">
+    <button
+      type="button"
+      class="create-habit-trigger w-full"
+      :aria-expanded="formulariObert ? 'true' : 'false'"
+      @click="toggleFormulari"
+    >
+      <span class="create-habit-trigger__icon" aria-hidden="true">
+        <svg width="33" height="33" viewBox="0 0 33 33" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <line x1="17" y1="2" x2="17" y2="31" stroke="white" stroke-width="4" stroke-linecap="round"/>
+          <line x1="2" y1="16" x2="31" y2="16" stroke="white" stroke-width="4" stroke-linecap="round"/>
+        </svg>
+      </span>
+    </button>
 
     <Teleport to="body">
       <Transition name="sheet-backdrop">
@@ -531,6 +534,28 @@ export default {
 </script>
 
 <style scoped>
+.create-habit-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 338px;
+  min-height: 64px;
+  margin: 0 auto;
+  padding: 0;
+  border-radius: 10px;
+  background: rgba(250, 249, 249, 0.5);
+  border: 2px dashed #FFFFFF;
+  box-shadow: none;
+}
+
+.create-habit-trigger__icon {
+  width: 33px;
+  height: 33px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .sheet-backdrop-enter-active,
 .sheet-backdrop-leave-active {
   transition: opacity 0.2s ease;

@@ -8,7 +8,7 @@
       <!-- CENTRE: sense sticky → el monstre creua el scroll amb el fons natural (no queda pinat sol) -->
       <div class="col-span-12 lg:col-span-6 order-3 lg:order-2 lg:row-span-1 h-fit max-h-none space-y-4 lg:space-y-6 lg:self-start lg:z-[5]">
         <!-- Mobile: monstre sobre el fons global (imatge dalt + verd #7EB356 sota) -->
-        <div class="lg:hidden relative w-full flex justify-center px-2 pt-0 pb-1 overflow-visible">
+        <div class="lg:hidden relative w-full flex justify-center pt-0 pb-1 overflow-visible">
           <img
             v-if="imatgeMascota"
             :src="imatgeMascota"
@@ -44,7 +44,7 @@
           </div>
 
           <div class="w-full flex flex-col items-center justify-start relative pt-2 shrink-0">
-            <div class="flex justify-center w-full px-2 pb-2 -mt-1">
+            <div class="flex justify-center w-full pb-2 -mt-1">
               <img
                 v-if="imatgeMascota"
                 :src="imatgeMascota"
@@ -115,13 +115,6 @@
         </div>
       </div>
 
-      <!-- Separador mobile entre monstre i hàbits -->
-      <div class="col-span-12 order-4 lg:hidden flex items-center gap-3 px-2">
-        <div class="flex-1 h-px bg-white/40"></div>
-        <span class="text-xs text-white/70 font-semibold whitespace-nowrap">{{ $t('home.habits_title') || 'Els teus hàbits' }}</span>
-        <div class="flex-1 h-px bg-white/40"></div>
-      </div>
-
       <!-- COSTAT DRET: només aquesta columna allarga la pàgina cap avall -->
       <div class="col-span-12 lg:col-span-3 order-5 lg:order-3 lg:self-start space-y-4 lg:space-y-6">
         <div class="hidden lg:block">
@@ -136,7 +129,6 @@
             @switch-manual="passarAManual"
           />
         </div>
-        <HomeCreateHabitDropdown @habit-creat="refrescarDespresCrearHabit" />
         <UserHomeHomeHabitsSection
           :habits="habitsDelDia"
           :esta-carregant="estaCarregantHabits"
@@ -148,6 +140,11 @@
           @netejar-error="errorMissatge = ''"
           @obrir-modal-habit="obrirModalHabit"
           @obrir-detalls-habit="obrirModalDetallsHabit"
+          @habit-creat="refrescarDespresCrearHabit"
+          @incrementar-habit="incrementarHabitInline"
+          @decrementar-habit="decrementarHabitInline"
+          @start-focus-habit="iniciarSessioFocus"
+          @editar-habit="editarHabitInline"
         />
       </div>
     </div>
@@ -211,7 +208,6 @@ import UserHomeHomeProfileCard from "~/components/user/home/HomeProfileCard.vue"
 import UserHomeHomeLogrosCard from "~/components/user/home/HomeLogrosCard.vue";
 import UserHomeHomeRouletteSection from "~/components/user/home/HomeRouletteSection.vue";
 import UserHomeHomeHabitsSection from "~/components/user/home/HomeHabitsSection.vue";
-import HomeCreateHabitDropdown from "~/components/user/home/HomeCreateHabitDropdown.vue";
 import WeatherWidget from "~/components/user/home/WeatherWidget.vue";
 import { authFetch } from "~/composables/useApi.js";
 import { flushPendingFocusEvents } from "~/composables/user/useFocusEventQueue.js";
@@ -230,7 +226,6 @@ export default {
     UserHomeHomeLogrosCard,
     UserHomeHomeRouletteSection,
     UserHomeHomeHabitsSection,
-    HomeCreateHabitDropdown,
     WeatherWidget
   },
   data: function () {
@@ -578,6 +573,11 @@ export default {
         this.gameStore.enviarProgresHabit(id, 1, this.socket);
       }
     },
+    incrementarHabitInline: function (habit) {
+      if (!habit) return;
+      this.habitSeleccionat = habit;
+      this.incrementarHabit();
+    },
 
     /**
      * Decrementa el progrés de l'hàbit seleccionat.
@@ -603,6 +603,15 @@ export default {
       if (this.socket && this.socket.connected) {
         this.gameStore.enviarProgresHabit(id, -1, this.socket);
       }
+    },
+    decrementarHabitInline: function (habit) {
+      if (!habit) return;
+      this.habitSeleccionat = habit;
+      this.decrementarHabit();
+    },
+    editarHabitInline: function (habit) {
+      if (!habit || !habit.id) return;
+      navigateTo("/habits?edit=" + habit.id);
     },
 
     /**

@@ -1,51 +1,30 @@
 <template>
-  <div
-    class="bg-white rounded-xl shadow transition-all hover:shadow-md overflow-hidden"
+  <button
+    type="button"
+    class="habit-card w-full text-left transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-lime-300"
     :data-testid="'home-habit-card-' + habit.id"
-    :class="climaAdvers ? 'ring-1 ring-orange-200' : ''"
+    :class="[
+      climaAdvers ? 'ring-1 ring-orange-200' : '',
+      completatAvui ? 'opacity-70' : ''
+    ]"
+    @click="$emit('obrir-detalls', habit)"
   >
-    <div v-if="climaAdvers" class="flex items-center gap-1.5 bg-orange-50 border-b border-orange-100 px-3 py-1">
-      <span class="text-sm">🌧️</span>
-      <span class="text-xs font-bold text-orange-600">Clima advers — considera alternativa interior</span>
+    <div class="habit-card__shape" aria-hidden="true">
+      <svg width="56" height="40" viewBox="0 0 56 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M1.64885 13.8624C4.80033 5.5202 12.7867 0 21.7043 0H46.8857C51.8563 0 55.8857 4.02944 55.8857 9V18.1149C55.8857 20.9967 55.1982 23.8369 53.8802 26.3997L53.3295 27.4705C49.3729 35.1639 41.4476 40 32.7964 40H18.4113C11.3613 40 4.93035 35.9742 1.85018 29.6327C-0.361252 25.0797 -0.600734 19.8171 1.18804 15.0821L1.64885 13.8624Z" :fill="colorIndicador" />
+      </svg>
     </div>
 
-    <div class="p-3 lg:p-4 flex items-center gap-3">
-      <!-- Color indicator -->
-      <div
-        class="w-8 h-8 lg:w-10 lg:h-10 rounded-full flex-shrink-0 flex items-center justify-center text-white text-sm lg:text-base"
-        :class="completatAvui ? 'opacity-50' : ''"
-        :style="{ backgroundColor: colorIndicador }"
-      >
-        <span aria-hidden="true">{{ iconaCategoria }}</span>
-      </div>
+    <p class="habit-card__title">
+      {{ habit.nom }}
+    </p>
 
-      <div class="flex-1 min-w-0">
-        <p class="font-semibold text-gray-800 text-sm lg:text-base">{{ habit.nom }}</p>
-        <p class="text-xs text-gray-500 truncate hidden lg:block">{{ habit.descripcio }} • +{{ habit.recompensaXP }} XP</p>
-        <p class="text-xs text-blue-600 font-semibold">{{ progress }}/{{ habit.objectiuVegades || 1 }}
-          <span v-if="completatAvui" class="text-green-600 ml-1">✓ {{ $t('home.completed') }}</span>
-        </p>
-      </div>
-
-      <div class="flex flex-col gap-1.5 lg:gap-2 flex-shrink-0">
-        <button
-          class="px-2 py-1.5 lg:px-3 lg:py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed min-w-[80px] lg:min-w-[110px]"
-          :disabled="estaProcessant"
-          @click="$emit('obrir-modal', habit)"
-        >
-          <span v-if="estaProcessant">{{ $t('home.loading') }}</span>
-          <span v-else>{{ $t('home.progress') }}</span>
-        </button>
-        <button
-          data-testid="habit-details-button"
-          class="px-2 py-1.5 lg:px-3 lg:py-2 bg-white text-indigo-600 border border-indigo-200 rounded-full hover:bg-indigo-50 transition text-xs font-bold min-w-[80px] lg:min-w-[110px]"
-          @click="$emit('obrir-detalls', habit)"
-        >
-          detalls
-        </button>
-      </div>
-    </div>
-  </div>
+    <span class="habit-card__dots" aria-hidden="true">
+      <span></span>
+      <span></span>
+      <span></span>
+    </span>
+  </button>
 </template>
 
 <script>
@@ -58,17 +37,6 @@ var CATEGORY_COLORS = {
   6: '#facc15', // groc (ment / meditació)
   7: '#34d399', // verd menta (exterior)
   8: '#fb923c'  // taronja clar (esport)
-};
-
-var CATEGORY_ICONS = {
-  1: '🏃',
-  2: '💧',
-  3: '📚',
-  4: '🎨',
-  5: '💬',
-  6: '🧘',
-  7: '🌳',
-  8: '⚽'
 };
 
 export default {
@@ -84,11 +52,54 @@ export default {
     colorIndicador: function () {
       var catId = this.habit.categoriaId || this.habit.categoria_id;
       return CATEGORY_COLORS[catId] || '#94a3b8';
-    },
-    iconaCategoria: function () {
-      var catId = this.habit.categoriaId || this.habit.categoria_id;
-      return CATEGORY_ICONS[catId] || '✅';
     }
   }
 };
 </script>
+
+<style scoped>
+.habit-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 86px;
+  padding: 18px 18px 18px 88px;
+  background-color: #FAF9F9;
+  border-radius: 10px;
+}
+
+.habit-card__shape {
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 56px;
+  height: 40px;
+}
+
+.habit-card__title {
+  margin: 0;
+  color: #2B2D42;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 20px;
+  line-height: 24px;
+}
+
+.habit-card__dots {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.habit-card__dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background-color: #D9D9D9;
+}
+</style>

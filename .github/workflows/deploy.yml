@@ -204,8 +204,8 @@ jobs:
 
             for i in $(seq 1 15); do
               API_OK=$($COMPOSE exec -T backend-laravel php artisan tinker --execute="echo 'OK';" 2>/dev/null | grep -c "OK" || true)
-              # Check Frontend port 3000 instead of 80 (since Nuxt uses 3000 locally in docker-compose)
-              WEB_OK=$(nc -z 127.0.0.1 3000 2>/dev/null && echo 1 || echo 0)
+              # Frontend públic en 80 (mapeig 80:3000 al docker-compose de producció)
+              WEB_OK=$(nc -z 127.0.0.1 80 2>/dev/null && echo 1 || echo 0)
 
               if [ "$API_OK" = "1" ] && [ "$WEB_OK" = "1" ]; then
                 echo "✅ Health check passed!"

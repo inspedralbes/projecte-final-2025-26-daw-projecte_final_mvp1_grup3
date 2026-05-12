@@ -260,6 +260,9 @@ export default {
         authStore.reiniciarEstatOnboarding();
         var habitStore = useHabitStore();
         habitStore.establirHabitsDesDeApi([]);
+        if (typeof window !== "undefined") {
+          sessionStorage.setItem("loopy_register_onboarding_entrance", "1");
+        }
         await navigateTo("/onboarding");
       } catch (err) {
         self.errorMissatge = this.$t('error_connection');

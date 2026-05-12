@@ -1,173 +1,197 @@
 <template>
-  <div class="global-app-container onboarding-page onboarding-container">
-    <!-- Progress Bar -->
-    <div class="onboarding-progress-container">
-      <div class="onboarding-progress-bar">
-        <div 
-          v-for="step in 4" 
-          :key="step" 
-          class="progress-segment"
-          :class="{ 
-            'completed': currentStep > step,
-            'active': currentStep === step
-          }"
-        ></div>
+  <div
+    class="global-app-container onboarding-page onboarding-container"
+    :class="{ 'onboarding-container--intro': !introFinished && !isLoading && !showHabitsSelection }"
+  >
+    <div
+      v-if="!introFinished && !isLoading && !showHabitsSelection"
+      class="onboarding-intro"
+      tabindex="0"
+      role="region"
+      :aria-label="$t('onboarding.intro.region_label')"
+      @click="advanceIntro"
+      @keydown.enter.prevent="advanceIntro"
+      @keydown.space.prevent="advanceIntro"
+    >
+      <div class="onboarding-intro-bubble" aria-live="polite">
+        <p class="onboarding-intro-bubble-text">
+          {{ introBubbleDisplayedText }}<span
+            v-if="!introTypingComplete"
+            class="onboarding-intro-type-caret"
+            aria-hidden="true"
+          />
+        </p>
       </div>
-      <p class="onboarding-progress-text">{{ $t('onboarding.progress', { current: currentStep }) }}</p>
+      <div class="onboarding-intro-loopy" aria-hidden="true">
+        <img
+          :src="loopySaludantUrl"
+          alt=""
+          class="onboarding-intro-loopy-img"
+          :class="{ 'onboarding-intro-loopy-img--entrance': introLoopyFromRegister }"
+          width="524"
+          height="628"
+          decoding="async"
+        />
+      </div>
     </div>
 
-    <!-- Main Content Card -->
-    <div class="onboarding-card">
-      <!-- Question 1: Objectiu (Goal) -->
-      <div v-if="currentStep === 1" class="question-section">
-        <div class="question-header">
-          <h2 class="question-title">{{ $t('onboarding.question1.title') }}</h2>
-          <p class="question-subtitle">{{ $t('onboarding.question1.subtitle') }}</p>
-        </div>
-        <div class="options-list">
-          <button 
-            v-for="option in goalOptions" 
-            :key="option.value"
-            type="button"
-            class="option-btn"
-            :class="{ 'option-btn--selected': answers.objectiu === option.value }"
-            @click="selectAnswer('objectiu', option.value)"
+    <div
+      v-if="introFinished && !isLoading && (currentStep <= 4 || showHabitsSelection)"
+      class="onboarding-quiz"
+    >
+      <div
+        class="onboarding-quiz-body"
+        :class="{ 'onboarding-quiz-body--intro-slide': quizIntroBodySlide }"
+      >
+        <div class="onboarding-progress-wrap">
+          <div
+            class="onboarding-progress-bars"
+            role="group"
+            :aria-label="$t('onboarding.progress', { current: displayProgressStep, total: TOTAL_ONBOARDING_STEPS })"
           >
-            {{ option.label }}
-          </button>
-        </div>
-      </div>
-
-      <!-- Question 2: Energia (Energy) -->
-      <div v-if="currentStep === 2" class="question-section">
-        <div class="question-header">
-          <h2 class="question-title">{{ $t('onboarding.question2.title') }}</h2>
-          <p class="question-subtitle">{{ $t('onboarding.question2.subtitle') }}</p>
-        </div>
-        <div class="options-list">
-          <button 
-            v-for="option in energyOptions" 
-            :key="option.value"
-            type="button"
-            class="option-btn"
-            :class="{ 'option-btn--selected': answers.energia === option.value }"
-            @click="selectAnswer('energia', option.value)"
-          >
-            {{ option.label }}
-          </button>
-        </div>
-      </div>
-
-      <!-- Question 3: Obstacle -->
-      <div v-if="currentStep === 3" class="question-section">
-        <div class="question-header">
-          <h2 class="question-title">{{ $t('onboarding.question3.title') }}</h2>
-          <p class="question-subtitle">{{ $t('onboarding.question3.subtitle') }}</p>
-        </div>
-        <div class="options-list">
-          <button 
-            v-for="option in obstacleOptions" 
-            :key="option.value"
-            type="button"
-            class="option-btn"
-            :class="{ 'option-btn--selected': answers.obstacle === option.value }"
-            @click="selectAnswer('obstacle', option.value)"
-          >
-            {{ option.label }}
-          </button>
-        </div>
-      </div>
-
-      <!-- Question 4: Temps (Time) -->
-      <div v-if="currentStep === 4" class="question-section">
-        <div class="question-header">
-          <h2 class="question-title">{{ $t('onboarding.question4.title') }}</h2>
-          <p class="question-subtitle">{{ $t('onboarding.question4.subtitle') }}</p>
-        </div>
-        <div class="options-list">
-          <button 
-            v-for="option in timeOptions" 
-            :key="option.value"
-            type="button"
-            class="option-btn"
-            :class="{ 'option-btn--selected': answers.temps === option.value }"
-            @click="selectAnswer('temps', option.value)"
-          >
-            {{ option.label }}
-          </button>
-        </div>
-      </div>
-
-      <!-- Loading State -->
-      <div v-if="isLoading" class="loading-section">
-        <div class="loading-spinner"></div>
-        <p class="loading-text">{{ $t('onboarding.generating_habits') }}</p>
-      </div>
-
-      <!-- Habits Selection -->
-      <div v-if="showHabitsSelection && !isLoading" class="habits-section">
-        <div class="question-header">
-          <h2 class="question-title">{{ $t('onboarding.habits.title') }}</h2>
-          <p class="question-subtitle">{{ $t('onboarding.habits.subtitle') }}</p>
-        </div>
-        <div class="habits-list">
-          <div 
-            v-for="(habit, index) in generatedHabits" 
-            :key="index"
-            class="habit-card"
-            :class="{ selected: selectedHabits.includes(index) }"
-            @click="toggleHabit(index)"
-          >
-            <div class="habit-card-header">
-              <span class="habit-title">{{ habit.titol }}</span>
-              <span class="habit-check" :class="{ checked: selectedHabits.includes(index) }">✓</span>
-            </div>
-            <p class="habit-rutina">{{ habit.rutina }}</p>
-            <div class="habit-meta">
-              <span class="habit-category">{{ habit.categoria }}</span>
-              <span class="habit-reward">{{ habit.recompensa }}</span>
+            <div
+              v-for="seg in TOTAL_ONBOARDING_STEPS"
+              :key="seg"
+              class="onboarding-progress-cell"
+            >
+              <svg
+                class="onboarding-progress-svg"
+                viewBox="0 0 100 5"
+                preserveAspectRatio="none"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true"
+              >
+                <line
+                  x1="2.5"
+                  y1="2.5"
+                  x2="97.5"
+                  y2="2.5"
+                  stroke="#79D45D"
+                  stroke-width="5"
+                  stroke-linecap="round"
+                  :stroke-opacity="seg <= displayProgressStep ? 1 : 0.4"
+                />
+              </svg>
             </div>
           </div>
         </div>
-        <p class="habits-enter-hint" :class="{ 'habits-enter-hint--empty': selectedHabits.length === 0 }">
-          {{ selectedHabits.length === 0
-            ? $t('onboarding.habits.hint_zero')
-            : selectedHabits.length === 1
-              ? $t('onboarding.habits.hint_one')
-              : $t('onboarding.habits.hint_other', { n: selectedHabits.length })
-          }}
-        </p>
-        <button 
+
+        <div class="onboarding-index-root">
+          <Transition :name="quizTransitionName" mode="out-in">
+            <p :key="quizSlideKey" class="onboarding-question-index">{{ $t('onboarding.question_number', { n: displayProgressStep }) }}</p>
+          </Transition>
+        </div>
+
+        <div class="onboarding-mascot">
+          <img
+            :src="loopyMascotUrl"
+            alt=""
+            width="265"
+            height="318"
+            class="onboarding-mascot-img"
+            decoding="async"
+          />
+        </div>
+
+        <div class="onboarding-slide-root">
+          <Transition :name="quizTransitionName" mode="out-in">
+            <div :key="quizSlideKey" class="onboarding-slide-pane">
+              <div class="onboarding-copy">
+                <template v-if="!showHabitsSelection">
+                  <h2 class="onboarding-title">{{ currentQuestionTitle }}</h2>
+                  <p class="onboarding-subtitle">{{ currentQuestionSubtitle }}</p>
+                </template>
+                <template v-else>
+                  <h2 class="onboarding-title">{{ $t('onboarding.habits.title') }}</h2>
+                  <p class="onboarding-subtitle">{{ $t('onboarding.habits.subtitle') }}</p>
+                </template>
+              </div>
+
+              <div v-if="!showHabitsSelection" class="onboarding-options">
+                <button
+                  v-for="option in currentOptions"
+                  :key="option.value"
+                  type="button"
+                  class="onboarding-option-btn"
+                  :class="{ 'onboarding-option-btn--selected': currentAnswerValue === option.value }"
+                  @click="selectAnswer(currentAnswerKey, option.value)"
+                >
+                  {{ option.label }}
+                </button>
+              </div>
+              <div v-else class="onboarding-options onboarding-options--habits">
+                <div
+                  v-for="(habit, index) in generatedHabits"
+                  :key="index"
+                  class="onboarding-habit-card"
+                  :class="{ 'onboarding-habit-card--selected': selectedHabits.includes(index) }"
+                  role="button"
+                  tabindex="0"
+                  @click="toggleHabit(index)"
+                  @keydown.enter.prevent="toggleHabit(index)"
+                  @keydown.space.prevent="toggleHabit(index)"
+                >
+                  <div class="onboarding-habit-card-header">
+                    <span class="onboarding-habit-title">{{ habit.titol }}</span>
+                    <span
+                      class="onboarding-habit-check"
+                      :class="{ 'onboarding-habit-check--checked': selectedHabits.includes(index) }"
+                    >✓</span>
+                  </div>
+                  <p class="onboarding-habit-rutina">{{ habit.rutina }}</p>
+                  <div class="onboarding-habit-meta">
+                    <span class="onboarding-habit-category">{{ habit.categoria }}</span>
+                    <span class="onboarding-habit-reward">{{ habit.recompensa }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Transition>
+        </div>
+
+        <div class="onboarding-arrows">
+          <button
+            type="button"
+            class="onboarding-arrow onboarding-arrow--back"
+            :disabled="!showHabitsSelection && currentStep <= 1"
+            :aria-label="$t('onboarding.back')"
+            @click="previousStep"
+          >
+            <svg width="23" height="37" viewBox="0 0 23 37" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M18.25 36.5L0 18.25L18.25 0L22.5083 4.25833L8.51667 18.25L22.5083 32.2417L18.25 36.5Z" fill="currentColor" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            class="onboarding-arrow onboarding-arrow--forward"
+            :disabled="showHabitsSelection || !canProceed"
+            :aria-label="currentStep === 4 ? $t('onboarding.generate') : $t('onboarding.next')"
+            @click="nextStep"
+          >
+            <svg width="23" height="37" viewBox="0 0 23 37" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M18.25 36.5L0 18.25L18.25 0L22.5083 4.25833L8.51667 18.25L22.5083 32.2417L18.25 36.5Z" fill="currentColor" />
+            </svg>
+          </button>
+        </div>
+
+        <button
+          v-if="showHabitsSelection"
           type="button"
-          class="login-btn-primary w-full mt-3" 
+          class="onboarding-primary-btn onboarding-primary-btn--habits"
           @click="confirmHabits"
         >
           {{ $t('onboarding.enter_app') }}
         </button>
       </div>
+    </div>
 
-      <!-- Navigation Buttons -->
-      <div v-if="!showHabitsSelection && !isLoading" class="onboarding-nav">
-        <button 
-          v-if="currentStep > 1" 
-          type="button"
-          class="login-btn-outline onboarding-nav-btn"
-          @click="previousStep"
-        >
-          {{ $t('onboarding.back') }}
-        </button>
-        <button 
-          type="button"
-          class="login-btn-primary onboarding-nav-btn"
-          :disabled="!canProceed"
-          @click="nextStep"
-        >
-          {{ currentStep === 4 ? $t('onboarding.generate') : $t('onboarding.next') }}
-        </button>
+    <div v-else-if="isLoading" class="onboarding-panel onboarding-panel--state">
+      <div class="loading-section">
+        <div class="loading-spinner"></div>
+        <p class="loading-text">{{ $t('onboarding.generating_habits') }}</p>
       </div>
     </div>
 
-    <!-- Error Message -->
     <div v-if="errorMessage" class="error-toast">
       {{ errorMessage }}
     </div>
@@ -175,29 +199,176 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import loopyMascotUrl from '~/assets/img/Onboarding/Img/2-Loopy-Content.png';
+import loopySaludantUrl from '~/assets/img/Onboarding/Img/1-Loopy-Saludant.png';
 import { authFetch } from '~/composables/useApi.js';
 import { useHabitStore } from '~/stores/useHabitStore.js';
 import { useAuthStore } from '~/stores/useAuthStore.js';
 
 definePageMeta({ layout: false });
 
-const { t, setLocale } = useI18n();
+useHead({
+  link: [
+    {
+      rel: 'stylesheet',
+      href: 'https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=Comfortaa:wght@400;700&display=swap',
+    },
+  ],
+});
+
+const { t, setLocale, locale } = useI18n();
 const onboardingDoneCookie = useCookie('loopy_onboarding_done', { sameSite: 'lax', maxAge: 60 * 60 * 24 * 365 });
 const habitStore = useHabitStore();
+/** Passos de quiz (4) + tria d'hàbits (1) per a la barra i l'índex "Pregunta n". */
+const TOTAL_ONBOARDING_STEPS = 5;
 /** Si és cert, al triar resposta a cada pas es passa automàticament al següent (hàbits sempre manual). */
 const AUTO_ADVANCE_STEPS = true;
 
-onMounted(function () {
-  setLocale('ca');
+const config = useRuntimeConfig();
+
+/** Diàleg pre-quiz: 0–2 = tres textos a la bombolla; després del tercer clic es passa a `introFinished`. */
+const introBubbleStep = ref(0);
+const introFinished = ref(false);
+const introLoopyFromRegister = ref(false);
+/** Després de l'animació d'entrada del Loopy (post-registre); sense registre és true des de l'inici. */
+const introLoopyEntranceDone = ref(true);
+/** Primer clic vàlid després d'`introLoopyEntranceDone`: arrenca la màquina d'escriure de la 1a viñeta. */
+const introPreambleComplete = ref(false);
+const introBubbleDisplayedText = ref('');
+/** Un sol cop: animació lateral de tot el bloc del quiz en passar de l'intro. */
+const quizIntroBodySlide = ref(false);
+var introTypewriterTimer = null;
+var introEntranceEndTimer = null;
+
+function introBubbleFullText() {
+  return t('onboarding.intro.bubble' + (introBubbleStep.value + 1));
+}
+
+function clearIntroTypewriter() {
+  if (introTypewriterTimer != null) {
+    clearInterval(introTypewriterTimer);
+    introTypewriterTimer = null;
+  }
+}
+
+function runIntroTypewriter(fullText) {
+  clearIntroTypewriter();
+  introBubbleDisplayedText.value = '';
+  if (!fullText) {
+    return;
+  }
+  var i = 0;
+  var msPerChar = 19;
+  introTypewriterTimer = setInterval(function () {
+    i += 1;
+    introBubbleDisplayedText.value = fullText.slice(0, i);
+    if (i >= fullText.length) {
+      clearIntroTypewriter();
+    }
+  }, msPerChar);
+}
+
+watch(introBubbleStep, function () {
+  if (introFinished.value) {
+    return;
+  }
+  if (introBubbleStep.value === 0 && !introPreambleComplete.value) {
+    return;
+  }
+  runIntroTypewriter(introBubbleFullText());
+}, { immediate: true });
+
+watch(locale, function () {
+  if (introFinished.value) {
+    return;
+  }
+  if (introBubbleStep.value === 0 && !introPreambleComplete.value) {
+    return;
+  }
+  runIntroTypewriter(introBubbleFullText());
 });
 
-const config = useRuntimeConfig();
+watch(introFinished, function (done) {
+  if (!done) {
+    return;
+  }
+  quizIntroBodySlide.value = false;
+  nextTick(function () {
+    quizIntroBodySlide.value = true;
+  });
+});
+
+function advanceIntro() {
+  if (!introPreambleComplete.value) {
+    if (!introLoopyEntranceDone.value) {
+      return;
+    }
+    introPreambleComplete.value = true;
+    runIntroTypewriter(introBubbleFullText());
+    return;
+  }
+
+  var full = introBubbleFullText();
+  if (introBubbleDisplayedText.value.length < full.length) {
+    clearIntroTypewriter();
+    introBubbleDisplayedText.value = full;
+    return;
+  }
+  if (introBubbleStep.value < 2) {
+    introBubbleStep.value++;
+  } else {
+    introFinished.value = true;
+  }
+}
+
+onBeforeUnmount(function () {
+  clearIntroTypewriter();
+  if (introEntranceEndTimer != null) {
+    clearTimeout(introEntranceEndTimer);
+    introEntranceEndTimer = null;
+  }
+});
+
+const introTypingComplete = computed(function () {
+  if (!introPreambleComplete.value) {
+    return true;
+  }
+  var full = introBubbleFullText();
+  return full.length > 0 && introBubbleDisplayedText.value.length >= full.length;
+});
+
+onMounted(function () {
+  setLocale('ca');
+  if (typeof window !== 'undefined' && sessionStorage.getItem('loopy_register_onboarding_entrance') === '1') {
+    sessionStorage.removeItem('loopy_register_onboarding_entrance');
+    introLoopyFromRegister.value = true;
+    var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduceMotion) {
+      introLoopyEntranceDone.value = true;
+    } else {
+      introLoopyEntranceDone.value = false;
+      introEntranceEndTimer = setTimeout(function () {
+        introEntranceEndTimer = null;
+        introLoopyEntranceDone.value = true;
+      }, 1180);
+    }
+  } else {
+    introPreambleComplete.value = true;
+    runIntroTypewriter(introBubbleFullText());
+  }
+});
 
 const currentStep = ref(1);
 const isLoading = ref(false);
 const showHabitsSelection = ref(false);
 const errorMessage = ref('');
+
+watch(isLoading, function (loading) {
+  if (loading) {
+    quizIntroBodySlide.value = false;
+  }
+});
 
 const answers = ref({
   objectiu: null,
@@ -242,6 +413,54 @@ const timeOptions = computed(function () {
   ];
 });
 
+const currentAnswerKey = computed(function () {
+  var map = { 1: 'objectiu', 2: 'energia', 3: 'obstacle', 4: 'temps' };
+  return map[currentStep.value] || 'objectiu';
+});
+
+const currentAnswerValue = computed(function () {
+  return answers.value[currentAnswerKey.value];
+});
+
+const currentOptions = computed(function () {
+  switch (currentStep.value) {
+    case 1: return goalOptions.value;
+    case 2: return energyOptions.value;
+    case 3: return obstacleOptions.value;
+    case 4: return timeOptions.value;
+    default: return [];
+  }
+});
+
+const currentQuestionTitle = computed(function () {
+  return t('onboarding.question' + currentStep.value + '.title');
+});
+
+const currentQuestionSubtitle = computed(function () {
+  return t('onboarding.question' + currentStep.value + '.subtitle');
+});
+
+const displayProgressStep = computed(function () {
+  if (showHabitsSelection.value) {
+    return 5;
+  }
+  return currentStep.value;
+});
+
+/** 1 = endavant (surten cap a l'esquerra, entren per la dreta); -1 = enrere (invers). */
+const quizSlideDirection = ref(1);
+
+const quizSlideKey = computed(function () {
+  if (showHabitsSelection.value) {
+    return 'habits';
+  }
+  return 'step-' + String(currentStep.value);
+});
+
+const quizTransitionName = computed(function () {
+  return quizSlideDirection.value === 1 ? 'onboarding-q-next' : 'onboarding-q-prev';
+});
+
 const generatedHabits = ref([]);
 const selectedHabits = ref([]);
 
@@ -263,12 +482,19 @@ function selectAnswer(key, value) {
 }
 
 function previousStep() {
+  quizSlideDirection.value = -1;
+  if (showHabitsSelection.value) {
+    showHabitsSelection.value = false;
+    currentStep.value = 4;
+    return;
+  }
   if (currentStep.value > 1) {
     currentStep.value--;
   }
 }
 
 async function nextStep() {
+  quizSlideDirection.value = 1;
   if (currentStep.value < 4) {
     currentStep.value++;
   } else {
@@ -457,238 +683,649 @@ function generarHabitsRapids() {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 2rem 1rem 3rem;
+  justify-content: flex-start;
+  padding: 1.5rem 1.25rem 2rem;
   position: relative;
+  z-index: 1;
+  background-color: #FAF9F9;
+}
+
+.onboarding-container.onboarding-container--intro {
+  padding: 0;
+}
+
+.onboarding-intro {
+  position: relative;
+  width: 100%;
+  max-width: 430px;
+  margin: 0 auto;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: clip;
+  background-color: #faf9f9;
+  isolation: isolate;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+}
+
+.onboarding-intro:focus-visible {
+  box-shadow: inset 0 0 0 2px #79d45d;
+}
+
+.onboarding-intro-bubble {
+  position: absolute;
+  z-index: 3;
+  top: 6%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 2rem);
+  max-width: 320px;
+  margin: 0;
+  padding: 1rem 1.1rem 0.75rem;
+  border: 3px solid #1f2937;
+  border-radius: 1.25rem 1.5rem 1.35rem 1.1rem / 1.2rem 1.3rem 1.4rem 1.15rem;
+  background: #fff;
+  box-shadow: 4px 4px 0 #1f2937;
+  pointer-events: none;
+  text-align: left;
+  font-family: 'Comfortaa', sans-serif;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.onboarding-intro-bubble::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -14px;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-top: 14px solid #1f2937;
+}
+
+.onboarding-intro-bubble::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -10px;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 9px solid transparent;
+  border-right: 9px solid transparent;
+  border-top: 11px solid #fff;
   z-index: 1;
 }
 
-.onboarding-progress-container {
-  width: 100%;
-  max-width: 28rem;
-  margin-bottom: 1.5rem;
-}
-
-.onboarding-progress-bar {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 0.5rem;
-}
-
-.progress-segment {
-  flex: 1;
-  height: 8px;
-  border-radius: 4px;
-  background: #e5e7eb;
-  transition: background 0.3s ease;
-}
-
-.progress-segment.completed {
-  background: #568039;
-}
-
-.progress-segment.active {
-  background: #7cb342;
-}
-
-.onboarding-progress-text {
-  text-align: center;
-  font-size: 0.875rem;
-  color: #6b7280;
-  font-weight: 500;
-}
-
-.onboarding-card {
-  width: 100%;
-  max-width: 28rem;
-  background: #ffffff;
-  border-radius: 1.5rem;
-  padding: 2rem 1.5rem;
-  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.12);
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  position: relative;
-  z-index: 2;
-}
-
-.question-header {
-  text-align: left;
-  margin-bottom: 1.5rem;
-}
-
-.question-title {
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: #3a5826;
-  margin-bottom: 0.5rem;
-  line-height: 1.25;
-}
-
-.question-subtitle {
-  color: #6b7280;
-  font-size: 0.95rem;
-  font-weight: 500;
-}
-
-.options-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  width: 100%;
-}
-
-.option-btn {
-  width: 100%;
-  padding: 1rem 1.25rem;
-  border-radius: 0.75rem;
-  border: 1px solid #e5e7eb;
-  background: #f9fafb;
+.onboarding-intro-bubble-text {
+  margin: 0;
+  font-weight: 700;
+  font-size: 30px;
+  line-height: 1.35;
   color: #1f2937;
-  font-weight: 600;
-  font-size: 0.95rem;
-  text-align: left;
-  cursor: pointer;
-  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
 }
 
-.option-btn:hover {
-  border-color: rgba(81, 125, 54, 0.45);
-  background: #ffffff;
+.onboarding-intro-type-caret {
+  display: inline-block;
+  width: 0.07em;
+  min-width: 2px;
+  height: 0.9em;
+  margin-left: 3px;
+  background: #1f2937;
+  vertical-align: -0.06em;
+  border-radius: 1px;
+  animation: onboarding-intro-caret 0.92s ease-in-out infinite;
 }
 
-.option-btn--selected {
-  background: #568039;
-  border-color: #568039;
-  color: #ffffff;
-  box-shadow: 0 4px 0 0 #3f5e29;
+@keyframes onboarding-intro-caret {
+  0%,
+  40% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0.15;
+  }
 }
 
-.option-btn--selected:hover {
-  background: #45682c;
-  border-color: #45682c;
+.onboarding-intro-loopy {
+  position: absolute;
+  width: 524px;
+  height: 628px;
+  left: -149px;
+  top: 468px;
+  pointer-events: none;
+  z-index: 1;
 }
 
-.onboarding-nav {
+.onboarding-intro-loopy-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  user-select: none;
+}
+
+.onboarding-intro-loopy-img--entrance {
+  opacity: 0;
+  animation: onboarding-intro-loopy-in 1.12s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes onboarding-intro-loopy-in {
+  0% {
+    opacity: 0;
+    transform: translate3d(88px, 10px, 0) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .onboarding-intro-loopy-img--entrance {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .onboarding-quiz-body--intro-slide {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .onboarding-intro-type-caret {
+    animation: none;
+    opacity: 1;
+  }
+
+  .onboarding-q-next-enter-active,
+  .onboarding-q-next-leave-active,
+  .onboarding-q-prev-enter-active,
+  .onboarding-q-prev-leave-active {
+    transition: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .onboarding-intro-loopy {
+    width: min(524px, 135vw);
+    height: auto;
+    aspect-ratio: 524 / 628;
+    left: max(-149px, -22vw);
+    top: clamp(320px, 52vh, 468px);
+  }
+}
+
+@media (max-height: 700px) {
+  .onboarding-intro-loopy {
+    transform: scale(0.72);
+    transform-origin: left bottom;
+  }
+}
+
+.onboarding-quiz {
+  width: 100%;
+  max-width: 22.5rem;
+}
+
+.onboarding-quiz-body {
+  width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  margin-top: 1.75rem;
+  align-items: flex-start;
+}
+
+.onboarding-quiz-body--intro-slide {
+  animation: onboarding-quiz-body-intro-slide 0.52s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes onboarding-quiz-body-intro-slide {
+  from {
+    opacity: 0;
+    transform: translate3d(100%, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.onboarding-progress-wrap {
+  width: 100%;
+  max-width: 20.5rem;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 0.75rem;
+  text-align: center;
+}
+
+.onboarding-progress-bars {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 0.625rem;
+}
+
+.onboarding-progress-cell {
+  flex: 1;
+  min-width: 0;
+  height: 5px;
+}
+
+.onboarding-progress-svg {
+  display: block;
+  width: 100%;
+  height: 5px;
+}
+
+.onboarding-index-root {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  min-height: 1.35rem;
+}
+
+.onboarding-question-index {
+  margin: 0.35rem 0 0.25rem;
+  text-align: center;
+  font-family: 'Comfortaa', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 1.2;
+  color: #79d45d;
+}
+
+.onboarding-mascot {
+  position: relative;
+  width: 265px;
+  max-width: 100%;
+  height: 318px;
+  margin: 0.5rem auto 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+}
+
+.onboarding-mascot-img {
+  width: 265px;
+  max-width: 100%;
+  height: auto;
+  max-height: 318px;
+  object-fit: contain;
+  display: block;
+  user-select: none;
+  pointer-events: none;
+}
+
+.onboarding-slide-root {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+
+.onboarding-slide-pane {
   width: 100%;
 }
 
-.onboarding-nav-btn {
+.onboarding-q-next-enter-active,
+.onboarding-q-next-leave-active,
+.onboarding-q-prev-enter-active,
+.onboarding-q-prev-leave-active {
+  transition: transform 0.42s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.36s ease;
+}
+
+.onboarding-q-next-leave-from {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.onboarding-q-next-leave-to {
+  transform: translateX(-100%);
+  opacity: 0;
+}
+
+.onboarding-q-next-enter-from {
+  transform: translateX(100%);
+  opacity: 0;
+}
+
+.onboarding-q-next-enter-to {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.onboarding-q-prev-leave-from {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.onboarding-q-prev-leave-to {
+  transform: translateX(100%);
+  opacity: 0;
+}
+
+.onboarding-q-prev-enter-from {
+  transform: translateX(-100%);
+  opacity: 0;
+}
+
+.onboarding-q-prev-enter-to {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.onboarding-copy {
   width: 100%;
+  text-align: left;
+  margin-bottom: 1.25rem;
+  box-sizing: border-box;
+}
+
+.onboarding-title {
+  margin: 0 0 0.5rem;
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-weight: 600;
+  font-size: 24px;
+  line-height: 1.25;
+  color: #1f2937;
+}
+
+.onboarding-subtitle {
+  margin: 0;
+  font-family: 'Comfortaa', sans-serif;
+  font-weight: 400;
+  font-size: 15px;
+  line-height: 1.45;
+  color: #4b5563;
+}
+
+.onboarding-options {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: stretch;
+  margin-bottom: 1.5rem;
+  box-sizing: border-box;
+}
+
+.onboarding-option-btn {
+  width: 100%;
+  min-height: 59px;
+  padding: 0.5rem 1rem;
+  box-sizing: border-box;
+  border-radius: 0.75rem;
+  border: 2px solid #79d45d;
+  background: transparent;
+  color: #79d45d;
+  font-family: 'Comfortaa', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 1.3;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.onboarding-option-btn:hover {
+  background: rgba(121, 212, 93, 0.08);
+}
+
+.onboarding-option-btn--selected {
+  background: #79d45d;
+  border-color: #79d45d;
+  color: #faf9f9;
+}
+
+.onboarding-option-btn--selected:hover {
+  background: #6bc24d;
+  border-color: #6bc24d;
+  color: #faf9f9;
+}
+
+.onboarding-arrows {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  margin-top: auto;
+  padding-top: 0.5rem;
+  box-sizing: border-box;
+}
+
+.onboarding-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  border: none;
+  background: transparent;
+  color: #d8d8d8;
+  cursor: pointer;
+  transition: color 0.15s ease, transform 0.1s ease;
+}
+
+.onboarding-arrow--back {
+  padding: 0;
+}
+
+.onboarding-arrow:not(:disabled) {
+  color: #79d45d;
+}
+
+.onboarding-arrow:not(:disabled):active {
+  transform: scale(0.96);
+}
+
+.onboarding-arrow:disabled {
+  cursor: default;
+  color: #d8d8d8;
+}
+
+.onboarding-arrow--forward svg {
+  transform: scaleX(-1);
+}
+
+.onboarding-panel {
+  width: 100%;
+  max-width: 28rem;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  background: transparent;
+}
+
+.onboarding-panel--state {
+  align-items: center;
+  justify-content: center;
+  min-height: 40vh;
+}
+
+.onboarding-primary-btn {
+  width: 100%;
+  margin: 1rem 0 0;
+  min-height: 52px;
+  border: none;
+  border-radius: 0.75rem;
+  background: #79d45d;
+  color: #faf9f9;
+  font-family: 'Comfortaa', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.onboarding-primary-btn:hover {
+  background: #6bc24d;
+}
+
+.onboarding-primary-btn:active {
+  transform: scale(0.99);
+}
+
+.onboarding-primary-btn--habits {
+  margin-top: 1.25rem;
+}
+
+.onboarding-options--habits {
+  margin-bottom: 1.5rem;
+}
+
+.onboarding-habit-card {
+  width: 100%;
+  min-height: 59px;
+  box-sizing: border-box;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  border: 2px solid #79d45d;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  font-family: 'Comfortaa', sans-serif;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.onboarding-habit-card:hover {
+  background: rgba(121, 212, 93, 0.08);
+}
+
+.onboarding-habit-card--selected {
+  background: #79d45d;
+  border-color: #79d45d;
+}
+
+.onboarding-habit-card--selected:hover {
+  background: #6bc24d;
+  border-color: #6bc24d;
+}
+
+.onboarding-habit-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 0.375rem;
+}
+
+.onboarding-habit-title {
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 1.3;
+  color: #79d45d;
+}
+
+.onboarding-habit-card--selected .onboarding-habit-title {
+  color: #faf9f9;
+}
+
+.onboarding-habit-check {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid #79d45d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: transparent;
+}
+
+.onboarding-habit-check--checked {
+  background: #79d45d;
+  border-color: #79d45d;
+  color: #faf9f9;
+}
+
+.onboarding-habit-card--selected .onboarding-habit-check {
+  background: #faf9f9;
+  border-color: #faf9f9;
+  color: #79d45d;
+}
+
+.onboarding-habit-card--selected .onboarding-habit-check--checked {
+  background: #faf9f9;
+  border-color: #faf9f9;
+  color: #79d45d;
+}
+
+.onboarding-habit-rutina {
+  margin: 0 0 0.5rem;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 1.4;
+  color: #4b5563;
+}
+
+.onboarding-habit-card--selected .onboarding-habit-rutina {
+  color: rgba(250, 249, 249, 0.92);
+}
+
+.onboarding-habit-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  font-size: 12px;
+}
+
+.onboarding-habit-category {
+  background: rgba(121, 212, 93, 0.2);
+  color: #3a5826;
+  padding: 0.2rem 0.45rem;
+  border-radius: 0.25rem;
+  font-weight: 700;
+}
+
+.onboarding-habit-card--selected .onboarding-habit-category {
+  background: rgba(255, 255, 255, 0.25);
+  color: #faf9f9;
+}
+
+.onboarding-habit-reward {
+  color: #64748b;
+  font-weight: 700;
+}
+
+.onboarding-habit-card--selected .onboarding-habit-reward {
+  color: rgba(250, 249, 249, 0.9);
 }
 
 .loading-section {
   text-align: center;
-  padding: 3rem;
+  padding: 3rem 1rem;
 }
 
 .loading-spinner {
   width: 50px;
   height: 50px;
-  border: 4px solid #e5e7eb;
-  border-top-color: #568039;
+  border: 4px solid rgba(121, 212, 93, 0.25);
+  border-top-color: #79d45d;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 1rem;
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .loading-text {
+  font-family: 'Comfortaa', sans-serif;
+  font-size: 15px;
   color: #64748b;
-}
-
-.habits-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.habit-card {
-  padding: 1rem;
-  border: 2px solid #e2e8f0;
-  border-radius: 1rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.habit-card:hover {
-  border-color: rgba(81, 125, 54, 0.5);
-}
-
-.habit-card.selected {
-  border-color: #568039;
-  background: #f7faf5;
-}
-
-.habit-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.5rem;
-}
-
-.habit-title {
-  font-weight: 600;
-  color: #1f2937;
-}
-
-.habit-check {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  border: 2px solid #e2e8f0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.75rem;
-  color: transparent;
-}
-
-.habit-check.checked {
-  background: #568039;
-  border-color: #568039;
-  color: white;
-}
-
-.habit-rutina {
-  color: #64748b;
-  font-size: 0.875rem;
-  margin-bottom: 0.5rem;
-}
-
-.habit-meta {
-  display: flex;
-  gap: 1rem;
-  font-size: 0.75rem;
-}
-
-.habit-category {
-  background: #e8f5e9;
-  color: #2e7d32;
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.25rem;
-}
-
-.habit-reward {
-  color: #64748b;
-}
-
-.habits-enter-hint {
-  text-align: center;
-  font-size: 0.875rem;
-  color: #64748b;
-  margin: 0;
-  line-height: 1.4;
-}
-
-.habits-enter-hint--empty {
-  color: #94a3b8;
 }
 
 .error-toast {
@@ -701,5 +1338,7 @@ function generarHabitsRapids() {
   padding: 1rem 2rem;
   border-radius: 0.5rem;
   font-weight: 500;
+  z-index: 50;
+  font-family: 'Comfortaa', sans-serif;
 }
 </style>

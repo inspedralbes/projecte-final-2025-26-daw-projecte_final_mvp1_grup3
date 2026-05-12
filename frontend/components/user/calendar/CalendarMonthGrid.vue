@@ -1,22 +1,23 @@
 <template>
-  <div class="w-full">
-    <!-- Capçalera dies de la setmana -->
-    <div class="grid grid-cols-7 gap-1 mb-2">
+  <div class="calendar-month-grid">
+    <div class="calendar-month-grid__weekdays" role="row">
       <div
         v-for="dia in diesSetmana"
         :key="dia"
-        class="text-center text-xs font-bold text-gray-500 uppercase tracking-wider py-2"
+        class="calendar-month-grid__wd"
       >
         {{ dia }}
       </div>
     </div>
 
-    <!-- Graella de dies -->
-    <div class="grid grid-cols-7 gap-1">
-      <!-- Cel·les buides abans del primer dia -->
-      <div v-for="n in cellesBuides" :key="'empty-' + n"></div>
+    <div class="calendar-month-grid__days" role="grid" :aria-label="ariaMes">
+      <div
+        v-for="n in cellesBuides"
+        :key="'empty-start-' + n"
+        class="calendar-month-grid__pad"
+        aria-hidden="true"
+      />
 
-      <!-- Cel·les dels dies -->
       <CalendarDayCell
         v-for="dia in diesDelMes"
         :key="dia.day"
@@ -25,6 +26,13 @@
         :category-colors="dia.categoryColors"
         :date-str="dia.dateStr"
         @click="onSelectDay"
+      />
+
+      <div
+        v-for="n in cellesFi"
+        :key="'empty-end-' + n"
+        class="calendar-month-grid__pad"
+        aria-hidden="true"
       />
     </div>
   </div>
@@ -46,7 +54,7 @@ export default {
   computed: {
     diesSetmana: function () {
       var cal = useCalendar();
-      return cal.DIES_SETMANA_CAT;
+      return cal.DIES_SETMANA_GRID_CA;
     },
     cellesBuides: function () {
       var cal = useCalendar();
@@ -74,6 +82,20 @@ export default {
         });
       }
       return resultat;
+    },
+    ocupades: function () {
+      return this.cellesBuides + this.diesDelMes.length;
+    },
+    cellesFi: function () {
+      var r = this.ocupades % 7;
+      if (r === 0) {
+        return 0;
+      }
+      return 7 - r;
+    },
+    ariaMes: function () {
+      var cal = useCalendar();
+      return cal.formatMonthHeader(this.year, this.month);
     }
   },
   methods: {
@@ -83,3 +105,52 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.calendar-month-grid {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.calendar-month-grid__weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 40px);
+  column-gap: 15px;
+  justify-content: center;
+}
+
+.calendar-month-grid__days {
+  display: grid;
+  grid-template-columns: repeat(7, 40px);
+  column-gap: 15px;
+  row-gap: 50px;
+  justify-content: center;
+  margin-top: 68px;
+}
+
+.calendar-month-grid__wd {
+  box-sizing: border-box;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #faf9f9;
+  box-shadow: 0 0 0 1px rgba(31, 41, 55, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Comfortaa", system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 10px;
+  line-height: 1.1;
+  text-align: center;
+  color: #4b5563;
+  padding: 2px;
+}
+
+.calendar-month-grid__pad {
+  width: 40px;
+  height: 40px;
+}
+</style>

@@ -415,7 +415,14 @@
     "no_templates": "No templates available"
   },
   "onboarding": {
-    "progress": "Step {current} of 4",
+    "progress": "Step {current} of {total}",
+    "question_number": "Question {n}",
+    "intro": {
+      "region_label": "Welcome to Loopy",
+      "bubble1": "Oh! Hi! I hadn’t noticed you… welcome to Loopy! I’m your guide on this adventure",
+      "bubble2": "Before we go, shall we sketch your map? Answer a few questions and my AI will tailor your journey to shape your ideal Habit Loop!",
+      "bubble3": "Ready?"
+    },
     "question1": {
       "title": "What do you want to improve?",
       "subtitle": "Pick the area you want to focus on."

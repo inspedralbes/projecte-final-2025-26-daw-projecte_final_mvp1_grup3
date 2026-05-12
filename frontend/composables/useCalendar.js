@@ -3,6 +3,8 @@
  */
 export function useCalendar() {
   var DIES_SETMANA_CAT = ["Dll", "Dm", "Dc", "Dj", "Dv", "Ds", "Dg"];
+  /** Abreviatures per la capçalera del calendari (graella setmanal). */
+  var DIES_SETMANA_GRID_CA = ["Dl", "Dt", "Dmc", "Dj", "Dv", "Ds", "Dg"];
   var DIES_SETMANA_ES = ["Lun", "Mar", "Mie", "Jue", "Vie", "Sab", "Dom"];
   var DIES_SETMANA_EN = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   var MESOS_CAT = [
@@ -161,6 +163,7 @@ export function useCalendar() {
 
   return {
     DIES_SETMANA_CAT: DIES_SETMANA_CAT,
+    DIES_SETMANA_GRID_CA: DIES_SETMANA_GRID_CA,
     MESOS_CAT: MESOS_CAT,
     prevMonth: prevMonth,
     nextMonth: nextMonth,

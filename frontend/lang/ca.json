@@ -415,7 +415,14 @@
         "no_templates": "No tens plantilles"
     },
     "onboarding": {
-        "progress": "Pas {current} de 4",
+        "progress": "Pas {current} de {total}",
+        "question_number": "Pregunta {n}",
+        "intro": {
+            "region_label": "Introducció a Loopy",
+            "bubble1": "Oh! Hola! No t'havia vist... benvingut a Loopy! Sóc el teu guia en aquesta aventura",
+            "bubble2": "Abans de marxar, dibuixem el teu mapa? Respon unes preguntes i la meva IA personalitzarà el teu viatge per donar forma al teu Habit Loop ideal!",
+            "bubble3": "Som-hi?"
+        },
         "question1": {
             "title": "Què vols millorar?",
             "subtitle": "Tria l'àrea en què vols centrar-te."

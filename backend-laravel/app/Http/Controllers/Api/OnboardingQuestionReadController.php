@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\OnboardingQuestionResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 //================================ PROPIETATS / ATRIBUTS ==========
 
@@ -26,24 +27,34 @@ class OnboardingQuestionReadController extends Controller
      */
     public function questions(): JsonResponse
     {
-        $categories = [1, 2, 3, 4, 5, 6, 7, 8];
-        $preguntesFinals = collect();
+        try {
+            if (!Schema::hasTable('preguntes_registre')) {
+                return response()->json([
+                    'success' => true,
+                    'preguntes' => [],
+                ]);
+            }
 
-        foreach ($categories as $catId) {
-            $preguntesCategoria = DB::table('preguntes_registre')
-                ->select('id', 'categoria_id', 'pregunta')
-                ->where('categoria_id', $catId)
-                ->inRandomOrder()
-                ->limit(2)
-                ->get();
+            $categories = [1, 2, 3, 4, 5, 6, 7, 8];
+            $preguntesFinals = collect();
 
-            $preguntesFinals = $preguntesFinals->concat($preguntesCategoria);
+            foreach ($categories as $catId) {
+                $preguntesCategoria = DB::table('preguntes_registre')
+                    ->select('id', 'categoria_id', 'pregunta')
+                    ->where('categoria_id', $catId)
+                    ->inRandomOrder()
+                    ->limit(2)
+                    ->get();
+
+                $preguntesFinals = $preguntesFinals->concat($preguntesCategoria);
+            }
+
+            $preguntesFinals = $preguntesFinals->shuffle();
+            $preguntes = OnboardingQuestionResource::collection($preguntesFinals)->resolve(request());
+            $preguntesArray = $preguntes['data'] ?? $preguntes;
+        } catch (\Throwable $e) {
+            $preguntesArray = [];
         }
-
-        $preguntesFinals = $preguntesFinals->shuffle();
-
-        $preguntes = OnboardingQuestionResource::collection($preguntesFinals)->resolve(request());
-        $preguntesArray = $preguntes['data'] ?? $preguntes;
 
         return response()->json([
             'success' => true,

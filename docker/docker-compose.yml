@@ -1,5 +1,5 @@
 # Loopy - Orquestación de microservicios
-# Nuxt :3000 | Node :3001 | Laravel :8000 | Adminer :8080 | PostgreSQL :5433 (host)->5432 | Redis :6380 (host)->6379
+# Nuxt :80->3000 | Node :3001 | Laravel :8000 | Adminer :8080 | PostgreSQL :5433 (host)->5432 | Redis :6380 (host)->6379
 # Si 5432/6379 están libres, puedes usar "5432:5432" y "6379:6379" para conectar desde el host a postgres/redis.
 #
 # Build Docker Desktop (Windows): si falla "parent snapshot ... does not exist" al exportar la imagen:
@@ -222,7 +222,7 @@ services:
     restart: unless-stopped
     working_dir: /app
     ports:
-      - "3000:3000"
+      - "80:3000"
     environment:
       NODE_ENV: development
       NUXT_HOST: 0.0.0.0

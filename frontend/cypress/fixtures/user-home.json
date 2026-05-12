@@ -1,0 +1,64 @@
+{
+  "success": true,
+  "data": {
+    "game_state": {
+      "nivell": 5,
+      "xp_total": 2500,
+      "xp_actual_nivel": 500,
+      "xp_objetivo_nivel": 1000,
+      "ratxa_actual": 3,
+      "ratxa_maxima": 10,
+      "monedes": 120,
+      "can_spin_roulette": true,
+      "ruleta_ultima_tirada": null,
+      "missio_diaria": {
+        "id": 1,
+        "titol": "Completa 2 hàbits avui",
+        "completada": false
+      }
+    },
+    "habits": [
+      {
+        "id": 1,
+        "titol": "Beure Aigua",
+        "frequencia_tipus": "diaria",
+        "dificultat": "facil",
+        "dies_setmana": [true, true, true, true, true, true, true],
+        "objectiu_vegades": 4,
+        "unitat": "gots",
+        "icona": "💧",
+        "color": "#3B82F6",
+        "completat": false
+      },
+      {
+        "id": 2,
+        "titol": "Fer Exercici",
+        "frequencia_tipus": "diaria",
+        "dificultat": "dificil",
+        "dies_setmana": [true, true, true, true, true, false, false],
+        "objectiu_vegades": 1,
+        "unitat": "vegades",
+        "icona": "🏋️",
+        "color": "#10B981",
+        "completat": false
+      },
+      {
+        "id": 3,
+        "titol": "Llegir",
+        "frequencia_tipus": "diaria",
+        "dificultat": "mitja",
+        "dies_setmana": [true, true, true, true, true, true, true],
+        "objectiu_vegades": 1,
+        "unitat": "vegades",
+        "icona": "📖",
+        "color": "#8B5CF6",
+        "completat": false
+      }
+    ],
+    "habit_progress": [
+      { "habit_id": 1, "progress": 2, "completed_today": false },
+      { "habit_id": 2, "progress": 0, "completed_today": false },
+      { "habit_id": 3, "progress": 1, "completed_today": true }
+    ]
+  }
+}

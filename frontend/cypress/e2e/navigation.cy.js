@@ -72,6 +72,14 @@ describe('Navegación y Auth Guards', function () {
   it('redirige / a /home cuando hay sesión de usuario', function () {
     cy.login();
     cy.mockApiAuth();
+    cy.intercept('POST', '**/api/auth/refresh', {
+      statusCode: 200,
+      body: {
+        token: 'fake-jwt-token-user',
+        role: 'user',
+        user: { id: 1, nom: 'Test User', email: 'test@example.com', nivell: 5, monedes: 100, xp_total: 2500, ratxa_actual: 3, ratxa_maxima: 10 }
+      }
+    });
     cy.intercept('GET', '**/socket.io/**', { statusCode: 200, body: '' });
     cy.visit('/');
     cy.url().should('include', '/home');
@@ -80,6 +88,14 @@ describe('Navegación y Auth Guards', function () {
   it('redirige / a /admin cuando hay sesión de admin', function () {
     cy.loginAdmin();
     cy.mockApiAdmin();
+    cy.intercept('POST', '**/api/auth/refresh', {
+      statusCode: 200,
+      body: {
+        token: 'fake-jwt-token-admin',
+        role: 'admin',
+        admin: { id: 1, nom: 'Admin', email: 'admin@looppy.cat' }
+      }
+    });
     cy.intercept('GET', '**/socket.io/**', { statusCode: 200, body: '' });
     cy.visit('/');
     cy.url().should('include', '/admin');

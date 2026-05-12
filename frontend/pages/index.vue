@@ -1,9 +1,20 @@
 <script setup>
 /**
  * Pàgina d'entrada principal.
- * Redirigeix automàticament al Login seguint el flux de l'aplicació.
+ * El middleware global ja redirigeix / segons rol; aquí cobrim el client
+ * (p. ex. si index es monta sense haver passat encara per la mateixa lògica).
  */
 onMounted(function() {
+  var auth = useAuthStore();
+  auth.loadFromStorage();
+  if (auth.role === 'admin') {
+    navigateTo('/admin');
+    return;
+  }
+  if (auth.role === 'user' && auth.token) {
+    navigateTo('/home');
+    return;
+  }
   navigateTo('/auth/login');
 });
 </script>

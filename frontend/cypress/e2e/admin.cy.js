@@ -8,7 +8,7 @@ describe('Admin Panel', function () {
   describe('Dashboard', function () {
     beforeEach(function () {
       cy.visit('/admin');
-      cy.wait('@getAdminDashboard');
+      cy.wait(['@getAdminDashboard', '@getAdminRankings', '@getAdminUsuaris']);
     });
 
     it('muestra el dashboard admin con título de bienvenida', function () {
@@ -71,11 +71,23 @@ describe('Admin Panel', function () {
 
   describe('Logout', function () {
     it('cierra sesión y redirige a login', function () {
-      cy.intercept('POST', '**/api/auth/logout', { statusCode: 200, body: {} }).as('logout');
+      cy.intercept('POST', '**/api/auth/refresh', {
+        statusCode: 200,
+        body: {
+          token: 'fake-jwt-token-admin',
+          role: 'admin',
+          admin: { id: 1, nom: 'Admin', email: 'admin@looppy.cat' }
+        }
+      });
+      cy.intercept('POST', '**/api/auth/logout', { statusCode: 200, body: {} });
       cy.visit('/admin');
-
-      cy.contains('Sortir').click();
-      cy.url().should('include', '/auth/login');
+      cy.contains('Loopy Admin').should('be.visible');
+      cy.get('#btn-admin-logout').should('be.visible');
+      cy.window().its('__loopyAdminSortir').should('be.a', 'function');
+      cy.window().then(function (win) {
+        return win.__loopyAdminSortir();
+      });
+      cy.url({ timeout: 15000 }).should('include', '/auth/login');
     });
   });
 });

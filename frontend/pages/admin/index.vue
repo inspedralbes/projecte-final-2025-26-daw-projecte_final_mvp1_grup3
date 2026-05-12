@@ -14,7 +14,8 @@ var config = useRuntimeConfig();
 
 // Estadístiques reals via API
 var { data: statsData, refresh: refreshStats } = useAuthFetch('/api/admin/dashboard', {
-  key: 'admin_stats'
+  key: 'admin_stats',
+  server: false
 });
 
 var stats = computed(function() {

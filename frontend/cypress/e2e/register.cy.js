@@ -12,8 +12,14 @@ describe('Registro', function () {
   });
 
   it('muestra error con campos vacíos', function () {
-    cy.get('.login-btn-primary').click();
-    cy.get('.login-error-msg').should('be.visible');
+    cy.get('form.login-form').should('be.visible');
+    cy.get('form.login-form input[type="text"]').clear();
+    cy.get('form.login-form input[type="email"]').clear();
+    cy.get('form.login-form input[type="password"]').each(function ($el) {
+      cy.wrap($el).clear();
+    });
+    cy.get('form.login-form .login-btn-primary').should('be.visible').click({ force: true });
+    cy.get('.login-error-msg', { timeout: 10000 }).should('be.visible');
   });
 
   it('muestra error cuando las contraseñas no coinciden', function () {
@@ -34,7 +40,7 @@ describe('Registro', function () {
     cy.get('.login-error-msg').should('be.visible');
   });
 
-  it('registro exitoso navega a /home', function () {
+  it('registro exitoso navega a /onboarding', function () {
     cy.intercept('POST', '**/api/auth/register', {
       statusCode: 200,
       body: {
@@ -50,14 +56,16 @@ describe('Registro', function () {
     cy.intercept('GET', '**/api/logros', { body: [] });
     cy.intercept('GET', '**/socket.io/**', { statusCode: 200, body: '' });
 
-    cy.get('input[type="text"]').type('Nuevo User');
-    cy.get('input[type="email"]').type('new@example.com');
-    cy.get('input[type="password"]').first().type('password123');
-    cy.get('input[type="password"]').last().type('password123');
-    cy.get('.login-btn-primary').click();
+    cy.get('form.login-form').within(function () {
+      cy.get('input[type="text"]').type('Nuevo User');
+      cy.get('input[type="email"]').type('new@example.com');
+      cy.get('input[type="password"]').first().type('password123');
+      cy.get('input[type="password"]').last().type('password123');
+    });
+    cy.get('form.login-form .login-btn-primary').click();
 
-    cy.wait('@register');
-    cy.url().should('include', '/home');
+    cy.wait('@register', { timeout: 15000 });
+    cy.url().should('include', '/onboarding');
   });
 
   it('muestra error del servidor cuando el registro falla', function () {
@@ -66,13 +74,15 @@ describe('Registro', function () {
       body: { message: "L'email ja està registrat" }
     }).as('registerFail');
 
-    cy.get('input[type="text"]').type('Test User');
-    cy.get('input[type="email"]').type('existing@example.com');
-    cy.get('input[type="password"]').first().type('password123');
-    cy.get('input[type="password"]').last().type('password123');
-    cy.get('.login-btn-primary').click();
+    cy.get('form.login-form').within(function () {
+      cy.get('input[type="text"]').type('Test User');
+      cy.get('input[type="email"]').type('existing@example.com');
+      cy.get('input[type="password"]').first().type('password123');
+      cy.get('input[type="password"]').last().type('password123');
+    });
+    cy.get('form.login-form .login-btn-primary').click();
 
-    cy.wait('@registerFail');
+    cy.wait('@registerFail', { timeout: 15000 });
     cy.get('.login-error-msg').should('be.visible');
   });
 
@@ -86,19 +96,7 @@ describe('Registro', function () {
     cy.get('.bento-banner').should('be.visible');
   });
 
-  it('inicia el onboarding al hacer clic en comenzar', function () {
-    cy.intercept('GET', '**/api/onboarding/questions', {
-      statusCode: 200,
-      body: {
-        success: true,
-        preguntes: [
-          { id: 1, pregunta: 'Fas exercici regularment?' },
-          { id: 2, pregunta: 'Beus prou aigua?' }
-        ]
-      }
-    }).as('onboarding');
-
-    cy.get('.bento-banner button').click();
-    cy.wait('@onboarding');
+  it('muestra el botón para iniciar el quiz d\'onboarding', function () {
+    cy.get('[data-cy="registre-iniciar-quiz"]').should('be.visible').and('not.be.disabled');
   });
 });

@@ -53,21 +53,7 @@ if (props.error && props.error.statusCode) {
   }
 }
 
-// B. Determinar ruta del botó Tornar segons el rol de l'usuari
+// B. Evitar composables aquí: en errors SSR primerencs poden no estar disponibles.
+//    Fem servir una ruta segura i neutral.
 var rutaTornar = "/";
-try {
-  var authStore = useAuthStore();
-  if (typeof authStore !== "undefined" && authStore.loadFromStorage) {
-    authStore.loadFromStorage();
-    if (authStore.role === "admin") {
-      rutaTornar = "/admin";
-    } else {
-      if (authStore.role === "user") {
-        rutaTornar = "/home";
-      }
-    }
-  }
-} catch (e) {
-  rutaTornar = "/";
-}
 </script>

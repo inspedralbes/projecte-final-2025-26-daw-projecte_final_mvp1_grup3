@@ -9,9 +9,9 @@
     <div v-else-if="comments.length === 0" class="text-center py-4 text-gray-500 text-sm">
       {{ $t('social.no_comments') }}
     </div>
-    <div v-else>
+    <div v-else class="max-h-96 overflow-y-auto space-y-1">
       <UserSocialCommentItem
-        v-for="comment in comments"
+        v-for="comment in sortedComments"
         :key="comment.id"
         :comment="comment"
         :depth="0"
@@ -35,6 +35,13 @@ export default {
       comments: this.initialComments,
       loading: false
     };
+  },
+  computed: {
+    sortedComments: function () {
+      return this.comments.slice().sort(function (a, b) {
+        return (b.likes_count || 0) - (a.likes_count || 0);
+      });
+    }
   },
   mounted: function () {
     this.loadComments();

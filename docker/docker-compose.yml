@@ -224,7 +224,8 @@ services:
     restart: unless-stopped
     working_dir: /app
     environment:
-      NODE_ENV: development
+      NODE_ENV: production
+      NODE_OPTIONS: --max-old-space-size=2048
       NUXT_HOST: 0.0.0.0
       NUXT_PORT: 3000
       SOCKET_URL: https://looppy.cat
@@ -250,7 +251,7 @@ services:
     depends_on:
       - backend-node
       - backend-laravel
-    command: npm run dev
+    command: sh -c "npm run build && npm run preview -- --host 0.0.0.0 --port 3000"
 
 volumes:
   postgres_data:

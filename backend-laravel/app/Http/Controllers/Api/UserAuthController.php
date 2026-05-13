@@ -223,7 +223,7 @@ class UserAuthController extends Controller
 
             $this->welcomeEmailService->enviarSiPrimeraConnexio($usuari);
 
-            $frontendUrl = env('GOOGLE_FRONTEND_REDIRECT', 'http://localhost:3000/auth/google/redirect');
+            $frontendUrl = env('GOOGLE_FRONTEND_REDIRECT', 'https://looppy.cat/auth/google/redirect');
             $redirectUrl = $frontendUrl . '?token=' . $token . '&onboarding=' . ($requiresOnboarding ? '1' : '0');
 
             $resposta = redirect($redirectUrl);

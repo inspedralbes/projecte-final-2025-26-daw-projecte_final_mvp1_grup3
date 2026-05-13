@@ -152,16 +152,13 @@ export default {
       self.estaCarregant = true;
       try {
         var authStore = useAuthStore();
-        var nuxtApp = useNuxtApp();
         try {
           await authStore.loginUser(email, contrasenya);
-          if (nuxtApp.$updateSocketAuth) nuxtApp.$updateSocketAuth();
           await navigateTo("/home");
           return;
         } catch (errUser) {
           try {
             await authStore.loginAdmin(email, contrasenya);
-            if (nuxtApp.$updateSocketAuth) nuxtApp.$updateSocketAuth();
             await navigateTo("/admin");
           } catch (errAdmin) {
             self.errorMissatge = errAdmin.message || this.$t('error_credentials');
@@ -172,7 +169,7 @@ export default {
       }
     },
     loginAmbGoogle: function () {
-      window.location.href = 'http://localhost:8000/api/auth/google/redirect';
+      window.location.href = '/api/auth/google/redirect';
     }
   }
 };

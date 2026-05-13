@@ -55,15 +55,19 @@ if (props.error && props.error.statusCode) {
 
 // B. Determinar ruta del botó Tornar segons el rol de l'usuari
 var rutaTornar = "/";
-var authStore = useAuthStore();
-if (typeof authStore !== "undefined" && authStore.loadFromStorage) {
-  authStore.loadFromStorage();
-  if (authStore.role === "admin") {
-    rutaTornar = "/admin";
-  } else {
-    if (authStore.role === "user") {
-      rutaTornar = "/home";
+try {
+  var authStore = useAuthStore();
+  if (typeof authStore !== "undefined" && authStore.loadFromStorage) {
+    authStore.loadFromStorage();
+    if (authStore.role === "admin") {
+      rutaTornar = "/admin";
+    } else {
+      if (authStore.role === "user") {
+        rutaTornar = "/home";
+      }
     }
   }
+} catch (e) {
+  rutaTornar = "/";
 }
 </script>

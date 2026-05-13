@@ -1,4 +1,38 @@
 <template>
+  <Teleport to="body">
+    <div
+      v-if="mostraSequenciaEntrada"
+      class="app-entry-sequence-root"
+      aria-hidden="true"
+      @contextmenu.prevent
+      @keydown.capture.prevent.stop
+    >
+      <div v-if="faseEntrada === 'video'" class="app-entry-video-layer">
+        <video
+          ref="videoEntradaRef"
+          class="app-entry-video-el"
+          :src="videoEntradaUrl"
+          tabindex="-1"
+          muted
+          playsinline
+          autoplay
+          disablepictureinpicture
+          disableremoteplayback
+          controlslist="nodownload noplaybackrate noremoteplayback"
+          @ended="finalitzarVideoEntrada"
+          @error="finalitzarVideoEntrada"
+        />
+      </div>
+      <div v-else-if="faseEntrada === 'loopy'" class="app-entry-loopy-layer">
+        <div
+          class="app-entry-loopy-burst"
+          :class="{ 'app-entry-loopy-burst--animate': loopyBurstAnimate }"
+          @animationend="onLoopyBurstAnimationEnd"
+        />
+        <span class="app-entry-loopy-word">Loopy</span>
+      </div>
+    </div>
+  </Teleport>
   <div class="global-app-container login-container">
     <div class="login-lang-switch">
       <LanguageSwitcher />
@@ -9,7 +43,7 @@
       <div class="login-header">
         <div class="login-logo">
           <span class="login-logo-text">Loopy</span>
-          <img src="@/assets/img/LogoLoopy.png" alt="Loopy Logo" class="login-logo-image" />
+          <img src="@/assets/img/Icones/Icona_Logo_Perfil.png" alt="Loopy Logo" class="login-logo-image" />
         </div>
         <h1 class="login-title">{{ $t('login_welcome') }}</h1>
         <p class="login-subtitle">{{ $t('login_subtitle') }}</p>
@@ -127,19 +161,151 @@
 
 <script setup>
 definePageMeta({ layout: false });
+import videoEntradaUrl from '~/assets/img/Onboarding/video/1-VideoEntradaApp.mp4';
 </script>
 
 <script>
+var STORAGE_APP_ENTRY_VIDEO = 'loopy_app_entry_video_done';
+
 export default {
   data: function () {
     return {
       formulari: { email: "", contrasenya: "" },
       percentatgeProgres: 60,
       errorMissatge: "",
-      estaCarregant: false
+      estaCarregant: false,
+      mostraSequenciaEntrada: false,
+      faseEntrada: 'video',
+      loopyBurstAnimate: false,
+      timeoutEntradaVideoId: null,
+      timeoutDespresLoopyId: null,
+      timeoutFallbackLoopyId: null,
+      sequenciaEntradaJaCompletada: false
     };
   },
+  beforeMount: function () {
+    if (typeof window === 'undefined') {
+      return;
+    }
+    try {
+      if (window.sessionStorage.getItem(STORAGE_APP_ENTRY_VIDEO) === '1') {
+        return;
+      }
+    } catch (e) {
+      return;
+    }
+    this.mostraSequenciaEntrada = true;
+    this.faseEntrada = 'video';
+    this.sequenciaEntradaJaCompletada = false;
+  },
+  mounted: function () {
+    if (!this.mostraSequenciaEntrada || this.faseEntrada !== 'video') {
+      return;
+    }
+    var self = this;
+    this.$nextTick(function () {
+      var el = self.$refs.videoEntradaRef;
+      if (el) {
+        el.muted = true;
+        el.setAttribute('muted', '');
+        el.play().catch(function () {
+          self.finalitzarVideoEntrada();
+        });
+      }
+      self.timeoutEntradaVideoId = window.setTimeout(function () {
+        self.finalitzarVideoEntrada();
+      }, 120000);
+    });
+  },
+  beforeUnmount: function () {
+    if (this.timeoutEntradaVideoId != null) {
+      clearTimeout(this.timeoutEntradaVideoId);
+      this.timeoutEntradaVideoId = null;
+    }
+    if (this.timeoutDespresLoopyId != null) {
+      clearTimeout(this.timeoutDespresLoopyId);
+      this.timeoutDespresLoopyId = null;
+    }
+    if (this.timeoutFallbackLoopyId != null) {
+      clearTimeout(this.timeoutFallbackLoopyId);
+      this.timeoutFallbackLoopyId = null;
+    }
+  },
   methods: {
+    finalitzarVideoEntrada: function () {
+      if (!this.mostraSequenciaEntrada || this.faseEntrada !== 'video') {
+        return;
+      }
+      if (this.timeoutEntradaVideoId != null) {
+        clearTimeout(this.timeoutEntradaVideoId);
+        this.timeoutEntradaVideoId = null;
+      }
+      var el = this.$refs.videoEntradaRef;
+      if (el) {
+        try {
+          el.pause();
+          el.removeAttribute('src');
+          el.load();
+        } catch (e2) {}
+      }
+      this.faseEntrada = 'loopy';
+      this.loopyBurstAnimate = false;
+      var self = this;
+      this.$nextTick(function () {
+        requestAnimationFrame(function () {
+          self.loopyBurstAnimate = true;
+          if (self.timeoutFallbackLoopyId != null) {
+            clearTimeout(self.timeoutFallbackLoopyId);
+          }
+          self.timeoutFallbackLoopyId = window.setTimeout(function () {
+            if (!self.sequenciaEntradaJaCompletada) {
+              self.completarSequenciaEntradaAlLogin();
+            }
+          }, 4000);
+        });
+      });
+    },
+    onLoopyBurstAnimationEnd: function (ev) {
+      if (ev.target !== ev.currentTarget) {
+        return;
+      }
+      if (this.sequenciaEntradaJaCompletada) {
+        return;
+      }
+      var self = this;
+      if (this.timeoutDespresLoopyId != null) {
+        clearTimeout(this.timeoutDespresLoopyId);
+      }
+      this.timeoutDespresLoopyId = window.setTimeout(function () {
+        self.completarSequenciaEntradaAlLogin();
+      }, 650);
+    },
+    completarSequenciaEntradaAlLogin: function () {
+      if (this.sequenciaEntradaJaCompletada) {
+        return;
+      }
+      this.sequenciaEntradaJaCompletada = true;
+      if (this.timeoutEntradaVideoId != null) {
+        clearTimeout(this.timeoutEntradaVideoId);
+        this.timeoutEntradaVideoId = null;
+      }
+      if (this.timeoutDespresLoopyId != null) {
+        clearTimeout(this.timeoutDespresLoopyId);
+        this.timeoutDespresLoopyId = null;
+      }
+      if (this.timeoutFallbackLoopyId != null) {
+        clearTimeout(this.timeoutFallbackLoopyId);
+        this.timeoutFallbackLoopyId = null;
+      }
+      try {
+        if (typeof window !== 'undefined') {
+          window.sessionStorage.setItem(STORAGE_APP_ENTRY_VIDEO, '1');
+        }
+      } catch (e) {}
+      this.mostraSequenciaEntrada = false;
+      this.faseEntrada = 'video';
+      this.loopyBurstAnimate = false;
+    },
     ferLogin: async function () {
       var self = this;
       var email = (self.formulari.email || "").trim();
@@ -177,3 +343,95 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.app-entry-sequence-root {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  pointer-events: auto;
+}
+
+.app-entry-video-layer {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+}
+
+.app-entry-video-el {
+  width: 100%;
+  height: 100%;
+  max-width: 100vw;
+  max-height: 100vh;
+  object-fit: cover;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.app-entry-loopy-layer {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  overflow: hidden;
+}
+
+.app-entry-loopy-burst {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #7eb356;
+  -webkit-clip-path: circle(0px at 50% 50%);
+  clip-path: circle(0px at 50% 50%);
+  will-change: clip-path;
+}
+
+.app-entry-loopy-burst--animate {
+  animation: app-entry-burst-grow 1.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes app-entry-burst-grow {
+  from {
+    -webkit-clip-path: circle(0px at 50% 50%);
+    clip-path: circle(0px at 50% 50%);
+  }
+  to {
+    -webkit-clip-path: circle(160vmax at 50% 50%);
+    clip-path: circle(160vmax at 50% 50%);
+  }
+}
+
+.app-entry-loopy-word {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  margin: 0;
+  font-family: "Bricolage Grotesque", system-ui, sans-serif;
+  font-size: clamp(2.75rem, 12vw, 5.5rem);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #ffffff;
+  text-shadow: 0 4px 28px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+  user-select: none;
+  opacity: 0;
+  animation: app-entry-loopy-word-in 0.55s ease 0.18s forwards;
+}
+
+@keyframes app-entry-loopy-word-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+</style>

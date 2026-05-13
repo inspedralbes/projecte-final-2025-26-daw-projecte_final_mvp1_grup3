@@ -103,8 +103,8 @@
 </template>
 
 <script>
-import coinIcon from "~/assets/img/coin-loopy.png";
-import xpIcon from "~/assets/img/xp-loopy.png";
+import coinIcon from "~/assets/img/Icones/Icona_Moneda.png";
+import xpIcon from "~/assets/img/Icones/Icona_Experiencia.png";
 
 export default {
   props: {

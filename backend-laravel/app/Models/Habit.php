@@ -34,6 +34,7 @@ class Habit extends Model
         'unitat',
         'icona',
         'color',
+        'moment_dia',
         'metadata',
         'metadada',
     ];

@@ -26,60 +26,76 @@
       <Transition name="sheet-panel">
         <div
           v-if="formulariObert"
-          class="fixed left-0 right-0 bottom-0 z-[81] bg-white rounded-t-3xl shadow-2xl border-t border-gray-200 max-h-[85vh] flex flex-col pb-[max(0.5rem,env(safe-area-inset-bottom))]"
+          class="fixed left-0 right-0 bottom-0 z-[81] bg-white rounded-t-3xl shadow-2xl max-h-[85vh] flex flex-col pb-[max(0.5rem,env(safe-area-inset-bottom))]"
         >
-          <div class="sticky top-0 bg-white rounded-t-3xl px-4 pt-3 pb-2 border-b border-gray-100 flex items-center justify-between">
-            <h3 class="text-base font-black text-gray-800">
-              {{ $t("habits.title") || "Crea un nou hàbit" }}
+          <div
+            class="create-habit-sheet__header sticky top-0 z-[1] bg-white rounded-t-3xl px-4 pt-3 pb-2"
+          >
+            <h3 class="create-habit-sheet__title">
+              {{ editantHabitId !== null ? $t("habits.edit_sheet_heading") : $t("habits.create_sheet_heading") }}
             </h3>
             <button
               type="button"
-              class="w-9 h-9 rounded-full bg-gray-100 text-gray-600 text-xl font-bold"
+              class="create-habit-sheet__close"
+              :aria-label="$t('habits.close_create_sheet')"
               @click="tancarFormulari"
             >
-              ×
+              <span class="create-habit-sheet__close-line create-habit-sheet__close-line--1" aria-hidden="true"></span>
+              <span class="create-habit-sheet__close-line create-habit-sheet__close-line--2" aria-hidden="true"></span>
             </button>
           </div>
 
-          <div class="sheet-form-plain flex-1 min-h-0 overflow-y-auto px-4 py-3 space-y-3">
+          <div
+            class="sheet-form-plain habit-form flex-1 min-h-0 overflow-y-auto px-4 py-3 space-y-3 pb-[max(1.25rem,env(safe-area-inset-bottom))]"
+          >
             <HabitFormDetails
               v-model="formulari"
               :categories="categories"
-              :colors="colors"
-              @select-category="seleccionarCategoria"
-            />
-            <HabitFormPlanning
-              v-model="formulari"
+              :user-categories="userCategories"
+              :category-custom-label="formulari.userCategoriaEtiqueta || ''"
+              :category-custom-icona="formulari.icona"
+              :selected-user-category-id="formulari.userCategoriaId"
               :is-day-selected="isDaySelected"
+              @select-category="seleccionarCategoria"
+              @select-user-category="seleccionarCategoriaUsuari"
+              @add-user-category="afegirCategoriaUsuari"
               @toggle-day="toggleDay"
             />
 
-          <div class="bento-card bg-white/95 backdrop-blur-md rounded-3xl p-5 shadow-xl border border-white/50">
-            <button
-              type="button"
-              class="w-full flex items-center justify-between gap-3 rounded-2xl border-2 border-gray-100 bg-gray-50/60 px-4 py-3"
-              @click="obrirApiSheet"
-            >
-              <span class="flex items-center gap-3 min-w-0">
-                <span class="w-9 h-9 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center text-lg shrink-0">🔎</span>
-                <span class="min-w-0 text-left">
-                  <span class="block text-sm font-bold text-gray-800">Context extern (opcional)</span>
-                  <span class="block text-xs text-gray-500 truncate">Pots vincular llibre, rutina o vídeo</span>
+            <div class="bento-card rounded-3xl p-4">
+              <button
+                type="button"
+                class="w-full flex items-center justify-between gap-3 rounded-2xl bg-gray-50/60 px-4 py-3 transition hover:bg-gray-100/70"
+                @click="obrirApiSheet"
+              >
+                <span class="flex items-center gap-3 min-w-0">
+                  <span class="w-9 h-9 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center text-lg shrink-0">🔎</span>
+                  <span class="min-w-0 text-left">
+                    <span class="block text-sm font-bold text-gray-800">Context extern (opcional)</span>
+                    <span class="block text-xs text-gray-500 truncate">Pots vincular llibre, rutina o vídeo</span>
+                  </span>
                 </span>
-              </span>
-              <span class="text-gray-400 text-lg leading-none">⌃</span>
-            </button>
-          </div>
-          </div>
-          <div class="shrink-0 border-t border-gray-100 bg-white px-4 pt-3 pb-[max(0.9rem,env(safe-area-inset-bottom))]">
-            <button
-              type="button"
-              class="w-full bg-green-500 hover:bg-green-600 text-white font-black py-2.5 rounded-xl disabled:opacity-50"
-              :disabled="estaCarregant"
-              @click="guardarHabit"
-            >
-              {{ estaCarregant ? "..." : ($t("habits.create_button") || "Guardar") }}
-            </button>
+                <span class="text-gray-400 text-lg leading-none">⌃</span>
+              </button>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 pt-4">
+              <button
+                type="button"
+                class="flex w-full min-w-0 items-center justify-center border-0 bg-transparent py-2.5 text-center text-base font-normal text-[#5E5E5E] shadow-none outline-none ring-0 transition hover:opacity-80 focus-visible:underline"
+                @click="tancarFormulari"
+              >
+                {{ $t("habits.back") }}
+              </button>
+              <button
+                type="button"
+                class="w-full min-w-0 rounded-xl border-2 border-[#6FBC58] bg-[#79D45D] py-2.5 text-center text-base font-normal text-white transition hover:brightness-[0.97] disabled:opacity-50"
+                :disabled="estaCarregant"
+                @click="guardarHabit"
+              >
+                {{ estaCarregant ? "..." : $t("habits.save") }}
+              </button>
+            </div>
           </div>
         </div>
       </Transition>
@@ -95,13 +111,14 @@
       <Transition name="sheet-panel">
         <div
           v-if="formulariObert && apiSectionOberta"
-          class="fixed left-0 right-0 bottom-0 z-[87] bg-white rounded-t-3xl shadow-2xl border-t border-gray-200 max-h-[82vh] flex flex-col pb-[max(0.5rem,env(safe-area-inset-bottom))]"
+          class="fixed left-0 right-0 bottom-0 z-[87] bg-white rounded-t-3xl shadow-2xl max-h-[82vh] flex flex-col pb-[max(0.5rem,env(safe-area-inset-bottom))] habit-form"
         >
-          <div class="sticky top-0 bg-white rounded-t-3xl px-4 pt-3 pb-2 border-b border-gray-100 flex items-center justify-between">
+          <div class="sticky top-0 bg-white rounded-t-3xl px-4 pt-3 pb-2 flex items-center justify-between">
             <h3 class="text-base font-black text-gray-800">Context extern (opcional)</h3>
             <button type="button" class="w-9 h-9 rounded-full bg-gray-100 text-gray-600 text-xl font-bold" @click="tancarApiSheet">×</button>
           </div>
-          <div class="flex-1 min-h-0 overflow-y-auto p-4 space-y-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
+          <div class="habit-sheet-body">
+            <div class="habit-sheet-body-inner space-y-3">
             <div v-if="proveidorExternActiu" class="space-y-3">
               <div class="flex gap-2">
                 <input
@@ -212,6 +229,7 @@
                 />
               </div>
             </div>
+            </div>
           </div>
         </div>
       </Transition>
@@ -221,20 +239,22 @@
 
 <script>
 import HabitFormDetails from "~/components/user/habits/HabitFormDetails.vue";
-import HabitFormPlanning from "~/components/user/habits/HabitFormPlanning.vue";
 import { authFetch } from "~/composables/useApi.js";
 import { getEndpointByProvider, getProviderByCategoryId } from "~/utils/habitExternal.js";
+import { getDefaultColorForCategoryId, nearestCategoryIdFromHex } from "~/utils/habitCategoryColor.js";
+import { normalizeHex } from "~/utils/colorSpace.js";
 
 export default {
   name: "HomeCreateHabitDropdown",
   components: {
-    HabitFormDetails,
-    HabitFormPlanning
+    HabitFormDetails
   },
   emits: ["habit-creat"],
   data: function () {
     return {
       formulariObert: false,
+      /** Mode edició: mateix full que crear, amb camps omplerts i socket UPDATE */
+      editantHabitId: null,
       estaCarregant: false,
       socket: null,
       categories: [
@@ -247,22 +267,25 @@ export default {
         { id: 7, key: "home", icona: "🏠" },
         { id: 8, key: "hobby", icona: "🎨" }
       ],
-      colors: [
-        "#10B981", "#3B82F6", "#F59E0B", "#EF4444", "#8B5CF6", "#EC4899", "#06B6D4", "#1F2937"
-      ],
+      userCategories: [],
+      categoriaAnterior: null,
       formulari: {
         nom: "",
+        icona: "💧",
         categoria: "",
         frequencia: "diaria",
         recordatori: "08:00",
+        momentDia: "tot_dia",
         objectiuVegades: 1,
         dificultat: "facil",
         unitat: "vegades",
-        color: "#10B981",
+        color: getDefaultColorForCategoryId(1),
         dies_setmana: [true, true, true, true, true, true, true],
         dataFinalitzacio: "",
         repeticio_interval: 1,
-        dies_mes: []
+        dies_mes: [],
+        userCategoriaEtiqueta: null,
+        userCategoriaId: null
       },
       recursExternSeleccionat: null,
       cercaExterna: {
@@ -296,6 +319,7 @@ export default {
     }
   },
   mounted: function () {
+    this.carregarCategoriesUsuari();
     this.socket = useNuxtApp().$socket;
     if (this.socket) {
       this._onHabitActionConfirmed = this.onHabitActionConfirmedSocket.bind(this);
@@ -309,11 +333,90 @@ export default {
   },
   methods: {
     toggleFormulari: function () {
+      if (!this.formulariObert) {
+        this.editantHabitId = null;
+        this.reiniciarFormulari();
+      }
       this.formulariObert = !this.formulariObert;
     },
     tancarFormulari: function () {
       this.formulariObert = false;
       this.apiSectionOberta = false;
+      this.editantHabitId = null;
+      this.reiniciarFormulari();
+    },
+    /**
+     * Obre el bottom sheet en mode edició (des de la llista d'hàbits a home).
+     * @param {object} habit - Hàbit del store (mapHabitFromApi)
+     */
+    obrirPerEdicio: function (habit) {
+      if (!habit || habit.id == null) {
+        return;
+      }
+      this.reiniciarFormulari();
+      this.carregarCategoriesUsuari();
+      this.aplicarHabitAlFormulari(habit);
+      this.editantHabitId = habit.id;
+      this.apiSectionOberta = false;
+      this.formulariObert = true;
+    },
+    aplicarHabitAlFormulari: function (habit) {
+      var catId = habit.categoriaId != null ? habit.categoriaId : habit.categoria_id;
+      this.formulari.nom = habit.nom || habit.titol || "";
+      this.formulari.icona = habit.icona || "💧";
+      this.formulari.categoria = catId === null || catId === undefined || catId === "" ? "" : catId;
+      this.formulari.frequencia = habit.frequenciaTipus || habit.frequencia_tipus || "diaria";
+      this.formulari.recordatori = habit.recordatori || "08:00";
+      this.formulari.momentDia = habit.momentDia || habit.moment_dia || "tot_dia";
+      if (habit.color && String(habit.color).trim()) {
+        this.formulari.color = normalizeHex(habit.color);
+      } else {
+        this.formulari.color = getDefaultColorForCategoryId(Number(this.formulari.categoria) || 1);
+      }
+      this.formulari.objectiuVegades = habit.objectiuVegades != null ? habit.objectiuVegades : (habit.objectiu_vegades || 1);
+      this.formulari.unitat = habit.unitat || "vegades";
+      this.formulari.dificultat = habit.dificultat || "facil";
+      var dies = habit.diesSetmana || habit.dies_setmana;
+      this.formulari.dies_setmana = Array.isArray(dies) && dies.length > 0
+        ? dies.slice()
+        : [true, true, true, true, true, true, true];
+      this.formulari.dataFinalitzacio = habit.dataFinalitzacio || habit.data_finalitzacio || "";
+      this.formulari.repeticio_interval = habit.repeticioInterval != null ? habit.repeticioInterval : (habit.repeticio_interval || 1);
+      var diesMes = habit.diesMes || habit.dies_mes;
+      this.formulari.dies_mes = Array.isArray(diesMes) ? diesMes.slice() : [];
+
+      this.categoriaAnterior = this.formulari.categoria;
+      this.cercaExterna.query = "";
+      this.cercaExterna.resultats = [];
+      this.cercaExterna.error = "";
+      this.recursExternSeleccionat = null;
+      this.manualExtern.titol = "";
+      this.manualExtern.url_imatge = "";
+
+      this.formulari.userCategoriaEtiqueta = null;
+      this.formulari.userCategoriaId = null;
+
+      var meta = habit.metadata;
+      if (meta && typeof meta === "object") {
+        if (meta.user_categoria_nom) {
+          this.formulari.userCategoriaEtiqueta = meta.user_categoria_nom;
+          this.formulari.userCategoriaId = meta.user_categoria_id != null ? meta.user_categoria_id : null;
+          if (meta.user_categoria_icona) {
+            this.formulari.icona = meta.user_categoria_icona;
+          }
+        }
+        if (meta.tipus_api === "manual") {
+          this.manualExtern.titol = meta.titol || "";
+          this.manualExtern.url_imatge = meta.url_imatge || "";
+        } else if (meta.tipus_api) {
+          this.recursExternSeleccionat = {
+            api_id: meta.api_id || "",
+            titol: meta.titol || "",
+            url_imatge: meta.url_imatge || "",
+            tipus_api: meta.tipus_api || ""
+          };
+        }
+      }
     },
     obrirApiSheet: function () {
       this.apiSectionOberta = true;
@@ -322,18 +425,24 @@ export default {
       this.apiSectionOberta = false;
     },
     reiniciarFormulari: function () {
+      this.editantHabitId = null;
       this.formulari.nom = "";
+      this.formulari.icona = "💧";
       this.formulari.categoria = "";
       this.formulari.frequencia = "diaria";
       this.formulari.recordatori = "08:00";
+      this.formulari.momentDia = "tot_dia";
       this.formulari.objectiuVegades = 1;
       this.formulari.dificultat = "facil";
       this.formulari.unitat = "vegades";
-      this.formulari.color = "#10B981";
+      this.formulari.color = getDefaultColorForCategoryId(1);
       this.formulari.dies_setmana = [true, true, true, true, true, true, true];
       this.formulari.dataFinalitzacio = "";
       this.formulari.repeticio_interval = 1;
       this.formulari.dies_mes = [];
+      this.formulari.userCategoriaEtiqueta = null;
+      this.formulari.userCategoriaId = null;
+      this.categoriaAnterior = null;
       this.recursExternSeleccionat = null;
       this.cercaExterna.query = "";
       this.cercaExterna.resultats = [];
@@ -345,18 +454,149 @@ export default {
       this.manualExtern.url_imatge = "";
     },
     seleccionarCategoria: function (id) {
-      this.formulari.categoria = id;
-      var cat = this.categories.find(function (c) { return Number(c.id) === Number(id); });
-      if (cat) {
-        this.formulari.icona = cat.icona;
+      var self = this;
+      var hiHaContextExtern = this.recursExternSeleccionat !== null || this.manualExtern.titol !== "" || this.manualExtern.url_imatge !== "";
+
+      function aplicarCanviCategoria() {
+        self.formulari.categoria = id;
+        self.formulari.userCategoriaEtiqueta = null;
+        self.formulari.userCategoriaId = null;
+        var cat = self.categories.find(function (c) { return Number(c.id) === Number(id); });
+        if (cat) {
+          self.formulari.icona = cat.icona;
+        }
+        self.formulari.color = getDefaultColorForCategoryId(id);
+        self.categoriaAnterior = id;
+        self.cercaExterna.query = "";
+        self.cercaExterna.resultats = [];
+        self.cercaExterna.error = "";
+        self.recursExternSeleccionat = null;
+        self.detallExercici.data = null;
+        self.detallExercici.error = "";
+        self.detallExercici.carregant = false;
       }
-      this.cercaExterna.query = "";
-      this.cercaExterna.resultats = [];
-      this.cercaExterna.error = "";
-      this.recursExternSeleccionat = null;
-      this.detallExercici.data = null;
-      this.detallExercici.error = "";
-      this.detallExercici.carregant = false;
+
+      if (this.categoriaAnterior && this.categoriaAnterior !== id && hiHaContextExtern) {
+        this.$swal.fire({
+          title: "Canviar categoria?",
+          text: "Si canvies la categoria, s'eliminaran els aspectes vinculats (llibre, rutina, etc.).",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonText: "Sí, canviar",
+          cancelButtonText: "Cancel·lar"
+        }).then(function (resultat) {
+          if (resultat && resultat.isConfirmed) {
+            self.manualExtern.titol = "";
+            self.manualExtern.url_imatge = "";
+            aplicarCanviCategoria();
+          }
+        });
+        return;
+      }
+
+      aplicarCanviCategoria();
+    },
+    seleccionarCategoriaUsuari: function (payload) {
+      var self = this;
+      if (!payload || payload.baseCategoryId == null) {
+        return;
+      }
+      var id = parseInt(String(payload.baseCategoryId), 10);
+      if (Number.isNaN(id)) {
+        return;
+      }
+      var hiHaContextExtern = this.recursExternSeleccionat !== null || this.manualExtern.titol !== "" || this.manualExtern.url_imatge !== "";
+
+      function aplicarUsuari() {
+        self.formulari.categoria = id;
+        self.formulari.icona = payload.icona || "✨";
+        self.formulari.color = payload.color && String(payload.color).trim()
+          ? normalizeHex(payload.color)
+          : getDefaultColorForCategoryId(id);
+        self.formulari.userCategoriaEtiqueta = payload.nom;
+        self.formulari.userCategoriaId = payload.id;
+        self.categoriaAnterior = id;
+        self.cercaExterna.query = "";
+        self.cercaExterna.resultats = [];
+        self.cercaExterna.error = "";
+        self.recursExternSeleccionat = null;
+        self.detallExercici.data = null;
+        self.detallExercici.error = "";
+        self.detallExercici.carregant = false;
+      }
+
+      if (this.categoriaAnterior && this.categoriaAnterior !== id && hiHaContextExtern) {
+        this.$swal.fire({
+          title: "Canviar categoria?",
+          text: "Si canvies la categoria, s'eliminaran els aspectes vinculats (llibre, rutina, etc.).",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonText: "Sí, canviar",
+          cancelButtonText: "Cancel·lar"
+        }).then(function (resultat) {
+          if (resultat && resultat.isConfirmed) {
+            self.manualExtern.titol = "";
+            self.manualExtern.url_imatge = "";
+            aplicarUsuari();
+          }
+        });
+        return;
+      }
+
+      aplicarUsuari();
+    },
+    carregarCategoriesUsuari: function () {
+      try {
+        var raw = localStorage.getItem("loopy_user_habit_categories");
+        if (!raw) {
+          this.userCategories = [];
+          return;
+        }
+        var parsed = JSON.parse(raw);
+        this.userCategories = Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        this.userCategories = [];
+      }
+    },
+    persistirCategoriesUsuari: function () {
+      try {
+        localStorage.setItem("loopy_user_habit_categories", JSON.stringify(this.userCategories));
+      } catch (e) {}
+    },
+    afegirCategoriaUsuari: function (payload) {
+      var nom = "";
+      var icona = "✨";
+      var colorHex = null;
+      var baseId = 8;
+      if (typeof payload === "string") {
+        nom = String(payload || "").trim();
+        baseId = (this.userCategories.length % 8) + 1;
+      } else if (payload && typeof payload === "object") {
+        nom = String(payload.nom || "").trim();
+        icona = payload.icona && String(payload.icona).trim() ? String(payload.icona).trim() : "✨";
+        if (payload.color && String(payload.color).trim()) {
+          colorHex = normalizeHex(payload.color);
+        }
+        if (payload.baseCategoryId != null) {
+          var b = parseInt(String(payload.baseCategoryId), 10);
+          baseId = Number.isNaN(b) ? nearestCategoryIdFromHex(colorHex || "#10B981") : b;
+        } else {
+          baseId = nearestCategoryIdFromHex(colorHex || "#10B981");
+        }
+      }
+      if (!nom) {
+        return;
+      }
+      var maxId = this.userCategories.reduce(function (m, c) {
+        return Math.max(m, Number(c.id) || 0);
+      }, 9000);
+      var nextId = maxId + 1;
+      var entry = { id: nextId, nom: nom, icona: icona, baseCategoryId: baseId };
+      if (colorHex) {
+        entry.color = colorHex;
+      }
+      this.userCategories = this.userCategories.concat([entry]);
+      this.persistirCategoriesUsuari();
     },
     isDaySelected: function (index) {
       return this.formulari.dies_setmana[index];
@@ -447,23 +687,36 @@ export default {
       this.recursExternSeleccionat = null;
     },
     construirMetadataHabit: function () {
+      var meta = null;
       if (this.recursExternSeleccionat) {
-        return {
+        meta = {
           api_id: this.recursExternSeleccionat.api_id || "",
           titol: this.recursExternSeleccionat.titol || "",
           url_imatge: this.recursExternSeleccionat.url_imatge || "",
           tipus_api: this.recursExternSeleccionat.tipus_api || ""
         };
-      }
-      if (this.manualExtern.titol || this.manualExtern.url_imatge) {
-        return {
+      } else if (this.manualExtern.titol || this.manualExtern.url_imatge) {
+        meta = {
           api_id: "",
           titol: this.manualExtern.titol || "",
           url_imatge: this.manualExtern.url_imatge || "",
           tipus_api: "manual"
         };
       }
-      return null;
+
+      var ucNom = this.formulari.userCategoriaEtiqueta && String(this.formulari.userCategoriaEtiqueta).trim();
+      if (ucNom) {
+        var extra = {
+          user_categoria_nom: ucNom,
+          user_categoria_icona: this.formulari.icona || "✨"
+        };
+        if (this.formulari.userCategoriaId != null && this.formulari.userCategoriaId !== "") {
+          extra.user_categoria_id = Number(this.formulari.userCategoriaId);
+        }
+        return meta ? Object.assign({}, meta, extra) : extra;
+      }
+
+      return meta;
     },
     guardarHabit: function () {
       if (!this.formulari.nom || !String(this.formulari.nom).trim()) {
@@ -494,26 +747,37 @@ export default {
         return Number(cat.id) === Number(this.formulari.categoria);
       }, this);
       var metadata = this.construirMetadataHabit();
+      var ucNom = this.formulari.userCategoriaEtiqueta && String(this.formulari.userCategoriaEtiqueta).trim();
+      var iconaPayload = ucNom
+        ? (this.formulari.icona || "✨")
+        : (categoria ? categoria.icona : this.formulari.icona || "💧");
+      var esEdicio = this.editantHabitId !== null && this.editantHabitId !== undefined;
       this.estaCarregant = true;
       this.socket.emit("habit_action", {
-        action: "CREATE",
+        action: esEdicio ? "UPDATE" : "CREATE",
+        habit_id: esEdicio ? this.editantHabitId : null,
         habit_data: {
           titol: this.formulari.nom,
           dificultat: this.formulari.dificultat,
           frequencia_tipus: this.formulari.frequencia,
           categoria_id: Number(this.formulari.categoria),
-          icona: categoria ? categoria.icona : "💧",
+          icona: iconaPayload,
           color: this.formulari.color,
           objectiu_vegades: Number(this.formulari.objectiuVegades) || 1,
           unitat: this.formulari.unitat,
           recordatori: this.formulari.recordatori,
+          moment_dia: this.formulari.momentDia || "tot_dia",
           dies_setmana: this.formulari.dies_setmana,
           metadata: metadata
         }
       });
     },
     onHabitActionConfirmedSocket: function (payload) {
-      if (!payload || String(payload.action || "").toUpperCase() !== "CREATE") {
+      if (!payload) {
+        return;
+      }
+      var act = String(payload.action || "").toUpperCase();
+      if (act !== "CREATE" && act !== "UPDATE") {
         return;
       }
       this.estaCarregant = false;
@@ -525,7 +789,6 @@ export default {
         });
         return;
       }
-      this.reiniciarFormulari();
       this.tancarFormulari();
       this.$emit("habit-creat");
     }
@@ -538,9 +801,10 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  max-width: 338px;
+  width: 100%;
+  max-width: none;
   min-height: 64px;
-  margin: 0 auto;
+  margin: 0;
   padding: 0;
   border-radius: 10px;
   background: rgba(250, 249, 249, 0.5);
@@ -575,6 +839,71 @@ export default {
 .sheet-panel-leave-to {
   transform: translateY(100%);
   opacity: 0.98;
+}
+
+.create-habit-sheet__header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  padding-left: 2.75rem;
+  padding-right: 2.75rem;
+}
+
+.create-habit-sheet__title {
+  margin: 0;
+  width: 100%;
+  text-align: center;
+  font-family: "Bricolage Grotesque", system-ui, sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #949494;
+}
+
+.create-habit-sheet__close {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  border: none;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.create-habit-sheet__close:focus {
+  outline: none;
+}
+
+.create-habit-sheet__close:focus-visible {
+  box-shadow: 0 0 0 2px rgba(148, 148, 148, 0.4);
+  border-radius: 6px;
+}
+
+.create-habit-sheet__close-line {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 18.5px;
+  height: 4px;
+  background-color: #d8d8d8;
+  border-radius: 999px;
+  transform-origin: center;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+.create-habit-sheet__close-line--1 {
+  transform: translate(-50%, -50%) rotate(43.17deg);
+}
+
+.create-habit-sheet__close-line--2 {
+  transform: translate(-50%, -50%) rotate(-44.87deg);
 }
 
 /* En el sheet de Home no queremos tarjetas con borde/sombra */

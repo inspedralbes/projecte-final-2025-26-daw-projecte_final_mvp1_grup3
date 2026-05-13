@@ -6,8 +6,22 @@
       <div class="flex w-full items-center gap-1 px-1 min-h-[2.75rem]">
         <div class="flex shrink-0 w-10 justify-start">
           <button class="hamburger-btn" @click="drawerOpen = !drawerOpen" aria-label="Menu">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            <svg
+              class="hamburger-menu-svg"
+              width="14"
+              height="10"
+              viewBox="0 0 14 10"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+            >
+              <path
+                d="M1 1H13M1 5H13M1 9H13"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
             </svg>
           </button>
         </div>
@@ -69,8 +83,22 @@
     <nav class="hidden lg:flex w-full items-center px-4 nav-bar-desktop">
       <div class="flex-1 min-w-0 flex justify-start">
         <button class="hamburger-btn hamburger-btn-desktop" @click="drawerOpen = !drawerOpen" aria-label="Menu">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          <svg
+            class="hamburger-menu-svg"
+            width="14"
+            height="10"
+            viewBox="0 0 14 10"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <path
+              d="M1 1H13M1 5H13M1 9H13"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
           </svg>
         </button>
       </div>
@@ -242,9 +270,9 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import logo from '~/assets/img/LogoLoopy.png'
-import coinIcon from '~/assets/img/coin-loopy.png'
-import xpIcon from '~/assets/img/xp-loopy.png'
+import logo from '~/assets/img/Icones/Icona_Logo_Perfil.png'
+import coinIcon from '~/assets/img/Icones/Icona_Moneda.png'
+import xpIcon from '~/assets/img/Icones/Icona_Experiencia.png'
 import LanguageSwitcher from './LanguageSwitcher.vue'
 import { useAuthStore } from '~/stores/useAuthStore'
 import { useGameStore } from '~/stores/gameStore.js'
@@ -520,10 +548,16 @@ nav a {
   background: none;
   border: none;
   padding: 0.5rem;
-  color: #4b5563;
+  color: #faf9f9;
   cursor: pointer;
   border-radius: 0.375rem;
   transition: all 0.2s;
+}
+
+.hamburger-menu-svg {
+  width: 1.5rem;
+  height: auto;
+  display: block;
 }
 .hamburger-btn:hover {
   background-color: rgba(243, 244, 246, 0.5);

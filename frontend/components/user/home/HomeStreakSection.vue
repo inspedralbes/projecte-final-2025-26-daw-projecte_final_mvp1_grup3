@@ -11,7 +11,7 @@
 </template>
 
 <script>
-import coinIcon from "~/assets/img/coin-loopy.png";
+import coinIcon from "~/assets/img/Icones/Icona_Moneda.png";
 
 export default {
   name: 'HomeStreakSection',

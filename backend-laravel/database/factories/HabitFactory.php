@@ -27,6 +27,7 @@ class HabitFactory extends Factory
             'unitat' => 'vegades',
             'icona' => 'check',
             'color' => '#22C55E',
+            'moment_dia' => 'tot_dia',
         ];
     }
 }

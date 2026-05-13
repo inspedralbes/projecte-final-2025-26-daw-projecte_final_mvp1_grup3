@@ -57,7 +57,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import coinIcon from '~/assets/img/coin-loopy.png';
+import coinIcon from '~/assets/img/Icones/Icona_Moneda.png';
 import { useGameStore } from '~/stores/gameStore.js';
 import { useShopStore } from '~/stores/useShopStore.js';
 

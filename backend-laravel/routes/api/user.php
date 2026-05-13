@@ -79,6 +79,7 @@ Route::middleware('ensure.user')->group(function () {
     Route::get('/users/{id}/profile', [UserProfileController::class, 'getPublicProfile']);
     Route::get('/users/self/profile', [UserProfileController::class, 'getSelfProfile']);
     Route::put('/users/self/showcase', [UserProfileController::class, 'updateShowcase']);
+    Route::put('/users/self/account', [UserProfileController::class, 'updateAccount']);
     Route::get('/users', [UserSearchController::class, 'search']);
 
     Route::post('/friends/request', [FriendshipController::class, 'sendRequest']);

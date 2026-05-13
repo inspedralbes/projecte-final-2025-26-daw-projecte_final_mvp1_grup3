@@ -1,31 +1,47 @@
 <template>
-  <div class="min-h-screen bg-transparent p-6">
+  <div class="templates-page min-h-screen bg-transparent p-6">
     <div class="max-w-7xl mx-auto">
-      <h1 class="text-3xl font-bold text-gray-800 mb-8">{{ $t('templates.title') }}</h1>
 
-      <div class="flex flex-col md:flex-row justify-between items-center mb-6">
-        <!-- Dropdown per filtrar plantilles -->
-        <div class="mb-4 md:mb-0">
-          <label for="filterTemplates" class="sr-only">{{ $t('templates.filter_label') }}</label>
-          <select
-            id="filterTemplates"
-            v-model="selectedFilter"
-            class="block w-full md:w-auto p-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
-          >
-            <option value="all">{{ $t('templates.filter_all') }}</option>
-            <option value="my">{{ $t('templates.filter_my') }}</option>
-          </select>
+      <div class="templates-filter-wrap mb-6">
+        <div class="templates-filter-row">
+          <div class="templates-filter-decor" aria-hidden="true">
+            <svg
+              class="templates-filter-decor__lupa"
+              width="33"
+              height="33"
+              viewBox="0 0 33 33"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M28.875 28.875L22.8937 22.8937M26.125 15.125C26.125 21.2001 21.2001 26.125 15.125 26.125C9.04987 26.125 4.125 21.2001 4.125 15.125C4.125 9.04987 9.04987 4.125 15.125 4.125C21.2001 4.125 26.125 9.04987 26.125 15.125Z"
+                stroke="#d8d8d8"
+                stroke-width="4"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </div>
+          <div class="templates-filter-card">
+            <label for="filterTemplates" class="sr-only">{{ $t('templates.filter_label') }}</label>
+            <select
+              id="filterTemplates"
+              v-model="selectedFilter"
+              class="templates-filter-select"
+            >
+              <option value="all">{{ $t('templates.filter_all') }}</option>
+              <option value="public">{{ $t('templates.public') }}</option>
+              <option value="private">{{ $t('templates.private') }}</option>
+            </select>
+            <span class="templates-filter-chevron" aria-hidden="true"></span>
+          </div>
         </div>
+      </div>
 
-        <button
-          @click="obrirModalCrearPlantilla"
-          class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition-all transform active:scale-95 flex items-center justify-center gap-2"
-        >
-          <span
-            class="bg-white text-green-600 rounded-full w-5 h-5 flex items-center justify-center text-xs"
-            >+</span>
-          {{ $t('templates.create_new') }}
-        </button>
+      <div class="moment-divider mt-1 mb-4" role="presentation">
+        <span class="moment-divider__line" aria-hidden="true"></span>
+        <span class="moment-divider__text">totes les plantilles</span>
+        <span class="moment-divider__line" aria-hidden="true"></span>
       </div>
 
       <div v-if="plantillaStore.loading" class="text-center py-10">
@@ -36,51 +52,138 @@
         <p>{{ $t('templates.error_prefix') }}{{ plantillaStore.error }}</p>
       </div>
 
-      <div v-else-if="plantillaStore.plantilles.length === 0" class="text-center py-10 text-gray-400">
+      <div v-else-if="filteredPlantilles.length === 0" class="text-center py-10 text-gray-400 space-y-4">
         <p>{{ $t('templates.no_templates') }}</p>
         <p class="text-sm">{{ $t('templates.create_first') }}</p>
+        <button
+          type="button"
+          class="inline-flex items-center justify-center rounded-xl border-2 border-[#6FBC58] bg-[#79D45D] px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:brightness-[0.97]"
+          @click="obrirSheetCrearPlantilla"
+        >
+          {{ $t('templates.create_sheet_heading') }}
+        </button>
       </div>
 
-      <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div
-          v-for="plantilla in plantillaStore.plantilles"
-          :key="plantilla.id"
-          class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col justify-between"
+      <div v-else class="templates-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+        <button
+          type="button"
+          class="create-category-trigger create-category-trigger--grid"
+          :aria-expanded="plantillaSheetObert ? 'true' : 'false'"
+          @click="obrirSheetCrearPlantilla"
         >
-          <div>
-            <h2 class="text-xl font-bold text-gray-800 mb-2">{{ plantilla.titol }}</h2>
-            <p class="text-sm text-gray-600 mb-4">{{ $t('habits.category') }}: {{ plantilla.categoria }}</p>
-            <span
-              :class="{
-                'bg-green-100 text-green-800': plantilla.esPublica,
-                'bg-blue-100 text-blue-800': !plantilla.esPublica
-              }"
-              class="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-medium"
-            >
-              {{ plantilla.esPublica ? $t('templates.public') : $t('templates.private') }}
-            </span>
-          </div>
-          <div class="mt-4 flex justify-end gap-3">
-            <button
-              v-if="plantilla.creadorId === gameStore.userId"
-              @click="editarPlantilla(plantilla.id)"
-              class="text-sm text-blue-600 hover:text-blue-700 font-semibold px-3 py-1 rounded border border-blue-200 hover:border-blue-300 transition-colors"
-            >
-              {{ $t('templates.edit') }}
-            </button>
-            <button
-              v-if="plantilla.creadorId === gameStore.userId"
-              @click="eliminarPlantilla(plantilla.id)"
-              class="text-sm text-red-600 hover:text-red-700 font-semibold px-3 py-1 rounded border border-red-200 hover:border-red-300 transition-colors"
-            >
-              {{ $t('templates.delete') }}
-            </button>
-            <button
-              @click="obrirModalExportarHabits(plantilla)"
-              class="text-sm bg-green-500 hover:bg-green-600 text-white font-semibold px-3 py-1 rounded-xl shadow-sm transition-colors"
-            >
-              Exportar
-            </button>
+          <span class="create-category-trigger__icon" aria-hidden="true">
+            <svg width="33" height="33" viewBox="0 0 33 33" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <line x1="17" y1="2" x2="17" y2="31" stroke="white" stroke-width="4" stroke-linecap="round"/>
+              <line x1="2" y1="16" x2="31" y2="16" stroke="white" stroke-width="4" stroke-linecap="round"/>
+            </svg>
+          </span>
+        </button>
+
+        <div
+          v-for="plantilla in filteredPlantilles"
+          :key="plantilla.id"
+          class="template-expandable"
+          :class="isPlantillaExpandida(plantilla.id) ? 'template-expandable--active' : ''"
+        >
+          <button
+            type="button"
+            class="template-card w-full text-left"
+            @click="togglePlantillaExpandida(plantilla.id)"
+          >
+            <div class="template-card__mark" aria-hidden="true">
+              <svg class="template-card__blob" width="57" height="54" viewBox="0 0 57 54" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M1.33093 20.8883C4.84845 8.52703 16.1404 0 28.9924 0H47.2749C52.2455 0 56.2749 4.02944 56.2749 9V25.1665C56.2749 28.2757 55.6987 31.358 54.5756 34.2573L54.3455 34.8512C50.0838 45.8525 39.4989 53.1035 27.701 53.1035H24.1663C14.0216 53.1035 4.95681 46.7675 1.4712 37.2404C-0.281291 32.4504 -0.473285 27.2287 0.922704 22.3229L1.33093 20.8883Z" :fill="plantilla.esPublica ? '#79D45D' : '#5BA5FF'" />
+              </svg>
+              <span class="template-card__icona">{{ plantilla.esPublica ? '🌍' : '🔒' }}</span>
+            </div>
+
+            <div class="template-card__content">
+              <p class="template-card__title">{{ plantilla.titol }}</p>
+              <div class="template-card__meta">
+                <span class="template-card__meta-item">
+                  <span aria-hidden="true">
+                    <svg width="14" height="10" viewBox="0 0 14 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M4.33333 1H13M4.33333 5H13M4.33333 9H13M1 1H1.00667M1 5H1.00667M1 9H1.00667" stroke="#707070" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </span>
+                  {{ (plantilla.habits && plantilla.habits.length) || 0 }} hàbits
+                </span>
+                <span class="template-card__meta-item">
+                  <span aria-hidden="true">
+                    <svg width="16" height="13" viewBox="0 0 16 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M0.666748 6.33333C0.666748 6.33333 3.33341 1 8.00008 1C12.6667 1 15.3334 6.33333 15.3334 6.33333C15.3334 6.33333 12.6667 11.6667 8.00008 11.6667C3.33341 11.6667 0.666748 6.33333 0.666748 6.33333Z" stroke="#707070" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M8.00008 8.33333C9.10465 8.33333 10.0001 7.4379 10.0001 6.33333C10.0001 5.22876 9.10465 4.33333 8.00008 4.33333C6.89551 4.33333 6.00008 5.22876 6.00008 6.33333C6.00008 7.4379 6.89551 8.33333 8.00008 8.33333Z" stroke="#707070" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </span>
+                  {{ plantilla.esPublica ? 'Pública' : 'Privada' }}
+                </span>
+              </div>
+            </div>
+          </button>
+
+          <div v-if="isPlantillaExpandida(plantilla.id)" class="template-expand-inline">
+            <div class="template-expand-top">
+              <button class="template-expand-close" type="button" @click="tancarPlantillaExpandida">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M11.2917 6.54167L6.54167 11.2917M6.54167 6.54167L11.2917 11.2917M16.8333 8.91667C16.8333 13.2889 13.2889 16.8333 8.91667 16.8333C4.54441 16.8333 1 13.2889 1 8.91667C1 4.54441 4.54441 1 8.91667 1C13.2889 1 16.8333 4.54441 16.8333 8.91667Z" stroke="#FAF9F9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+              <button class="template-expand-edit" type="button" @click="editarPlantilla(plantilla.id)">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M7 2.41421H2.33333C1.97971 2.41421 1.64057 2.55469 1.39052 2.80474C1.14048 3.05479 1 3.39392 1 3.74755V13.0809C1 13.4345 1.14048 13.7736 1.39052 14.0237C1.64057 14.2737 1.97971 14.4142 2.33333 14.4142H11.6667C12.0203 14.4142 12.3594 14.2737 12.6095 14.0237C12.8595 13.7736 13 13.4345 13 13.0809V8.41421M12 1.41421C12.2652 1.149 12.6249 1 13 1C13.3751 1 13.7348 1.149 14 1.41421C14.2652 1.67943 14.4142 2.03914 14.4142 2.41421C14.4142 2.78929 14.2652 3.149 14 3.41421L7.66667 9.74755L5 10.4142L5.66667 7.74755L12 1.41421Z" stroke="#FAF9F9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Editar Plantilla</span>
+              </button>
+            </div>
+
+            <div class="template-expand-panel">
+              <div class="template-spec-card">
+                <div class="template-expand-actions">
+                  <button
+                    type="button"
+                    class="template-expand-btn template-expand-btn--primary"
+                    @click="obrirModalExportarHabits(plantilla)"
+                  >
+                    Exportar
+                  </button>
+                  <button
+                    type="button"
+                    class="template-expand-btn template-expand-btn--secondary"
+                    @click="togglePublicacioPlantilla(plantilla)"
+                  >
+                    {{ plantilla.esPublica ? 'Fer privada' : 'Publicar' }}
+                  </button>
+                </div>
+              </div>
+
+              <div class="moment-divider moment-divider--expanded-habits" role="presentation">
+                <span class="moment-divider__line" aria-hidden="true"></span>
+                <span class="moment-divider__text">{{ $t('templates.expanded_habits_section') }}</span>
+                <span class="moment-divider__line" aria-hidden="true"></span>
+              </div>
+
+              <div class="template-habits-stack">
+                <p v-if="!plantilla.habits || plantilla.habits.length === 0" class="template-habits-list__empty">
+                  {{ $t('templates.no_habits_to_select') }}
+                </p>
+                <button
+                  v-for="habit in plantilla.habits"
+                  :key="habit.id"
+                  type="button"
+                  class="template-habit-card"
+                >
+                  <span class="template-habit-card__mark" aria-hidden="true">
+                    <svg class="template-habit-card__blob" width="56" height="40" viewBox="0 0 56 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M1.64885 13.8624C4.80033 5.5202 12.7867 0 21.7043 0H46.8857C51.8563 0 55.8857 4.02944 55.8857 9V18.1149C55.8857 20.9967 55.1982 23.8369 53.8802 26.3997L53.3295 27.4705C49.3729 35.1639 41.4476 40 32.7964 40H18.4113C11.3613 40 4.93035 35.9742 1.85018 29.6327C-0.361252 25.0797 -0.600734 19.8171 1.18804 15.0821L1.64885 13.8624Z" :fill="habit.color || '#79D45D'" />
+                    </svg>
+                    <span class="template-habit-card__icona">{{ habit.icona || '✨' }}</span>
+                  </span>
+                  <span class="template-habit-card__content">
+                    <span class="template-habit-card__title">{{ habit.nom || habit.titol }}</span>
+                  </span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -138,18 +241,13 @@
               />
             </div>
 
-            <!-- És Pública? -->
-            <div class="flex items-center">
-              <input
-                id="esPublica"
-                v-model="form.esPublica"
-                type="checkbox"
-                class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-              />
-              <label for="esPublica" class="ml-2 block text-sm text-gray-900"
-                >{{ $t('templates.public_checkbox') }}</label
-              >
-            </div>
+            <!-- Plantilla pública -->
+            <SharedTemplatePublicSwitch
+              input-id="esPublica"
+              :model-value="form.esPublica"
+              :label="$t('templates.public_checkbox')"
+              @update:model-value="form.esPublica = $event"
+            />
 
             <!-- Selecció d'Hàbits -->
             <div>
@@ -288,6 +386,151 @@
         </div>
       </div>
     </div>
+
+    <Teleport to="body">
+      <Transition name="sheet-backdrop">
+        <div
+          v-if="plantillaSheetObert"
+          class="fixed inset-0 z-[80] bg-black/40"
+          @click="tancarSheetCrearPlantilla"
+        ></div>
+      </Transition>
+      <Transition name="sheet-panel">
+        <div
+          v-if="plantillaSheetObert"
+          class="fixed left-0 right-0 bottom-0 z-[81] bg-white rounded-t-3xl shadow-2xl max-h-[90vh] flex flex-col pb-[max(0.5rem,env(safe-area-inset-bottom))]"
+        >
+          <div class="plantilla-sheet__header sticky top-0 z-[1] bg-white rounded-t-3xl px-4 pt-3 pb-2">
+            <h3 class="plantilla-sheet__title">
+              {{ $t('templates.create_sheet_heading') }}
+            </h3>
+            <button
+              type="button"
+              class="plantilla-sheet__close"
+              :aria-label="$t('templates.close_create_sheet')"
+              @click="tancarSheetCrearPlantilla"
+            >
+              <span class="plantilla-sheet__close-line plantilla-sheet__close-line--1" aria-hidden="true"></span>
+              <span class="plantilla-sheet__close-line plantilla-sheet__close-line--2" aria-hidden="true"></span>
+            </button>
+          </div>
+          <div class="flex-1 min-h-0 overflow-y-auto px-4 py-3 space-y-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2" for="plantilla-sheet-titol">{{
+                $t('templates.name_label')
+              }}</label>
+              <input
+                id="plantilla-sheet-titol"
+                v-model="form.titol"
+                type="text"
+                :placeholder="$t('templates.name_placeholder')"
+                class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white transition-all"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2" for="plantilla-sheet-categoria">{{
+                $t('habits.category')
+              }}</label>
+              <input
+                id="plantilla-sheet-categoria"
+                v-model="form.categoria"
+                type="text"
+                :placeholder="$t('templates.category_placeholder')"
+                class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white transition-all"
+              />
+            </div>
+            <div class="rounded-xl border border-gray-100 bg-gray-50/60 px-4 py-3">
+              <SharedTemplatePublicSwitch
+                input-id="plantilla-sheet-es-publica"
+                :model-value="form.esPublica"
+                :label="$t('templates.public_checkbox')"
+                @update:model-value="form.esPublica = $event"
+              />
+            </div>
+            <div>
+              <h4 class="text-sm font-bold text-gray-800 mb-2">{{ $t('templates.select_habits') }}</h4>
+              <div v-if="habitStore.loading" class="text-center py-6 text-gray-500 text-sm">
+                {{ $t('home.loading_habits') }}
+              </div>
+              <div v-else-if="habitStore.error" class="text-center py-4 text-red-500 text-sm">
+                {{ $t('templates.error_prefix') }}{{ habitStore.error }}
+              </div>
+              <div v-else-if="habitStore.habits.length === 0" class="text-center py-4 text-gray-400 text-sm">
+                {{ $t('templates.no_habits_to_select') }}
+              </div>
+              <div v-else class="flex flex-col gap-2 max-h-[min(50vh,22rem)] overflow-y-auto pr-1">
+                <button
+                  v-for="habit in habitStore.habits"
+                  :key="'sheet-habit-' + habit.id"
+                  type="button"
+                  class="flex w-full items-center rounded-xl border p-3 text-left transition-all"
+                  :class="
+                    form.habitsSeleccionats.indexOf(habit.id) !== -1
+                      ? 'border-green-500 bg-green-50 shadow-sm'
+                      : 'border-gray-200 bg-white hover:bg-gray-50'
+                  "
+                  @click="toggleHabitSeleccionat(habit.id)"
+                >
+                  <span
+                    class="mr-3 flex h-5 w-5 shrink-0 items-center justify-center rounded border-2"
+                    :class="
+                      form.habitsSeleccionats.indexOf(habit.id) !== -1
+                        ? 'border-green-600 bg-green-600'
+                        : 'border-gray-300 bg-white'
+                    "
+                    aria-hidden="true"
+                  >
+                    <svg
+                      v-if="form.habitsSeleccionats.indexOf(habit.id) !== -1"
+                      class="h-3 w-3 text-white"
+                      viewBox="0 0 12 10"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M1 5L4.5 8.5L11 1.5"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                  </span>
+                  <span
+                    class="mr-3 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm text-white"
+                    :style="{ backgroundColor: habit.color || '#10B981' }"
+                    >{{ habit.icona }}</span
+                  >
+                  <span
+                    class="min-w-0 flex-1 text-sm font-medium"
+                    :class="
+                      form.habitsSeleccionats.indexOf(habit.id) !== -1 ? 'text-green-800 font-bold' : 'text-gray-700'
+                    "
+                    >{{ habit.nom || habit.titol }}</span
+                  >
+                </button>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3 pt-2">
+              <button
+                type="button"
+                class="flex w-full min-w-0 items-center justify-center border-0 bg-transparent py-2.5 text-center text-base font-normal text-[#5E5E5E] shadow-none outline-none ring-0 transition hover:opacity-80 focus-visible:underline"
+                @click="tancarSheetCrearPlantilla"
+              >
+                {{ $t('habits.back') }}
+              </button>
+              <button
+                type="button"
+                class="w-full min-w-0 rounded-xl border-2 border-[#6FBC58] bg-[#79D45D] py-2.5 text-center text-base font-normal text-white transition hover:brightness-[0.97]"
+                @click="guardarPlantilla"
+              >
+                {{ $t('templates.create_button') }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -310,7 +553,8 @@ export default {
   // Dades reactives del component.
   data: function () {
     return {
-      modalVisible: false, // Controla la visibilitat del modal de creació/edició.
+      modalVisible: false,
+      plantillaSheetObert: false,
       modoEdicio: false, // Indica si el modal està en mode edició o creació.
       plantillaAEditar: null, // Objecte de plantilla a editar, si n'hi ha.
       socket: null, // Instància del socket per a comunicació en temps real.
@@ -324,7 +568,26 @@ export default {
       modalExportarVisible: false, // New: Controla la visibilitat del modal d'exportació.
       plantillaAExportar: null,    // New: Objecte de plantilla seleccionada per exportar.
       habitsAExportarSeleccionats: [], // New: Array d'IDs d'hàbits seleccionats per a l'exportació.
+      plantillaExpandidaId: null,
     };
+  },
+  computed: {
+    filteredPlantilles: function () {
+      if (!Array.isArray(this.plantillaStore.plantilles)) {
+        return [];
+      }
+      if (this.selectedFilter === 'public') {
+        return this.plantillaStore.plantilles.filter(function (plantilla) {
+          return plantilla.esPublica === true;
+        });
+      }
+      if (this.selectedFilter === 'private') {
+        return this.plantillaStore.plantilles.filter(function (plantilla) {
+          return plantilla.esPublica !== true;
+        });
+      }
+      return this.plantillaStore.plantilles;
+    }
   },
   // Hook de cicle de vida: s'executa quan el component és muntat.
   mounted: function () {
@@ -375,10 +638,71 @@ export default {
      * @returns {Promise<void>}
      */
     carregarPlantilles: async function () {
-      var filter = this.selectedFilter;
       var userId = this.gameStore.userId; // Get userId from gameStore
-      console.log("Fetching plantilles with filter:", filter, "and userId:", userId); // Debug log
-      await this.plantillaStore.obtenirPlantillesDesDeApi(filter, userId);
+      console.log("Fetching plantilles with userId:", userId); // Debug log
+      await this.plantillaStore.obtenirPlantillesDesDeApi('all', userId);
+    },
+    togglePlantillaExpandida: function (id) {
+      if (this.plantillaExpandidaId === id) {
+        this.plantillaExpandidaId = null;
+        return;
+      }
+      this.plantillaExpandidaId = id;
+    },
+    tancarPlantillaExpandida: function () {
+      this.plantillaExpandidaId = null;
+    },
+    isPlantillaExpandida: function (id) {
+      return this.plantillaExpandidaId === id;
+    },
+    /**
+     * Obre el bottom sheet per crear plantilla (mateix formulari que el modal, estil full hàbit).
+     */
+    obrirSheetCrearPlantilla: async function () {
+      var self = this;
+      self.modoEdicio = false;
+      self.plantillaAEditar = null;
+      self.form.titol = "";
+      self.form.categoria = "";
+      self.form.esPublica = false;
+      self.form.habitsSeleccionats = [];
+      await self.carregarHabits();
+      self.modalVisible = false;
+      self.plantillaSheetObert = true;
+    },
+    tancarSheetCrearPlantilla: function () {
+      this.plantillaSheetObert = false;
+    },
+    togglePublicacioPlantilla: function (plantilla) {
+      var self = this;
+      var i;
+      var habitsIds = [];
+
+      if (!self.socket) {
+        self.$swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: this.$t('templates.alert_socket_unavailable')
+        });
+        return;
+      }
+
+      if (plantilla.habits && Array.isArray(plantilla.habits)) {
+        for (i = 0; i < plantilla.habits.length; i++) {
+          habitsIds.push(plantilla.habits[i].id);
+        }
+      }
+
+      self.socket.emit("plantilla_action", {
+        action: "UPDATE",
+        plantilla_data: {
+          id: plantilla.id,
+          titol: plantilla.titol,
+          categoria: plantilla.categoria,
+          es_publica: !plantilla.esPublica,
+          habits_ids: habitsIds
+        },
+      });
     },
 
     /**
@@ -394,6 +718,7 @@ export default {
       self.form.esPublica = false;
       self.form.habitsSeleccionats = [];
       await self.carregarHabits(); // Refresh habits before opening the modal
+      self.plantillaSheetObert = false;
       self.modalVisible = true;
     },
 
@@ -433,6 +758,7 @@ export default {
       }
 
       await self.carregarHabits();
+      self.plantillaSheetObert = false;
       self.modalVisible = true;
     },
 
@@ -477,6 +803,7 @@ export default {
      */
     tancar: function () {
       this.modalVisible = false;
+      this.plantillaSheetObert = false;
     },
 
     /**
@@ -893,5 +1220,458 @@ export default {
 </script>
 
 <style scoped>
-/* Estils específics de la pàgina si calen */
+.templates-page {
+  font-family: "Comfortaa", system-ui, sans-serif;
+}
+
+.templates-filter-wrap {
+  width: 100%;
+}
+
+.templates-filter-row {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  width: 100%;
+}
+
+.templates-filter-decor {
+  flex-shrink: 0;
+  width: 58px;
+  height: 58px;
+  border-radius: 10px;
+  background: #faf9f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.templates-filter-decor__lupa {
+  display: block;
+  width: 28px;
+  height: 28px;
+}
+
+.templates-filter-card {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  height: 58px;
+  border-radius: 10px;
+  background: #faf9f9;
+  overflow: hidden;
+}
+
+.templates-filter-select {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  padding: 0 48px 0 20px;
+  color: #5e5e5e;
+  font-family: "Comfortaa", system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.2;
+  appearance: none;
+  outline: none;
+}
+
+.templates-filter-chevron {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  border-right: 5px solid #d8d8d8;
+  border-bottom: 5px solid #d8d8d8;
+  border-radius: 2px;
+  transform: translateY(-62%) rotate(45deg);
+  pointer-events: none;
+}
+
+.moment-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+  width: 100%;
+}
+
+.moment-divider__text {
+  flex-shrink: 0;
+  color: #faf9f9;
+  font-size: 15px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.moment-divider__line {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 3px;
+  background: #faf9f9;
+  border-radius: 999px;
+}
+
+/* Mateix separador que al catàleg / home; dins de la plantilla expandida */
+.moment-divider--expanded-habits {
+  margin-top: 2px;
+}
+
+.sheet-backdrop-enter-active,
+.sheet-backdrop-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.sheet-backdrop-enter-from,
+.sheet-backdrop-leave-to {
+  opacity: 0;
+}
+
+.sheet-panel-enter-active,
+.sheet-panel-leave-active {
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+.sheet-panel-enter-from,
+.sheet-panel-leave-to {
+  transform: translateY(100%);
+  opacity: 0.98;
+}
+
+.plantilla-sheet__header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  padding-left: 2.75rem;
+  padding-right: 2.75rem;
+}
+
+.plantilla-sheet__title {
+  margin: 0;
+  width: 100%;
+  text-align: center;
+  font-family: "Bricolage Grotesque", system-ui, sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #949494;
+}
+
+.plantilla-sheet__close {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  border: none;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.plantilla-sheet__close:focus {
+  outline: none;
+}
+
+.plantilla-sheet__close:focus-visible {
+  box-shadow: 0 0 0 2px rgba(148, 148, 148, 0.4);
+  border-radius: 6px;
+}
+
+.plantilla-sheet__close-line {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 18.5px;
+  height: 4px;
+  background-color: #d8d8d8;
+  border-radius: 999px;
+  transform-origin: center;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+.plantilla-sheet__close-line--1 {
+  transform: translate(-50%, -50%) rotate(43.17deg);
+}
+
+.plantilla-sheet__close-line--2 {
+  transform: translate(-50%, -50%) rotate(-44.87deg);
+}
+
+.create-category-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 338px;
+  min-height: 64px;
+  margin: 0 auto;
+  padding: 0;
+  border-radius: 10px;
+  background: rgba(250, 249, 249, 0.5);
+  border: 2px dashed #ffffff;
+  box-shadow: none;
+}
+
+.create-category-trigger--grid {
+  max-width: none;
+  width: 100%;
+  margin: 0;
+}
+
+.create-category-trigger__icon {
+  width: 33px;
+  height: 33px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.template-expandable {
+  overflow: hidden;
+  border-radius: 10px;
+  max-height: 92px;
+  transition: max-height 0.28s ease, background-color 0.2s ease, padding 0.2s ease;
+}
+
+.templates-grid {
+  --tw-space-y-reverse: 0;
+  column-gap: 1.5rem;
+  row-gap: calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));
+}
+
+.template-expandable--active {
+  background: rgba(0, 0, 0, 0.54);
+  padding: 10px;
+  max-height: 620px;
+}
+
+.template-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 57px minmax(0, 1fr);
+  column-gap: 23px;
+  align-items: center;
+  width: 100%;
+  min-height: 86px;
+  padding: 16px 18px;
+  background-color: #faf9f9;
+  border-radius: 10px;
+}
+
+.template-card__content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+}
+
+.template-card__mark {
+  position: relative;
+  width: 57px;
+  height: 54px;
+}
+
+.template-card__blob {
+  display: block;
+  width: 57px;
+  height: 54px;
+}
+
+.template-card__icona {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -52%);
+  z-index: 1;
+  width: 2rem;
+  text-align: center;
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+.template-card__title {
+  margin: 0;
+  font-family: "Bricolage Grotesque", system-ui, sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: #2b2d42;
+}
+
+.template-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: #707070;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.template-card__meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #707070;
+  line-height: 1;
+}
+
+.template-expand-inline {
+  animation: template-sheet-up 0.22s ease-out;
+  margin-top: 8px;
+}
+
+.template-expand-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.template-expand-close,
+.template-expand-edit {
+  border: 0;
+  background: transparent;
+  color: #faf9f9;
+}
+
+.template-expand-edit {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 16px;
+  font-weight: 400;
+}
+
+.template-expand-panel {
+  background: transparent;
+  border-radius: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.template-spec-card {
+  border: 1px solid #ececec;
+  border-radius: 10px;
+  padding: 10px;
+  background: #ffffff;
+}
+
+.template-habits-stack {
+  display: grid;
+  gap: 8px;
+}
+
+.template-habits-list__title {
+  margin: 0 0 8px 0;
+  color: #2b2d42;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.template-habits-list__empty {
+  margin: 4px 0;
+  color: #8a8a8a;
+  font-size: 12px;
+}
+
+.template-habit-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 74px;
+  padding: 14px 14px 14px 82px;
+  border: 0;
+  border-radius: 10px;
+  background: #ffffff;
+  text-align: left;
+}
+
+.template-habit-card__mark {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 56px;
+  height: 40px;
+}
+
+.template-habit-card__blob {
+  display: block;
+  width: 56px;
+  height: 40px;
+}
+
+.template-habit-card__icona {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -52%);
+  width: 2rem;
+  text-align: center;
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+.template-habit-card__content {
+  display: grid;
+  gap: 2px;
+}
+
+.template-habit-card__title {
+  color: #2b2d42;
+  font-size: 16px;
+  font-family: "Bricolage Grotesque", system-ui, sans-serif;
+  font-weight: 700;
+}
+
+.template-habit-card__subtitle {
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.template-expand-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.template-expand-btn {
+  border: 0;
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.template-expand-btn--danger {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.template-expand-btn--primary {
+  background: #79d45d;
+  color: #ffffff;
+}
+
+.template-expand-btn--secondary {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+@keyframes template-sheet-up {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
 </style>

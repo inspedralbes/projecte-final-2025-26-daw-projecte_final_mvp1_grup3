@@ -9,7 +9,7 @@
       <div class="login-header">
         <div class="login-logo">
           <span class="login-logo-text">Loopy</span>
-          <img src="@/assets/img/LogoLoopy.png" alt="Loopy Logo" class="login-logo-image" />
+          <img src="@/assets/img/Icones/Icona_Logo_Perfil.png" alt="Loopy Logo" class="login-logo-image" />
         </div>
         <h1 class="login-title">{{ $t('join_loopy') }}</h1>
         <p class="login-subtitle">{{ $t('create_account') }}</p>

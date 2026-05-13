@@ -25,7 +25,7 @@
 </template>
 
 <script>
-import rouletteIcon from '~/assets/img/roulette-loopy.png'
+import rouletteIcon from '~/assets/img/Icones/Icona_Ruleta.png'
 
 export default {
   name: 'HomeRouletteSection',

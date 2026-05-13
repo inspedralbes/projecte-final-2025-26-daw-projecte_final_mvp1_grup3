@@ -976,6 +976,10 @@ class HabitService
             $dades['color'] = $habitData['color'];
         }
 
+        if (array_key_exists('moment_dia', $habitData)) {
+            $dades['moment_dia'] = $this->normalitzarMomentDia($habitData['moment_dia']);
+        }
+
         if (array_key_exists('metadata', $habitData)) {
             $meta = $this->normalitzarMetadata($habitData['metadata']);
             $columnaMetadata = $this->obtenirColumnaMetadataHabits();
@@ -985,6 +989,27 @@ class HabitService
         }
 
         return $dades;
+    }
+
+    /**
+     * Normalitza el moment del dia (matí, tarda, nit, tot el dia).
+     *
+     * @param  mixed  $valor
+     */
+    private function normalitzarMomentDia($valor): string
+    {
+        if ($valor === null || $valor === '') {
+            return 'tot_dia';
+        }
+
+        $v = strtolower((string) $valor);
+        $permesos = ['tot_dia', 'mati', 'tarda', 'nit'];
+
+        if (!in_array($v, $permesos, true)) {
+            return 'tot_dia';
+        }
+
+        return $v;
     }
 
     /**

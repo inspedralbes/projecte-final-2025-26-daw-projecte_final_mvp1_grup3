@@ -41,6 +41,7 @@ function mapHabitFromApi(hàbit) {
     frequencia: freqMapejada,
     frequenciaTipus: hàbit.frequencia_tipus || "",
     recordatori: hàbit.recordatori || "",
+    momentDia: hàbit.moment_dia || "tot_dia",
     icona: hàbit.icona || "📝",
     color: hàbit.color || "#10B981",
     dificultat: hàbit.dificultat || null,
@@ -78,6 +79,8 @@ function mapHabitFromApiForHome(h) {
     unitat: h.unitat || "",
     categoriaId: h.categoria_id || null,
     frequenciaTipus: h.frequencia_tipus || "",
+    momentDia: h.moment_dia || "tot_dia",
+    recordatori: h.recordatori || "",
     metadata: (h.metadata && typeof h.metadata === "object")
       ? h.metadata
       : ((h.metadada && typeof h.metadada === "object") ? h.metadada : null)

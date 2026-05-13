@@ -14,23 +14,23 @@
           </button>
         </div>
 
-        <!-- 1. Detalls (inclou categoria) -->
+        <!-- Detalls, categoria, repetició, objectiu i dificultat -->
         <HabitFormDetails
           v-model="formulari"
           :categories="categories"
-          :colors="colors"
-          @select-category="seleccionarCategoria"
-        />
-
-        <!-- 2. Planificació -->
-        <HabitFormPlanning 
-          v-model="formulari" 
-          @toggle-day="toggleDay"
+          :user-categories="userCategories"
+          :category-custom-label="formulari.userCategoriaEtiqueta || ''"
+          :category-custom-icona="formulari.icona"
+          :selected-user-category-id="formulari.userCategoriaId"
           :is-day-selected="isDaySelected"
+          @select-category="seleccionarCategoria"
+          @select-user-category="seleccionarCategoriaUsuari"
+          @add-user-category="afegirCategoriaUsuari"
+          @toggle-day="toggleDay"
         />
 
         <!-- 3. Context extern (opcional) -->
-        <div class="bento-card bg-white/95 backdrop-blur-md rounded-3xl p-8 shadow-xl border border-white/50">
+        <div class="habit-form bento-card bg-white/95 backdrop-blur-md rounded-3xl p-4 shadow-xl border border-white/50">
           <div class="flex items-center gap-3 mb-4">
             <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center text-lg">🔎</div>
             <div>
@@ -180,11 +180,24 @@
           </div>
         </div>
 
-        <!-- Botó Enviar -->
-        <button data-testid="habit-save-button" @click="guardarHabit" :disabled="estaCarregant" class="w-full bg-green-600 hover:bg-green-700 text-white font-black py-6 rounded-3xl shadow-2xl shadow-green-900/40 transition-all transform hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-4 text-2xl uppercase tracking-widest disabled:opacity-50">
-          <span class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">{{ editantHabitId ? "✎" : "＋" }}</span>
-          {{ estaCarregant ? 'Processant...' : (editantHabitId ? 'Guardar canvis' : $t('habits.create_button')) }}
-        </button>
+        <div class="grid grid-cols-2 gap-3">
+          <button
+            type="button"
+            class="flex w-full min-w-0 items-center justify-center border-0 bg-transparent py-4 text-center text-base sm:text-lg font-normal text-[#5E5E5E] shadow-none outline-none ring-0 transition hover:opacity-80 focus-visible:underline"
+            @click="tornarDesDelFormulariHabits"
+          >
+            {{ $t('habits.back') }}
+          </button>
+          <button
+            data-testid="habit-save-button"
+            type="button"
+            class="w-full min-w-0 rounded-2xl border-2 border-[#6FBC58] bg-[#79D45D] py-4 sm:py-5 text-center text-base sm:text-lg font-normal text-white transition hover:brightness-[0.97] active:scale-[0.99] disabled:opacity-50"
+            :disabled="estaCarregant"
+            @click="guardarHabit"
+          >
+            {{ estaCarregant ? 'Processant...' : (editantHabitId ? $t('habits.save_changes') : $t('habits.save')) }}
+          </button>
+        </div>
         <button
           v-if="editantHabitId"
           class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3 rounded-2xl transition"
@@ -255,15 +268,15 @@
 <script>
 import { useHabitStore } from "../stores/useHabitStore";
 import HabitFormDetails from "~/components/user/habits/HabitFormDetails.vue";
-import HabitFormPlanning from "~/components/user/habits/HabitFormPlanning.vue";
 import { authFetch } from "~/composables/useApi.js";
 import { getEndpointByProvider, getProviderByCategoryId } from "~/utils/habitExternal.js";
+import { getDefaultColorForCategoryId, nearestCategoryIdFromHex } from "~/utils/habitCategoryColor.js";
+import { normalizeHex } from "~/utils/colorSpace.js";
 import { useAuthStore } from "~/stores/useAuthStore.js";
 
 export default {
   components: {
-    HabitFormDetails,
-    HabitFormPlanning
+    HabitFormDetails
   },
   data: function () {
     return {
@@ -277,6 +290,7 @@ export default {
         categoria: "", 
         frequencia: "diaria", 
         recordatori: "08:00", 
+        momentDia: "tot_dia",
         color: "#10B981", 
         objectiuVegades: 1, 
         unitat: "vegades",
@@ -284,7 +298,9 @@ export default {
         dies_setmana: [true, true, true, true, true, true, true],
         dataFinalitzacio: "",
         repeticio_interval: 1,
-        dies_mes: []
+        dies_mes: [],
+        userCategoriaEtiqueta: null,
+        userCategoriaId: null
       },
       editantHabitId: null,
       categoriaAnterior: null,
@@ -314,9 +330,7 @@ export default {
         { id: 7, key: "home", icona: "🏠" },
         { id: 8, key: "hobby", icona: "🎨" }
       ],
-      colors: [
-        "#10B981", "#3B82F6", "#F59E0B", "#EF4444", "#8B5CF6", "#EC4899", "#06B6D4", "#1F2937"
-      ],
+      userCategories: [],
       modalLlistaEditarObert: false
     };
   },
@@ -345,6 +359,7 @@ export default {
   mounted: async function () {
     var self = this;
     await this.carregarHabits();
+    this.carregarCategoriesUsuari();
     this.aplicarEditDesDeQuery();
     this.socket = useNuxtApp().$socket;
     if (this.socket) {
@@ -366,6 +381,9 @@ export default {
         clearTimeout(this.habitGuardarTimeoutId);
         this.habitGuardarTimeoutId = null;
       }
+    },
+    tornarDesDelFormulariHabits: function () {
+      navigateTo("/home");
     },
     onHabitActionConfirmedSocket: function (payload) {
       if (!payload || payload.action == null) {
@@ -466,10 +484,13 @@ export default {
 
       function aplicarCanviCategoria() {
         self.formulari.categoria = id;
+        self.formulari.userCategoriaEtiqueta = null;
+        self.formulari.userCategoriaId = null;
         var cat = self.categories.find(function(c) { return c.id === id; });
         if (cat) {
           self.formulari.icona = cat.icona;
         }
+        self.formulari.color = getDefaultColorForCategoryId(id);
         self.categoriaAnterior = id;
         self.cercaExterna.query = "";
         self.cercaExterna.resultats = [];
@@ -499,6 +520,108 @@ export default {
       }
 
       aplicarCanviCategoria();
+    },
+    seleccionarCategoriaUsuari: function (payload) {
+      var self = this;
+      if (!payload || payload.baseCategoryId == null) {
+        return;
+      }
+      var id = parseInt(String(payload.baseCategoryId), 10);
+      if (Number.isNaN(id)) {
+        return;
+      }
+      var hiHaContextExtern = this.recursExternSeleccionat !== null || this.manualExtern.titol !== "" || this.manualExtern.url_imatge !== "";
+
+      function aplicarUsuari() {
+        self.formulari.categoria = id;
+        self.formulari.icona = payload.icona || "✨";
+        self.formulari.color = payload.color && String(payload.color).trim()
+          ? normalizeHex(payload.color)
+          : getDefaultColorForCategoryId(id);
+        self.formulari.userCategoriaEtiqueta = payload.nom;
+        self.formulari.userCategoriaId = payload.id;
+        self.categoriaAnterior = id;
+        self.cercaExterna.query = "";
+        self.cercaExterna.resultats = [];
+        self.cercaExterna.error = "";
+        self.recursExternSeleccionat = null;
+        self.detallExercici.data = null;
+        self.detallExercici.error = "";
+        self.detallExercici.carregant = false;
+      }
+
+      if (this.categoriaAnterior && this.categoriaAnterior !== id && hiHaContextExtern) {
+        this.$swal.fire({
+          title: "Canviar categoria?",
+          text: "Si canvies la categoria, s'eliminaran els aspectes vinculats (llibre, rutina, etc.).",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonText: "Sí, canviar",
+          cancelButtonText: "Cancel·lar"
+        }).then(function (resultat) {
+          if (resultat && resultat.isConfirmed) {
+            self.manualExtern.titol = "";
+            self.manualExtern.url_imatge = "";
+            aplicarUsuari();
+          }
+        });
+        return;
+      }
+
+      aplicarUsuari();
+    },
+    carregarCategoriesUsuari: function () {
+      try {
+        var raw = localStorage.getItem("loopy_user_habit_categories");
+        if (!raw) {
+          this.userCategories = [];
+          return;
+        }
+        var parsed = JSON.parse(raw);
+        this.userCategories = Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        this.userCategories = [];
+      }
+    },
+    persistirCategoriesUsuari: function () {
+      try {
+        localStorage.setItem("loopy_user_habit_categories", JSON.stringify(this.userCategories));
+      } catch (e) {}
+    },
+    afegirCategoriaUsuari: function (payload) {
+      var nom = "";
+      var icona = "✨";
+      var colorHex = null;
+      var baseId = 8;
+      if (typeof payload === "string") {
+        nom = String(payload || "").trim();
+        baseId = (this.userCategories.length % 8) + 1;
+      } else if (payload && typeof payload === "object") {
+        nom = String(payload.nom || "").trim();
+        icona = payload.icona && String(payload.icona).trim() ? String(payload.icona).trim() : "✨";
+        if (payload.color && String(payload.color).trim()) {
+          colorHex = normalizeHex(payload.color);
+        }
+        if (payload.baseCategoryId != null) {
+          var b = parseInt(String(payload.baseCategoryId), 10);
+          baseId = Number.isNaN(b) ? nearestCategoryIdFromHex(colorHex || "#10B981") : b;
+        } else {
+          baseId = nearestCategoryIdFromHex(colorHex || "#10B981");
+        }
+      }
+      if (!nom) {
+        return;
+      }
+      var maxId = this.userCategories.reduce(function (m, c) {
+        return Math.max(m, Number(c.id) || 0);
+      }, 9000);
+      var nextId = maxId + 1;
+      var entry = { id: nextId, nom: nom, icona: icona, baseCategoryId: baseId };
+      if (colorHex) {
+        entry.color = colorHex;
+      }
+      this.userCategories = this.userCategories.concat([entry]);
+      this.persistirCategoriesUsuari();
     },
     isDaySelected: function (index) {
       return this.formulari.dies_setmana[index];
@@ -598,17 +721,16 @@ export default {
       this.recursExternSeleccionat = null;
     },
     construirMetadataHabit: function () {
+      var meta = null;
       if (this.recursExternSeleccionat) {
-        return {
+        meta = {
           api_id: this.recursExternSeleccionat.api_id || "",
           titol: this.recursExternSeleccionat.titol || "",
           url_imatge: this.recursExternSeleccionat.url_imatge || "",
           tipus_api: this.recursExternSeleccionat.tipus_api || ""
         };
-      }
-
-      if (this.manualExtern.titol || this.manualExtern.url_imatge) {
-        return {
+      } else if (this.manualExtern.titol || this.manualExtern.url_imatge) {
+        meta = {
           api_id: "",
           titol: this.manualExtern.titol || "",
           url_imatge: this.manualExtern.url_imatge || "",
@@ -616,7 +738,19 @@ export default {
         };
       }
 
-      return null;
+      var ucNom = this.formulari.userCategoriaEtiqueta && String(this.formulari.userCategoriaEtiqueta).trim();
+      if (ucNom) {
+        var extra = {
+          user_categoria_nom: ucNom,
+          user_categoria_icona: this.formulari.icona || "✨"
+        };
+        if (this.formulari.userCategoriaId != null && this.formulari.userCategoriaId !== "") {
+          extra.user_categoria_id = Number(this.formulari.userCategoriaId);
+        }
+        return meta ? Object.assign({}, meta, extra) : extra;
+      }
+
+      return meta;
     },
     guardarHabit: function () {
       if (!this.formulari.nom || !String(this.formulari.nom).trim()) {
@@ -683,6 +817,7 @@ export default {
           objectiu_vegades: this.formulari.objectiuVegades,
           unitat: this.formulari.unitat,
           recordatori: this.formulari.recordatori,
+          moment_dia: this.formulari.momentDia || "tot_dia",
           dies_setmana: this.formulari.dies_setmana,
           metadata: metadata
         }
@@ -695,7 +830,8 @@ export default {
       this.formulari.categoria = habit.categoriaId || "";
       this.formulari.frequencia = habit.frequenciaTipus || "diaria";
       this.formulari.recordatori = habit.recordatori || "08:00";
-      this.formulari.color = habit.color || "#10B981";
+      this.formulari.momentDia = habit.momentDia || habit.moment_dia || "tot_dia";
+      this.formulari.color = getDefaultColorForCategoryId(this.formulari.categoria || 1);
       this.formulari.objectiuVegades = habit.objectiuVegades || 1;
       this.formulari.unitat = habit.unitat || "vegades";
       this.formulari.dificultat = habit.dificultat || "facil";
@@ -713,11 +849,21 @@ export default {
       this.manualExtern.titol = "";
       this.manualExtern.url_imatge = "";
 
+      this.formulari.userCategoriaEtiqueta = null;
+      this.formulari.userCategoriaId = null;
+
       if (habit.metadata && typeof habit.metadata === "object") {
+        if (habit.metadata.user_categoria_nom) {
+          this.formulari.userCategoriaEtiqueta = habit.metadata.user_categoria_nom;
+          this.formulari.userCategoriaId = habit.metadata.user_categoria_id != null ? habit.metadata.user_categoria_id : null;
+          if (habit.metadata.user_categoria_icona) {
+            this.formulari.icona = habit.metadata.user_categoria_icona;
+          }
+        }
         if (habit.metadata.tipus_api === "manual") {
           this.manualExtern.titol = habit.metadata.titol || "";
           this.manualExtern.url_imatge = habit.metadata.url_imatge || "";
-        } else {
+        } else if (habit.metadata.tipus_api) {
           this.recursExternSeleccionat = {
             api_id: habit.metadata.api_id || "",
             titol: habit.metadata.titol || "",
@@ -737,7 +883,8 @@ export default {
       this.formulari.categoria = "";
       this.formulari.frequencia = "diaria";
       this.formulari.recordatori = "08:00";
-      this.formulari.color = "#10B981";
+      this.formulari.momentDia = "tot_dia";
+      this.formulari.color = getDefaultColorForCategoryId(1);
       this.formulari.objectiuVegades = 1;
       this.formulari.unitat = "vegades";
       this.formulari.dificultat = "facil";
@@ -745,6 +892,8 @@ export default {
       this.formulari.dataFinalitzacio = "";
       this.formulari.repeticio_interval = 1;
       this.formulari.dies_mes = [];
+      this.formulari.userCategoriaEtiqueta = null;
+      this.formulari.userCategoriaId = null;
 
       this.categoriaAnterior = null;
       this.recursExternSeleccionat = null;

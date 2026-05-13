@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\LogroMedalla;
+use App\Services\UserAccountUpdateService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -58,6 +59,40 @@ class UserProfileController extends Controller
         $user = User::findOrFail($request->user_id);
 
         return $this->getPublicProfile($user->id);
+    }
+
+    /**
+     * PUT. Actualitza nom, email i opcionalment contrasenya de l'usuari autenticat.
+     */
+    public function updateAccount(Request $request, UserAccountUpdateService $userAccountUpdateService): JsonResponse
+    {
+        $userId = (int) $request->user_id;
+        $nom = (string) $request->input('nom', '');
+        $email = (string) $request->input('email', '');
+        $password = $request->input('password');
+        if (!is_string($password)) {
+            $password = null;
+        }
+
+        $resultat = $userAccountUpdateService->actualitzarPerUsuariId($userId, $nom, $email, $password);
+
+        if (!$resultat['ok']) {
+            return response()->json([
+                'success' => false,
+                'errors' => $resultat['errors'],
+            ], 422);
+        }
+
+        $u = $resultat['user'];
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $u->id,
+                'nom' => $u->nom,
+                'email' => $u->email,
+            ],
+        ]);
     }
 
     public function updateShowcase(Request $request): JsonResponse

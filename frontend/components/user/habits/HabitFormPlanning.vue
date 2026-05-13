@@ -1,16 +1,18 @@
 <template>
-  <div class="bento-card bg-white/95 backdrop-blur-md rounded-3xl p-8 shadow-xl border border-white/50">
+  <div
+    :class="embedded ? 'habit-form' : 'habit-form bento-card bg-white/95 backdrop-blur-md rounded-3xl p-4 shadow-xl border border-white/50'"
+  >
     <div class="space-y-5">
       <div class="grid grid-cols-1 gap-5">
         <div>
-          <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3 px-1">{{ $t('habits.repetition') }}</label>
+          <label class="habit-form-label">{{ $t('habits.repetition') }}</label>
           <button
             type="button"
-            class="w-full bg-gray-50/50 border-2 border-gray-100 rounded-2xl px-6 py-4 focus:outline-none focus:ring-4 focus:ring-green-500/10 focus:border-green-500 focus:bg-white transition-all cursor-pointer font-bold text-gray-800 flex items-center justify-between"
+            class="habit-form-field-surface w-full flex items-center justify-between border-gray-100 bg-gray-50/50 text-gray-800 transition-all focus:outline-none focus:ring-4 focus:ring-green-500/10 focus:border-green-500 focus:bg-white cursor-pointer"
             @click="obrirSelectorRepeticio"
           >
-            <span>{{ etiquetaRepeticio }}</span>
-            <span class="text-gray-400 text-lg leading-none">⌄</span>
+            <span class="habit-form-field-text">{{ etiquetaRepeticio }}</span>
+            <HabitFormSelectChevron />
           </button>
         </div>
       </div>
@@ -30,44 +32,49 @@
     <Transition name="rep-sheet">
       <div
         v-if="selectorObert"
-        class="fixed left-0 right-0 bottom-0 z-[85] bg-white rounded-t-3xl shadow-2xl border-t border-gray-200 max-h-[80vh] flex flex-col"
+        class="fixed bottom-0 left-0 right-0 z-[85] flex max-h-[80vh] flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl habit-form"
       >
-        <div class="px-5 pt-4 pb-3 border-b border-gray-100 flex items-center justify-between">
-          <h3 class="text-base font-black text-gray-800">{{ $t('habits.define_repetition') }}</h3>
+        <header class="create-habit-sheet__header sticky top-0 z-[1] shrink-0 bg-white px-4 pt-3 pb-2">
           <button
             type="button"
-            class="w-9 h-9 rounded-full bg-gray-100 text-gray-600 text-xl font-bold"
+            class="create-habit-sheet__close create-habit-sheet__close--start"
+            :aria-label="$t('habits.cancel')"
             @click="tancarSelectorRepeticio"
           >
-            ×
+            <span class="create-habit-sheet__close-line create-habit-sheet__close-line--1" aria-hidden="true"></span>
+            <span class="create-habit-sheet__close-line create-habit-sheet__close-line--2" aria-hidden="true"></span>
           </button>
-        </div>
+          <h3 class="create-habit-sheet__title">
+            {{ $t('habits.define_repetition') }}
+          </h3>
+        </header>
 
-        <div class="overflow-y-auto p-5 space-y-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+        <div class="habit-sheet-body">
+          <div class="habit-sheet-body-inner space-y-6">
           <div>
-            <label class="block text-sm font-black text-gray-700 mb-3">{{ $t('habits.end_date') }}</label>
+            <label class="habit-form-label">{{ $t('habits.end_date') }}</label>
             <button
               type="button"
-              class="w-full flex items-center justify-between rounded-2xl border-2 px-5 py-3.5 transition"
+            class="habit-form-field-surface w-full flex items-center justify-between transition focus:outline-none focus:ring-4 focus:ring-green-500/10"
               :class="mostrarInputData ? 'border-green-400 bg-green-50/50' : 'border-gray-100 bg-gray-50/50'"
               @click="mostrarInputData = !mostrarInputData"
             >
-              <span class="font-semibold text-gray-700">{{ modelValue.dataFinalitzacio ? modelValue.dataFinalitzacio : $t('habits.end_date_never') }}</span>
-              <span class="text-gray-400 text-lg leading-none">⌄</span>
+              <span class="habit-form-field-text text-gray-700">{{ modelValue.dataFinalitzacio ? modelValue.dataFinalitzacio : $t('habits.end_date_never') }}</span>
+              <HabitFormSelectChevron />
             </button>
             <div v-if="mostrarInputData" class="mt-3 space-y-2">
               <button
                 type="button"
-                class="w-full text-left rounded-xl border-2 px-4 py-2.5 text-sm font-semibold transition"
+                class="habit-form-field-surface w-full text-left transition"
                 :class="!modelValue.dataFinalitzacio ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-100 bg-white text-gray-600 hover:border-green-200'"
                 @click="seleccionarDataFi('')"
               >
-                {{ $t('habits.end_date_never') }}
+                <span class="habit-form-field-text">{{ $t('habits.end_date_never') }}</span>
               </button>
               <input
                 type="date"
                 :value="modelValue.dataFinalitzacio || ''"
-                class="w-full bg-white border-2 border-gray-100 rounded-xl px-4 py-2.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-400"
+                class="habit-form-field-surface w-full bg-white border-gray-100 focus:outline-none focus:ring-4 focus:ring-green-500/10 focus:border-green-500"
                 :min="minDate"
                 @input="seleccionarDataFi($event.target.value)"
               />
@@ -75,25 +82,21 @@
           </div>
 
           <div>
-            <label class="block text-sm font-black text-gray-700 mb-3">{{ $t('habits.repetition') }}</label>
+            <label class="habit-form-label">{{ $t('habits.repetition') }}</label>
             <div class="space-y-2">
               <button
                 v-for="opcio in opcionsRepeticio"
                 :key="opcio.valor"
                 type="button"
-                class="w-full flex items-center justify-between rounded-2xl border-2 px-5 py-3.5 text-left transition"
-                :class="modeRepeticio === opcio.valor ? 'bg-green-50/60 border-green-400' : 'bg-gray-50/50 border-gray-100 hover:border-green-200'"
+                class="habit-form-field-surface w-full flex items-center justify-between text-left transition"
+                :class="modeRepeticio === opcio.valor ? 'border-[#79D45D] bg-[#ecfdf3]' : 'bg-gray-50/50 border-gray-100 hover:border-green-200'"
                 @click="seleccionarModeRepeticio(opcio.valor)"
               >
-                <span class="font-semibold text-gray-800">{{ opcio.etiqueta }}</span>
-                <span
-                  class="w-7 h-7 rounded-full flex items-center justify-center text-sm transition-all"
-                  :class="modeRepeticio === opcio.valor ? 'bg-green-500 text-white shadow-md' : 'bg-gray-200 text-gray-400'"
-                >
-                  ✓
-                </span>
+                <span class="habit-form-field-text text-gray-800">{{ opcio.etiqueta }}</span>
+                <MissionStyleCheckIcon :selected="modeRepeticio === opcio.valor" :size="36" />
               </button>
             </div>
+          </div>
           </div>
         </div>
       </div>
@@ -111,22 +114,27 @@
     <Transition name="rep-sheet">
       <div
         v-if="customSheetObert"
-        class="fixed left-0 right-0 bottom-0 z-[89] bg-white rounded-t-3xl shadow-2xl border-t border-gray-200 max-h-[82vh] flex flex-col"
+        class="fixed bottom-0 left-0 right-0 z-[89] flex max-h-[82vh] flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl habit-form"
       >
-        <div class="px-5 pt-4 pb-3 border-b border-gray-100 flex items-center justify-between">
-          <h3 class="text-base font-black text-gray-800">{{ $t('habits.custom_repetition_title') }}</h3>
+        <header class="create-habit-sheet__header sticky top-0 z-[1] shrink-0 bg-white px-4 pt-3 pb-2">
           <button
             type="button"
-            class="w-9 h-9 rounded-full bg-gray-100 text-gray-600 text-xl font-bold"
+            class="create-habit-sheet__close create-habit-sheet__close--start"
+            :aria-label="$t('habits.cancel')"
             @click="tancarCustomSheet"
           >
-            ×
+            <span class="create-habit-sheet__close-line create-habit-sheet__close-line--1" aria-hidden="true"></span>
+            <span class="create-habit-sheet__close-line create-habit-sheet__close-line--2" aria-hidden="true"></span>
           </button>
-        </div>
+          <h3 class="create-habit-sheet__title">
+            {{ $t('habits.custom_repetition_title') }}
+          </h3>
+        </header>
 
-        <div class="overflow-y-auto p-5 space-y-5 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+        <div class="habit-sheet-body">
+          <div class="habit-sheet-body-inner space-y-5">
           <div>
-            <label class="block text-sm font-black text-gray-700 mb-3">{{ $t('habits.custom_options') }}</label>
+            <label class="habit-form-label">{{ $t('habits.custom_options') }}</label>
             <div class="flex rounded-2xl border-2 border-gray-100 overflow-hidden">
               <button
                 v-for="tab in customTabs"
@@ -146,11 +154,11 @@
               <span class="text-sm font-bold text-gray-600 shrink-0">{{ $t('habits.custom_every') }}</span>
               <button
                 type="button"
-                class="flex-1 flex items-center justify-between rounded-2xl border-2 border-gray-100 bg-gray-50/50 px-4 py-3 transition hover:border-green-200"
+                class="habit-form-field-surface flex-1 flex items-center justify-between border-gray-100 bg-gray-50/50 transition hover:border-green-200"
                 @click="mostrarIntervalSelect = !mostrarIntervalSelect"
               >
                 <span class="text-sm font-semibold text-gray-700">{{ etiquetaIntervalSetmanal }}</span>
-                <span class="text-gray-400 text-lg leading-none">⌄</span>
+                <HabitFormSelectChevron />
               </button>
             </div>
             <div v-if="mostrarIntervalSelect" class="space-y-1 rounded-2xl border-2 border-gray-100 bg-white p-2 max-h-40 overflow-y-auto">
@@ -184,11 +192,11 @@
               <span class="text-sm font-bold text-gray-600 shrink-0">{{ $t('habits.custom_every') }}</span>
               <button
                 type="button"
-                class="flex-1 flex items-center justify-between rounded-2xl border-2 border-gray-100 bg-gray-50/50 px-4 py-3 transition hover:border-green-200"
+                class="habit-form-field-surface flex-1 flex items-center justify-between border-gray-100 bg-gray-50/50 transition hover:border-green-200"
                 @click="mostrarIntervalSelectDiari = !mostrarIntervalSelectDiari"
               >
                 <span class="text-sm font-semibold text-gray-700">{{ etiquetaIntervalDiari }}</span>
-                <span class="text-gray-400 text-lg leading-none">⌄</span>
+                <HabitFormSelectChevron />
               </button>
             </div>
             <div v-if="mostrarIntervalSelectDiari" class="space-y-1 rounded-2xl border-2 border-gray-100 bg-white p-2 max-h-40 overflow-y-auto">
@@ -210,11 +218,11 @@
               <span class="text-sm font-bold text-gray-600 shrink-0">{{ $t('habits.custom_every') }}</span>
               <button
                 type="button"
-                class="flex-1 flex items-center justify-between rounded-2xl border-2 border-gray-100 bg-gray-50/50 px-4 py-3 transition hover:border-green-200"
+                class="habit-form-field-surface flex-1 flex items-center justify-between border-gray-100 bg-gray-50/50 transition hover:border-green-200"
                 @click="mostrarIntervalSelectMensual = !mostrarIntervalSelectMensual"
               >
                 <span class="text-sm font-semibold text-gray-700">{{ etiquetaIntervalMensual }}</span>
-                <span class="text-gray-400 text-lg leading-none">⌄</span>
+                <HabitFormSelectChevron />
               </button>
             </div>
             <div v-if="mostrarIntervalSelectMensual" class="space-y-1 rounded-2xl border-2 border-gray-100 bg-white p-2 max-h-40 overflow-y-auto">
@@ -231,7 +239,7 @@
             </div>
 
             <div class="space-y-3">
-              <label class="block text-sm font-black text-gray-700">{{ $t('habits.month_days_label') }}</label>
+              <label class="habit-form-label">{{ $t('habits.month_days_label') }}</label>
               <div class="grid grid-cols-7 gap-2">
                 <button
                   v-for="d in 31"
@@ -249,6 +257,7 @@
               </p>
             </div>
           </div>
+          </div>
         </div>
       </div>
     </Transition>
@@ -256,11 +265,20 @@
 </template>
 
 <script>
+import HabitFormSelectChevron from './HabitFormSelectChevron.vue'
+import MissionStyleCheckIcon from '~/components/shared/MissionStyleCheckIcon.vue'
+
 export default {
   name: 'HabitFormPlanning',
+  components: {
+    HabitFormSelectChevron,
+    MissionStyleCheckIcon
+  },
   props: {
     modelValue: { type: Object, required: true },
-    isDaySelected: { type: Function, required: true }
+    isDaySelected: { type: Function, required: true },
+    /** Sense tarja pròpia; dins HabitFormDetails */
+    embedded: { type: Boolean, default: false }
   },
   emits: ['update:modelValue', 'toggle-day'],
   data: function () {
@@ -446,5 +464,75 @@ export default {
 .rep-sheet-leave-to {
   transform: translateY(100%);
   opacity: 0.98;
+}
+
+.create-habit-sheet__header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  padding-left: 2.75rem;
+  padding-right: 2.75rem;
+}
+
+.create-habit-sheet__title {
+  margin: 0;
+  width: 100%;
+  text-align: center;
+  font-family: "Bricolage Grotesque", system-ui, sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #949494;
+}
+
+.create-habit-sheet__close {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  border: none;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.create-habit-sheet__close--start {
+  left: 8px;
+  right: auto;
+}
+
+.create-habit-sheet__close:focus {
+  outline: none;
+}
+
+.create-habit-sheet__close:focus-visible {
+  box-shadow: 0 0 0 2px rgba(148, 148, 148, 0.4);
+  border-radius: 6px;
+}
+
+.create-habit-sheet__close-line {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 18.5px;
+  height: 4px;
+  background-color: #d8d8d8;
+  border-radius: 999px;
+  transform-origin: center;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+.create-habit-sheet__close-line--1 {
+  transform: translate(-50%, -50%) rotate(43.17deg);
+}
+
+.create-habit-sheet__close-line--2 {
+  transform: translate(-50%, -50%) rotate(-44.87deg);
 }
 </style>

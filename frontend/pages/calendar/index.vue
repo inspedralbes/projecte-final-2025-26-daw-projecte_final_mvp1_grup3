@@ -182,7 +182,7 @@ export default {
       this.carregarMes();
     },
     onSelectDay: function (dateStr) {
-      navigateTo("/calendar/day?date=" + dateStr);
+      navigateTo("/home?date=" + encodeURIComponent(dateStr));
     },
     tornar: function () {
       navigateTo("/home");

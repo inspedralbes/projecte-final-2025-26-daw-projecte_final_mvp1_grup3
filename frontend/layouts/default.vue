@@ -13,7 +13,7 @@
   >
     <div class="global-content-wrapper">
       <HeaderUser />
-      <main class="mx-auto w-full min-w-0 max-w-7xl px-3 sm:px-4 py-4 sm:py-6 pb-28 lg:pb-8">
+      <main class="mx-auto w-full min-w-0 max-w-7xl px-3 sm:px-4 pt-0 pb-28 lg:pb-8">
         <slot />
       </main>
       <!-- Footer escriptori: accés ràpid a la Botiga (la barra inferior mòbil també inclou /shop) -->

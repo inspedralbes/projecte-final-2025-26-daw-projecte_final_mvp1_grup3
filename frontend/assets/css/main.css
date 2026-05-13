@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Comfortaa:wght@300..700&family=Fredoka:wght@300..700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -11,6 +11,78 @@
 }
 
 @layer components {
+    /* Formulari crear / editar hàbit: etiquetes de camp */
+    .habit-form-label {
+        display: block;
+        margin-bottom: 0.75rem;
+        padding-right: 0.25rem;
+        font-family: "Bricolage Grotesque", system-ui, sans-serif;
+        font-size: 20px;
+        font-weight: 600;
+        line-height: 1.2;
+        color: #2b2d42;
+    }
+
+    /* Valors dins d'inputs / selects / textareas del formulari d'hàbit */
+    .habit-form input[type="text"],
+    .habit-form input[type="date"],
+    .habit-form input[type="time"],
+    .habit-form input[type="search"],
+    .habit-form input[type="email"],
+    .habit-form input[type="url"],
+    .habit-form input[type="number"],
+    .habit-form select,
+    .habit-form textarea {
+        font-family: "Comfortaa", system-ui, sans-serif !important;
+        font-size: 12px !important;
+        font-weight: 400 !important;
+        line-height: 1.35;
+    }
+
+    .habit-form option {
+        font-family: "Comfortaa", system-ui, sans-serif;
+        font-size: 12px;
+        font-weight: 400;
+    }
+
+    .habit-form input::placeholder,
+    .habit-form textarea::placeholder {
+        font-family: "Comfortaa", system-ui, sans-serif;
+        font-size: 12px;
+        font-weight: 400;
+    }
+
+    /* Text del valor en botons tipus select (categoria, color, repetició, data…) */
+    .habit-form .habit-form-field-text {
+        font-family: "Comfortaa", system-ui, sans-serif;
+        font-size: 12px;
+        font-weight: 400;
+        line-height: 1.35;
+    }
+
+    /* Mateix aire que l'input de nom del hàbit (HabitFormDetails): vora, radi i padding */
+    .habit-form .habit-form-field-surface {
+        @apply rounded-2xl border-2 px-6 py-4;
+    }
+
+    .habit-form .habit-form-daily-goal-count {
+        font-family: "Comfortaa", system-ui, sans-serif;
+        font-size: clamp(1.875rem, 6vw, 2.75rem);
+        font-weight: 500;
+        line-height: 1.05;
+        color: #2b2d42;
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* Cos de sheets (categoria, repetició, API…): mateix inset horitzontal que crear hàbit (px-4 + card p-4) */
+    .habit-sheet-body {
+        @apply min-h-0 flex-1 overflow-y-auto px-4 py-3 pb-[max(1.25rem,env(safe-area-inset-bottom))];
+    }
+
+    .habit-sheet-body-inner {
+        @apply rounded-3xl bg-white p-4;
+    }
+
     /* ==== LOGIN PAGE ==== */
 
     /* Contenedor Principal */
@@ -255,6 +327,36 @@
     .global-content-wrapper {
         @apply relative z-10;
     }
+}
+
+/*
+  Formulari hàbit: en focus només el border sòlid #535353 (sense anell / doble vora Tailwind).
+*/
+.habit-form input[type="text"]:focus,
+.habit-form input[type="text"]:focus-visible,
+.habit-form input[type="date"]:focus,
+.habit-form input[type="date"]:focus-visible,
+.habit-form input[type="time"]:focus,
+.habit-form input[type="time"]:focus-visible,
+.habit-form input[type="search"]:focus,
+.habit-form input[type="search"]:focus-visible,
+.habit-form input[type="email"]:focus,
+.habit-form input[type="email"]:focus-visible,
+.habit-form input[type="url"]:focus,
+.habit-form input[type="url"]:focus-visible,
+.habit-form input[type="number"]:focus,
+.habit-form input[type="number"]:focus-visible,
+.habit-form select:focus,
+.habit-form select:focus-visible,
+.habit-form textarea:focus,
+.habit-form textarea:focus-visible {
+    border-color: #535353 !important;
+    outline: none !important;
+    box-shadow: none !important;
+    --tw-ring-shadow: 0 0 #0000 !important;
+    --tw-ring-offset-shadow: 0 0 #0000 !important;
+    --tw-shadow: 0 0 #0000 !important;
+    --tw-ring-offset-width: 0 !important;
 }
 
 /* Estilos personalizados */

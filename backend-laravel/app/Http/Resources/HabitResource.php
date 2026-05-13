@@ -49,6 +49,7 @@ class HabitResource extends JsonResource
             'unitat' => $this->unitat,
             'icona' => $this->icona,
             'color' => $this->color,
+            'moment_dia' => $this->moment_dia ?? 'tot_dia',
             'metadata' => $this->metadata ?? null,
             'completat' => $completat,
         ];

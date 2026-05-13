@@ -2,9 +2,10 @@
   <div class="space-y-0 lg:space-y-6">
     <div class="hidden lg:flex items-center justify-between">
       <h2 class="text-lg font-bold text-gray-800">{{ $t('home.habits_title') }}</h2>
-      <NuxtLink to="/habits" class="text-blue-500 text-xs font-semibold hover:underline">
+      <NuxtLink v-if="!readOnly" to="/habits" class="text-blue-500 text-xs font-semibold hover:underline">
         {{ $t('home.see_all') }}
       </NuxtLink>
+      <span v-else class="text-xs font-semibold text-gray-400">{{ $t('home.historical_readonly_hint') }}</span>
     </div>
     <div class="space-y-3">
       <div v-if="errorMissatge" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
@@ -26,6 +27,9 @@
             ></span>
           </div>
         </div>
+
+        <slot name="below-daily-progress"></slot>
+
         <div class="daily-progress-card__footer">
           <span class="daily-progress-card__list-icon" aria-hidden="true">
             <svg width="14" height="10" viewBox="0 0 14 10" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -40,7 +44,7 @@
           <span class="moment-divider__text">durant tot el dia</span>
           <span class="moment-divider__line" aria-hidden="true"></span>
         </div>
-        <HomeCreateHabitDropdown @habit-creat="$emit('habit-creat')" />
+        <HomeCreateHabitDropdown v-if="!readOnly" ref="createHabitDropdown" @habit-creat="$emit('habit-creat')" />
         <template v-if="habitsSenseMoment.length > 0">
           <div
             v-for="h in habitsSenseMoment"
@@ -54,6 +58,7 @@
               :completat-avui="habitCompletatAvui(h.id)"
               :esta-processant="estaProcessant(h.id)"
               :clima-advers="esClimaAdversPerHabit(h)"
+              :read-only="readOnly"
               @obrir-modal="$emit('obrir-modal-habit', $event)"
               @obrir-detalls="obrirHabitExpandit"
             />
@@ -68,7 +73,7 @@
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M7 2.41421H2.33333C1.97971 2.41421 1.64057 2.55469 1.39052 2.80474C1.14048 3.05479 1 3.39392 1 3.74755V13.0809C1 13.4345 1.14048 13.7736 1.39052 14.0237C1.64057 14.2737 1.97971 14.4142 2.33333 14.4142H11.6667C12.0203 14.4142 12.3594 14.2737 12.6095 14.0237C12.8595 13.7736 13 13.4345 13 13.0809V8.41421M12 1.41421C12.2652 1.149 12.6249 1 13 1C13.3751 1 13.7348 1.149 14 1.41421C14.2652 1.67943 14.4142 2.03914 14.4142 2.41421C14.4142 2.78929 14.2652 3.149 14 3.41421L7.66667 9.74755L5 10.4142L5.66667 7.74755L12 1.41421Z" stroke="#FAF9F9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                   </svg>
-                  <span>editar habit</span>
+                  <span>Editar Habit</span>
                 </button>
               </div>
               <div class="habit-expand-panel">
@@ -79,7 +84,7 @@
                     <span class="meta-icon" :style="{ color: colorHabitExpandit }">{{ esPrioritari(habitExpanditActual) ? '♥' : '♡' }}</span>
                     <span>Prioritari</span>
                   </button>
-                  <button class="focus-btn" type="button" @click="$emit('start-focus-habit', habitExpanditActual)">mode focus</button>
+                  <button class="focus-btn" type="button" @click="$emit('start-focus-habit', habitExpanditActual)">Mode Focus</button>
                 </div>
                 <div class="habit-expand-controls">
                   <button type="button" class="habit-expand-action" @click="$emit('decrementar-habit', habitExpanditActual)">−</button>
@@ -108,6 +113,7 @@
               :completat-avui="habitCompletatAvui(h.id)"
               :esta-processant="estaProcessant(h.id)"
               :clima-advers="esClimaAdversPerHabit(h)"
+              :read-only="readOnly"
               @obrir-modal="$emit('obrir-modal-habit', $event)"
               @obrir-detalls="obrirHabitExpandit"
             />
@@ -118,7 +124,7 @@
                 </button>
                 <button class="habit-expand-edit" type="button" @click="editarHabitExpandit">
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 2.41421H2.33333C1.97971 2.41421 1.64057 2.55469 1.39052 2.80474C1.14048 3.05479 1 3.39392 1 3.74755V13.0809C1 13.4345 1.14048 13.7736 1.39052 14.0237C1.64057 14.2737 1.97971 14.4142 2.33333 14.4142H11.6667C12.0203 14.4142 12.3594 14.2737 12.6095 14.0237C12.8595 13.7736 13 13.4345 13 13.0809V8.41421M12 1.41421C12.2652 1.149 12.6249 1 13 1C13.3751 1 13.7348 1.149 14 1.41421C14.2652 1.67943 14.4142 2.03914 14.4142 2.41421C14.4142 2.78929 14.2652 3.149 14 3.41421L7.66667 9.74755L5 10.4142L5.66667 7.74755L12 1.41421Z" stroke="#FAF9F9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                  <span>editar habit</span>
+                  <span>Editar Habit</span>
                 </button>
               </div>
               <div class="habit-expand-panel">
@@ -129,7 +135,7 @@
                     <span class="meta-icon" :style="{ color: colorHabitExpandit }">{{ esPrioritari(habitExpanditActual) ? '♥' : '♡' }}</span>
                     <span>Prioritari</span>
                   </button>
-                  <button class="focus-btn" type="button" @click="$emit('start-focus-habit', habitExpanditActual)">mode focus</button>
+                  <button class="focus-btn" type="button" @click="$emit('start-focus-habit', habitExpanditActual)">Mode Focus</button>
                 </div>
                 <div class="habit-expand-controls">
                   <button type="button" class="habit-expand-action" @click="$emit('decrementar-habit', habitExpanditActual)">−</button>
@@ -159,13 +165,14 @@
               :completat-avui="habitCompletatAvui(h.id)"
               :esta-processant="estaProcessant(h.id)"
               :clima-advers="esClimaAdversPerHabit(h)"
+              :read-only="readOnly"
               @obrir-modal="$emit('obrir-modal-habit', $event)"
               @obrir-detalls="obrirHabitExpandit"
             />
             <div v-if="isHabitExpandit(h)" class="habit-expand-inline">
               <div class="habit-expand-top">
                 <button class="habit-expand-close" type="button" @click="tancarHabitExpandit"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11.2917 6.54167L6.54167 11.2917M6.54167 6.54167L11.2917 11.2917M16.8333 8.91667C16.8333 13.2889 13.2889 16.8333 8.91667 16.8333C4.54441 16.8333 1 13.2889 1 8.91667C1 4.54441 4.54441 1 8.91667 1C13.2889 1 16.8333 4.54441 16.8333 8.91667Z" stroke="#FAF9F9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-                <button class="habit-expand-edit" type="button" @click="editarHabitExpandit"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 2.41421H2.33333C1.97971 2.41421 1.64057 2.55469 1.39052 2.80474C1.14048 3.05479 1 3.39392 1 3.74755V13.0809C1 13.4345 1.14048 13.7736 1.39052 14.0237C1.64057 14.2737 1.97971 14.4142 2.33333 14.4142H11.6667C12.0203 14.4142 12.3594 14.2737 12.6095 14.0237C12.8595 13.7736 13 13.4345 13 13.0809V8.41421M12 1.41421C12.2652 1.149 12.6249 1 13 1C13.3751 1 13.7348 1.149 14 1.41421C14.2652 1.67943 14.4142 2.03914 14.4142 2.41421C14.4142 2.78929 14.2652 3.149 14 3.41421L7.66667 9.74755L5 10.4142L5.66667 7.74755L12 1.41421Z" stroke="#FAF9F9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>editar habit</span></button>
+                <button class="habit-expand-edit" type="button" @click="editarHabitExpandit"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 2.41421H2.33333C1.97971 2.41421 1.64057 2.55469 1.39052 2.80474C1.14048 3.05479 1 3.39392 1 3.74755V13.0809C1 13.4345 1.14048 13.7736 1.39052 14.0237C1.64057 14.2737 1.97971 14.4142 2.33333 14.4142H11.6667C12.0203 14.4142 12.3594 14.2737 12.6095 14.0237C12.8595 13.7736 13 13.4345 13 13.0809V8.41421M12 1.41421C12.2652 1.149 12.6249 1 13 1C13.3751 1 13.7348 1.149 14 1.41421C14.2652 1.67943 14.4142 2.03914 14.4142 2.41421C14.4142 2.78929 14.2652 3.149 14 3.41421L7.66667 9.74755L5 10.4142L5.66667 7.74755L12 1.41421Z" stroke="#FAF9F9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Editar Habit</span></button>
               </div>
               <div class="habit-expand-panel">
                 <div class="habit-expand-meta">
@@ -175,7 +182,7 @@
                     <span class="meta-icon" :style="{ color: colorHabitExpandit }">{{ esPrioritari(habitExpanditActual) ? '♥' : '♡' }}</span>
                     <span>Prioritari</span>
                   </button>
-                  <button class="focus-btn" type="button" @click="$emit('start-focus-habit', habitExpanditActual)">mode focus</button>
+                  <button class="focus-btn" type="button" @click="$emit('start-focus-habit', habitExpanditActual)">Mode Focus</button>
                 </div>
                 <div class="habit-expand-controls">
                   <button type="button" class="habit-expand-action" @click="$emit('decrementar-habit', habitExpanditActual)">−</button>
@@ -205,13 +212,14 @@
               :completat-avui="habitCompletatAvui(h.id)"
               :esta-processant="estaProcessant(h.id)"
               :clima-advers="esClimaAdversPerHabit(h)"
+              :read-only="readOnly"
               @obrir-modal="$emit('obrir-modal-habit', $event)"
               @obrir-detalls="obrirHabitExpandit"
             />
             <div v-if="isHabitExpandit(h)" class="habit-expand-inline">
               <div class="habit-expand-top">
                 <button class="habit-expand-close" type="button" @click="tancarHabitExpandit"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11.2917 6.54167L6.54167 11.2917M6.54167 6.54167L11.2917 11.2917M16.8333 8.91667C16.8333 13.2889 13.2889 16.8333 8.91667 16.8333C4.54441 16.8333 1 13.2889 1 8.91667C1 4.54441 4.54441 1 8.91667 1C13.2889 1 16.8333 4.54441 16.8333 8.91667Z" stroke="#FAF9F9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-                <button class="habit-expand-edit" type="button" @click="editarHabitExpandit"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 2.41421H2.33333C1.97971 2.41421 1.64057 2.55469 1.39052 2.80474C1.14048 3.05479 1 3.39392 1 3.74755V13.0809C1 13.4345 1.14048 13.7736 1.39052 14.0237C1.64057 14.2737 1.97971 14.4142 2.33333 14.4142H11.6667C12.0203 14.4142 12.3594 14.2737 12.6095 14.0237C12.8595 13.7736 13 13.4345 13 13.0809V8.41421M12 1.41421C12.2652 1.149 12.6249 1 13 1C13.3751 1 13.7348 1.149 14 1.41421C14.2652 1.67943 14.4142 2.03914 14.4142 2.41421C14.4142 2.78929 14.2652 3.149 14 3.41421L7.66667 9.74755L5 10.4142L5.66667 7.74755L12 1.41421Z" stroke="#FAF9F9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>editar habit</span></button>
+                <button class="habit-expand-edit" type="button" @click="editarHabitExpandit"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 2.41421H2.33333C1.97971 2.41421 1.64057 2.55469 1.39052 2.80474C1.14048 3.05479 1 3.39392 1 3.74755V13.0809C1 13.4345 1.14048 13.7736 1.39052 14.0237C1.64057 14.2737 1.97971 14.4142 2.33333 14.4142H11.6667C12.0203 14.4142 12.3594 14.2737 12.6095 14.0237C12.8595 13.7736 13 13.4345 13 13.0809V8.41421M12 1.41421C12.2652 1.149 12.6249 1 13 1C13.3751 1 13.7348 1.149 14 1.41421C14.2652 1.67943 14.4142 2.03914 14.4142 2.41421C14.4142 2.78929 14.2652 3.149 14 3.41421L7.66667 9.74755L5 10.4142L5.66667 7.74755L12 1.41421Z" stroke="#FAF9F9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Editar Habit</span></button>
               </div>
               <div class="habit-expand-panel">
                 <div class="habit-expand-meta">
@@ -221,7 +229,7 @@
                     <span class="meta-icon" :style="{ color: colorHabitExpandit }">{{ esPrioritari(habitExpanditActual) ? '♥' : '♡' }}</span>
                     <span>Prioritari</span>
                   </button>
-                  <button class="focus-btn" type="button" @click="$emit('start-focus-habit', habitExpanditActual)">mode focus</button>
+                  <button class="focus-btn" type="button" @click="$emit('start-focus-habit', habitExpanditActual)">Mode Focus</button>
                 </div>
                 <div class="habit-expand-controls">
                   <button type="button" class="habit-expand-action" @click="$emit('decrementar-habit', habitExpanditActual)">−</button>
@@ -254,6 +262,27 @@ function parseHoraRecordatori(recordatori) {
   return hora;
 }
 
+/** Agrupa per moment del dia: API `moment_dia` / `momentDia`, o fallback per hora de recordatori. */
+function bucketMomentDelDia(habit) {
+  var raw = habit.momentDia != null && habit.momentDia !== ""
+    ? habit.momentDia
+    : (habit.moment_dia != null && habit.moment_dia !== "" ? habit.moment_dia : "");
+  if (raw === "mati" || raw === "tarda" || raw === "nit" || raw === "tot_dia") {
+    return raw;
+  }
+  var hora = parseHoraRecordatori(habit.recordatori);
+  if (hora === null) {
+    return "tot_dia";
+  }
+  if (hora >= 5 && hora < 12) {
+    return "mati";
+  }
+  if (hora >= 12 && hora < 19) {
+    return "tarda";
+  }
+  return "nit";
+}
+
 export default {
   name: 'HomeHabitsSection',
   components: {
@@ -273,7 +302,8 @@ export default {
     obtenirProgres:     { type: Function, required: true },
     habitCompletatAvui: { type: Function, required: true },
     estaProcessant:     { type: Function, default: function () { return false; } },
-    weatherGlobal:      { type: Object,   default: null }
+    weatherGlobal:      { type: Object,   default: null },
+    readOnly:           { type: Boolean,  default: false }
   },
   computed: {
     barresProgress: function () {
@@ -295,29 +325,25 @@ export default {
     },
     habitsSenseMoment: function () {
       var llista = (this.habits || []).filter(function (habit) {
-        var hora = parseHoraRecordatori(habit.recordatori);
-        return hora === null;
+        return bucketMomentDelDia(habit) === "tot_dia";
       });
       return this.ordenarPerPrioritat(llista);
     },
     habitsMatins: function () {
       var llista = (this.habits || []).filter(function (habit) {
-        var hora = parseHoraRecordatori(habit.recordatori);
-        return hora !== null && hora >= 5 && hora < 12;
+        return bucketMomentDelDia(habit) === "mati";
       });
       return this.ordenarPerPrioritat(llista);
     },
     habitsTarda: function () {
       var llista = (this.habits || []).filter(function (habit) {
-        var hora = parseHoraRecordatori(habit.recordatori);
-        return hora !== null && hora >= 12 && hora < 19;
+        return bucketMomentDelDia(habit) === "tarda";
       });
       return this.ordenarPerPrioritat(llista);
     },
     habitsNit: function () {
       var llista = (this.habits || []).filter(function (habit) {
-        var hora = parseHoraRecordatori(habit.recordatori);
-        return hora !== null && (hora >= 19 || hora < 5);
+        return bucketMomentDelDia(habit) === "nit";
       });
       return this.ordenarPerPrioritat(llista);
     },
@@ -352,6 +378,7 @@ export default {
   },
   methods: {
     obrirHabitExpandit: function (habit) {
+      if (this.readOnly) return;
       this.habitExpanditId = habit && habit.id ? habit.id : null;
     },
     tancarHabitExpandit: function () {
@@ -361,8 +388,15 @@ export default {
       return !!(habit && this.habitExpanditId && habit.id === this.habitExpanditId);
     },
     editarHabitExpandit: function () {
-      if (!this.habitExpanditActual) return;
-      this.$emit('editar-habit', this.habitExpanditActual);
+      if (this.readOnly) return;
+      if (!this.habitExpanditActual) {
+        return;
+      }
+      var dropdown = this.$refs.createHabitDropdown;
+      if (dropdown && typeof dropdown.obrirPerEdicio === "function") {
+        dropdown.obrirPerEdicio(this.habitExpanditActual);
+        this.tancarHabitExpandit();
+      }
     },
     esPrioritari: function (habit) {
       if (!habit || !habit.id) return false;
@@ -452,7 +486,7 @@ export default {
   align-items: center;
   gap: 6px;
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 400;
 }
 
 .habit-expand-panel {
@@ -512,7 +546,7 @@ export default {
   border-radius: 12px;
   height: 40px;
   font-size: 16px;
-  font-weight: 700;
+  font-weight: 500;
 }
 
 .habit-expand-controls {
@@ -582,7 +616,6 @@ export default {
 }
 
 .daily-progress-card__footer {
-  margin-top: 10px;
   display: flex;
   align-items: center;
 }
@@ -615,10 +648,12 @@ export default {
   align-items: center;
   justify-content: center;
   gap: 30px;
+  width: 100%;
   margin-top: 2px;
 }
 
 .moment-divider__text {
+  flex-shrink: 0;
   color: #FAF9F9;
   font-size: 15px;
   line-height: 1.2;
@@ -626,7 +661,8 @@ export default {
 }
 
 .moment-divider__line {
-  width: 95px;
+  flex: 1 1 0;
+  min-width: 0;
   height: 3px;
   background: #FAF9F9;
   border-radius: 999px;

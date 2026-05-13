@@ -8,12 +8,14 @@
       <!-- CENTRE: sense sticky → el monstre creua el scroll amb el fons natural (no queda pinat sol) -->
       <div class="col-span-12 lg:col-span-6 order-3 lg:order-2 lg:row-span-1 h-fit max-h-none space-y-4 lg:space-y-6 lg:self-start lg:z-[5]">
         <!-- Mobile: monstre sobre el fons global (imatge dalt + verd #7EB356 sota) -->
-        <div class="lg:hidden relative w-full flex justify-center pt-0 pb-1 overflow-visible">
+        <div class="lg:hidden relative w-full flex justify-center px-2 pt-0 pb-1 overflow-visible">
           <img
             v-if="imatgeMascota"
             :src="imatgeMascota"
             alt="El teu monstre"
-            class="w-[93vw] max-w-[408px] h-auto max-h-[21rem] sm:max-h-[24rem] object-contain object-bottom drop-shadow-[0_14px_28px_rgba(0,0,0,0.35)] select-none -translate-y-3 sm:-translate-y-4"
+            width="500"
+            height="500"
+            class="w-[500px] max-w-full h-auto max-h-[500px] object-contain object-bottom drop-shadow-[0_14px_28px_rgba(0,0,0,0.35)] select-none -translate-y-3 sm:-translate-y-4"
             decoding="async"
             draggable="false"
           />
@@ -27,8 +29,17 @@
                 {{ $t('home.monster_title') }}
               </h2>
               <div class="flex items-center gap-2 mt-1">
-                <span class="bg-green-100 text-green-700 px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider">{{ $t('home.level') }} {{ nivell }}</span>
+                <span class="bg-green-100 text-green-700 px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider">{{ $t('home.level') }} {{ nivellMostrat }}</span>
                 <button
+                  v-if="vistaHistorialDia"
+                  type="button"
+                  class="inline-flex items-center gap-1 rounded-full bg-white/90 px-3 py-1.5 text-[11px] font-black uppercase tracking-wide text-gray-800 shadow-[3px_3px_8px_rgba(0,0,0,0.1)] border border-white/60 hover:bg-gray-50 transition-all duration-200"
+                  @click="tornarHistorialCalendari"
+                >
+                  {{ $t('home.back_to_calendar') }}
+                </button>
+                <button
+                  v-else
                   type="button"
                   class="w-8 h-8 rounded-full bg-indigo-50 shadow-[3px_3px_8px_rgba(0,0,0,0.1)] border border-white/60 flex items-center justify-center text-indigo-500 hover:bg-indigo-100 hover:scale-105 transition-all duration-200"
                   title="Calendari"
@@ -44,12 +55,14 @@
           </div>
 
           <div class="w-full flex flex-col items-center justify-start relative pt-2 shrink-0">
-            <div class="flex justify-center w-full pb-2 -mt-1">
+            <div class="flex justify-center w-full px-2 pb-2 -mt-1">
               <img
                 v-if="imatgeMascota"
                 :src="imatgeMascota"
                 alt="El teu monstre"
-                class="h-[min(32rem,78vh)] w-[min(32rem,94vw)] max-h-[min(32rem,78vh)] max-w-[min(32rem,94vw)] object-contain object-bottom drop-shadow-[0_20px_20px_rgba(0,0,0,0.28)] -translate-y-3 lg:-translate-y-5"
+                width="500"
+                height="500"
+                class="w-[500px] max-w-full h-auto max-h-[500px] object-contain object-bottom drop-shadow-[0_20px_20px_rgba(0,0,0,0.28)] -translate-y-3 lg:-translate-y-5"
                 decoding="async"
                 draggable="false"
               />
@@ -65,52 +78,50 @@
       <!-- COSTAT ESQUERRE -->
       <div class="col-span-12 lg:col-span-3 order-1 lg:order-1 lg:self-start space-y-2 lg:space-y-6 pt-1 lg:pt-0">
         <div class="grid grid-cols-4 gap-1 items-stretch w-full lg:block lg:space-y-6">
-          <div class="col-span-2 bento-card rounded-xl lg:rounded-3xl p-0 lg:p-6 lg:bg-white/95 lg:backdrop-blur-md lg:shadow-xl lg:border lg:border-white/50 min-w-0 w-full h-full lg:h-auto self-stretch overflow-hidden lg:overflow-visible">
-            <UserHomeHomeMissionCard
-              :missio-diaria="missioDiaria"
-              :missio-completada="missioCompletada"
-              :missio-progres="missioProgres"
-              :missio-objectiu="missioObjectiu"
-            />
-            <!-- Perfil: solo visible en desktop -->
-            <div class="hidden lg:block">
-              <div class="h-px bg-gray-100 my-4"></div>
-              <UserHomeHomeProfileCard
-                :user="user"
-                :nivell="nivell"
-                :xp-actual-nivel="xpActualNivel"
-                :xp-objetivo-nivel="xpObjetivoNivel"
-                :percentatge-nivell="percentatgeNivell"
-              />
-            </div>
-          </div>
-          <!-- Ruleta al home (mobil); ja no al menú hamburguesa -->
-          <div class="col-span-1 min-w-0 h-full lg:hidden flex">
-            <UserHomeHomeRouletteSection
-              compact
-              :classe-icona-ruleta="classeIconaRuleta"
-              @obrir-modal-ruleta="obrirModalRuleta"
+          <div class="hidden lg:block col-span-4 bento-card rounded-xl lg:rounded-3xl bg-[#FAF9F9] p-2 sm:p-2.5 lg:p-6 lg:backdrop-blur-md lg:shadow-xl lg:border lg:border-white/50 min-w-0 w-full lg:h-auto overflow-hidden lg:overflow-visible">
+            <UserHomeHomeProfileCard
+              :user="user"
+              :nivell="nivellMostrat"
+              :xp-actual-nivel="xpActualMostrat"
+              :xp-objetivo-nivel="xpObjetivoMostrat"
+              :percentatge-nivell="percentatgeNivellMostrat"
             />
           </div>
-          <button
-            type="button"
-            class="col-span-1 min-w-0 h-full lg:hidden flex items-center justify-center transition-transform hover:scale-105 active:scale-95"
-            :title="$t('nav.calendar') || 'Calendari'"
-            @click="anarAlCalendari"
+          <!-- Calendari (mòbil), alineat a la dreta -->
+          <div
+            class="col-span-4 lg:hidden flex flex-row flex-nowrap justify-between items-center gap-2 min-w-0 w-full pt-1 pr-0.5 pl-0.5"
           >
-            <img
-              :src="imatgeCalendari"
-              alt="Calendari"
-              class="w-16 h-16 sm:w-[4.5rem] sm:h-[4.5rem] object-contain select-none"
-              decoding="async"
-              draggable="false"
-            />
-          </button>
+            <button
+              v-if="vistaHistorialDia"
+              type="button"
+              class="shrink-0 min-w-0 max-w-[50%] rounded-xl bg-white/90 px-2.5 py-2 text-[11px] font-black uppercase leading-tight text-gray-800 shadow-[3px_3px_8px_rgba(0,0,0,0.1)] border border-white/60 active:scale-95 transition-transform"
+              @click="tornarHistorialCalendari"
+            >
+              {{ $t('home.back_to_calendar') }}
+            </button>
+            <span v-else class="shrink-0 w-10" aria-hidden="true" />
+            <button
+              type="button"
+              class="shrink-0 w-16 h-16 sm:w-[4.5rem] sm:h-[4.5rem] flex items-center justify-center transition-transform hover:scale-105 active:scale-95 min-h-0"
+              :class="vistaHistorialDia ? 'opacity-40 pointer-events-none' : ''"
+              :title="$t('nav.calendar') || 'Calendari'"
+              :disabled="vistaHistorialDia"
+              @click="anarAlCalendari"
+            >
+              <img
+                :src="imatgeCalendari"
+                alt="Calendari"
+                class="max-w-full max-h-full w-auto h-auto object-contain select-none"
+                decoding="async"
+                draggable="false"
+              />
+            </button>
+          </div>
         </div>
-        <div class="hidden lg:block">
+        <div v-if="!vistaHistorialDia" class="hidden lg:block">
           <UserHomeHomeLogrosCard :ultims-logros="ultimsLogros" @obrir-modal-logros="obrirModalLogros" />
         </div>
-        <div class="hidden lg:block">
+        <div v-if="!vistaHistorialDia" class="hidden lg:block">
           <UserHomeHomeRouletteSection :classe-icona-ruleta="classeIconaRuleta" @obrir-modal-ruleta="obrirModalRuleta" />
         </div>
       </div>
@@ -131,12 +142,13 @@
         </div>
         <UserHomeHomeHabitsSection
           :habits="habitsDelDia"
-          :esta-carregant="estaCarregantHabits"
+          :esta-carregant="habitsSectionCarregant"
           :error-missatge="errorMissatge"
           :obtenir-progres="obtenirProgres"
           :habit-completat-avui="habitCompletatAvui"
           :esta-processant="comvprovarSiSestaProcessant"
           :weather-global="weatherGlobal"
+          :read-only="vistaHistorialDia"
           @netejar-error="errorMissatge = ''"
           @obrir-modal-habit="obrirModalHabit"
           @obrir-detalls-habit="obrirModalDetallsHabit"
@@ -144,8 +156,22 @@
           @incrementar-habit="incrementarHabitInline"
           @decrementar-habit="decrementarHabitInline"
           @start-focus-habit="iniciarSessioFocus"
-          @editar-habit="editarHabitInline"
-        />
+        >
+          <template v-if="!vistaHistorialDia" #below-daily-progress>
+            <div class="min-w-0 w-full space-y-3">
+              <UserHomeHomeMissionCard
+                :missio-diaria="missioDiaria"
+                :missio-completada="missioCompletada"
+                :missio-progres="missioProgres"
+                :missio-objectiu="missioObjectiu"
+              />
+              <UserHomeHomeDailyRouletteCard
+                :pot-tirar="canSpinRoulette"
+                @obrir-ruleta="obrirModalRuleta"
+              />
+            </div>
+          </template>
+        </UserHomeHomeHabitsSection>
       </div>
     </div>
 
@@ -204,12 +230,15 @@ import LogrosModal from "~/components/home/LogrosModal.vue";
 import RouletteModal from "~/components/home/RouletteModal.vue";
 import HabitDetailsModal from "~/components/user/home/HabitDetailsModal.vue";
 import UserHomeHomeMissionCard from "~/components/user/home/HomeMissionCard.vue";
+import UserHomeHomeDailyRouletteCard from "~/components/user/home/HomeDailyRouletteCard.vue";
 import UserHomeHomeProfileCard from "~/components/user/home/HomeProfileCard.vue";
 import UserHomeHomeLogrosCard from "~/components/user/home/HomeLogrosCard.vue";
 import UserHomeHomeRouletteSection from "~/components/user/home/HomeRouletteSection.vue";
 import UserHomeHomeHabitsSection from "~/components/user/home/HomeHabitsSection.vue";
 import WeatherWidget from "~/components/user/home/WeatherWidget.vue";
 import { authFetch } from "~/composables/useApi.js";
+import { useCalendar } from "~/composables/useCalendar.js";
+import { useCalendarStore } from "~/stores/calendar.js";
 import { flushPendingFocusEvents } from "~/composables/user/useFocusEventQueue.js";
 import mascotaImg from "~/assets/img/Mascota.png";
 import calendarImg from "~/assets/img/calendar-loopy.png";
@@ -222,6 +251,7 @@ export default {
     LogrosModal,
     RouletteModal,
     UserHomeHomeMissionCard,
+    UserHomeHomeDailyRouletteCard,
     UserHomeHomeProfileCard,
     UserHomeHomeLogrosCard,
     UserHomeHomeRouletteSection,
@@ -252,6 +282,9 @@ export default {
       ruletaProcessant: false,
       imatgeMascota: mascotaImg,
       imatgeCalendari: calendarImg,
+      snapshotHistoric: null,
+      carregantSnapshotHistoric: false,
+      errorSnapshotHistoric: "",
     };
   },
   computed: {
@@ -269,7 +302,56 @@ export default {
       return Math.round(Math.min(100, Math.max(0, percent)));
     },
     habits: function () { return this.habitStore.habits || []; },
+    dataHistorialDia: function () {
+      var q = this.$route && this.$route.query ? this.$route.query.date : null;
+      if (!q || typeof q !== "string") return null;
+      var cal = useCalendar();
+      if (cal.isAfterToday(q) || !cal.parseDate(q)) return null;
+      var d = cal.parseDate(q);
+      var avui = new Date();
+      var avui0 = new Date(avui.getFullYear(), avui.getMonth(), avui.getDate());
+      if (d.getTime() === avui0.getTime()) return null;
+      return q;
+    },
+    vistaHistorialDia: function () {
+      return this.dataHistorialDia != null;
+    },
+    habitsSectionCarregant: function () {
+      return this.estaCarregantHabits || (this.vistaHistorialDia && this.carregantSnapshotHistoric);
+    },
+    xpActualMostrat: function () {
+      if (this.snapshotHistoric && this.snapshotHistoric.mascota_json) {
+        var m = this.snapshotHistoric.mascota_json;
+        return m.xp_actual_nivel != null ? Number(m.xp_actual_nivel) : 0;
+      }
+      return this.xpActualNivel;
+    },
+    xpObjetivoMostrat: function () {
+      if (this.snapshotHistoric && this.snapshotHistoric.mascota_json) {
+        var m = this.snapshotHistoric.mascota_json;
+        return m.xp_objetivo_nivel != null ? Number(m.xp_objetivo_nivel) : 1000;
+      }
+      return this.xpObjetivoNivel;
+    },
+    nivellMostrat: function () {
+      if (this.snapshotHistoric && this.snapshotHistoric.mascota_json) {
+        var m2 = this.snapshotHistoric.mascota_json;
+        return m2.nivell != null ? Number(m2.nivell) : 1;
+      }
+      return this.nivell;
+    },
+    percentatgeNivellMostrat: function () {
+      var xpA = this.xpActualMostrat;
+      var xpO = this.xpObjetivoMostrat || 1000;
+      return Math.round(Math.min(100, Math.max(0, (xpA / xpO) * 100)));
+    },
     habitsDelDia: function () {
+      if (this.dataHistorialDia) {
+        if (this.snapshotHistoric && this.snapshotHistoric.habits_json) {
+          return this.mapHabitsHistoric(this.snapshotHistoric.habits_json);
+        }
+        return [];
+      }
       var llista = this.habits || [];
       var completats = [];
       var pendents = [];
@@ -325,6 +407,9 @@ export default {
     if (typeof window !== "undefined") {
       window.addEventListener("loopy-weather-city-changed", self._onLoopyWeatherCity);
     }
+    self.$nextTick(function () {
+      self.sincronitzarHistoricDesDeRuta();
+    });
   },
   beforeUnmount: function () {
     if (typeof window !== "undefined" && this._onLoopyWeatherCity) {
@@ -336,10 +421,14 @@ export default {
       if (typeof window !== "undefined" && nova && nova.trim() !== "") {
         localStorage.setItem("loopy_weather_city", nova.trim());
       }
+    },
+    "$route.query.date": function () {
+      this.sincronitzarHistoricDesDeRuta();
     }
   },
   methods: {
     refrescarDespresCrearHabit: function () {
+      if (this.vistaHistorialDia) return;
       var self = this;
       self.estaCarregantHabits = true;
       self.gameStore.carregarDadesHome()
@@ -479,7 +568,85 @@ export default {
         self.weatherCarregant = false;
       }
     },
+    mapHabitsHistoric: function (habitsJson) {
+      var completats = [];
+      var pendents = [];
+      if (!habitsJson || !Array.isArray(habitsJson)) return [];
+      for (var i = 0; i < habitsJson.length; i++) {
+        var h = habitsJson[i];
+        var meta = h.metadata && typeof h.metadata === "object" ? h.metadata : {};
+        var objectiu = h.objectiu_vegades != null ? Number(h.objectiu_vegades) : (meta.objectiu_vegades != null ? Number(meta.objectiu_vegades) : 1);
+        var ac = !!h.acabado;
+        var mapped = {
+          id: h.id,
+          nom: h.titol || h.nom || "",
+          titol: h.titol,
+          icona: h.icona,
+          color: h.color,
+          dificultat: h.dificultat,
+          categoria_id: h.categoria_id,
+          categoriaId: h.categoria_id,
+          recordatori: h.recordatori || meta.recordatori || "",
+          momentDia: meta.moment_dia || meta.momentDia || h.moment_dia || h.momentDia || "",
+          moment_dia: meta.moment_dia || "",
+          frequenciaTipus: h.frequencia_tipus || meta.frequencia_tipus || "diaria",
+          objectiuVegades: objectiu,
+          unitat: h.unitat || meta.unitat || "vegades",
+          prioritari: meta.prioritari === true,
+          metadata: meta
+        };
+        if (ac) completats.push(mapped);
+        else pendents.push(mapped);
+      }
+      return pendents.concat(completats);
+    },
+    sincronitzarHistoricDesDeRuta: async function () {
+      var self = this;
+      self.snapshotHistoric = null;
+      self.errorSnapshotHistoric = "";
+      var q = self.$route && self.$route.query ? self.$route.query.date : null;
+      if (!q || typeof q !== "string") {
+        return;
+      }
+      var cal = useCalendar();
+      if (cal.isAfterToday(q) || !cal.parseDate(q)) {
+        await navigateTo({ path: "/home", query: {} });
+        return;
+      }
+      var d = cal.parseDate(q);
+      var avui = new Date();
+      var avui0 = new Date(avui.getFullYear(), avui.getMonth(), avui.getDate());
+      if (d.getTime() === avui0.getTime()) {
+        await navigateTo({ path: "/home", query: {} });
+        return;
+      }
+      self.carregantSnapshotHistoric = true;
+      try {
+        var store = useCalendarStore();
+        var snap = await store.fetchDaySnapshot(q);
+        if (!snap) {
+          await navigateTo({ path: "/home", query: {} });
+          return;
+        }
+        self.snapshotHistoric = snap;
+      } finally {
+        self.carregantSnapshotHistoric = false;
+      }
+    },
+    tornarHistorialCalendari: async function () {
+      var store = useCalendarStore();
+      var q = this.dataHistorialDia || (this.$route.query && this.$route.query.date);
+      if (q && typeof q === "string") {
+        var parts = String(q).split("-");
+        if (parts.length >= 2) {
+          store.selectedYear = parseInt(parts[0], 10);
+          store.selectedMonth = parseInt(parts[1], 10);
+        }
+      }
+      await navigateTo("/calendar");
+    },
     anarAlCalendari: function () {
+      if (this.vistaHistorialDia) return;
       navigateTo("/calendar");
     },
     logout: async function() {
@@ -487,18 +654,38 @@ export default {
       navigateTo("/auth/login");
     },
     obtenirProgres: function (habitId) {
+      if (this.dataHistorialDia && this.snapshotHistoric && this.snapshotHistoric.habits_json) {
+        var arr = this.snapshotHistoric.habits_json;
+        for (var j = 0; j < arr.length; j++) {
+          if (arr[j].id === habitId) {
+            var h = arr[j];
+            var meta = h.metadata && typeof h.metadata === "object" ? h.metadata : {};
+            var objectiu = h.objectiu_vegades != null ? Number(h.objectiu_vegades) : (meta.objectiu_vegades != null ? Number(meta.objectiu_vegades) : 1);
+            return h.acabado ? objectiu : 0;
+          }
+        }
+        return 0;
+      }
       var mapa = this.gameStore.habitProgress || {};
       return (mapa[habitId] && mapa[habitId].progress) || 0;
     },
     habitCompletatAvui: function (habitId) {
-      var mapa = this.gameStore.habitProgress || {};
-      return !!(mapa[habitId] && mapa[habitId].completed_today);
+      if (this.dataHistorialDia && this.snapshotHistoric && this.snapshotHistoric.habits_json) {
+        var arr2 = this.snapshotHistoric.habits_json;
+        for (var k = 0; k < arr2.length; k++) {
+          if (arr2[k].id === habitId) return !!arr2[k].acabado;
+        }
+        return false;
+      }
+      var mapa2 = this.gameStore.habitProgress || {};
+      return !!(mapa2[habitId] && mapa2[habitId].completed_today);
     },
 
     /**
      * Obre el modal de progrés per a un hàbit.
      */
     obrirModalHabit: function (habit) {
+      if (this.vistaHistorialDia) return;
       this.habitSeleccionat = habit;
       this.esObertModalHabit = true;
     },
@@ -507,6 +694,7 @@ export default {
      * Obre modal de detalls d'un hàbit.
      */
     obrirModalDetallsHabit: function (habit) {
+      if (this.vistaHistorialDia) return;
       this.habitDetallsSeleccionat = habit;
       this.esObertModalDetalls = true;
       this.weatherContextDetalls = this.weatherGlobal || null;
@@ -529,6 +717,7 @@ export default {
       this.weatherContextDetalls = null;
     },
     iniciarSessioFocus: function (habit) {
+      if (this.vistaHistorialDia) return;
       var habitTarget = habit || this.habitDetallsSeleccionat;
       if (!habitTarget || !habitTarget.id) {
         return;
@@ -563,6 +752,7 @@ export default {
      * Incrementa el progrés de l'hàbit seleccionat. Actualització optimista + enviar al backend.
      */
     incrementarHabit: function () {
+      if (this.vistaHistorialDia) return;
       if (!this.habitSeleccionat) return;
       var id = this.habitSeleccionat.id;
       var current = this.obtenirProgres(id);
@@ -574,6 +764,7 @@ export default {
       }
     },
     incrementarHabitInline: function (habit) {
+      if (this.vistaHistorialDia) return;
       if (!habit) return;
       this.habitSeleccionat = habit;
       this.incrementarHabit();
@@ -584,6 +775,7 @@ export default {
      * Si restar faria que l'hàbit deixi d'estar completat, mostra avís amb SweetAlert.
      */
     decrementarHabit: function () {
+      if (this.vistaHistorialDia) return;
       if (!this.habitSeleccionat) return;
       var id = this.habitSeleccionat.id;
       var progressActual = this.progresModal;
@@ -605,13 +797,10 @@ export default {
       }
     },
     decrementarHabitInline: function (habit) {
+      if (this.vistaHistorialDia) return;
       if (!habit) return;
       this.habitSeleccionat = habit;
       this.decrementarHabit();
-    },
-    editarHabitInline: function (habit) {
-      if (!habit || !habit.id) return;
-      navigateTo("/habits?edit=" + habit.id);
     },
 
     /**
@@ -627,6 +816,7 @@ export default {
      */
     confirmarHabit: async function () {
       var self = this;
+      if (self.vistaHistorialDia) return;
       if (!this.habitSeleccionat) return;
       var habitId = this.habitSeleccionat.id;
       var objectiu = this.objectiuModal || 1;
@@ -760,6 +950,7 @@ export default {
      * Obre el modal de la ruleta (si està disponible).
      */
     obrirModalRuleta: function () {
+      if (this.vistaHistorialDia) return;
       if (!this.canSpinRoulette) {
         return;
       }
@@ -1023,6 +1214,7 @@ export default {
       });
     },
     obrirModalLogros: function () {
+      if (this.vistaHistorialDia) return;
       var self = this;
       self.esObertModalLogros = true;
       self.logroStore.carregarLogros().then(function () {
@@ -1032,6 +1224,7 @@ export default {
     },
     tancarModalLogros: function () { this.esObertModalLogros = false; },
     enviarSpinRuleta: function () {
+      if (this.vistaHistorialDia) return;
       if (this.socket) {
         this.socket.emit("roulette_spin", {});
       }

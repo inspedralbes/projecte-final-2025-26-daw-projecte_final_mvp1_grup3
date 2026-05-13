@@ -133,6 +133,7 @@ CREATE TABLE HABITS (
     unitat VARCHAR(50),
     icona VARCHAR(50),
     color VARCHAR(20),
+    moment_dia VARCHAR(20) NOT NULL DEFAULT 'tot_dia',
     metadata JSONB
 );
 

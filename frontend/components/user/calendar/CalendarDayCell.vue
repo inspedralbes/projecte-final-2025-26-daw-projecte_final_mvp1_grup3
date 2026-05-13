@@ -2,9 +2,10 @@
   <button
     type="button"
     class="calendar-day-cell"
-    :disabled="!day"
+    :disabled="!day || (day && !hasSnapshot)"
     :class="{
       'calendar-day-cell--disabled': !day,
+      'calendar-day-cell--no-snapshot': day && !hasSnapshot,
       'calendar-day-cell--has-activity': hasSnapshot,
       'calendar-day-cell--today': isToday,
     }"
@@ -40,9 +41,10 @@ export default {
   },
   methods: {
     handleClick: function () {
-      if (this.day && this.dateStr) {
-        this.$emit("click", this.dateStr);
+      if (!this.day || !this.dateStr || !this.hasSnapshot) {
+        return;
       }
+      this.$emit("click", this.dateStr);
     }
   }
 };
@@ -78,6 +80,11 @@ export default {
   pointer-events: none;
   background: transparent;
   box-shadow: none;
+}
+
+.calendar-day-cell--no-snapshot {
+  cursor: not-allowed;
+  opacity: 0.55;
 }
 
 .calendar-day-cell--has-activity {

@@ -150,8 +150,22 @@ export var useSocialStore = defineStore("social", {
             if (!this.posts[i].comments) {
               this.posts[i].comments = [];
             }
-            this.posts[i].comments.push(result);
-            this.posts[i].comments_count = (Number(this.posts[i].comments_count) || 0) + 1;
+            
+            var existingIndex = -1;
+            for (var k = 0; k < this.posts[i].comments.length; k++) {
+              if (this.posts[i].comments[k].id === result.id) {
+                existingIndex = k;
+                break;
+              }
+            }
+            
+            if (existingIndex === -1) {
+              this.posts[i].comments.push(result);
+              this.posts[i].comments_count = (Number(this.posts[i].comments_count) || 0) + 1;
+            } else {
+              this.posts[i].comments[existingIndex] = result;
+            }
+            
             this.posts[i] = { ...this.posts[i] };
             break;
           }
@@ -388,17 +402,21 @@ export var useSocialStore = defineStore("social", {
             this.posts[i].comments = [];
           }
           
-          var j;
-          for (j = 0; j < this.posts[i].comments.length; j++) {
+          var found = false;
+          for (var j = 0; j < this.posts[i].comments.length; j++) {
             if (this.posts[i].comments[j].id === commentId) {
-              this.posts[i].comments.splice(j, 1);
+              this.posts[i].comments[j] = comment;
+              found = true;
               break;
             }
           }
           
-          comment.liked_by_current_user = false;
-          this.posts[i].comments.push(comment);
-          this.posts[i].comments_count = (Number(this.posts[i].comments_count) || 0) + 1;
+          if (!found) {
+            comment.liked_by_current_user = false;
+            this.posts[i].comments.push(comment);
+            this.posts[i].comments_count = (Number(this.posts[i].comments_count) || 0) + 1;
+          }
+          
           this.posts[i] = { ...this.posts[i] };
           break;
         }

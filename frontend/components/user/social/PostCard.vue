@@ -91,7 +91,7 @@
         />
 
         <div v-if="showComments" class="mt-4 border-t pt-4">
-          <UserSocialCommentForm :post-id="post.id" @submitted="onCommentSubmitted" />
+          <UserSocialCommentForm :post-id="post.id" />
           <UserSocialCommentList :post-id="post.id" :initial-comments="post.comments || []" />
         </div>
       </div>
@@ -183,9 +183,6 @@ export default {
 
       this.showMenu = false;
     },
-    onCommentSubmitted: function () {
-      this.commentsCount = (this.commentsCount || 0) + 1;
-    }
   }
 };
 </script>

@@ -48,16 +48,26 @@ class HabitService
      */
     private MissionService $missionService;
 
+    /**
+     * Servei de gamificació.
+     */
+    private GamificationService $gamificationService;
+
     //================================ MÈTODES / FUNCIONS ===========
 
     /**
      * Constructor. Injecció del servei de feedback i logros i missions.
      */
-    public function __construct(RedisFeedbackService $feedbackService, LogroService $logroService, MissionService $missionService)
-    {
+    public function __construct(
+        RedisFeedbackService $feedbackService, 
+        LogroService $logroService, 
+        MissionService $missionService,
+        GamificationService $gamificationService
+    ) {
         $this->feedbackService = $feedbackService;
         $this->logroService = $logroService;
         $this->missionService = $missionService;
+        $this->gamificationService = $gamificationService;
     }
 
     /**
@@ -449,7 +459,7 @@ class HabitService
                 ]
             );
 
-            $this->actualitzarRatxa($ratxa, $dataActivitat);
+            $this->gamificationService->actualitzarRatxa($usuariId);
 
             // D3. Inserir fila a REGISTRE_ACTIVITAT amb timestamp complet (hora real)
             $habit->registresActivitat()->create([
@@ -769,50 +779,6 @@ class HabitService
             ->whereDate('data', $dataActivitat)
             ->where('acabado', true)
             ->exists();
-    }
-
-    /**
-     * Actualitza la ratxa de l'usuari segons la data de l'activitat.
-     * Incrementa ratxa_actual si és dia consecutiu; reseteja a zero si hi ha falta d'activitat.
-     * Actualitza ratxa_maxima si la ratxa actual la supera.
-     *
-     * @param  Ratxa  $ratxa
-     * @param  Carbon  $dataActivitat
-     */
-    private function actualitzarRatxa(Ratxa $ratxa, Carbon $dataActivitat): void
-    {
-        $timezone = config('app.timezone', 'Europe/Madrid');
-        $avui = $dataActivitat->copy()->startOfDay();
-
-        // A. Si hi ha data prèvia, parsejar-la (mateix timezone per a comparacions coherents)
-        if ($ratxa->ultima_data !== null) {
-            $ultimaData = Carbon::parse($ratxa->ultima_data, $timezone)->startOfDay();
-        } else {
-            $ultimaData = null;
-        }
-
-        $ratxaActual = (int) $ratxa->ratxa_actual;
-        $ratxaMaxima = (int) $ratxa->ratxa_maxima;
-
-        // B. Si és el mateix dia, no modifiquem la ratxa (evitar duplicats)
-        if ($ultimaData !== null && $ultimaData->isSameDay($avui)) {
-            return;
-        }
-
-        if ($ultimaData !== null && $avui->gt($ultimaData) && (int) $ultimaData->diffInDays($avui, true) === 1) {
-            $ratxaActual++;
-        } else {
-            // Si hi ha un gap o és la primera vegada: nova ratxa, començar des d'1.
-            $ratxaActual = 1;
-        }
-
-        $ratxaMaxima = max($ratxaMaxima, $ratxaActual);
-
-        $ratxa->update([
-            'ratxa_actual' => $ratxaActual,
-            'ratxa_maxima' => $ratxaMaxima,
-            'ultima_data' => $avui,
-        ]);
     }
 
     /**

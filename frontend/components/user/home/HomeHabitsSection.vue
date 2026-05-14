@@ -77,15 +77,31 @@
                 </button>
               </div>
               <div class="habit-expand-panel">
-                <div class="habit-expand-meta">
-                  <p><span class="meta-icon" :style="{ color: colorHabitExpandit }">↻</span>{{ textRepeticioHabit }}</p>
-                  <p><span class="meta-icon" :style="{ color: colorHabitExpandit }">☆</span>{{ textDificultatHabit }}</p>
-                  <button class="meta-priority" type="button" @click="togglePrioritari(habitExpanditActual)">
-                    <span class="meta-icon" :style="{ color: colorHabitExpandit }">{{ esPrioritari(habitExpanditActual) ? '♥' : '♡' }}</span>
-                    <span>Prioritari</span>
-                  </button>
-                  <button class="focus-btn" type="button" @click="$emit('start-focus-habit', habitExpanditActual)">Mode Focus</button>
+                <div class="habit-expand-info">
+                  <div class="habit-expand-meta">
+                    <p><span class="meta-icon" :style="{ color: colorHabitExpandit }">↻</span>{{ textRepeticioHabit }}</p>
+                    <p><span class="meta-icon" :style="{ color: colorHabitExpandit }">☆</span>{{ textDificultatHabit }}</p>
+                    <button class="meta-priority" type="button" @click="togglePrioritari(habitExpanditActual)">
+                      <span class="meta-icon" :style="{ color: colorHabitExpandit }">{{ esPrioritari(habitExpanditActual) ? '♥' : '♡' }}</span>
+                      <span>Prioritari</span>
+                    </button>
+                    <p>
+                      <span class="meta-icon" :style="{ color: colorHabitExpandit }">◎</span>
+                      {{ habitExpanditActual.objectiuVegades || 1 }}
+                    </p>
+                  </div>
+                  <div class="habit-expand-rewards">
+                    <div class="reward-square reward-square--coins">
+                      <img :src="coinIcon" alt="Monedes" class="reward-square__icon" />
+                      <span class="reward-square__value">+{{ recompensaMonedes }}</span>
+                    </div>
+                    <div class="reward-square reward-square--xp">
+                      <img :src="xpIcon" alt="XP" class="reward-square__icon" />
+                      <span class="reward-square__value">+{{ recompensaXP }}</span>
+                    </div>
+                  </div>
                 </div>
+                <button class="focus-btn" type="button" @click="$emit('start-focus-habit', habitExpanditActual)">Mode Focus</button>
                 <div class="habit-expand-controls">
                   <button type="button" class="habit-expand-action" @click="$emit('decrementar-habit', habitExpanditActual)">−</button>
                   <span class="habit-expand-count">{{ obtenirProgres(habitExpanditActual.id) }}</span>
@@ -128,15 +144,31 @@
                 </button>
               </div>
               <div class="habit-expand-panel">
-                <div class="habit-expand-meta">
-                  <p><span class="meta-icon" :style="{ color: colorHabitExpandit }">↻</span>{{ textRepeticioHabit }}</p>
-                  <p><span class="meta-icon" :style="{ color: colorHabitExpandit }">☆</span>{{ textDificultatHabit }}</p>
-                  <button class="meta-priority" type="button" @click="togglePrioritari(habitExpanditActual)">
-                    <span class="meta-icon" :style="{ color: colorHabitExpandit }">{{ esPrioritari(habitExpanditActual) ? '♥' : '♡' }}</span>
-                    <span>Prioritari</span>
-                  </button>
-                  <button class="focus-btn" type="button" @click="$emit('start-focus-habit', habitExpanditActual)">Mode Focus</button>
+                <div class="habit-expand-info">
+                  <div class="habit-expand-meta">
+                    <p><span class="meta-icon" :style="{ color: colorHabitExpandit }">↻</span>{{ textRepeticioHabit }}</p>
+                    <p><span class="meta-icon" :style="{ color: colorHabitExpandit }">☆</span>{{ textDificultatHabit }}</p>
+                    <button class="meta-priority" type="button" @click="togglePrioritari(habitExpanditActual)">
+                      <span class="meta-icon" :style="{ color: colorHabitExpandit }">{{ esPrioritari(habitExpanditActual) ? '♥' : '♡' }}</span>
+                      <span>Prioritari</span>
+                    </button>
+                    <p>
+                      <span class="meta-icon" :style="{ color: colorHabitExpandit }">◎</span>
+                      {{ habitExpanditActual.objectiuVegades || 1 }}
+                    </p>
+                  </div>
+                  <div class="habit-expand-rewards">
+                    <div class="reward-square reward-square--coins">
+                      <img :src="coinIcon" alt="Monedes" class="reward-square__icon" />
+                      <span class="reward-square__value">+{{ recompensaMonedes }}</span>
+                    </div>
+                    <div class="reward-square reward-square--xp">
+                      <img :src="xpIcon" alt="XP" class="reward-square__icon" />
+                      <span class="reward-square__value">+{{ recompensaXP }}</span>
+                    </div>
+                  </div>
                 </div>
+                <button class="focus-btn" type="button" @click="$emit('start-focus-habit', habitExpanditActual)">Mode Focus</button>
                 <div class="habit-expand-controls">
                   <button type="button" class="habit-expand-action" @click="$emit('decrementar-habit', habitExpanditActual)">−</button>
                   <span class="habit-expand-count">{{ obtenirProgres(habitExpanditActual.id) }}</span>
@@ -175,15 +207,31 @@
                 <button class="habit-expand-edit" type="button" @click="editarHabitExpandit"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 2.41421H2.33333C1.97971 2.41421 1.64057 2.55469 1.39052 2.80474C1.14048 3.05479 1 3.39392 1 3.74755V13.0809C1 13.4345 1.14048 13.7736 1.39052 14.0237C1.64057 14.2737 1.97971 14.4142 2.33333 14.4142H11.6667C12.0203 14.4142 12.3594 14.2737 12.6095 14.0237C12.8595 13.7736 13 13.4345 13 13.0809V8.41421M12 1.41421C12.2652 1.149 12.6249 1 13 1C13.3751 1 13.7348 1.149 14 1.41421C14.2652 1.67943 14.4142 2.03914 14.4142 2.41421C14.4142 2.78929 14.2652 3.149 14 3.41421L7.66667 9.74755L5 10.4142L5.66667 7.74755L12 1.41421Z" stroke="#FAF9F9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Editar Habit</span></button>
               </div>
               <div class="habit-expand-panel">
-                <div class="habit-expand-meta">
-                  <p><span class="meta-icon" :style="{ color: colorHabitExpandit }">↻</span>{{ textRepeticioHabit }}</p>
-                  <p><span class="meta-icon" :style="{ color: colorHabitExpandit }">☆</span>{{ textDificultatHabit }}</p>
-                  <button class="meta-priority" type="button" @click="togglePrioritari(habitExpanditActual)">
-                    <span class="meta-icon" :style="{ color: colorHabitExpandit }">{{ esPrioritari(habitExpanditActual) ? '♥' : '♡' }}</span>
-                    <span>Prioritari</span>
-                  </button>
-                  <button class="focus-btn" type="button" @click="$emit('start-focus-habit', habitExpanditActual)">Mode Focus</button>
+                <div class="habit-expand-info">
+                  <div class="habit-expand-meta">
+                    <p><span class="meta-icon" :style="{ color: colorHabitExpandit }">↻</span>{{ textRepeticioHabit }}</p>
+                    <p><span class="meta-icon" :style="{ color: colorHabitExpandit }">☆</span>{{ textDificultatHabit }}</p>
+                    <button class="meta-priority" type="button" @click="togglePrioritari(habitExpanditActual)">
+                      <span class="meta-icon" :style="{ color: colorHabitExpandit }">{{ esPrioritari(habitExpanditActual) ? '♥' : '♡' }}</span>
+                      <span>Prioritari</span>
+                    </button>
+                    <p>
+                      <span class="meta-icon" :style="{ color: colorHabitExpandit }">◎</span>
+                      {{ habitExpanditActual.objectiuVegades || 1 }}
+                    </p>
+                  </div>
+                  <div class="habit-expand-rewards">
+                    <div class="reward-square reward-square--coins">
+                      <img :src="coinIcon" alt="Monedes" class="reward-square__icon" />
+                      <span class="reward-square__value">+{{ recompensaMonedes }}</span>
+                    </div>
+                    <div class="reward-square reward-square--xp">
+                      <img :src="xpIcon" alt="XP" class="reward-square__icon" />
+                      <span class="reward-square__value">+{{ recompensaXP }}</span>
+                    </div>
+                  </div>
                 </div>
+                <button class="focus-btn" type="button" @click="$emit('start-focus-habit', habitExpanditActual)">Mode Focus</button>
                 <div class="habit-expand-controls">
                   <button type="button" class="habit-expand-action" @click="$emit('decrementar-habit', habitExpanditActual)">−</button>
                   <span class="habit-expand-count">{{ obtenirProgres(habitExpanditActual.id) }}</span>
@@ -222,15 +270,31 @@
                 <button class="habit-expand-edit" type="button" @click="editarHabitExpandit"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 2.41421H2.33333C1.97971 2.41421 1.64057 2.55469 1.39052 2.80474C1.14048 3.05479 1 3.39392 1 3.74755V13.0809C1 13.4345 1.14048 13.7736 1.39052 14.0237C1.64057 14.2737 1.97971 14.4142 2.33333 14.4142H11.6667C12.0203 14.4142 12.3594 14.2737 12.6095 14.0237C12.8595 13.7736 13 13.4345 13 13.0809V8.41421M12 1.41421C12.2652 1.149 12.6249 1 13 1C13.3751 1 13.7348 1.149 14 1.41421C14.2652 1.67943 14.4142 2.03914 14.4142 2.41421C14.4142 2.78929 14.2652 3.149 14 3.41421L7.66667 9.74755L5 10.4142L5.66667 7.74755L12 1.41421Z" stroke="#FAF9F9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Editar Habit</span></button>
               </div>
               <div class="habit-expand-panel">
-                <div class="habit-expand-meta">
-                  <p><span class="meta-icon" :style="{ color: colorHabitExpandit }">↻</span>{{ textRepeticioHabit }}</p>
-                  <p><span class="meta-icon" :style="{ color: colorHabitExpandit }">☆</span>{{ textDificultatHabit }}</p>
-                  <button class="meta-priority" type="button" @click="togglePrioritari(habitExpanditActual)">
-                    <span class="meta-icon" :style="{ color: colorHabitExpandit }">{{ esPrioritari(habitExpanditActual) ? '♥' : '♡' }}</span>
-                    <span>Prioritari</span>
-                  </button>
-                  <button class="focus-btn" type="button" @click="$emit('start-focus-habit', habitExpanditActual)">Mode Focus</button>
+                <div class="habit-expand-info">
+                  <div class="habit-expand-meta">
+                    <p><span class="meta-icon" :style="{ color: colorHabitExpandit }">↻</span>{{ textRepeticioHabit }}</p>
+                    <p><span class="meta-icon" :style="{ color: colorHabitExpandit }">☆</span>{{ textDificultatHabit }}</p>
+                    <button class="meta-priority" type="button" @click="togglePrioritari(habitExpanditActual)">
+                      <span class="meta-icon" :style="{ color: colorHabitExpandit }">{{ esPrioritari(habitExpanditActual) ? '♥' : '♡' }}</span>
+                      <span>Prioritari</span>
+                    </button>
+                    <p>
+                      <span class="meta-icon" :style="{ color: colorHabitExpandit }">◎</span>
+                      {{ habitExpanditActual.objectiuVegades || 1 }}
+                    </p>
+                  </div>
+                  <div class="habit-expand-rewards">
+                    <div class="reward-square reward-square--coins">
+                      <img :src="coinIcon" alt="Monedes" class="reward-square__icon" />
+                      <span class="reward-square__value">+{{ recompensaMonedes }}</span>
+                    </div>
+                    <div class="reward-square reward-square--xp">
+                      <img :src="xpIcon" alt="XP" class="reward-square__icon" />
+                      <span class="reward-square__value">+{{ recompensaXP }}</span>
+                    </div>
+                  </div>
                 </div>
+                <button class="focus-btn" type="button" @click="$emit('start-focus-habit', habitExpanditActual)">Mode Focus</button>
                 <div class="habit-expand-controls">
                   <button type="button" class="habit-expand-action" @click="$emit('decrementar-habit', habitExpanditActual)">−</button>
                   <span class="habit-expand-count">{{ obtenirProgres(habitExpanditActual.id) }}</span>
@@ -248,6 +312,8 @@
 <script>
 import UserHomeHomeHabitCard from "~/components/user/home/HomeHabitCard.vue";
 import HomeCreateHabitDropdown from "~/components/user/home/HomeCreateHabitDropdown.vue";
+import coinIcon from "~/assets/img/Icones/Icona_Moneda.png";
+import xpIcon from "~/assets/img/Icones/Icona_Experiencia.png";
 
 function parseHoraRecordatori(recordatori) {
   if (!recordatori || String(recordatori).trim() === "") {
@@ -292,7 +358,9 @@ export default {
   data: function () {
     return {
       habitExpanditId: null,
-      prioritatsLocals: {}
+      prioritatsLocals: {},
+      coinIcon: coinIcon,
+      xpIcon: xpIcon
     };
   },
   props: {
@@ -374,6 +442,20 @@ export default {
         }
       }
       return null;
+    },
+    recompensaXP: function () {
+      if (!this.habitExpanditActual) return 0;
+      var dif = String(this.habitExpanditActual.dificultat || "facil").toLowerCase();
+      if (dif === "dificil") return 400;
+      if (dif === "mitja" || dif === "media") return 250;
+      return 100;
+    },
+    recompensaMonedes: function () {
+      if (!this.habitExpanditActual) return 0;
+      var dif = String(this.habitExpanditActual.dificultat || "facil").toLowerCase();
+      if (dif === "dificil") return 10;
+      if (dif === "mitja" || dif === "media") return 5;
+      return 2;
     }
   },
   methods: {
@@ -515,8 +597,15 @@ export default {
   flex: 1;
 }
 
+.habit-expand-info {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 4px;
+}
+
 .habit-expand-meta {
-  margin-top: 10px;
   display: grid;
   gap: 8px;
 }
@@ -535,18 +624,30 @@ export default {
 
 .meta-icon {
   font-size: 18px;
-  width: 20px;
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .focus-btn {
-  margin-top: 6px;
+  width: 100%;
+  margin-top: 12px;
   border: 0;
   background: #79D45D;
   color: #FAF9F9;
   border-radius: 12px;
-  height: 40px;
-  font-size: 16px;
-  font-weight: 500;
+  height: 44px;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.focus-btn:active {
+  transform: scale(0.98);
 }
 
 .habit-expand-controls {
@@ -589,6 +690,53 @@ export default {
   height: 6px;
   border-radius: 999px;
   background-color: #D9D9D9;
+}
+
+.habit-expand-rewards {
+  display: flex;
+  gap: 12px;
+  margin-left: 15px;
+}
+
+.reward-square {
+  width: 76px;
+  height: 76px;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s;
+}
+
+.reward-square:hover {
+  transform: scale(1.05);
+}
+
+.reward-square--coins {
+  background: #dfa632;
+  transform: rotate(-5deg);
+}
+
+.reward-square--xp {
+  background: #94bef0;
+  transform: rotate(5deg);
+}
+
+.reward-square__icon {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+}
+
+.reward-square__value {
+  font-family: "Bricolage Grotesque", system-ui, sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  color: #faf9f9;
+  line-height: 1;
 }
 
 @keyframes habit-sheet-up {

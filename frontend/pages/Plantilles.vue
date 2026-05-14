@@ -2,26 +2,42 @@
   <div class="templates-page min-h-screen bg-transparent p-6">
     <div class="max-w-7xl mx-auto">
 
-      <div class="templates-filter-wrap mb-6">
+      <div class="templates-filter-wrap mb-6" :class="{ 'templates-filter-wrap--searching': searchVisible }">
         <div class="templates-filter-row">
-          <div class="templates-filter-decor" aria-hidden="true">
-            <svg
-              class="templates-filter-decor__lupa"
-              width="33"
-              height="33"
-              viewBox="0 0 33 33"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
+          <div class="templates-filter-search" :class="{ 'templates-filter-search--active': searchVisible }">
+            <button
+              type="button"
+              class="templates-filter-decor"
+              :aria-label="searchVisible ? 'Tancar cerca' : 'Obrir cerca'"
+              @click="toggleSearch"
             >
-              <path
-                d="M28.875 28.875L22.8937 22.8937M26.125 15.125C26.125 21.2001 21.2001 26.125 15.125 26.125C9.04987 26.125 4.125 21.2001 4.125 15.125C4.125 9.04987 9.04987 4.125 15.125 4.125C21.2001 4.125 26.125 9.04987 26.125 15.125Z"
-                stroke="#d8d8d8"
-                stroke-width="4"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-            </svg>
+              <svg
+                class="templates-filter-decor__lupa"
+                width="33"
+                height="33"
+                viewBox="0 0 33 33"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M28.875 28.875L22.8937 22.8937M26.125 15.125C26.125 21.2001 21.2001 26.125 15.125 26.125C9.04987 26.125 4.125 21.2001 4.125 15.125C4.125 9.04987 9.04987 4.125 15.125 4.125C21.2001 4.125 26.125 9.04987 26.125 15.125Z"
+                  :stroke="searchVisible ? '#79D45D' : '#d8d8d8'"
+                  stroke-width="4"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </button>
+            <input
+              v-if="searchVisible"
+              ref="searchInput"
+              v-model="searchQuery"
+              type="text"
+              class="templates-filter-search-input"
+              :placeholder="$t('templates.filter_label')"
+            />
           </div>
+
           <div class="templates-filter-card">
             <label for="filterTemplates" class="sr-only">{{ $t('templates.filter_label') }}</label>
             <select
@@ -92,9 +108,9 @@
           >
             <div class="template-card__mark" aria-hidden="true">
               <svg class="template-card__blob" width="57" height="54" viewBox="0 0 57 54" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M1.33093 20.8883C4.84845 8.52703 16.1404 0 28.9924 0H47.2749C52.2455 0 56.2749 4.02944 56.2749 9V25.1665C56.2749 28.2757 55.6987 31.358 54.5756 34.2573L54.3455 34.8512C50.0838 45.8525 39.4989 53.1035 27.701 53.1035H24.1663C14.0216 53.1035 4.95681 46.7675 1.4712 37.2404C-0.281291 32.4504 -0.473285 27.2287 0.922704 22.3229L1.33093 20.8883Z" :fill="plantilla.esPublica ? '#79D45D' : '#5BA5FF'" />
+                <path d="M1.33093 20.8883C4.84845 8.52703 16.1404 0 28.9924 0H47.2749C52.2455 0 56.2749 4.02944 56.2749 9V25.1665C56.2749 28.2757 55.6987 31.358 54.5756 34.2573L54.3455 34.8512C50.0838 45.8525 39.4989 53.1035 27.701 53.1035H24.1663C14.0216 53.1035 4.95681 46.7675 1.4712 37.2404C-0.281291 32.4504 -0.473285 27.2287 0.922704 22.3229L1.33093 20.8883Z" :fill="getHabitColor({ categoria_id: plantilla.categoria })" />
               </svg>
-              <span class="template-card__icona">{{ plantilla.esPublica ? '🌍' : '🔒' }}</span>
+              <span class="template-card__icona">{{ getCategoryIcon(plantilla.categoria) }}</span>
             </div>
 
             <div class="template-card__content">
@@ -141,17 +157,24 @@
                 <div class="template-expand-actions">
                   <button
                     type="button"
-                    class="template-expand-btn template-expand-btn--primary"
-                    @click="obrirModalExportarHabits(plantilla)"
+                    class="template-expand-btn template-expand-btn--forum"
+                    @click="exportarAForum(plantilla)"
                   >
                     Exportar
                   </button>
                   <button
                     type="button"
-                    class="template-expand-btn template-expand-btn--secondary"
-                    @click="togglePublicacioPlantilla(plantilla)"
+                    class="template-expand-btn template-expand-btn--import"
+                    @click="obrirModalImportarHabits(plantilla)"
                   >
-                    {{ plantilla.esPublica ? 'Fer privada' : 'Publicar' }}
+                    Importar
+                  </button>
+                  <button
+                    type="button"
+                    class="template-expand-btn template-expand-btn--delete"
+                    @click="eliminarPlantilla(plantilla.id)"
+                  >
+                    Eliminar
                   </button>
                 </div>
               </div>
@@ -187,11 +210,13 @@
           </div>
         </div>
       </div>
+    </div>
 
+    <Teleport to="body">
       <!-- Modal per crear/editar plantilla -->
       <div
         v-if="modalVisible"
-        class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center z-50"
+        class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center z-[100]"
         @click.self="tancar"
       >
         <div
@@ -212,7 +237,7 @@
             <!-- Nom de la Plantilla -->
             <div>
               <label
-                class="block text-sm font-medium text-gray-700 mb-2"
+                class="habit-form-label"
                 for="titol"
                 >{{ $t('templates.name_label') }}</label
               >
@@ -227,31 +252,33 @@
 
             <!-- Categoria -->
             <div>
-              <label
-                class="block text-sm font-medium text-gray-700 mb-2"
-                for="categoria"
-                >{{ $t('habits.category') }}</label
-              >
-              <input
-                id="categoria"
-                v-model="form.categoria"
-                type="text"
-                :placeholder="$t('templates.category_placeholder')"
-                class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white transition-all"
+              <UserHabitsHabitFormCategory
+                embedded
+                :categories="categories"
+                :user-categories="userCategories"
+                :selected-id="form.categoria"
+                :category-custom-label="form.userCategoriaEtiqueta || ''"
+                :category-custom-icona="form.icona"
+                :selected-user-category-id="form.userCategoriaId"
+                @select="seleccionarCategoria"
+                @select-user="seleccionarCategoriaUsuari"
+                @add-user-category="afegirCategoriaUsuari"
               />
             </div>
 
             <!-- Plantilla pública -->
-            <SharedTemplatePublicSwitch
-              input-id="esPublica"
-              :model-value="form.esPublica"
-              :label="$t('templates.public_checkbox')"
-              @update:model-value="form.esPublica = $event"
-            />
+            <div>
+              <label class="habit-form-label" for="esPublica">{{ $t('templates.public_checkbox') }}</label>
+              <SharedTemplatePublicSwitch
+                input-id="esPublica"
+                :model-value="form.esPublica"
+                @update:model-value="form.esPublica = $event"
+              />
+            </div>
 
             <!-- Selecció d'Hàbits -->
             <div>
-              <h3 class="text-lg font-bold text-gray-800 mb-4">{{ $t('templates.select_habits') }}</h3>
+              <h3 class="habit-form-label">{{ $t('templates.select_habits') }}</h3>
               <div v-if="habitStore.loading" class="text-center py-4">
                 <p class="text-gray-500">{{ $t('home.loading_habits') }}</p>
               </div>
@@ -267,31 +294,40 @@
               >
                 <p>{{ $t('templates.no_habits_to_select') }}</p>
               </div>
-              <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-60 overflow-y-auto pr-2">
-                <div
+              <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-80 overflow-y-auto pr-2">
+                <button
                   v-for="habit in habitStore.habits"
                   :key="habit.id"
-                  class="flex items-center p-3 rounded-lg border transition-all cursor-pointer"
-                  :class="{
-                    'bg-green-50 border-green-500 shadow-sm': form.habitsSeleccionats.indexOf(habit.id) !== -1,
-                    'border-gray-200 hover:bg-gray-50': form.habitsSeleccionats.indexOf(habit.id) === -1
-                  }"
+                  type="button"
+                  class="template-habit-selection-card"
+                  :class="{ 'template-habit-selection-card--selected': form.habitsSeleccionats.indexOf(habit.id) !== -1 }"
                   @click="toggleHabitSeleccionat(habit.id)"
                 >
-                  <input
-                    type="checkbox"
-                    :checked="form.habitsSeleccionats.indexOf(habit.id) !== -1"
-                    class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded mr-3"
-                  />
-                  <div
-                    :style="{ backgroundColor: habit.color || '#10B981' }"
-                    class="w-8 h-8 rounded-full flex items-center justify-center text-sm text-white mr-3"
-                  >
-                    {{ habit.icona }}
+                  <div class="template-habit-selection-card__check">
+                    <SharedMissionStyleCheckIcon :selected="form.habitsSeleccionats.indexOf(habit.id) !== -1" :size="32" />
                   </div>
-                  <span class="text-sm font-medium" :class="form.habitsSeleccionats.indexOf(habit.id) !== -1 ? 'text-green-800 font-bold' : 'text-gray-700'">{{ habit.nom || habit.titol }}</span>
-                </div>
+                  <div class="template-habit-selection-card__content">
+                    <div class="template-habit-selection-card__icon-blob">
+                      <svg class="template-habit-selection-card__blob-svg" viewBox="0 0 56 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M1.64885 13.8624C4.80033 5.5202 12.7867 0 21.7043 0H46.8857C51.8563 0 55.8857 4.02944 55.8857 9V18.1149C55.8857 20.9967 55.1982 23.8369 53.8802 26.3997L53.3295 27.4705C49.3729 35.1639 41.4476 40 32.7964 40H18.4113C11.3613 40 4.93035 35.9742 1.85018 29.6327C-0.361252 25.0797 -0.600734 19.8171 1.18804 15.0821L1.64885 13.8624Z" :fill="getHabitColor(habit)" />
+                      </svg>
+                      <span class="template-habit-selection-card__emoji">{{ habit.icona || '💧' }}</span>
+                    </div>
+                    <span class="template-habit-selection-card__name">{{ habit.nom || habit.titol }}</span>
+                  </div>
+                </button>
               </div>
+            </div>
+
+            <!-- Botó Eliminar (només en mode edició) -->
+            <div v-if="modoEdicio" class="mb-2">
+              <button
+                type="button"
+                @click="eliminarPlantilla(plantillaAEditar.id)"
+                class="w-full py-3 bg-red-50 text-red-500 rounded-xl font-bold border border-red-100 hover:bg-red-100 transition-colors uppercase text-sm tracking-wider"
+              >
+                {{ $t('templates.delete_button') }}
+              </button>
             </div>
 
             <!-- Botons d'Acció -->
@@ -313,79 +349,119 @@
           </div>
         </div>
       </div>
-    </div>
-    <!-- New Modal per exportar hàbits de plantilla -->
-    <div
-      v-if="modalExportarVisible"
-      class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center z-50"
-      @click.self="tancarModalExportar"
-    >
+
+      <!-- Modal per importar/exportar hàbits de plantilla -->
       <div
-        class="relative bg-white rounded-2xl shadow-xl p-8 m-4 max-w-2xl w-full"
+        v-if="modalExportarVisible"
+        class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center z-[100]"
+        @click.self="tancarModalExportar"
       >
-        <button
-          @click="tancarModalExportar"
-          class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl font-bold"
+        <div
+          class="relative bg-white rounded-2xl shadow-xl p-8 m-4 max-w-2xl w-full"
         >
-          &times;
-        </button>
+          <button
+            @click="tancarModalExportar"
+            class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl"
+          >
+            &times;
+          </button>
 
-        <h2 class="2xl font-bold text-gray-800 mb-6">
-          {{ $t('templates.export_title', { titol: plantillaAExportar ? plantillaAExportar.titol : '' }) }}
-        </h2>
+          <h2 class="habit-form-label text-gray-800 text-2xl mb-6">
+            {{ $t('templates.import_title', { titol: plantillaAExportar ? plantillaAExportar.titol : '' }) }}
+          </h2>
 
-        <div class="space-y-6">
-          <!-- Selecció d'Hàbits per exportar -->
-          <div>
-            <h3 class="text-lg font-bold text-gray-800 mb-4">{{ $t('templates.export_select_habits') }}</h3>
-            <div v-if="!plantillaAExportar || !plantillaAExportar.habits || plantillaAExportar.habits.length === 0" class="text-center py-4 text-gray-400">
-              <p>{{ $t('templates.export_no_habits') }}</p>
-            </div>
-            <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-60 overflow-y-auto pr-2">
-              <div
-                v-for="habit in plantillaAExportar.habits"
-                :key="habit.id"
-                class="flex items-center p-3 rounded-lg border transition-all cursor-pointer"
-                :class="{
-                  'bg-green-50 border-green-500 shadow-sm': habitsAExportarSeleccionats.indexOf(habit.id) !== -1,
-                  'border-gray-200 hover:bg-gray-50': habitsAExportarSeleccionats.indexOf(habit.id) === -1
-                }"
-                @click="toggleHabitAExportarSeleccionat(habit.id)"
-              >
-                <input
-                  type="checkbox"
-                  :checked="habitsAExportarSeleccionats.indexOf(habit.id) !== -1"
-                  class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded mr-3"
-                />
-                <div
-                  :style="{ backgroundColor: habit.color || '#10B981' }"
-                  class="w-8 h-8 rounded-full flex items-center justify-center text-sm text-white mr-3"
+          <div class="space-y-6">
+            <!-- Selecció d'Hàbits per exportar -->
+            <div>
+              <h3 class="habit-form-label text-gray-800 mb-4">{{ $t('templates.import_select_habits') }}</h3>
+              <div v-if="!plantillaAExportar || !plantillaAExportar.habits || plantillaAExportar.habits.length === 0" class="text-center py-4 text-gray-400">
+                <p>{{ $t('templates.import_no_habits') }}</p>
+              </div>
+              <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-80 overflow-y-auto pr-2">
+                <button
+                  v-for="habit in plantillaAExportar.habits"
+                  :key="habit.id"
+                  type="button"
+                  class="template-habit-selection-card"
+                  :class="{ 'template-habit-selection-card--selected': habitsAExportarSeleccionats.indexOf(habit.id) !== -1 }"
+                  @click="toggleHabitAExportarSeleccionat(habit.id)"
                 >
-                  {{ habit.icona }}
-                </div>
-                <span class="text-sm font-medium" :class="habitsAExportarSeleccionats.indexOf(habit.id) !== -1 ? 'text-green-800 font-bold' : 'text-gray-700'">{{ habit.nom || habit.titol }}</span>
+                  <div class="template-habit-selection-card__check">
+                    <SharedMissionStyleCheckIcon :selected="habitsAExportarSeleccionats.indexOf(habit.id) !== -1" :size="32" />
+                  </div>
+                  <div class="template-habit-selection-card__content">
+                    <div class="template-habit-selection-card__icon-blob">
+                      <svg class="template-habit-selection-card__blob-svg" viewBox="0 0 56 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M1.64885 13.8624C4.80033 5.5202 12.7867 0 21.7043 0H46.8857C51.8563 0 55.8857 4.02944 55.8857 9V18.1149C55.8857 20.9967 55.1982 23.8369 53.8802 26.3997L53.3295 27.4705C49.3729 35.1639 41.4476 40 32.7964 40H18.4113C11.3613 40 4.93035 35.9742 1.85018 29.6327C-0.361252 25.0797 -0.600734 19.8171 1.18804 15.0821L1.64885 13.8624Z" :fill="getHabitColor(habit)" />
+                      </svg>
+                      <span class="template-habit-selection-card__emoji">{{ habit.icona || '💧' }}</span>
+                    </div>
+                    <span class="template-habit-selection-card__name">{{ habit.nom || habit.titol }}</span>
+                  </div>
+                </button>
               </div>
             </div>
-          </div>
 
-          <!-- Botons d'Acció per exportar -->
-          <div class="flex justify-end gap-3 mt-8">
+            <!-- Botons d'Acció per exportar -->
+            <div class="flex justify-end gap-3 mt-8">
+              <button
+                @click="tancarModalExportar"
+                class="px-6 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-100 transition-colors"
+              >
+                {{ $t('habits.cancel') }}
+              </button>
+              <button
+                @click="confirmarExportacioHabits"
+                class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl shadow-lg transition-all transform active:scale-95"
+              >
+                {{ $t('templates.import_button') }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal per eliminar plantilla -->
+      <div
+        v-if="modalEliminarVisible"
+        class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center z-[110]"
+        @click.self="tancarModalEliminar"
+      >
+        <div
+          class="relative bg-white rounded-2xl shadow-xl p-8 m-4 max-w-md w-full"
+        >
+          <button
+            @click="tancarModalEliminar"
+            class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl font-bold"
+          >
+            &times;
+          </button>
+
+          <h2 class="habit-form-label text-gray-800 text-2xl mb-4">
+            Eliminar plantilla?
+          </h2>
+
+          <p class="text-gray-600 mb-8">
+            Estàs segur que vols eliminar la plantilla <strong>{{ plantillaAEliminar ? plantillaAEliminar.titol : '' }}</strong>? Aquesta acció no es pot desfer.
+          </p>
+
+          <div class="flex flex-col gap-3">
             <button
-              @click="tancarModalExportar"
-              class="px-6 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-100 transition-colors"
+              @click="confirmarEliminar"
+              class="w-full py-4 bg-red-500 hover:bg-red-600 text-white font-extrabold rounded-2xl shadow-[0_4px_0_#D14D6B] active:translate-y-[2px] active:shadow-[0_2px_0_#D14D6B] transition-all text-lg"
             >
-              {{ $t('habits.cancel') }}
+              SÍ, ELIMINA-LA
             </button>
             <button
-              @click="confirmarExportacioHabits"
-              class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-lg transition-all transform active:scale-95"
+              @click="tancarModalEliminar"
+              class="w-full py-4 bg-gray-100 hover:bg-gray-200 text-gray-500 font-extrabold rounded-2xl transition-all text-lg"
             >
-              {{ $t('templates.export_button') }}
+              ARA NO
             </button>
           </div>
         </div>
       </div>
-    </div>
+    </Teleport>
 
     <Teleport to="body">
       <Transition name="sheet-backdrop">
@@ -402,7 +478,7 @@
         >
           <div class="plantilla-sheet__header sticky top-0 z-[1] bg-white rounded-t-3xl px-4 pt-3 pb-2">
             <h3 class="plantilla-sheet__title">
-              {{ $t('templates.create_sheet_heading') }}
+              {{ modoEdicio ? $t('templates.edit_title') : $t('templates.create_sheet_heading') }}
             </h3>
             <button
               type="button"
@@ -416,7 +492,7 @@
           </div>
           <div class="flex-1 min-h-0 overflow-y-auto px-4 py-3 space-y-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2" for="plantilla-sheet-titol">{{
+              <label class="habit-form-label" for="plantilla-sheet-titol">{{
                 $t('templates.name_label')
               }}</label>
               <input
@@ -428,27 +504,29 @@
               />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2" for="plantilla-sheet-categoria">{{
-                $t('habits.category')
-              }}</label>
-              <input
-                id="plantilla-sheet-categoria"
-                v-model="form.categoria"
-                type="text"
-                :placeholder="$t('templates.category_placeholder')"
-                class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white transition-all"
+              <UserHabitsHabitFormCategory
+                embedded
+                :categories="categories"
+                :user-categories="userCategories"
+                :selected-id="form.categoria"
+                :category-custom-label="form.userCategoriaEtiqueta || ''"
+                :category-custom-icona="form.icona"
+                :selected-user-category-id="form.userCategoriaId"
+                @select="seleccionarCategoria"
+                @select-user="seleccionarCategoriaUsuari"
+                @add-user-category="afegirCategoriaUsuari"
               />
             </div>
-            <div class="rounded-xl border border-gray-100 bg-gray-50/60 px-4 py-3">
+            <div>
+              <label class="habit-form-label" for="plantilla-sheet-es-publica">{{ $t('templates.public_checkbox') }}</label>
               <SharedTemplatePublicSwitch
                 input-id="plantilla-sheet-es-publica"
                 :model-value="form.esPublica"
-                :label="$t('templates.public_checkbox')"
                 @update:model-value="form.esPublica = $event"
               />
             </div>
             <div>
-              <h4 class="text-sm font-bold text-gray-800 mb-2">{{ $t('templates.select_habits') }}</h4>
+              <h4 class="habit-form-label">{{ $t('templates.select_habits') }}</h4>
               <div v-if="habitStore.loading" class="text-center py-6 text-gray-500 text-sm">
                 {{ $t('home.loading_habits') }}
               </div>
@@ -463,54 +541,36 @@
                   v-for="habit in habitStore.habits"
                   :key="'sheet-habit-' + habit.id"
                   type="button"
-                  class="flex w-full items-center rounded-xl border p-3 text-left transition-all"
-                  :class="
-                    form.habitsSeleccionats.indexOf(habit.id) !== -1
-                      ? 'border-green-500 bg-green-50 shadow-sm'
-                      : 'border-gray-200 bg-white hover:bg-gray-50'
-                  "
+                  class="template-habit-selection-card"
+                  :class="{ 'template-habit-selection-card--selected': form.habitsSeleccionats.indexOf(habit.id) !== -1 }"
                   @click="toggleHabitSeleccionat(habit.id)"
                 >
-                  <span
-                    class="mr-3 flex h-5 w-5 shrink-0 items-center justify-center rounded border-2"
-                    :class="
-                      form.habitsSeleccionats.indexOf(habit.id) !== -1
-                        ? 'border-green-600 bg-green-600'
-                        : 'border-gray-300 bg-white'
-                    "
-                    aria-hidden="true"
-                  >
-                    <svg
-                      v-if="form.habitsSeleccionats.indexOf(habit.id) !== -1"
-                      class="h-3 w-3 text-white"
-                      viewBox="0 0 12 10"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M1 5L4.5 8.5L11 1.5"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                      />
-                    </svg>
-                  </span>
-                  <span
-                    class="mr-3 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm text-white"
-                    :style="{ backgroundColor: habit.color || '#10B981' }"
-                    >{{ habit.icona }}</span
-                  >
-                  <span
-                    class="min-w-0 flex-1 text-sm font-medium"
-                    :class="
-                      form.habitsSeleccionats.indexOf(habit.id) !== -1 ? 'text-green-800 font-bold' : 'text-gray-700'
-                    "
-                    >{{ habit.nom || habit.titol }}</span
-                  >
+                  <div class="template-habit-selection-card__check">
+                    <SharedMissionStyleCheckIcon :selected="form.habitsSeleccionats.indexOf(habit.id) !== -1" :size="32" />
+                  </div>
+                  <div class="template-habit-selection-card__content">
+                    <div class="template-habit-selection-card__icon-blob">
+                      <svg class="template-habit-selection-card__blob-svg" viewBox="0 0 56 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M1.64885 13.8624C4.80033 5.5202 12.7867 0 21.7043 0H46.8857C51.8563 0 55.8857 4.02944 55.8857 9V18.1149C55.8857 20.9967 55.1982 23.8369 53.8802 26.3997L53.3295 27.4705C49.3729 35.1639 41.4476 40 32.7964 40H18.4113C11.3613 40 4.93035 35.9742 1.85018 29.6327C-0.361252 25.0797 -0.600734 19.8171 1.18804 15.0821L1.64885 13.8624Z" :fill="getHabitColor(habit)" />
+                      </svg>
+                      <span class="template-habit-selection-card__emoji">{{ habit.icona || '💧' }}</span>
+                    </div>
+                    <span class="template-habit-selection-card__name">{{ habit.nom || habit.titol }}</span>
+                  </div>
                 </button>
               </div>
             </div>
+            <!-- Botó Eliminar (només en mode edició) -->
+            <div v-if="modoEdicio" class="pt-2">
+              <button
+                type="button"
+                @click="eliminarPlantilla(plantillaAEditar.id)"
+                class="w-full py-3 bg-red-50 text-red-500 rounded-xl font-bold border border-red-100 hover:bg-red-100 transition-colors uppercase text-sm tracking-wider"
+              >
+                {{ $t('templates.delete_button') }}
+              </button>
+            </div>
+
             <div class="grid grid-cols-2 gap-3 pt-2">
               <button
                 type="button"
@@ -524,7 +584,7 @@
                 class="w-full min-w-0 rounded-xl border-2 border-[#6FBC58] bg-[#79D45D] py-2.5 text-center text-base font-normal text-white transition hover:brightness-[0.97]"
                 @click="guardarPlantilla"
               >
-                {{ $t('templates.create_button') }}
+                {{ modoEdicio ? $t('templates.update_button') : $t('templates.create_button') }}
               </button>
             </div>
           </div>
@@ -540,6 +600,8 @@ import { useHabitStore } from "../stores/useHabitStore";
 import { useGameStore } from "../stores/gameStore"; // Import useGameStore
 import { useSocketConfig } from "../composables/useSocketConfig";
 import { watch } from 'vue'; // Import watch from vue
+import { getDefaultColorForCategoryId, nearestCategoryIdFromHex } from "~/utils/habitCategoryColor.js";
+import { normalizeHex } from "~/utils/colorSpace.js";
 
 export default {
   // Configuració inicial dels 'stores' de Pinia per a la gestió de l'estat.
@@ -562,36 +624,70 @@ export default {
       form: {
         titol: "",
         categoria: "",
+        icona: "📁",
         esPublica: false,
         habitsSeleccionats: [], // Array d'IDs d'hàbits seleccionats per a la plantilla.
+        userCategoriaEtiqueta: null,
+        userCategoriaId: null
       },
+      categories: [
+        { id: 1, key: "physical", icona: "🏃" },
+        { id: 2, key: "food", icona: "🥗" },
+        { id: 3, key: "study", icona: "📚" },
+        { id: 4, key: "reading", icona: "📖" },
+        { id: 5, key: "wellness", icona: "🧘" },
+        { id: 6, key: "improvement", icona: "✨" },
+        { id: 7, key: "home", icona: "🏠" },
+        { id: 8, key: "hobby", icona: "🎨" }
+      ],
+      userCategories: [],
+      categoriaAnterior: null,
       modalExportarVisible: false, // New: Controla la visibilitat del modal d'exportació.
       plantillaAExportar: null,    // New: Objecte de plantilla seleccionada per exportar.
       habitsAExportarSeleccionats: [], // New: Array d'IDs d'hàbits seleccionats per a l'exportació.
+      modalEliminarVisible: false, // New: Controla la visibilitat del modal d'eliminació.
+      plantillaAEliminar: null,   // New: Objecte de plantilla seleccionada per eliminar.
       plantillaExpandidaId: null,
+      searchQuery: '',
+      searchVisible: false,
     };
   },
   computed: {
     filteredPlantilles: function () {
-      if (!Array.isArray(this.plantillaStore.plantilles)) {
+      var self = this;
+      if (!Array.isArray(self.plantillaStore.plantilles)) {
         return [];
       }
-      if (this.selectedFilter === 'public') {
-        return this.plantillaStore.plantilles.filter(function (plantilla) {
+      
+      var filtered = self.plantillaStore.plantilles;
+
+      // Filtre per visibilitat
+      if (self.selectedFilter === 'public') {
+        filtered = filtered.filter(function (plantilla) {
           return plantilla.esPublica === true;
         });
-      }
-      if (this.selectedFilter === 'private') {
-        return this.plantillaStore.plantilles.filter(function (plantilla) {
+      } else if (self.selectedFilter === 'private') {
+        filtered = filtered.filter(function (plantilla) {
           return plantilla.esPublica !== true;
         });
       }
-      return this.plantillaStore.plantilles;
+
+      // Filtre per cerca de text
+      if (self.searchQuery.trim() !== '') {
+        var query = self.searchQuery.toLowerCase();
+        filtered = filtered.filter(function (plantilla) {
+          var titol = (plantilla.titol || '').toLowerCase();
+          return titol.indexOf(query) !== -1;
+        });
+      }
+
+      return filtered;
     }
   },
   // Hook de cicle de vida: s'executa quan el component és muntat.
   mounted: function () {
     var self = this;
+    self.carregarCategoriesUsuari();
     // A. Carregar les plantilles existents des de l'API.
     self.carregarPlantilles();
     // Set default userId for now as there's no authentication yet
@@ -658,20 +754,31 @@ export default {
     /**
      * Obre el bottom sheet per crear plantilla (mateix formulari que el modal, estil full hàbit).
      */
-    obrirSheetCrearPlantilla: async function () {
+    obrirSheetCrearPlantilla: function () {
       var self = this;
       self.modoEdicio = false;
       self.plantillaAEditar = null;
       self.form.titol = "";
       self.form.categoria = "";
+      self.form.icona = "📁";
       self.form.esPublica = false;
       self.form.habitsSeleccionats = [];
-      await self.carregarHabits();
+      self.form.userCategoriaEtiqueta = null;
+      self.form.userCategoriaId = null;
+      self.categoriaAnterior = null;
+      
+      // Carreguem en segon pla sense bloquejar l'obertura del desplegable
+      self.carregarHabits();
+      self.carregarCategoriesUsuari();
+      
       self.modalVisible = false;
       self.plantillaSheetObert = true;
     },
     tancarSheetCrearPlantilla: function () {
       this.plantillaSheetObert = false;
+      this.form.userCategoriaEtiqueta = null;
+      this.form.userCategoriaId = null;
+      this.categoriaAnterior = null;
     },
     togglePublicacioPlantilla: function (plantilla) {
       var self = this;
@@ -708,16 +815,23 @@ export default {
     /**
      * Obre el modal en mode de creació de plantilla i reinicia el formulari.
      */
-    obrirModalCrearPlantilla: async function () {
+    obrirModalCrearPlantilla: function () {
       var self = this;
       self.modoEdicio = false;
       self.plantillaAEditar = null;
       // Reiniciar el formulari per a una nova creació.
       self.form.titol = "";
       self.form.categoria = "";
+      self.form.icona = "📁";
       self.form.esPublica = false;
       self.form.habitsSeleccionats = [];
-      await self.carregarHabits(); // Refresh habits before opening the modal
+      self.form.userCategoriaEtiqueta = null;
+      self.form.userCategoriaId = null;
+      self.categoriaAnterior = null;
+
+      self.carregarHabits(); // Refresh habits in background
+      self.carregarCategoriesUsuari();
+
       self.plantillaSheetObert = false;
       self.modalVisible = true;
     },
@@ -726,7 +840,7 @@ export default {
      * Obre el modal en mode d'edició per a una plantilla específica.
      * @param {number} id - L'ID de la plantilla a editar.
      */
-    editarPlantilla: async function (id) {
+    editarPlantilla: function (id) {
       var self = this;
       var plantillaTrobada = null;
       var i;
@@ -747,8 +861,23 @@ export default {
       // Reiniciar formulari abans d'omplir-lo
       self.form.titol = self.plantillaAEditar.titol;
       self.form.categoria = self.plantillaAEditar.categoria;
+      self.form.icona = self.plantillaAEditar.icona || "📁";
       self.form.esPublica = self.plantillaAEditar.esPublica;
       self.form.habitsSeleccionats = [];
+      self.form.userCategoriaEtiqueta = null;
+      self.form.userCategoriaId = null;
+
+      // Carregar dades de categoria personalitzada si n'hi ha en metadata
+      var meta = self.plantillaAEditar.metadata;
+      if (meta && typeof meta === "object") {
+        if (meta.user_categoria_nom) {
+          self.form.userCategoriaEtiqueta = meta.user_categoria_nom;
+          self.form.userCategoriaId = meta.user_categoria_id != null ? meta.user_categoria_id : null;
+          if (meta.user_categoria_icona) {
+            self.form.icona = meta.user_categoria_icona;
+          }
+        }
+      }
 
       // Carregar els IDs dels hàbits que ja té la plantilla
       if (self.plantillaAEditar.habits && Array.isArray(self.plantillaAEditar.habits)) {
@@ -757,9 +886,13 @@ export default {
         }
       }
 
-      await self.carregarHabits();
-      self.plantillaSheetObert = false;
-      self.modalVisible = true;
+      // Carreguem en segon pla
+      self.carregarHabits();
+      self.carregarCategoriesUsuari();
+      
+      // Obrim el desplegable (sheet) en lloc del modal per ser més instantani i consistent
+      self.modalVisible = false;
+      self.plantillaSheetObert = true;
     },
 
     /**
@@ -768,7 +901,6 @@ export default {
      */
     eliminarPlantilla: function (id) {
       var self = this;
-      // A. Comprovar que el socket estigui disponible.
       if (!self.socket) {
         self.$swal.fire({
           icon: 'error',
@@ -777,25 +909,30 @@ export default {
         });
         return;
       }
-      // B. Confirmar l'eliminació amb l'usuari.
-      self.$swal.fire({
-        title: this.$t('templates.confirm_delete'),
-        text: "Aquesta acció no es pot desfer.",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        confirmButtonText: 'Sí, esborra-la',
-        cancelButtonText: 'Cancel·la'
-      }).then(function (result) {
-        if (result.isConfirmed) {
-          // C. Emitir l'acció de DELETE via socket.
-          self.socket.emit("plantilla_action", {
-            action: "DELETE",
-            plantilla_id: id,
-            user_id: self.gameStore.userId
-          });
-        }
+      self.tancar(); // Close creation modal if open
+      self.tancarModalExportar(); // Close export modal if open
+      // Buscar la plantilla per mostrar el seu titol al modal
+      var p = self.plantillaStore.plantilles.find(function(item) { return item.id === id; });
+      self.plantillaAEliminar = p;
+      self.modalEliminarVisible = true;
+    },
+
+    tancarModalEliminar: function () {
+      this.modalEliminarVisible = false;
+      this.plantillaAEliminar = null;
+    },
+
+    confirmarEliminar: function () {
+      var self = this;
+      if (!self.plantillaAEliminar) return;
+
+      self.socket.emit("plantilla_action", {
+        action: "DELETE",
+        plantilla_id: self.plantillaAEliminar.id,
+        user_id: self.gameStore.userId
       });
+      
+      self.tancarModalEliminar();
     },
 
     /**
@@ -804,6 +941,9 @@ export default {
     tancar: function () {
       this.modalVisible = false;
       this.plantillaSheetObert = false;
+      this.form.userCategoriaEtiqueta = null;
+      this.form.userCategoriaId = null;
+      this.categoriaAnterior = null;
     },
 
     /**
@@ -875,8 +1015,10 @@ export default {
      * Carrega els hàbits disponibles des de l'API a través del 'habitStore'.
      * @returns {Promise<void>}
      */
-    carregarHabits: async function () {
-      await this.habitStore.obtenirHabitsDesDeApi();
+    carregarHabits: function () {
+      // No fem await per permetre que la UI sigui instantània.
+      // El store ja gestiona l'estat 'loading' que la UI mostra.
+      this.habitStore.obtenirHabitsDesDeApi();
     },
 
     /**
@@ -895,8 +1037,76 @@ export default {
       }
     },
 
+    seleccionarCategoria: function (id) {
+      this.form.categoria = id;
+      this.form.userCategoriaEtiqueta = null;
+      this.form.userCategoriaId = null;
+      var cat = this.categories.find(function (c) { return Number(c.id) === Number(id); });
+      if (cat) {
+        this.form.icona = cat.icona;
+      }
+      this.categoriaAnterior = id;
+    },
+    seleccionarCategoriaUsuari: function (payload) {
+      if (!payload || payload.baseCategoryId == null) return;
+      this.form.categoria = parseInt(String(payload.baseCategoryId), 10);
+      this.form.icona = payload.icona || "📁";
+      this.form.userCategoriaEtiqueta = payload.nom;
+      this.form.userCategoriaId = payload.id;
+      this.categoriaAnterior = this.form.categoria;
+    },
+    carregarCategoriesUsuari: function () {
+      try {
+        var raw = localStorage.getItem("loopy_user_habit_categories");
+        if (!raw) {
+          this.userCategories = [];
+          return;
+        }
+        var parsed = JSON.parse(raw);
+        this.userCategories = Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        this.userCategories = [];
+      }
+    },
+    persistirCategoriesUsuari: function () {
+      try {
+        localStorage.setItem("loopy_user_habit_categories", JSON.stringify(this.userCategories));
+      } catch (e) {}
+    },
+    afegirCategoriaUsuari: function (payload) {
+      var nom = "";
+      var icona = "✨";
+      var colorHex = null;
+      var baseId = 8;
+      if (typeof payload === "string") {
+        nom = String(payload || "").trim();
+        baseId = (this.userCategories.length % 8) + 1;
+      } else if (payload && typeof payload === "object") {
+        nom = String(payload.nom || "").trim();
+        icona = payload.icona && String(payload.icona).trim() ? String(payload.icona).trim() : "✨";
+        if (payload.color && String(payload.color).trim()) {
+          colorHex = normalizeHex(payload.color);
+        }
+        if (payload.baseCategoryId != null) {
+          var b = parseInt(String(payload.baseCategoryId), 10);
+          baseId = Number.isNaN(b) ? nearestCategoryIdFromHex(colorHex || "#10B981") : b;
+        } else {
+          baseId = nearestCategoryIdFromHex(colorHex || "#10B981");
+        }
+      }
+      if (!nom) return;
+      var maxId = this.userCategories.reduce(function (m, c) {
+        return Math.max(m, Number(c.id) || 0);
+      }, 9000);
+      var nextId = maxId + 1;
+      var entry = { id: nextId, nom: nom, icona: icona, baseCategoryId: baseId };
+      if (colorHex) entry.color = colorHex;
+      this.userCategories = this.userCategories.concat([entry]);
+      this.persistirCategoriesUsuari();
+    },
+
     /**
-     * Guarda la plantilla (creació o actualització) enviant les dades via socket.
+     * Guarda la plantilla actual (creant-la o actualitzant-la).
      */
     guardarPlantilla: function () {
       var self = this;
@@ -937,9 +1147,15 @@ export default {
       // C. Preparar les dades de la plantilla per enviar.
       var plantillaData = {
         titol: self.form.titol,
-        categoria: self.form.categoria,
-        es_publica: self.form.esPublica, // El backend espera 'es_publica'.
-        habits_ids: self.form.habitsSeleccionats, // El backend espera 'habits_ids'.
+        categoria: String(self.form.categoria),
+        icona: self.form.icona || "📁",
+        es_publica: self.form.esPublica,
+        habits_ids: self.form.habitsSeleccionats,
+        metadata: {
+          user_categoria_nom: self.form.userCategoriaEtiqueta,
+          user_categoria_id: self.form.userCategoriaId,
+          user_categoria_icona: self.form.userCategoriaEtiqueta ? self.form.icona : null
+        }
       };
 
       // D. Determinar si és una creació o una actualització.
@@ -1016,15 +1232,35 @@ export default {
     },
 
     /**
-     * Obre el modal d'exportació d'hàbits per a una plantilla específica.
-     * @param {object} plantilla - La plantilla de la qual exportar hàbits.
+     * Retorna el color d'un hàbit per al fons del blob.
+     * @param {object} habit - L'hàbit del qual obtenir el color.
      */
-    obrirModalExportarHabits: function (plantilla) {
+    getHabitColor: function (habit) {
+      var c = habit && habit.color;
+      if (c && String(c).trim()) {
+        return normalizeHex(String(c).trim());
+      }
+      var catId = habit.categoriaId != null ? habit.categoriaId : habit.categoria_id;
+      return getDefaultColorForCategoryId(Number(catId) || 1);
+    },
+
+    getCategoryIcon: function (catId) {
+      var cat = this.categories.find(function (c) { return Number(c.id) === Number(catId); });
+      return cat ? cat.icona : "📁";
+    },
+
+    /**
+     * Obre el modal per importar els hàbits d'una plantilla a l'usuari.
+     * @param {object} plantilla - La plantilla de la qual importar hàbits.
+     */
+    obrirModalImportarHabits: function (plantilla) {
       var self = this;
+      self.tancar(); // Close creation modal if open
+      self.tancarModalEliminar(); // Close delete modal if open
       self.plantillaAExportar = plantilla;
       self.modalExportarVisible = true;
 
-      // Seleccionar tots els hàbits de la plantilla per defecte per a l'exportació.
+      // Seleccionar tots els hàbits de la plantilla per defecte per a la importació.
       self.habitsAExportarSeleccionats = [];
       if (plantilla.habits && Array.isArray(plantilla.habits)) {
         var i;
@@ -1032,6 +1268,15 @@ export default {
           self.habitsAExportarSeleccionats.push(plantilla.habits[i].id);
         }
       }
+    },
+
+    /**
+     * Redirigeix l'usuari al fòrum (social) per exportar/compartir la plantilla.
+     * @param {object} plantilla - La plantilla a compartir.
+     */
+    exportarAForum: function (plantilla) {
+      // Redirigim a social. Se li podria passar l'ID si tinguéssim un flux de "share"
+      navigateTo('/social');
     },
 
     /**
@@ -1215,6 +1460,19 @@ export default {
 
         self.$router.push('/home');
     },
+    toggleSearch: function () {
+      var self = this;
+      self.searchVisible = !self.searchVisible;
+      if (self.searchVisible) {
+        self.$nextTick(function () {
+          if (self.$refs.searchInput) {
+            self.$refs.searchInput.focus();
+          }
+        });
+      } else {
+        self.searchQuery = '';
+      }
+    },
   },
 };
 </script>
@@ -1233,34 +1491,62 @@ export default {
   align-items: stretch;
   gap: 10px;
   width: 100%;
+  flex-wrap: wrap;
+}
+
+.templates-filter-search {
+  display: flex;
+  align-items: center;
+  width: 58px;
+  height: 58px;
+  border-radius: 10px;
+  background: #faf9f9;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.templates-filter-search--active {
+  width: 100%;
 }
 
 .templates-filter-decor {
   flex-shrink: 0;
   width: 58px;
   height: 58px;
-  border-radius: 10px;
-  background: #faf9f9;
+  border: 0;
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-sizing: border-box;
+  cursor: pointer;
+  outline: none;
 }
 
-.templates-filter-decor__lupa {
-  display: block;
-  width: 28px;
-  height: 28px;
+.templates-filter-search-input {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  padding: 0 20px 0 0;
+  color: #5e5e5e;
+  font-family: "Comfortaa", system-ui, sans-serif;
+  font-size: 16px;
+  outline: none;
 }
 
 .templates-filter-card {
   position: relative;
   flex: 1 1 0;
-  min-width: 0;
+  min-width: 200px;
   height: 58px;
   border-radius: 10px;
   background: #faf9f9;
   overflow: hidden;
+  transition: width 0.3s ease, flex 0.3s ease;
+}
+
+.templates-filter-wrap--searching .templates-filter-card {
+  flex: 0 0 100%;
 }
 
 .templates-filter-select {
@@ -1673,5 +1959,139 @@ export default {
 @keyframes template-sheet-up {
   from { transform: translateY(20px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
+}
+
+/* Estils per a la selecció d'hàbits dins dels formularis (estil Mission Card) */
+.template-habit-selection-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 70px;
+  padding: 6px 16px 6px 66px;
+  background-color: #faf9f9;
+  border-radius: 10px;
+  overflow: hidden;
+  box-sizing: border-box;
+  border: 2px solid transparent;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  text-align: left;
+}
+
+.template-habit-selection-card--selected {
+  border-color: #79d45d;
+  background-color: #ecfdf3;
+}
+
+.template-habit-selection-card__check {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 43px;
+  height: 43px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.template-habit-selection-card__content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.template-habit-selection-card__icon-blob {
+  position: relative;
+  width: 48px;
+  height: 34px;
+  flex-shrink: 0;
+}
+
+.template-habit-selection-card__blob-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.template-habit-selection-card__emoji {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -52%);
+  font-size: 1.15rem;
+  z-index: 1;
+  text-shadow: 0 0 2px rgba(255, 255, 255, 0.8), 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.template-habit-selection-card__name {
+  font-family: "Bricolage Grotesque", system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.1;
+  color: #2b2d42;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.template-expand-btn--forum {
+  background: #5BA5FF;
+  color: white;
+}
+
+.template-expand-btn--import {
+  background: #79D45D;
+  color: white;
+}
+
+.template-expand-btn--delete {
+  background: #FF6B8A;
+  color: white;
+}
+
+/* SweetAlert Custom Loopy Styles */
+:deep(.loopy-swal-popup) {
+  border-radius: 32px !important;
+  padding: 2.5rem !important;
+  font-family: 'Outfit', sans-serif !important;
+  border: 4px solid #F3F4F6 !important;
+}
+
+:deep(.loopy-swal-title) {
+  font-weight: 900 !important;
+  color: #1F2937 !important;
+  font-size: 24px !important;
+  margin-bottom: 1rem !important;
+}
+
+:deep(.loopy-swal-confirm) {
+  background-color: #FF6B8A !important;
+  color: white !important;
+  border-radius: 16px !important;
+  padding: 12px 24px !important;
+  font-weight: 800 !important;
+  margin: 8px !important;
+  font-size: 16px !important;
+  transition: transform 0.2s !important;
+  border: none !important;
+  box-shadow: 0 4px 0 #D14D6B !important;
+}
+
+:deep(.loopy-swal-confirm:active) {
+  transform: translateY(2px) !important;
+  box-shadow: 0 2px 0 #D14D6B !important;
+}
+
+:deep(.loopy-swal-cancel) {
+  background-color: #F3F4F6 !important;
+  color: #6B7280 !important;
+  border-radius: 16px !important;
+  padding: 12px 24px !important;
+  font-weight: 800 !important;
+  margin: 8px !important;
+  font-size: 16px !important;
+  border: none !important;
 }
 </style>

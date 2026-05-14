@@ -284,6 +284,7 @@ import coinLoopy from "~/assets/img/Icones/Icona_Moneda.png";
 import xpIcon from "~/assets/img/Icones/Icona_Experiencia.png";
 import ratxaIcon from "~/assets/img/Icones/Icona_Ratxa.png";
 import logrosIcon from "~/assets/img/Icones/Icona_Logros.png";
+import UserHomeHomeStreakSection from "~/components/user/home/HomeStreakSection.vue";
 import { getDefaultColorForCategoryId } from "~/utils/habitCategoryColor.js";
 import { normalizeHex } from "~/utils/colorSpace.js";
 import { authFetch, getBaseUrl } from "~/composables/useApi.js";

@@ -5,20 +5,18 @@
       type="checkbox"
       class="template-public-switch__native peer sr-only"
       :checked="modelValue"
-      :aria-labelledby="titleId"
       @change="onChange"
     />
     <label
       :for="inputId"
       class="template-public-switch__hitbox peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[#6FBC58] peer-focus-visible:rounded-[30px]"
     >
-      <!-- Rail únic: fons + vora segons estat; thumb + títol dins (sense label exterior) -->
+      <!-- Rail únic: fons + vora segons estat; thumb dins -->
       <span
         class="template-public-switch__track"
         :class="modelValue ? 'template-public-switch__track--on' : 'template-public-switch__track--off'"
       >
         <span class="template-public-switch__thumb" aria-hidden="true"></span>
-        <span :id="titleId" class="template-public-switch__title">{{ label }}</span>
       </span>
     </label>
   </div>
@@ -32,18 +30,10 @@ var props = defineProps({
     type: Boolean,
     default: false,
   },
-  label: {
-    type: String,
-    default: "",
-  },
   inputId: {
     type: String,
     required: true,
   },
-});
-
-var titleId = computed(function () {
-  return props.inputId + "-public-title";
 });
 
 var emit = defineEmits(["update:modelValue"]);
@@ -118,42 +108,5 @@ function onChange(e) {
 .template-public-switch__track--on .template-public-switch__thumb {
   left: calc(100% - 4px);
   transform: translate(-100%, -50%);
-}
-
-/* Títol dins el rail: canvia de banda per no solapar el thumb */
-.template-public-switch__title {
-  position: absolute;
-  z-index: 1;
-  top: 50%;
-  transform: translateY(-50%);
-  margin: 0;
-  font-family: "Bricolage Grotesque", system-ui, sans-serif;
-  font-size: clamp(0.9375rem, 3.2vw, 1.125rem);
-  font-weight: 600;
-  line-height: 1.2;
-  letter-spacing: 0.01em;
-  pointer-events: none;
-  transition:
-    left 0.32s cubic-bezier(0.4, 0, 0.2, 1),
-    right 0.32s cubic-bezier(0.4, 0, 0.2, 1),
-    color 0.28s cubic-bezier(0.4, 0, 0.2, 1),
-    text-align 0.32s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.template-public-switch__track--off .template-public-switch__title {
-  left: calc(4px + var(--thumb-w) + 10px);
-  right: 12px;
-  text-align: right;
-  color: #535353;
-}
-
-.template-public-switch__track--on .template-public-switch__title {
-  left: 14px;
-  right: calc(4px + var(--thumb-w) + 10px);
-  text-align: left;
-  color: #faf9f9;
 }
 </style>

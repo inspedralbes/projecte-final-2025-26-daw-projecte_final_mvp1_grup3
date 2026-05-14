@@ -75,7 +75,17 @@
                     <span class="block text-xs text-gray-500 truncate">Pots vincular llibre, rutina o vídeo</span>
                   </span>
                 </span>
-                <span class="text-gray-400 text-lg leading-none">⌃</span>
+                <HabitFormSelectChevron style="transform: rotate(180deg);" />
+              </button>
+            </div>
+
+            <div v-if="editantHabitId" class="pt-2">
+              <button
+                type="button"
+                class="w-full rounded-xl border-2 border-[#D14D6B] bg-[#FF6B8A] py-2.5 text-center text-base font-bold text-white transition hover:brightness-[0.97]"
+                @click="eliminarHabit"
+              >
+                {{ $t("habits.delete") || "Eliminar" }}
               </button>
             </div>
 
@@ -113,9 +123,16 @@
           v-if="formulariObert && apiSectionOberta"
           class="fixed left-0 right-0 bottom-0 z-[87] bg-white rounded-t-3xl shadow-2xl max-h-[82vh] flex flex-col pb-[max(0.5rem,env(safe-area-inset-bottom))] habit-form"
         >
-          <div class="sticky top-0 bg-white rounded-t-3xl px-4 pt-3 pb-2 flex items-center justify-between">
-            <h3 class="text-base font-black text-gray-800">Context extern (opcional)</h3>
-            <button type="button" class="w-9 h-9 rounded-full bg-gray-100 text-gray-600 text-xl font-bold" @click="tancarApiSheet">×</button>
+          <div class="create-habit-sheet__header sticky top-0 z-[1] bg-white rounded-t-3xl px-4 pt-3 pb-2">
+            <h3 class="create-habit-sheet__title">Context extern (opcional)</h3>
+            <button
+              type="button"
+              class="create-habit-sheet__close"
+              @click="tancarApiSheet"
+            >
+              <span class="create-habit-sheet__close-line create-habit-sheet__close-line--1" aria-hidden="true"></span>
+              <span class="create-habit-sheet__close-line create-habit-sheet__close-line--2" aria-hidden="true"></span>
+            </button>
           </div>
           <div class="habit-sheet-body">
             <div class="habit-sheet-body-inner space-y-3">
@@ -239,6 +256,7 @@
 
 <script>
 import HabitFormDetails from "~/components/user/habits/HabitFormDetails.vue";
+import HabitFormSelectChevron from "~/components/user/habits/HabitFormSelectChevron.vue";
 import { authFetch } from "~/composables/useApi.js";
 import { getEndpointByProvider, getProviderByCategoryId } from "~/utils/habitExternal.js";
 import { getDefaultColorForCategoryId, nearestCategoryIdFromHex } from "~/utils/habitCategoryColor.js";
@@ -247,7 +265,8 @@ import { normalizeHex } from "~/utils/colorSpace.js";
 export default {
   name: "HomeCreateHabitDropdown",
   components: {
-    HabitFormDetails
+    HabitFormDetails,
+    HabitFormSelectChevron
   },
   emits: ["habit-creat"],
   data: function () {
@@ -772,12 +791,42 @@ export default {
         }
       });
     },
+    eliminarHabit: function () {
+      var self = this;
+      if (!self.editantHabitId) return;
+
+      self.$swal.fire({
+        title: 'Eliminar hàbit?',
+        text: "Estàs segur que vols eliminar aquest hàbit? Aquesta acció no es pot desfer.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancel·lar',
+        customClass: {
+          popup: 'loopy-swal-popup',
+          title: 'loopy-swal-title',
+          confirmButton: 'loopy-swal-confirm',
+          cancelButton: 'loopy-swal-cancel'
+        },
+        buttonsStyling: false
+      }).then(function (result) {
+        if (result.isConfirmed) {
+          if (self.socket && self.socket.connected) {
+            self.estaCarregant = true;
+            self.socket.emit("habit_action", {
+              action: "DELETE",
+              habit_id: self.editantHabitId
+            });
+          }
+        }
+      });
+    },
     onHabitActionConfirmedSocket: function (payload) {
       if (!payload) {
         return;
       }
       var act = String(payload.action || "").toUpperCase();
-      if (act !== "CREATE" && act !== "UPDATE") {
+      if (act !== "CREATE" && act !== "UPDATE" && act !== "DELETE") {
         return;
       }
       this.estaCarregant = false;
@@ -810,6 +859,50 @@ export default {
   background: rgba(250, 249, 249, 0.5);
   border: 2px dashed #FFFFFF;
   box-shadow: none;
+}
+
+/* SweetAlert Custom Loopy Styles */
+:deep(.loopy-swal-popup) {
+  border-radius: 32px !important;
+  padding: 2.5rem !important;
+  font-family: 'Outfit', sans-serif !important;
+  border: 4px solid #F3F4F6 !important;
+}
+
+:deep(.loopy-swal-title) {
+  font-weight: 900 !important;
+  color: #1F2937 !important;
+  font-size: 24px !important;
+  margin-bottom: 1rem !important;
+}
+
+:deep(.loopy-swal-confirm) {
+  background-color: #FF6B8A !important;
+  color: white !important;
+  border-radius: 16px !important;
+  padding: 12px 24px !important;
+  font-weight: 800 !important;
+  margin: 8px !important;
+  font-size: 16px !important;
+  transition: transform 0.2s !important;
+  border: none !important;
+  box-shadow: 0 4px 0 #D14D6B !important;
+}
+
+:deep(.loopy-swal-confirm:active) {
+  transform: translateY(2px) !important;
+  box-shadow: 0 2px 0 #D14D6B !important;
+}
+
+:deep(.loopy-swal-cancel) {
+  background-color: #F3F4F6 !important;
+  color: #6B7280 !important;
+  border-radius: 16px !important;
+  padding: 12px 24px !important;
+  font-weight: 800 !important;
+  margin: 8px !important;
+  font-size: 16px !important;
+  border: none !important;
 }
 
 .create-habit-trigger__icon {

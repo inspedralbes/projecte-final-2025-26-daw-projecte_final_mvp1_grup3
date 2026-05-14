@@ -242,6 +242,7 @@ import { useCalendarStore } from "~/stores/calendar.js";
 import { flushPendingFocusEvents } from "~/composables/user/useFocusEventQueue.js";
 import mascotaImg from "~/assets/img/Mascota.png";
 import calendarImg from "~/assets/img/calendar-loopy.png";
+import UserHomeHomeStreakSection from "~/components/user/home/HomeStreakSection.vue";
 
 export default {
   components: {
@@ -256,6 +257,7 @@ export default {
     UserHomeHomeLogrosCard,
     UserHomeHomeRouletteSection,
     UserHomeHomeHabitsSection,
+    UserHomeHomeStreakSection,
     WeatherWidget
   },
   data: function () {

@@ -63,6 +63,9 @@ class GamificationService
         // B. Reset diari i assignació de nova missió si cal
         $this->comprovarResetIAssignarMissio($usuari);
 
+        // B2. Actualitzar ratxa per entrar a l'app
+        $this->actualitzarRatxa($usuariId);
+
         // C. Recuperar ratxa (reload usuari per si s'ha actualitzat)
         $usuari = $usuari->fresh();
         $ratxa = Ratxa::where('usuari_id', $usuariId)->first();
@@ -183,6 +186,59 @@ class GamificationService
             'missio_completada' => false,
             'missio_diaria_id' => $novaMissioId,
             'ultim_reset_missio' => $avui->toDateString(),
+        ]);
+    }
+
+    /**
+     * Actualitza la ratxa de l'usuari. 
+     * Si és un dia nou consecutiu, incrementa la ratxa.
+     * Si ha passat més d'un dia, la reseteja a 1 (comença de nou).
+     * Si és el mateix dia, no fa res.
+     *
+     * @param int $usuariId
+     */
+    public function actualitzarRatxa(int $usuariId): void
+    {
+        $timezone = config('app.timezone', 'Europe/Madrid');
+        $avui = Carbon::now($timezone)->startOfDay();
+
+        $ratxa = Ratxa::firstOrCreate(
+            ['usuari_id' => $usuariId],
+            [
+                'ratxa_actual' => 0,
+                'ratxa_maxima' => 0,
+                'ultima_data' => null,
+            ]
+        );
+
+        // A. Si hi ha data prèvia, parsejar-la
+        $ultimaData = null;
+        if ($ratxa->ultima_data !== null) {
+            $ultimaData = Carbon::parse($ratxa->ultima_data, $timezone)->startOfDay();
+        }
+
+        $ratxaActual = (int) $ratxa->ratxa_actual;
+        $ratxaMaxima = (int) $ratxa->ratxa_maxima;
+
+        // B. Si és el mateix dia, no modifiquem la ratxa
+        if ($ultimaData !== null && $ultimaData->isSameDay($avui)) {
+            return;
+        }
+
+        // C. Si és el dia següent, incrementem
+        if ($ultimaData !== null && $avui->diffInDays($ultimaData) === 1) {
+            $ratxaActual++;
+        } else {
+            // Gap o primera vegada: racha 1
+            $ratxaActual = 1;
+        }
+
+        $ratxaMaxima = max($ratxaMaxima, $ratxaActual);
+
+        $ratxa->update([
+            'ratxa_actual' => $ratxaActual,
+            'ratxa_maxima' => $ratxaMaxima,
+            'ultima_data' => $avui->toDateString(),
         ]);
     }
 }

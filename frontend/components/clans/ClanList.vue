@@ -50,6 +50,30 @@
         </div>
       </div>
     </div>
+    <div v-if="clansLastPage > 1" class="flex justify-center items-center gap-2 mt-6">
+      <button
+        @click="changePage(clansPage - 1)"
+        :disabled="clansPage <= 1"
+        class="px-3 py-1 text-sm rounded-lg border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+      >
+        Anterior
+      </button>
+      <template v-for="p in clansPages" :key="p">
+        <button
+          @click="changePage(p)"
+          :class="['px-3 py-1 text-sm rounded-lg border', p === clansPage ? 'bg-blue-500 text-white border-blue-500' : 'border-gray-300 hover:bg-gray-100']"
+        >
+          {{ p }}
+        </button>
+      </template>
+      <button
+        @click="changePage(clansPage + 1)"
+        :disabled="clansPage >= clansLastPage"
+        class="px-3 py-1 text-sm rounded-lg border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+      >
+        Següent
+      </button>
+    </div>
   </div>
 </template>
 
@@ -83,6 +107,22 @@ export default {
         });
       }
       return clans;
+    },
+    clansPage: function() {
+      var store = useClanStore();
+      return store.clansPage || 1;
+    },
+    clansLastPage: function() {
+      var store = useClanStore();
+      return store.clansLastPage || 1;
+    },
+    clansPages: function() {
+      var store = useClanStore();
+      var pages = [];
+      for (var i = 1; i <= (store.clansLastPage || 1); i++) {
+        pages.push(i);
+      }
+      return pages;
     }
   },
 mounted: function() {
@@ -114,7 +154,21 @@ mounted: function() {
       this.loading = true;
       try {
         var store = useClanStore();
-        await store.fetchClans(this.searchQuery);
+        await store.fetchClans(this.searchQuery, 1);
+        this.clans = store.clans;
+      } catch(e) {
+        console.error(e);
+      } finally {
+        this.loading = false;
+      }
+    },
+    changePage: async function(page) {
+      if (page < 1) return;
+      var store = useClanStore();
+      if (page > (store.clansLastPage || 1)) return;
+      this.loading = true;
+      try {
+        await store.fetchClans(this.searchQuery, page);
         this.clans = store.clans;
       } catch(e) {
         console.error(e);

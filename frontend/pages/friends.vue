@@ -45,6 +45,30 @@
           @open-chat="openChat"
           @view-profile="viewProfile"
         />
+        <div v-if="friendsLastPage > 1" class="flex justify-center items-center gap-2 mt-4">
+          <button
+            @click="changeFriendsPage(friendsPage - 1)"
+            :disabled="friendsPage <= 1"
+            class="px-3 py-1 text-sm rounded-lg border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+          >
+            Anterior
+          </button>
+          <template v-for="p in friendsPages" :key="p">
+            <button
+              @click="changeFriendsPage(p)"
+              :class="['px-3 py-1 text-sm rounded-lg border', p === friendsPage ? 'bg-blue-500 text-white border-blue-500' : 'border-gray-300 hover:bg-gray-100']"
+            >
+              {{ p }}
+            </button>
+          </template>
+          <button
+            @click="changeFriendsPage(friendsPage + 1)"
+            :disabled="friendsPage >= friendsLastPage"
+            class="px-3 py-1 text-sm rounded-lg border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+          >
+            Següent
+          </button>
+        </div>
       </div>
 
       <div v-if="activeTab === 'pendientes'" class="space-y-3">
@@ -223,6 +247,19 @@ export default {
     friendsLoading() {
       return this.friendshipStore?.loading || false;
     },
+    friendsPage() {
+      return this.friendshipStore?.friendsPage || 1;
+    },
+    friendsLastPage() {
+      return this.friendshipStore?.friendsLastPage || 1;
+    },
+    friendsPages() {
+      var pages = [];
+      for (var i = 1; i <= this.friendsLastPage; i++) {
+        pages.push(i);
+      }
+      return pages;
+    },
     pendingRequests() {
       return this.friendshipStore?.pendingRequests || [];
     },
@@ -300,6 +337,10 @@ export default {
         this.profileUserId = userId;
         this.showProfile = true;
       }
+    },
+    changeFriendsPage: function (page) {
+      if (page < 1 || page > this.friendsLastPage) return;
+      this.friendshipStore.fetchFriendsList(page);
     },
   },
 };

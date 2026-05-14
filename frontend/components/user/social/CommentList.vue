@@ -11,7 +11,7 @@
     </div>
     <div v-else class="max-h-96 overflow-y-auto space-y-1">
       <UserSocialCommentItem
-        v-for="comment in sortedComments"
+        v-for="comment in treeComments"
         :key="comment.id"
         :comment="comment"
         :depth="0"
@@ -37,10 +37,24 @@ export default {
     };
   },
   computed: {
-    sortedComments: function () {
-      return this.comments.slice().sort(function (a, b) {
-        return (b.likes_count || 0) - (a.likes_count || 0);
+    treeComments: function () {
+      var map = {};
+      var roots = [];
+
+      this.comments.forEach(function (comment) {
+        comment.children = [];
+        map[comment.id] = comment;
       });
+
+      this.comments.forEach(function (comment) {
+        if (comment.parent_id && map[comment.parent_id]) {
+          map[comment.parent_id].children.push(comment);
+        } else {
+          roots.push(comment);
+        }
+      });
+
+      return roots;
     }
   },
   mounted: function () {

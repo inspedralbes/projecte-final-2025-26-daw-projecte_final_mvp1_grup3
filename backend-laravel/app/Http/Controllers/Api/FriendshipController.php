@@ -111,8 +111,9 @@ class FriendshipController extends Controller
         })
             ->where('status', 'accepted')
             ->with(['requester:id,nom,nivell,xp_total', 'addressee:id,nom,nivell,xp_total'])
-            ->get()
-            ->map(function ($friendship) use ($userId) {
+            ->orderBy('created_at', 'desc')
+            ->paginate(8)
+            ->through(function ($friendship) use ($userId) {
             $friend = $friendship->requester_id === $userId ? $friendship->addressee : $friendship->requester;
             return [
             'id' => $friendship->id,

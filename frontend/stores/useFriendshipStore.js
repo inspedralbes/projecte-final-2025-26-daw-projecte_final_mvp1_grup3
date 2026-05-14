@@ -23,6 +23,9 @@ export var useFriendshipStore = defineStore("friendship", {
       pendingRequests: [],
       loading: false,
       error: null,
+      friendsPage: 1,
+      friendsLastPage: 1,
+      friendsTotal: 0,
     };
   },
   actions: {
@@ -111,17 +114,24 @@ export var useFriendshipStore = defineStore("friendship", {
       }
     },
 
-    fetchFriendsList: async function () {
+    fetchFriendsList: async function (page) {
       this.loading = true;
       this.error = null;
 
       try {
-        var resposta = await authFetch("/api/friends", {});
+        var url = "/api/friends";
+        if (page) {
+          url += "?page=" + page;
+        }
+        var resposta = await authFetch(url, {});
         if (!resposta.ok) {
           throw new Error("Error en obtenir llista d amics");
         }
         var dades = await resposta.json();
         this.friends = dedupeById(dades.data || dades || []);
+        this.friendsPage = dades.current_page || 1;
+        this.friendsLastPage = dades.last_page || 1;
+        this.friendsTotal = dades.total || 0;
         return this.friends;
       } catch (e) {
         this.error = e.message;

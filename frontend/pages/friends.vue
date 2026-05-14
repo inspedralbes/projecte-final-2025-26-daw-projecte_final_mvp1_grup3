@@ -45,6 +45,30 @@
           @open-chat="openChat"
           @view-profile="viewProfile"
         />
+        <div v-if="friendsLastPage > 1" class="flex justify-center items-center gap-2 mt-4">
+          <button
+            @click="changeFriendsPage(friendsPage - 1)"
+            :disabled="friendsPage <= 1"
+            class="px-3 py-1 text-sm rounded-lg border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+          >
+            Anterior
+          </button>
+          <template v-for="p in friendsPages" :key="p">
+            <button
+              @click="changeFriendsPage(p)"
+              :class="['px-3 py-1 text-sm rounded-lg border', p === friendsPage ? 'bg-blue-500 text-white border-blue-500' : 'border-gray-300 hover:bg-gray-100']"
+            >
+              {{ p }}
+            </button>
+          </template>
+          <button
+            @click="changeFriendsPage(friendsPage + 1)"
+            :disabled="friendsPage >= friendsLastPage"
+            class="px-3 py-1 text-sm rounded-lg border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+          >
+            Següent
+          </button>
+        </div>
       </div>
 
       <div v-if="activeTab === 'pendientes'" class="space-y-3">
@@ -97,9 +121,10 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
           </svg>
         </div>
-        <div v-if="filteredUsers.length > 0" class="space-y-2">
+        <div v-if="searching" class="text-center py-8 text-gray-500">{{ $t('home.loading') }}</div>
+        <div v-else-if="paginatedUsers.length > 0" class="space-y-2">
           <div
-            v-for="user in filteredUsers"
+            v-for="user in paginatedUsers"
             :key="user.id"
             class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex items-center justify-between"
           >
@@ -128,6 +153,33 @@
               {{ $t('friends.send_request') }}
             </button>
           </div>
+          <div v-if="searchLastPage > 1" class="flex justify-center items-center gap-2 mt-4">
+            <button
+              @click="changeSearchPage(searchPage - 1)"
+              :disabled="searchPage <= 1"
+              class="px-3 py-1 text-sm rounded-lg border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+            >
+              Anterior
+            </button>
+            <template v-for="p in searchPages" :key="p">
+              <button
+                @click="changeSearchPage(p)"
+                :class="['px-3 py-1 text-sm rounded-lg border', p === searchPage ? 'bg-blue-500 text-white border-blue-500' : 'border-gray-300 hover:bg-gray-100']"
+              >
+                {{ p }}
+              </button>
+            </template>
+            <button
+              @click="changeSearchPage(searchPage + 1)"
+              :disabled="searchPage >= searchLastPage"
+              class="px-3 py-1 text-sm rounded-lg border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+            >
+              Següent
+            </button>
+          </div>
+        </div>
+        <div v-else class="text-center py-8 text-gray-500">
+          {{ searchQuery ? $t('friends.no_results') : $t('friends.search_hint') }}
         </div>
       </div>
 
@@ -184,6 +236,9 @@ export default {
       profileUserId: null,
       searching: false,
       sending: false,
+      searchPage: 1,
+      searchLastPage: 1,
+      searchTotal: 0,
     };
   },
   computed: {
@@ -223,6 +278,19 @@ export default {
     friendsLoading() {
       return this.friendshipStore?.loading || false;
     },
+    friendsPage() {
+      return this.friendshipStore?.friendsPage || 1;
+    },
+    friendsLastPage() {
+      return this.friendshipStore?.friendsLastPage || 1;
+    },
+    friendsPages() {
+      var pages = [];
+      for (var i = 1; i <= this.friendsLastPage; i++) {
+        pages.push(i);
+      }
+      return pages;
+    },
     pendingRequests() {
       return this.friendshipStore?.pendingRequests || [];
     },
@@ -238,7 +306,49 @@ export default {
         backgroundSize: "cover",
         backgroundPosition: "center",
       };
-    }
+    },
+    filteredUsers() {
+      var self = this;
+      var friendsIds = {};
+      var pendingIds = {};
+      var allFriends = this.friendshipStore?.friends || [];
+      for (var i = 0; i < allFriends.length; i++) {
+        if (allFriends[i] && allFriends[i].friend && allFriends[i].friend.id) {
+          friendsIds[allFriends[i].friend.id] = true;
+        }
+      }
+      var allPending = this.friendshipStore?.pendingRequests || [];
+      for (var j = 0; j < allPending.length; j++) {
+        if (allPending[j] && allPending[j].requester && allPending[j].requester.id) {
+          pendingIds[allPending[j].requester.id] = true;
+        }
+        if (allPending[j] && allPending[j].addressee && allPending[j].addressee.id) {
+          pendingIds[allPending[j].addressee.id] = true;
+        }
+      }
+      var users = this.allUsers.filter(function(user) {
+        return user.id && !friendsIds[user.id] && !pendingIds[user.id];
+      });
+      if (!this.searchQuery) {
+        return users;
+      }
+      var query = this.searchQuery.toLowerCase();
+      return users.filter(function(user) {
+        return user.nom && user.nom.toLowerCase().indexOf(query) !== -1;
+      });
+    },
+    paginatedUsers() {
+      var start = (this.searchPage - 1) * 8;
+      var end = start + 8;
+      return this.filteredUsers.slice(start, end);
+    },
+    searchPages() {
+      var pages = [];
+      for (var i = 1; i <= this.searchLastPage; i++) {
+        pages.push(i);
+      }
+      return pages;
+    },
   },
   async mounted() {
     if (this.friendshipStore) {
@@ -255,6 +365,8 @@ export default {
         if (resposta.ok) {
           var dades = await resposta.json();
           this.allUsers = dades.data || dades || [];
+          this.searchTotal = dades.total || this.allUsers.length;
+          this.searchLastPage = dades.last_page || Math.ceil(this.allUsers.length / 8) || 1;
           this.searchResults = this.allUsers;
         }
       } catch (e) {
@@ -300,6 +412,14 @@ export default {
         this.profileUserId = userId;
         this.showProfile = true;
       }
+    },
+    changeFriendsPage: function (page) {
+      if (page < 1 || page > this.friendsLastPage) return;
+      this.friendshipStore.fetchFriendsList(page);
+    },
+    changeSearchPage: function (page) {
+      if (page < 1 || page > this.searchLastPage) return;
+      this.searchPage = page;
     },
   },
 };

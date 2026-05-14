@@ -21,7 +21,7 @@ class ClanController extends Controller
 
         $clans = Clan::withCount('members')
             ->orderBy('nom')
-            ->paginate(20);
+            ->paginate(8);
 
         return response()->json($clans);
     }

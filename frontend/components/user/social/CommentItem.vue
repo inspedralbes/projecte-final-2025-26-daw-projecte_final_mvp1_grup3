@@ -31,7 +31,7 @@
         </div>
         <p class="text-gray-700 text-sm mt-1">{{ comment.content }}</p>
       </div>
-      <div v-if="depth < 2" class="mt-1 flex items-center gap-3">
+      <div v-if="depth < 3" class="mt-1 flex items-center gap-3">
         <button
           @click="showReply = !showReply"
           class="text-xs text-blue-600 hover:text-blue-800"

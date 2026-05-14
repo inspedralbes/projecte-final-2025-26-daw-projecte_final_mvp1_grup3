@@ -43,9 +43,9 @@ class SocialCommentController extends Controller
         $depthLevel = 0;
         if (!empty($validated['parent_id'])) {
             $parent = SocialComment::findOrFail($validated['parent_id']);
-            if ($parent->depth_level >= 2) {
+            if ($parent->depth_level >= 3) {
                 return response()->json([
-                    'message' => 'No es pot respondre a un comentari de profunditat 2',
+                    'message' => 'No es pot respondre a un comentari de profunditat 3',
                 ], 422);
             }
             $depthLevel = $parent->depth_level + 1;

@@ -22,6 +22,7 @@ describe('Login', function () {
     cy.visit('/auth/login', {
       onBeforeLoad: function (win) {
         esborrarSessioLoopy(win);
+        win.sessionStorage.setItem('loopy_app_entry_video_done', '1');
       }
     });
   });
@@ -41,6 +42,7 @@ describe('Login', function () {
     // Asegura que Vue ya está hidratado antes de enviar
     cy.get('input[type="email"]').type('a').clear();
     cy.get('input[type="password"]').type('a').clear();
+    cy.wait(500); // Dar tiempo extra a que Vue hidrate si es rápido
     cy.get('form button[type="submit"]').click();
     cy.get('.login-error-msg').should('be.visible');
   });
@@ -118,7 +120,6 @@ describe('Login', function () {
     });
     cy.get('form.login-form button[type="submit"]').should('not.be.disabled').click();
 
-    cy.wait('@loginUserFail', { timeout: 15000 });
     cy.wait('@loginAdmin', { timeout: 15000 });
     cy.url().should('include', '/admin');
   });

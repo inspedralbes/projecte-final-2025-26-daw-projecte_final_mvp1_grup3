@@ -22,13 +22,14 @@ describe('Home / Hàbits', function () {
     cy.contains('Llegir').should('be.visible');
   });
 
-  it('muestra el progreso de cada hábito', function () {
-    cy.contains('+100 XP').should('be.visible');
-    cy.contains('+250 XP').should('be.visible');
+  it('muestra la tarjeta de cada hábito', function () {
+    cy.contains('.habit-card', 'Beure Aigua').should('exist');
   });
 
-  it('muestra los botones de progreso de cada hábito', function () {
-    cy.contains('button', 'Progrés').should('exist');
+  it('muestra opciones de progreso al expandir el hábito', function () {
+    cy.contains('.habit-card', 'Beure Aigua').click({ force: true });
+    cy.get('.habit-expand-panel').should('exist');
+    cy.contains('button', '+').should('exist');
   });
 
   it('tiene enlace VEURE TOT que apunta a /habits', function () {

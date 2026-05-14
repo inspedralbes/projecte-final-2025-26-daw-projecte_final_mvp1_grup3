@@ -141,7 +141,9 @@
     "chat": "Chat",
     "request_sent": "Request sent",
     "online": "Online",
-    "no_messages": "No messages"
+    "no_messages": "No messages",
+    "no_results": "No users found",
+    "search_hint": "Type to search users"
   },
   "chat": {
     "placeholder": "Write a message...",

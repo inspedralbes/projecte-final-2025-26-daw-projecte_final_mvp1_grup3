@@ -16,13 +16,13 @@
     </div>
 
     <div class="flex gap-2">
-      <button @click="filterType = 'all'" :class="filterType === 'all' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'" class="px-4 py-2 rounded-lg font-medium transition-colors">
+      <button @click="setFilter('all')" :class="filterType === 'all' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'" class="px-4 py-2 rounded-lg font-medium transition-colors">
         Tots
       </button>
-      <button @click="filterType = 'public'" :class="filterType === 'public' ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-700'" class="px-4 py-2 rounded-lg font-medium transition-colors">
+      <button @click="setFilter('public')" :class="filterType === 'public' ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-700'" class="px-4 py-2 rounded-lg font-medium transition-colors">
         Públicos
       </button>
-      <button @click="filterType = 'private'" :class="filterType === 'private' ? 'bg-purple-500 text-white' : 'bg-gray-200 text-gray-700'" class="px-4 py-2 rounded-lg font-medium transition-colors">
+      <button @click="setFilter('private')" :class="filterType === 'private' ? 'bg-purple-500 text-white' : 'bg-gray-200 text-gray-700'" class="px-4 py-2 rounded-lg font-medium transition-colors">
         Privats
       </button>
     </div>
@@ -30,11 +30,11 @@
     <div v-if="loading" class="text-center py-8">
       <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
     </div>
-    <div v-else-if="filteredClans.length === 0" class="text-center py-8 text-gray-500">
+    <div v-else-if="paginatedClans.length === 0" class="text-center py-8 text-gray-500">
       No s'han trobat clans.
     </div>
     <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div v-for="clan in filteredClans" :key="clan.id" class="bg-white rounded-xl shadow p-6 border">
+      <div v-for="clan in paginatedClans" :key="clan.id" class="bg-white rounded-xl shadow p-6 border">
         <h3 class="text-lg font-bold text-gray-800">{{ clan.nom }}</h3>
         <p class="text-sm text-gray-500 mt-1">Membres: {{ clan.members_count || clan.membres_count || 0 }} / {{ clan.max_membres }}</p>
         <p v-if="!clan.es_public" class="text-xs text-purple-600 font-medium mt-1">Privat</p>
@@ -52,8 +52,8 @@
     </div>
     <div v-if="clansLastPage > 1" class="flex justify-center items-center gap-2 mt-6">
       <button
-        @click="changePage(clansPage - 1)"
-        :disabled="clansPage <= 1"
+        @click="changePage(currentPage - 1)"
+        :disabled="currentPage <= 1"
         class="px-3 py-1 text-sm rounded-lg border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
       >
         Anterior
@@ -61,14 +61,14 @@
       <template v-for="p in clansPages" :key="p">
         <button
           @click="changePage(p)"
-          :class="['px-3 py-1 text-sm rounded-lg border', p === clansPage ? 'bg-blue-500 text-white border-blue-500' : 'border-gray-300 hover:bg-gray-100']"
+          :class="['px-3 py-1 text-sm rounded-lg border', p === currentPage ? 'bg-blue-500 text-white border-blue-500' : 'border-gray-300 hover:bg-gray-100']"
         >
           {{ p }}
         </button>
       </template>
       <button
-        @click="changePage(clansPage + 1)"
-        :disabled="clansPage >= clansLastPage"
+        @click="changePage(currentPage + 1)"
+        :disabled="currentPage >= clansLastPage"
         class="px-3 py-1 text-sm rounded-lg border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
       >
         Següent
@@ -89,7 +89,9 @@ export default {
       searchQuery: "",
       loading: false,
       clans: [],
-      filterType: "all"
+      filterType: "all",
+      currentPage: 1,
+      clansLastPage: 1
     }
   },
   computed: {
@@ -108,18 +110,19 @@ export default {
       }
       return clans;
     },
-    clansPage: function() {
-      var store = useClanStore();
-      return store.clansPage || 1;
-    },
-    clansLastPage: function() {
-      var store = useClanStore();
-      return store.clansLastPage || 1;
+    paginatedClans: function() {
+      var perPage = 8;
+      var start = (this.currentPage - 1) * perPage;
+      var end = start + perPage;
+      return this.filteredClans.slice(start, end);
     },
     clansPages: function() {
-      var store = useClanStore();
+      var total = this.filteredClans.length;
+      var perPage = 8;
+      var lastPage = Math.max(1, Math.ceil(total / perPage));
+      this.clansLastPage = lastPage;
       var pages = [];
-      for (var i = 1; i <= (store.clansLastPage || 1); i++) {
+      for (var i = 1; i <= lastPage; i++) {
         pages.push(i);
       }
       return pages;
@@ -150,8 +153,13 @@ mounted: function() {
     tryConnect();
   },
   methods: {
+    setFilter: function(type) {
+      this.filterType = type;
+      this.currentPage = 1;
+    },
     search: async function() {
       this.loading = true;
+      this.currentPage = 1;
       try {
         var store = useClanStore();
         await store.fetchClans(this.searchQuery, 1);
@@ -162,19 +170,11 @@ mounted: function() {
         this.loading = false;
       }
     },
-    changePage: async function(page) {
-      if (page < 1) return;
+    changePage: function(page) {
+      if (page < 1 || page > this.clansLastPage) return;
+      this.currentPage = page;
       var store = useClanStore();
-      if (page > (store.clansLastPage || 1)) return;
-      this.loading = true;
-      try {
-        await store.fetchClans(this.searchQuery, page);
-        this.clans = store.clans;
-      } catch(e) {
-        console.error(e);
-      } finally {
-        this.loading = false;
-      }
+      store.fetchClans(this.searchQuery, page);
     },
 joinClan: async function(id) {
        var self = this;

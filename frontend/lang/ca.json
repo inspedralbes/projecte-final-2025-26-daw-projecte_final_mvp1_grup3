@@ -141,7 +141,9 @@
         "chat": "Xatejar",
         "request_sent": "Sol·licitud enviada",
         "online": "En línia",
-        "no_messages": "No teniu missatges"
+        "no_messages": "No teniu missatges",
+        "no_results": "No s'han trobat usuaris",
+        "search_hint": "Escriu per buscar usuaris"
     },
     "chat": {
         "placeholder": "Escriu un missatge...",

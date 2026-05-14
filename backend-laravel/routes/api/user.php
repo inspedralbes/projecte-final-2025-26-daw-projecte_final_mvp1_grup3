@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\GameStateReadController;
 use App\Http\Controllers\Api\HabitReadController;
 use App\Http\Controllers\Api\ExternalResourceController;
 use App\Http\Controllers\Api\LogroReadController;
+use App\Http\Controllers\Api\MonsterChoiceController;
 use App\Http\Controllers\Api\OnboardingHabitAssignController;
 use App\Http\Controllers\Api\PlantillaReadController;
 use App\Http\Controllers\Api\ShopController;
@@ -75,6 +76,8 @@ Route::middleware('ensure.user')->group(function () {
     Route::get('/user/home', [UserHomeReadController::class, 'index']);
     Route::get('/logros', [LogroReadController::class, 'index']);
     Route::get('/user/profile', [UserProfileReadController::class, 'profile']);
+    Route::post('/user/monster-choice', [MonsterChoiceController::class, 'store']);
+    Route::get('/user/monster', [MonsterChoiceController::class, 'show']);
 
     Route::get('/users/{id}/profile', [UserProfileController::class, 'getPublicProfile']);
     Route::get('/users/self/profile', [UserProfileController::class, 'getSelfProfile']);

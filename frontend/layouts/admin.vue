@@ -102,8 +102,7 @@ onBeforeUnmount(function () {
 
 var menuPrincipal = [
   { nom: 'Dashboard', ruta: '/admin' },
-  { nom: 'Fòrum (Pròximament)', ruta: null },
-  { nom: 'Notificacions', ruta: '/admin/notificacions' }
+  { nom: 'Fòrum (Pròximament)', ruta: null }
 ];
 
 var menuGestio = [
@@ -115,8 +114,7 @@ var menuGestio = [
 ];
 
 var menuSistema = [
-  { nom: 'Perfil', ruta: '/admin/perfil' },
-  { nom: 'Configuració', ruta: '/admin/configuracio' }
+  { nom: 'Perfil', ruta: '/admin/perfil' }
 ];
 </script>
 

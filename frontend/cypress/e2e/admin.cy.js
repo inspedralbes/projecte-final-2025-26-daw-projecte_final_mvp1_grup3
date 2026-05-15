@@ -42,7 +42,6 @@ describe('Admin Panel', function () {
 
     it('muestra los enlaces de navegación principal', function () {
       cy.contains('Dashboard').should('be.visible');
-      cy.contains('Notificacions').should('be.visible');
     });
 
     it('muestra los enlaces de gestión', function () {
@@ -55,7 +54,6 @@ describe('Admin Panel', function () {
 
     it('muestra los enlaces de sistema', function () {
       cy.contains('Perfil').should('be.visible');
-      cy.contains('Configuració').should('be.visible');
     });
 
     it('tiene el botón de cerrar sesión', function () {

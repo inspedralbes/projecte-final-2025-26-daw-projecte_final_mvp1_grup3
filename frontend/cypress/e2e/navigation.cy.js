@@ -17,13 +17,22 @@ describe('Navegación y Auth Guards', function () {
   it('permite acceder a /auth/login sin autenticación', function () {
     cy.visit('/auth/login');
     cy.url().should('include', '/auth/login');
-    cy.get('.login-logo-text').should('contain', 'Loopy');
+    cy.get('.login-logo-text').should('contain', 'Looppy');
   });
 
-  it('permite acceder a /auth/registre sin autenticación', function () {
+  it('permite acceder a /auth/registre sin autenticación (escritorio)', function () {
+    cy.viewport(1280, 800);
     cy.visit('/auth/registre');
     cy.url().should('include', '/auth/registre');
-    cy.get('.login-logo-text').should('contain', 'Loopy');
+    cy.get('.register-brand, .login-logo-text').filter(':visible').should('contain', 'Looppy');
+  });
+
+  it('en móvil /auth/registre redirige al login con el panel de registro', function () {
+    cy.viewport(390, 844);
+    cy.visit('/auth/registre');
+    cy.url({ timeout: 15000 }).should('include', '/auth/login');
+    cy.url().should('include', 'register=1');
+    cy.get('[data-cy="login-register-submit"]').should('be.visible');
   });
 
   it('redirige a /error/403 cuando un user intenta acceder a /admin', function () {

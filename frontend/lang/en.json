@@ -1,4 +1,5 @@
 {
+  "brand_name": "Looppy",
   "welcome": "Welcome",
   "dominate_habits": "Dominate your habits, dominate your life.",
   "login": "Login",
@@ -7,7 +8,7 @@
   "password": "Password",
   "register": "Register",
   "forgot_password": "Forgot your password?",
-  "no_account": "Don't have an account?",
+  "no_account": "Don't have an account",
   "join_loopy": "Join Loopy",
   "create_account": "Create your account and start your journey.",
   "name": "NAME",

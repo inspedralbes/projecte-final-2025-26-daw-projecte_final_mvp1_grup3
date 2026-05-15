@@ -34,7 +34,8 @@ describe('Login', function () {
   });
 
   it('muestra el logo y título de la app', function () {
-    cy.get('.login-logo-text').should('contain', 'Loopy');
+    cy.get('.login-logo-text').should('contain', 'Looppy');
+    cy.viewport(1280, 720);
     cy.get('.login-logo-image').should('be.visible');
   });
 
@@ -143,8 +144,20 @@ describe('Login', function () {
   });
 
   it('tiene enlace de navegación a registro', function () {
-    cy.get('a[href="/auth/registre"]').click();
+    cy.viewport(1280, 800);
+    cy.get('[data-cy="login-go-register"]').should('be.visible').click();
     cy.url().should('include', '/auth/registre');
+  });
+
+  it('en móvil el registro abre el segundo panel en la misma página', function () {
+    cy.viewport(390, 844);
+    cy.get('[data-cy="login-go-register"]').should('be.visible').click();
+    cy.url().should('include', '/auth/login');
+    cy.url().should('include', 'register=1');
+    cy.get('[data-cy="login-register-submit"]').should('be.visible');
+    cy.get('[data-cy="login-back-from-register"]').click();
+    cy.url().should('not.include', 'register=1');
+    cy.get('form.login-form button[type="submit"]').should('be.visible');
   });
 
   it('muestra el botón de login con Google', function () {

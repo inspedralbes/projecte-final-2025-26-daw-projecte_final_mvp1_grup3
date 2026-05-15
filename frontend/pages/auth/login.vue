@@ -33,21 +33,29 @@
       </div>
     </div>
   </Teleport>
-  <div class="global-app-container login-container">
+  <div class="global-app-container login-container login-page-auth">
+    <div class="login-auth-bg-desktop" aria-hidden="true" />
     <div class="login-lang-switch">
       <LanguageSwitcher />
     </div>
 
-    <!-- ===== COLUMNA IZQUIERDA (Formulario de Login) ===== -->
+    <!-- Mòbil: dues pantalles apilades (efecte scroll); escriptori: sense canvi -->
     <div class="login-left-col">
-      <div class="login-header">
-        <div class="login-logo">
-          <span class="login-logo-text">Loopy</span>
-          <img src="@/assets/img/Icones/Icona_Logo_Perfil.png" alt="Loopy Logo" class="login-logo-image" />
+      <div
+        class="auth-m-track max-lg:flex max-lg:w-full max-lg:flex-col max-lg:transition-transform max-lg:duration-[550ms] max-lg:ease-[cubic-bezier(0.32,0.72,0,1)] lg:contents"
+        :class="{ 'max-lg:-translate-y-1/2': mobilMostraRegistre }"
+      >
+        <div class="auth-m-panel-login max-lg:relative max-lg:flex max-lg:min-h-[100dvh] max-lg:w-full max-lg:flex-shrink-0 max-lg:flex-col max-lg:justify-between lg:contents">
+          <div class="login-auth-bg-mobile lg:hidden" aria-hidden="true" />
+          <div class="login-form-area">
+        <div class="login-header">
+          <div class="login-logo">
+            <span class="login-logo-text">{{ $t('brand_name') }}</span>
+            <img src="@/assets/img/Icones/Icona_Logo_Perfil.png" alt="Loopy Logo" class="login-logo-image" />
+          </div>
+          <h1 class="login-title">{{ $t('login_welcome') }}</h1>
+          <p class="login-subtitle">{{ $t('login_subtitle') }}</p>
         </div>
-        <h1 class="login-title">{{ $t('login_welcome') }}</h1>
-        <p class="login-subtitle">{{ $t('login_subtitle') }}</p>
-      </div>
 
       <form class="login-form" novalidate @submit.prevent="ferLogin">
         <div v-if="errorMissatge" class="login-error-msg">
@@ -62,7 +70,7 @@
           <input v-model="formulari.contrasenya" type="password" autocomplete="current-password" :placeholder="$t('password')" class="login-input" />
         </div>
 
-        <div class="pt-4">
+        <div>
           <button type="submit" :disabled="estaCarregant" class="login-btn-primary">
             {{ $t('login_button') }}
           </button>
@@ -81,18 +89,56 @@
           </button>
         </div>
 
+      </form>
+          </div>
+
+      <div class="login-register-section">
         <div class="login-divider">
-          <span class="login-divider-text">O</span>
+          <span class="login-divider-text">{{ $t('no_account') }}</span>
+        </div>
+        <div class="w-full max-w-sm mx-auto">
+          <button type="button" class="login-btn-outline w-full" data-cy="login-go-register" @click="anarARegistre">
+            {{ $t('register_button') }}
+          </button>
+        </div>
+      </div>
         </div>
 
-        <div>
-          <NuxtLink to="/auth/registre" class="block w-full">
-            <button type="button" class="login-btn-outline">
-              {{ $t('register_button') }}
-            </button>
-          </NuxtLink>
+        <div class="auth-m-panel-register register-page-auth max-lg:flex max-lg:min-h-[100dvh] max-lg:w-full max-lg:flex-col max-lg:shrink-0 lg:hidden">
+          <div class="register-form-shell">
+            <form class="login-form mt-6 space-y-4" novalidate @submit.prevent>
+              <div v-if="errorMissatgeRegistre" class="login-error-msg">
+                {{ errorMissatgeRegistre }}
+              </div>
+              <div>
+                <input v-model="formulariRegistre.nom" type="text" :placeholder="$t('name_placeholder')" class="login-input" />
+              </div>
+              <div>
+                <input v-model="formulariRegistre.email" type="email" :placeholder="$t('email_placeholder')" class="login-input" />
+              </div>
+              <div>
+                <input v-model="formulariRegistre.contrasenya" type="password" :placeholder="$t('password_placeholder_dots')" class="login-input" />
+              </div>
+              <div>
+                <input v-model="formulariRegistre.confirmacio" type="password" :placeholder="$t('password_placeholder_dots')" class="login-input" />
+              </div>
+              <div>
+                <button type="button" :disabled="estaCarregantRegistre" class="login-btn-primary" data-cy="login-register-submit" @click="registrarUsuariMobil">
+                  {{ $t('register_button') }}
+                </button>
+              </div>
+              <div class="login-divider">
+                <span class="login-divider-text">{{ $t('already_have_account') }}</span>
+              </div>
+              <div>
+                <button type="button" class="login-btn-outline w-full" data-cy="login-back-from-register" @click="tornarAlLoginMobil">
+                  {{ $t('back_to_login') }}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
-      </form>
+      </div>
     </div>
 
     <!-- ===== COLUMNA DERECHA (Bento Grid) ===== -->
@@ -171,6 +217,11 @@ export default {
   data: function () {
     return {
       formulari: { email: "", contrasenya: "" },
+      mobilMostraRegistre: false,
+      formulariRegistre: { nom: "", email: "", contrasenya: "", confirmacio: "" },
+      errorMissatgeRegistre: "",
+      estaCarregantRegistre: false,
+      apiBaseRegistre: "http://localhost:8000",
       percentatgeProgres: 60,
       errorMissatge: "",
       estaCarregant: false,
@@ -198,11 +249,25 @@ export default {
     this.faseEntrada = 'video';
     this.sequenciaEntradaJaCompletada = false;
   },
+  watch: {
+    '$route.query.register': {
+      immediate: true,
+      handler: function (val) {
+        this.mobilMostraRegistre = val === '1' || val === 1;
+      }
+    }
+  },
   mounted: function () {
+    var self = this;
+    try {
+      var c = useRuntimeConfig();
+      self.apiBaseRegistre = (c.public.apiUrl || 'http://localhost:8000').replace(/\/$/, '');
+    } catch (e) {
+      self.apiBaseRegistre = 'http://localhost:8000';
+    }
     if (!this.mostraSequenciaEntrada || this.faseEntrada !== 'video') {
       return;
     }
-    var self = this;
     this.$nextTick(function () {
       var el = self.$refs.videoEntradaRef;
       if (el) {
@@ -339,6 +404,69 @@ export default {
     },
     loginAmbGoogle: function () {
       window.location.href = 'http://localhost:8000/api/auth/google/redirect';
+    },
+    anarARegistre: function () {
+      if (typeof window !== 'undefined' && window.matchMedia('(max-width: 1023px)').matches) {
+        this.mobilMostraRegistre = true;
+        this.$router.replace({ path: '/auth/login', query: { register: '1' } }).catch(function () {});
+        return;
+      }
+      useState('authSlideDir').value = 'forward';
+      navigateTo('/auth/registre');
+    },
+    tornarAlLoginMobil: function () {
+      this.mobilMostraRegistre = false;
+      this.errorMissatgeRegistre = '';
+      this.$router.replace({ path: '/auth/login', query: {} }).catch(function () {});
+    },
+    registrarUsuariMobil: async function () {
+      var self = this;
+      var f = self.formulariRegistre;
+      if (!f.nom || !f.email || !f.contrasenya) {
+        self.errorMissatgeRegistre = this.$t('error_all_fields_required');
+        return;
+      }
+      if (f.contrasenya.length < 6) {
+        self.errorMissatgeRegistre = this.$t('error_password_short');
+        return;
+      }
+      if (f.contrasenya !== f.confirmacio) {
+        self.errorMissatgeRegistre = this.$t('error_password_mismatch');
+        return;
+      }
+      self.errorMissatgeRegistre = '';
+      self.estaCarregantRegistre = true;
+      try {
+        var base = self.apiBaseRegistre || 'http://localhost:8000';
+        var resposta = await fetch(base + '/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({
+            nom: f.nom,
+            email: f.email,
+            contrasenya: f.contrasenya,
+            contrasenya_confirmation: f.confirmacio
+          })
+        });
+        var dades = await resposta.json();
+        if (!resposta.ok) {
+          self.errorMissatgeRegistre = dades.message || this.$t('error_registration_generic');
+          return;
+        }
+        var authStore = useAuthStore();
+        authStore.aplicarSessio({ token: dades.token, user: dades.user, role: 'user', requires_onboarding: true });
+        authStore.reiniciarEstatOnboarding();
+        var habitStore = useHabitStore();
+        habitStore.establirHabitsDesDeApi([]);
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('loopy_register_onboarding_entrance', '1');
+        }
+        await navigateTo('/onboarding');
+      } catch (err) {
+        self.errorMissatgeRegistre = this.$t('error_connection');
+      } finally {
+        self.estaCarregantRegistre = false;
+      }
     }
   }
 };

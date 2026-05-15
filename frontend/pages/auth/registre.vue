@@ -1,21 +1,22 @@
 <template>
-  <div class="global-app-container login-container">
+  <div class="global-app-container login-container register-page-auth">
     <div class="login-lang-switch">
       <LanguageSwitcher />
     </div>
 
     <!-- ===== COLUMNA IZQUIERDA (Formulario de Registro) ===== -->
     <div class="login-left-col">
-      <div class="login-header">
-        <div class="login-logo">
-          <span class="login-logo-text">Loopy</span>
-          <img src="@/assets/img/Icones/Icona_Logo_Perfil.png" alt="Loopy Logo" class="login-logo-image" />
+      <div class="register-form-shell">
+        <div class="login-header register-header-desktop">
+          <div class="login-logo">
+            <span class="login-logo-text">{{ $t('brand_name') }}</span>
+            <img src="@/assets/img/Icones/Icona_Logo_Perfil.png" alt="Loopy Logo" class="login-logo-image" />
+          </div>
+          <h1 class="login-title">{{ $t('join_loopy') }}</h1>
+          <p class="login-subtitle">{{ $t('create_account') }}</p>
         </div>
-        <h1 class="login-title">{{ $t('join_loopy') }}</h1>
-        <p class="login-subtitle">{{ $t('create_account') }}</p>
-      </div>
 
-      <form class="login-form mt-6 space-y-4" novalidate @submit.prevent>
+        <form class="login-form mt-6 space-y-4" novalidate @submit.prevent>
         <div v-if="errorMissatge" class="login-error-msg">
           {{ errorMissatge }}
         </div>
@@ -46,13 +47,12 @@
         </div>
 
         <div>
-          <NuxtLink to="/auth/login" class="block w-full">
-            <button type="button" class="login-btn-outline">
-              {{ $t('back_to_login') }}
-            </button>
-          </NuxtLink>
+          <button type="button" class="login-btn-outline w-full" data-cy="registre-back-login" @click="tornarAlLogin">
+            {{ $t('back_to_login') }}
+          </button>
         </div>
       </form>
+      </div>
     </div>
 
     <!-- ===== COLUMNA DERECHA (Quiz Dinàmic / Features) ===== -->
@@ -161,11 +161,15 @@ export default {
   },
   mounted: function () {
     var self = this;
+    if (typeof window !== 'undefined' && window.matchMedia('(max-width: 1023px)').matches) {
+      navigateTo({ path: '/auth/login', query: { register: '1' }, replace: true });
+      return;
+    }
     try {
       var c = useRuntimeConfig();
-      self.apiBaseResolt = (c.public.apiUrl || "http://localhost:8000").replace(/\/$/, "");
+      self.apiBaseResolt = (c.public.apiUrl || 'http://localhost:8000').replace(/\/$/, '');
     } catch (e) {
-      self.apiBaseResolt = "http://localhost:8000";
+      self.apiBaseResolt = 'http://localhost:8000';
     }
   },
   computed: {
@@ -218,6 +222,10 @@ export default {
       } else {
         this.quizFinalitzat = true;
       }
+    },
+    tornarAlLogin: function () {
+      useState('authSlideDir').value = 'reverse';
+      navigateTo('/auth/login');
     },
     obtenirClasseBoto: function (preguntaId, valor) {
       return this.respostes[preguntaId] === valor ? "bg-blue-500 text-white" : "bg-gray-200";

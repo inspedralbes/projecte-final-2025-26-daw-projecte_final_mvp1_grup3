@@ -1,4 +1,5 @@
 {
+  "brand_name": "Looppy",
   "welcome": "Bienvenido",
   "dominate_habits": "Domina tus hábitos, domina tu vida.",
   "login": "Iniciar sesión",
@@ -7,7 +8,7 @@
   "password": "Contraseña",
   "register": "Regístrate",
   "forgot_password": "¿Has olvidado la contraseña?",
-  "no_account": "¿No tienes cuenta?",
+  "no_account": "No tienes cuenta",
   "join_loopy": "Únete a Loopy",
   "create_account": "Crea tu cuenta y comienza tu viaje.",
   "name": "NOMBRE",

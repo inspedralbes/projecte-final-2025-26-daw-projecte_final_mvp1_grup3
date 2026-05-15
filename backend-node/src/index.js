@@ -24,6 +24,11 @@ if (GEMINI_API_KEY) {
 var server = http.createServer(function (req, res) {
   var url = req.url || '';
   var method = req.method || 'GET';
+  console.log('Node received:', method, url);
+
+  res.on('error', function (err) {
+    console.error('Response error:', err);
+  });
 
   // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -49,6 +54,65 @@ var server = http.createServer(function (req, res) {
         req.body = {};
       }
       onboardingHandlers.getOnboardingGenerateHandler(genAI)(req, res);
+    });
+    return;
+  }
+
+  // Monster choice endpoint
+  if (method === 'POST' && url === '/api/user/monster-choice') {
+    var body = '';
+    req.on('data', function (chunk) {
+      body += chunk.toString();
+    });
+    req.on('end', function () {
+      var parsedBody = {};
+      try {
+        parsedBody = JSON.parse(body);
+      } catch (e) {
+        console.error('Error parsing monster-choice body:', e.message);
+      }
+      var monstreTipus = parsedBody.monstre_tipus;
+      var userId = parsedBody.user_id;
+      var tipusValids = ['VV', 'VR', 'VL', 'VA'];
+      if (!monstreTipus || !tipusValids.includes(monstreTipus)) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: false, error: 'Tipus de monstre no vàlid' }));
+        return;
+      }
+      console.log('Monstre triat:', monstreTipus, 'per user:', userId || 'anonymous');
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: true, message: 'Monstre desat correctament' }));
+    });
+    req.on('error', function (err) {
+      console.error('Request error in monster-choice:', err);
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: false, error: 'Server error' }));
+    });
+    return;
+  }
+
+  // Habits assign endpoint
+  if (method === 'POST' && url === '/api/habits/assign') {
+    var body = '';
+    req.on('data', function (chunk) {
+      body += chunk.toString();
+    });
+    req.on('end', function () {
+      var parsedBody = {};
+      try {
+        parsedBody = JSON.parse(body);
+      } catch (e) {
+        console.error('Error parsing habits/assign body:', e.message);
+      }
+      var habits = parsedBody.habits || [];
+      console.log('Habits assign rebuts:', habits.length);
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: true, habits: habits }));
+    });
+    req.on('error', function (err) {
+      console.error('Request error in habits/assign:', err);
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: false, error: 'Server error' }));
     });
     return;
   }

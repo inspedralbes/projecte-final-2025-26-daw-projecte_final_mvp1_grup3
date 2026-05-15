@@ -36,7 +36,7 @@
     </div>
 
     <div
-      v-if="introFinished && !isLoading && (currentStep <= 4 || showHabitsSelection)"
+      v-if="introFinished && !isLoading && (currentStep <= 4 || showHabitsSelection || showMonsterSelection)"
       class="onboarding-quiz"
     >
       <div
@@ -97,17 +97,21 @@
           <Transition :name="quizTransitionName" mode="out-in">
             <div :key="quizSlideKey" class="onboarding-slide-pane">
               <div class="onboarding-copy">
-                <template v-if="!showHabitsSelection">
+                <template v-if="!showHabitsSelection && !showMonsterSelection">
                   <h2 class="onboarding-title">{{ currentQuestionTitle }}</h2>
                   <p class="onboarding-subtitle">{{ currentQuestionSubtitle }}</p>
                 </template>
-                <template v-else>
+                <template v-else-if="showHabitsSelection && !showMonsterSelection">
                   <h2 class="onboarding-title">{{ $t('onboarding.habits.title') }}</h2>
                   <p class="onboarding-subtitle">{{ $t('onboarding.habits.subtitle') }}</p>
                 </template>
+                <template v-else-if="showMonsterSelection">
+                  <h2 class="onboarding-title">Tria el teu monstre!</h2>
+                  <p class="onboarding-subtitle">Selecciona l'ou del monstre que t'acompanyarà.</p>
+                </template>
               </div>
 
-              <div v-if="!showHabitsSelection" class="onboarding-options">
+              <div v-if="!showHabitsSelection && !showMonsterSelection" class="onboarding-options">
                 <button
                   v-for="option in currentOptions"
                   :key="option.value"
@@ -119,7 +123,7 @@
                   {{ option.label }}
                 </button>
               </div>
-              <div v-else class="onboarding-options onboarding-options--habits">
+              <div v-else-if="showHabitsSelection && !showMonsterSelection" class="onboarding-options onboarding-options--habits">
                 <div
                   v-for="(habit, index) in generatedHabits"
                   :key="index"
@@ -145,6 +149,23 @@
                   </div>
                 </div>
               </div>
+              <div v-else-if="showMonsterSelection" class="onboarding-options onboarding-options--monsters">
+                <div
+                  v-for="egg in monsterEggs"
+                  :key="egg.type"
+                  class="onboarding-monster-card"
+                  :class="{ 'onboarding-monster-card--selected': selectedMonsterType === egg.type }"
+                  role="button"
+                  tabindex="0"
+                  @click="selectMonster(egg.type)"
+                  @keydown.enter.prevent="selectMonster(egg.type)"
+                  @keydown.space.prevent="selectMonster(egg.type)"
+                >
+                  <div class="onboarding-monster-card-content">
+                    <img :src="egg.image" alt="Huevo" class="onboarding-monster-egg" decoding="async" />
+                  </div>
+                </div>
+              </div>
             </div>
           </Transition>
         </div>
@@ -153,34 +174,28 @@
           <button
             type="button"
             class="onboarding-arrow onboarding-arrow--back"
-            :disabled="!showHabitsSelection && currentStep <= 1"
-            :aria-label="$t('onboarding.back')"
+            :disabled="!showMonsterSelection && !showHabitsSelection && currentStep <= 1"
             @click="previousStep"
           >
-            <svg width="23" height="37" viewBox="0 0 23 37" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-              <path d="M18.25 36.5L0 18.25L18.25 0L22.5083 4.25833L8.51667 18.25L22.5083 32.2417L18.25 36.5Z" fill="currentColor" />
-            </svg>
+            <svg width="23" height="37" viewBox="0 0 23 37" fill="none"><path d="M18.25 36.5L0 18.25L18.25 0L22.5083 4.25833L8.51667 18.25L22.5083 32.2417L18.25 36.5Z" fill="currentColor" /></svg>
           </button>
           <button
             type="button"
             class="onboarding-arrow onboarding-arrow--forward"
-            :disabled="showHabitsSelection || !canProceed"
-            :aria-label="currentStep === 4 ? $t('onboarding.generate') : $t('onboarding.next')"
+            :disabled="showHabitsSelection || showMonsterSelection || !canProceed"
             @click="nextStep"
           >
-            <svg width="23" height="37" viewBox="0 0 23 37" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-              <path d="M18.25 36.5L0 18.25L18.25 0L22.5083 4.25833L8.51667 18.25L22.5083 32.2417L18.25 36.5Z" fill="currentColor" />
-            </svg>
+            <svg width="23" height="37" viewBox="0 0 23 37" fill="none"><path d="M18.25 36.5L0 18.25L18.25 0L22.5083 4.25833L8.51667 18.25L22.5083 32.2417L18.25 36.5Z" fill="currentColor" /></svg>
           </button>
         </div>
 
-        <button
-          v-if="showHabitsSelection"
-          type="button"
-          class="onboarding-primary-btn onboarding-primary-btn--habits"
-          @click="confirmHabits"
-        >
+        <button v-if="showHabitsSelection && !showMonsterSelection" type="button" class="onboarding-primary-btn" @click="confirmHabits">
           {{ $t('onboarding.enter_app') }}
+        </button>
+
+        <button v-if="showMonsterSelection" type="button" class="onboarding-primary-btn" :disabled="!selectedMonsterType || isConfirmingMonster" @click="confirmMonster">
+          <span v-if="isConfirmingMonster" class="loading-spinner-small"></span>
+          <span v-else>Triar monstre</span>
         </button>
       </div>
     </div>
@@ -202,6 +217,10 @@
 import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import loopyMascotUrl from '~/assets/img/Onboarding/Img/2-Loopy-Content.png';
 import loopySaludantUrl from '~/assets/img/Onboarding/Img/1-Loopy-Saludant.png';
+import huevoVerdeUrl from '~/assets/img/monsters/huevos/Huevo_V.png';
+import huevoRosaUrl from '~/assets/img/monsters/huevos/Huevo_R.png';
+import huevoLilaUrl from '~/assets/img/monsters/huevos/Huevo_L.png';
+import huevoAmarilloUrl from '~/assets/img/monsters/huevos/Huevo_A.png';
 import { authFetch } from '~/composables/useApi.js';
 import { useHabitStore } from '~/stores/useHabitStore.js';
 import { useAuthStore } from '~/stores/useAuthStore.js';
@@ -220,8 +239,8 @@ useHead({
 const { t, setLocale, locale } = useI18n();
 const onboardingDoneCookie = useCookie('loopy_onboarding_done', { sameSite: 'lax', maxAge: 60 * 60 * 24 * 365 });
 const habitStore = useHabitStore();
-/** Passos de quiz (4) + tria d'hàbits (1) per a la barra i l'índex "Pregunta n". */
-const TOTAL_ONBOARDING_STEPS = 5;
+/** Passos de quiz (4) + tria d'hàbits (1) + tria de monstre (1) per a la barra i l'índex "Pregunta n". */
+const TOTAL_ONBOARDING_STEPS = 6;
 /** Si és cert, al triar resposta a cada pas es passa automàticament al següent (hàbits sempre manual). */
 const AUTO_ADVANCE_STEPS = true;
 
@@ -413,6 +432,19 @@ const timeOptions = computed(function () {
   ];
 });
 
+const generatedHabits = ref([]);
+const selectedHabits = ref([]);
+const showMonsterSelection = ref(false);
+const selectedMonsterType = ref(null);
+const isConfirmingMonster = ref(false);
+
+const monsterEggs = [
+  { type: 'VV', image: huevoVerdeUrl },
+  { type: 'VR', image: huevoRosaUrl },
+  { type: 'VL', image: huevoLilaUrl },
+  { type: 'VA', image: huevoAmarilloUrl },
+];
+
 const currentAnswerKey = computed(function () {
   var map = { 1: 'objectiu', 2: 'energia', 3: 'obstacle', 4: 'temps' };
   return map[currentStep.value] || 'objectiu';
@@ -441,6 +473,9 @@ const currentQuestionSubtitle = computed(function () {
 });
 
 const displayProgressStep = computed(function () {
+  if (showMonsterSelection.value) {
+    return 6;
+  }
   if (showHabitsSelection.value) {
     return 5;
   }
@@ -451,6 +486,9 @@ const displayProgressStep = computed(function () {
 const quizSlideDirection = ref(1);
 
 const quizSlideKey = computed(function () {
+  if (showMonsterSelection.value) {
+    return 'monster';
+  }
   if (showHabitsSelection.value) {
     return 'habits';
   }
@@ -460,9 +498,6 @@ const quizSlideKey = computed(function () {
 const quizTransitionName = computed(function () {
   return quizSlideDirection.value === 1 ? 'onboarding-q-next' : 'onboarding-q-prev';
 });
-
-const generatedHabits = ref([]);
-const selectedHabits = ref([]);
 
 const canProceed = computed(() => {
   if (currentStep.value === 1) return answers.value.objectiu !== null;
@@ -483,6 +518,11 @@ function selectAnswer(key, value) {
 
 function previousStep() {
   quizSlideDirection.value = -1;
+  if (showMonsterSelection.value) {
+    showMonsterSelection.value = false;
+    showHabitsSelection.value = true;
+    return;
+  }
   if (showHabitsSelection.value) {
     showHabitsSelection.value = false;
     currentStep.value = 4;
@@ -500,6 +540,174 @@ async function nextStep() {
   } else {
     await generateHabits();
   }
+}
+
+function selectMonster(type) {
+  selectedMonsterType.value = type;
+}
+
+function toggleHabit(index) {
+  var idx = selectedHabits.value.indexOf(index);
+  if (idx > -1) {
+    selectedHabits.value.splice(idx, 1);
+  } else {
+    selectedHabits.value.push(index);
+  }
+}
+
+async function confirmHabits() {
+  isLoading.value = true;
+  errorMessage.value = '';
+  try {
+    var habitsToSave = selectedHabits.value.map(function (index) { return generatedHabits.value[index]; });
+    if (habitsToSave.length === 0) {
+      habitStore.establirHabitsDesDeApi([]);
+      quizSlideDirection.value = 1;
+      showMonsterSelection.value = true;
+      isLoading.value = false;
+      return;
+    }
+    var authStore = useAuthStore();
+    var response = await authFetch('/api/habits/assign', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_id: authStore.user ? authStore.user.id : null,
+        habits: habitsToSave.map(function (h) { return {
+          titol: h.titol,
+          categoria_id: mapCategoria(h.categoria),
+          dificultat: mapDificultat(answers.value.obstacle),
+          objectiu_vegades: mapTemps(answers.value.temps),
+        }; }),
+      }),
+    });
+    if (response.ok) {
+      var data = await response.json();
+      if (data && Array.isArray(data.habits)) {
+        habitStore.establirHabitsDesDeApi(data.habits);
+      } else {
+        habitStore.establirHabitsDesDeApi(habitsToSave);
+      }
+    } else {
+      habitStore.establirHabitsDesDeApi(habitsToSave);
+    }
+    quizSlideDirection.value = 1;
+    showMonsterSelection.value = true;
+  } catch (error) {
+    console.error('Error saving habits:', error);
+    var habitsToSave = selectedHabits.value.map(function (index) { return generatedHabits.value[index]; });
+    habitStore.establirHabitsDesDeApi(habitsToSave);
+    quizSlideDirection.value = 1;
+    showMonsterSelection.value = true;
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+async function confirmMonster() {
+  if (!selectedMonsterType.value || isConfirmingMonster.value) {
+    return;
+  }
+  isConfirmingMonster.value = true;
+  errorMessage.value = '';
+  try {
+    var authStore = useAuthStore();
+    var userId = authStore.user && authStore.user.id ? authStore.user.id : null;
+    var bodyData = { monstre_tipus: selectedMonsterType.value };
+    if (userId) {
+      bodyData.user_id = userId;
+    }
+    var response = await fetch(config.public.socketUrl + '/api/user/monster-choice', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(bodyData),
+    });
+    var data = await response.json();
+    if (response.ok && data.success) {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('loopy_monstre_tipus', selectedMonsterType.value);
+      }
+      marcarOnboardingCompletat();
+      navigateTo('/home');
+    } else {
+      errorMessage.value = data.error || 'Error al triar el monstre';
+    }
+  } catch (error) {
+    console.error('Error confirming monster choice:', error);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('loopy_monstre_tipus', selectedMonsterType.value);
+    }
+    marcarOnboardingCompletat();
+    navigateTo('/home');
+  } finally {
+    isConfirmingMonster.value = false;
+  }
+}
+
+function mapCategoria(categoria) {
+  var map = {
+    'salut': 1,
+    'productivitat': 2,
+    'ment': 3,
+    'aprenentatge': 4,
+  };
+  return map[categoria?.toLowerCase()] || 1;
+}
+
+function mapDificultat(obstacle) {
+  var map = {
+    'estress': 'facil',
+    'temps': 'media',
+    'memoria': 'media',
+    'andra': 'media',
+  };
+  return map[obstacle] || 'media';
+}
+
+function mapTemps(temps) {
+  var map = {
+    '15min': 1,
+    '30min': 1,
+    '1h': 1,
+    '1h+': 2,
+  };
+  return map[temps] || 1;
+}
+
+function marcarOnboardingCompletat() {
+  var authStore = useAuthStore();
+  onboardingDoneCookie.value = '1';
+  authStore.desmarcarOnboardingPendent();
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('loopy_onboarding_done', '1');
+    if (authStore.user && authStore.user.id != null) {
+      localStorage.setItem('loopy_onboarding_user_id', String(authStore.user.id));
+    }
+  }
+}
+
+function generarHabitsRapids() {
+  var categoria = answers.value.objectiu || 'salut';
+  return [
+    {
+      titol: 'Micro habit del matí',
+      rutina: 'Fes una acció petita en menys de 2 minuts.',
+      categoria: categoria,
+      recompensa: '+10 XP',
+    },
+    {
+      titol: 'Pausa conscient',
+      rutina: 'Respira profundament durant 1 minut.',
+      categoria: categoria,
+      recompensa: '+10 XP',
+    },
+    {
+      titol: 'Tancament del dia',
+      rutina: 'Marca una petita victòria abans de dormir.',
+      categoria: categoria,
+      recompensa: '+10 XP',
+    },
+  ];
 }
 
 async function generateHabits() {
@@ -543,137 +751,6 @@ async function generateHabits() {
   } finally {
     isLoading.value = false;
   }
-}
-
-function toggleHabit(index) {
-  const idx = selectedHabits.value.indexOf(index);
-  if (idx > -1) {
-    selectedHabits.value.splice(idx, 1);
-  } else {
-    selectedHabits.value.push(index);
-  }
-}
-
-async function confirmHabits() {
-  isLoading.value = true;
-  errorMessage.value = '';
-
-  try {
-    const habitsToSave = selectedHabits.value.map(index => generatedHabits.value[index]);
-    if (habitsToSave.length === 0) {
-      habitStore.establirHabitsDesDeApi([]);
-      marcarOnboardingCompletat();
-      navigateTo('/home');
-      return;
-    }
-
-    const response = await authFetch('/api/habits/assign', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        habits: habitsToSave.map(h => ({
-          titol: h.titol,
-          categoria_id: mapCategoria(h.categoria),
-          dificultat: mapDificultat(answers.value.obstacle),
-          objectiu_vegades: mapTemps(answers.value.temps),
-        })),
-      }),
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      if (data && Array.isArray(data.habits)) {
-        habitStore.establirHabitsDesDeApi(data.habits);
-      } else {
-        // Si el backend no retorna la llista, mantenim una còpia local mínima.
-        habitStore.establirHabitsDesDeApi(habitsToSave);
-      }
-      marcarOnboardingCompletat();
-      navigateTo('/home');
-    } else {
-      // Fallback: no bloquejar l'entrada a l'app si la persistència falla temporalment.
-      habitStore.establirHabitsDesDeApi(habitsToSave);
-      marcarOnboardingCompletat();
-      navigateTo('/home');
-    }
-  } catch (error) {
-    console.error('Error saving habits:', error);
-    // Fallback en errors de xarxa/CORS/500 per evitar quedar-se encallat a onboarding.
-    const habitsToSave = selectedHabits.value.map(index => generatedHabits.value[index]);
-    habitStore.establirHabitsDesDeApi(habitsToSave);
-    marcarOnboardingCompletat();
-    navigateTo('/home');
-  } finally {
-    isLoading.value = false;
-  }
-}
-
-function mapCategoria(categoria) {
-  const map = {
-    'salut': 1,
-    'productivitat': 2,
-    'ment': 3,
-    'aprenentatge': 4,
-  };
-  return map[categoria?.toLowerCase()] || 1;
-}
-
-function mapDificultat(obstacle) {
-  const map = {
-    'estress': 'facil',
-    'temps': 'media',
-    'memoria': 'media',
-    'andra': 'media',
-  };
-  return map[obstacle] || 'media';
-}
-
-function mapTemps(temps) {
-  const map = {
-    '15min': 1,
-    '30min': 1,
-    '1h': 1,
-    '1h+': 2,
-  };
-  return map[temps] || 1;
-}
-
-function marcarOnboardingCompletat() {
-  const authStore = useAuthStore();
-  onboardingDoneCookie.value = '1';
-  authStore.desmarcarOnboardingPendent();
-  if (typeof window !== 'undefined') {
-    localStorage.setItem('loopy_onboarding_done', '1');
-    if (authStore.user && authStore.user.id != null) {
-      localStorage.setItem('loopy_onboarding_user_id', String(authStore.user.id));
-    }
-  }
-}
-
-function generarHabitsRapids() {
-  const categoria = answers.value.objectiu || 'salut';
-  return [
-    {
-      titol: 'Micro habit del matí',
-      rutina: 'Fes una acció petita en menys de 2 minuts.',
-      categoria: categoria,
-      recompensa: '+10 XP',
-    },
-    {
-      titol: 'Pausa conscient',
-      rutina: 'Respira profundament durant 1 minut.',
-      categoria: categoria,
-      recompensa: '+10 XP',
-    },
-    {
-      titol: 'Tancament del dia',
-      rutina: 'Marca una petita victòria abans de dormir.',
-      categoria: categoria,
-      recompensa: '+10 XP',
-    },
-  ];
 }
 </script>
 
@@ -1299,6 +1376,52 @@ function generarHabitsRapids() {
 
 .onboarding-habit-card--selected .onboarding-habit-reward {
   color: rgba(250, 249, 249, 0.9);
+}
+
+.onboarding-options--monsters {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  justify-items: center;
+}
+
+.onboarding-monster-card {
+  width: 140px;
+  height: 180px;
+  border-radius: 1rem;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid transparent;
+}
+
+.onboarding-monster-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.onboarding-monster-card--selected {
+  border-color: #79d45d;
+  background: #f0fff0;
+}
+
+.onboarding-monster-card-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 1rem;
+}
+
+.onboarding-monster-egg {
+  width: 100px;
+  height: 140px;
+  object-fit: contain;
 }
 
 .loading-section {

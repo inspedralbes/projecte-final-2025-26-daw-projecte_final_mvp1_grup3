@@ -240,23 +240,8 @@ import { authFetch } from "~/composables/useApi.js";
 import { useCalendar } from "~/composables/useCalendar.js";
 import { useCalendarStore } from "~/stores/calendar.js";
 import { flushPendingFocusEvents } from "~/composables/user/useFocusEventQueue.js";
+import { getMonsterImageFromUser } from "~/utils/monsterImage.js";
 import calendarImg from "~/assets/img/calendar-loopy.png";
-import mvbImg from "~/public/img/monsters/MVB 1.png";
-import mvnImg from "~/public/img/monsters/MVN 1.png";
-import mvaImg from "~/public/img/monsters/MVA 1.png";
-import mvmImg from "~/public/img/monsters/MVM 1.png";
-import mrbImg from "~/public/img/monsters/MRB 1.png";
-import mrnImg from "~/public/img/monsters/MRN 1.png";
-import mraImg from "~/public/img/monsters/MRA 1.png";
-import mrmImg from "~/public/img/monsters/MRM 1.png";
-import mlbImg from "~/public/img/monsters/MLB 1.png";
-import mlnImg from "~/public/img/monsters/MLN 1.png";
-import mlaImg from "~/public/img/monsters/MLA 1.png";
-import mlmImg from "~/public/img/monsters/MLM 1.png";
-import mabImg from "~/public/img/monsters/MAB 1.png";
-import manImg from "~/public/img/monsters/MAN 1.png";
-import maaImg from "~/public/img/monsters/MAA 1.png";
-import mamImg from "~/public/img/monsters/MAM 1.png";
 import UserHomeHomeStreakSection from "~/components/user/home/HomeStreakSection.vue";
 
 export default {
@@ -301,18 +286,6 @@ export default {
       snapshotHistoric: null,
       carregantSnapshotHistoric: false,
       errorSnapshotHistoric: "",
-      monsterImages: {
-        VVB: mvbImg, VVN: mvnImg, VVA: mvaImg, VVM: mvmImg,
-        VRB: mrbImg, VRN: mrnImg, VRA: mraImg, VRM: mrmImg,
-        VLB: mlbImg, VLN: mlnImg, VLA: mlaImg, VLM: mlmImg,
-        VAB: mabImg, VAN: manImg, VAA: maaImg, VAM: mamImg,
-      },
-      monsterBabyImages: {
-        VV: mvbImg,
-        VR: mrbImg,
-        VL: mlbImg,
-        VA: mabImg,
-      },
     };
   },
   computed: {
@@ -335,19 +308,10 @@ export default {
       return localStorage.getItem('loopy_monstre_tipus') || null;
     },
     imatgeMascotaDinamica: function () {
-      var tipus = this.monstreTipusActual;
-      if (!tipus || tipus.length < 2) return null;
-      var nivell = this.nivellMostrat || 1;
-      var etapa = 'B';
-      if (nivell > 5) etapa = 'N';
-      if (nivell > 15) etapa = 'A';
-      if (nivell > 30) etapa = 'M';
-      var colorCode = tipus.charAt(1);
-      var key = 'V' + colorCode + etapa;
-      if (this.monsterImages[key]) {
-        return this.monsterImages[key];
+      if (this.snapshotHistoric && this.snapshotHistoric.mascota_json) {
+        return getMonsterImageFromUser(this.snapshotHistoric.mascota_json);
       }
-      return null;
+      return getMonsterImageFromUser(this.user);
     },
     dataHistorialDia: function () {
       var q = this.$route && this.$route.query ? this.$route.query.date : null;

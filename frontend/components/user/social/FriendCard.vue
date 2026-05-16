@@ -7,9 +7,11 @@
       <div class="w-12 h-12 rounded-full overflow-hidden shadow-inner" :style="avatarBackgroundStyle">
         <div class="w-full h-full rounded-full border border-gray-200 bg-white/20 p-1 flex items-center justify-center">
           <img
-            :src="mascotaImg"
+            v-if="monsterImage"
+            :src="monsterImage"
             alt="Monstre del perfil"
             class="w-full h-full object-contain"
+            :style="monsterStyle"
             decoding="async"
             draggable="false"
           />
@@ -33,7 +35,7 @@
 </template>
 
 <script>
-import mascotaImg from "~/assets/img/Mascota.png";
+import { getMonsterImageFromUser } from "~/utils/monsterImage.js";
 import bosqueImg from "~/assets/img/Bosque.png";
 
 export default {
@@ -45,12 +47,16 @@ export default {
     },
   },
   emits: ["open-chat", "view-profile"],
-  data: function () {
-    return {
-      mascotaImg: mascotaImg,
-    };
-  },
   computed: {
+    monsterImage: function () {
+      return getMonsterImageFromUser(this.friend.friend);
+    },
+    monsterStyle: function () {
+      return {
+        transform: "scale(1.2) translateY(10%)",
+        filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.2))"
+      };
+    },
     avatarBackgroundStyle: function () {
       return {
         backgroundImage: "url(" + bosqueImg + ")",
@@ -58,9 +64,6 @@ export default {
         backgroundPosition: "center",
       };
     }
-  },
-  setup(props) {
-    return {};
-  },
+  }
 };
 </script>

@@ -8,7 +8,6 @@ export function getEtapa(nivell) {
 
 export function getMonsterImage(tipus, nivell) {
   if (!tipus || tipus.length < 2) {
-    console.log('getMonsterImage: tipus invalid', tipus);
     return null;
   }
   
@@ -22,7 +21,6 @@ export function getMonsterImage(tipus, nivell) {
   var filename = 'M' + colorCode + etapa + ' 1.png';
   var path = '/img/monsters/' + filename;
   
-  console.log('getMonsterImage: result', path);
   return path;
 }
 
@@ -33,8 +31,6 @@ export function getMonsterImageFromUser(user) {
   }
   var tipus = user.monstre_tipus;
   var nivell = user.nivell;
-  
-  console.log('getMonsterImageFromUser: data', { tipus, nivell });
   
   if (!tipus) return null;
   return getMonsterImage(tipus, nivell);

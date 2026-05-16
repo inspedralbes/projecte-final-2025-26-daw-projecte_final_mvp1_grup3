@@ -49,6 +49,7 @@ class UserProfileController extends Controller
             'streak' => $ratxaActual,
             'streak_maxima' => $ratxaMaxima,
             'logros_showcase' => $logrosShowcase,
+            'monstre_tipus' => $user->monstre_tipus,
         ];
 
         return response()->json($response);

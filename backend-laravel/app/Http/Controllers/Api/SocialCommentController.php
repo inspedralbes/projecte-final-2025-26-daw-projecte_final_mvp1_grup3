@@ -20,7 +20,7 @@ class SocialCommentController extends Controller
     public function index(Request $request, int $postId): JsonResponse
     {
         $userId = $request->user_id;
-        $comments = SocialComment::with('user:id,nom')
+        $comments = SocialComment::with('user')
             ->withCount('likes')
             ->withExists(['likes as liked_by_current_user' => function ($query) use ($userId) {
             $query->where('user_id', $userId);
@@ -59,7 +59,7 @@ class SocialCommentController extends Controller
             'depth_level' => $depthLevel,
         ]);
 
-        $comment->load('user:id,nom');
+        $comment->load('user');
         $comment->loadCount('likes');
         $comment->loadExists(['likes as liked_by_current_user' => function ($query) use ($request) {
             $query->where('user_id', $request->user_id);

@@ -49,6 +49,8 @@ class AuthService
                 'id' => $usuari->id,
                 'nom' => $usuari->nom,
                 'email' => $usuari->email,
+                'monstre_tipus' => $usuari->monstre_tipus,
+                'nivell' => $usuari->nivell,
             ],
         ];
 
@@ -88,6 +90,7 @@ class AuthService
         if ($role === 'admin') {
             $dades['admin'] = $dadesPerfil;
         } else {
+            // Assegurem que dadesPerfil té la info del monstre si l'usuari existeix
             $dades['user'] = $dadesPerfil;
         }
 

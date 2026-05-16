@@ -617,7 +617,7 @@ async function confirmMonster() {
     if (userId) {
       bodyData.user_id = userId;
     }
-    var response = await fetch(config.public.socketUrl + '/api/user/monster-choice', {
+    var response = await authFetch('/api/user/monster-choice', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(bodyData),

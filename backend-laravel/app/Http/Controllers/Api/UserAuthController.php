@@ -162,6 +162,8 @@ class UserAuthController extends Controller
             'id' => $usuari->id,
             'nom' => $usuari->nom,
             'email' => $usuari->email,
+            'monstre_tipus' => $usuari->monstre_tipus,
+            'nivell' => $usuari->nivell,
         ], $nouToken);
     }
 

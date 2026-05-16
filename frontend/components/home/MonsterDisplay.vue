@@ -53,8 +53,8 @@ export default {
   },
   computed: {
     colorCode: function () {
-      if (!this.tipus) return 'V';
-      return this.tipus.charAt(0);
+      if (!this.tipus || this.tipus.length < 2) return 'V';
+      return this.tipus.charAt(1);
     },
     etapa: function () {
       return this.getEtapa(this.nivell);

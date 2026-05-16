@@ -2,6 +2,27 @@ import { defineStore } from "pinia";
 import { authFetch } from "~/composables/useApi.js";
 import { mapHabitFromApi } from "~/utils/mappers/apiMappers.js";
 
+var LOOPY_HABITS_COOKIE = 'loopy_habits_data';
+
+function carregarHabitsInicial() {
+  if (typeof window === 'undefined') return [];
+  try {
+    var stored = localStorage.getItem('loopy_onboarding_habits');
+    if (stored) {
+      var parsed = JSON.parse(stored);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch (e) {}
+  return [];
+}
+
+function desarHabitsLocal(llista) {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem('loopy_onboarding_habits', JSON.stringify(llista));
+  } catch (e) {}
+}
+
 /**
  * Store per a la gestió dels hàbits de l'usuari.
  * Segueix les normes de l'Agent Javascript (ES5 Estricte).
@@ -9,12 +30,18 @@ import { mapHabitFromApi } from "~/utils/mappers/apiMappers.js";
 export var useHabitStore = defineStore("habit", {
   state: function () {
     return {
-      habits: [],
+      habits: carregarHabitsInicial(),
       loading: false,
       error: null,
     };
   },
   actions: {
+    carregarHabitsLocal: function () {
+      this.habits = carregarHabitsInicial();
+    },
+    desarHabitsLocal: function () {
+      desarHabitsLocal(this.habits);
+    },
     /**
      * Estableix la llista d'hàbits a partir de dades de l'API.
      */
@@ -25,6 +52,7 @@ export var useHabitStore = defineStore("habit", {
         mapejats.push(mapHabitFromApi(llistaHabits[i]));
       }
       this.habits = mapejats;
+      desarHabitsLocal(llistaHabits);
     },
 
     /**

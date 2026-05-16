@@ -22,9 +22,11 @@
             <div class="w-24 h-24 mx-auto rounded-full overflow-hidden mb-3 shadow-inner" :style="avatarBackgroundStyle">
               <div class="w-full h-full rounded-full bg-white/20 border border-gray-200 p-1 flex items-center justify-center">
                 <img
-                  :src="imatgeMascota"
+                  v-if="monsterImage"
+                  :src="monsterImage"
                   alt="Monstre del perfil"
                   class="w-full h-full object-contain"
+                  :style="monsterStyle"
                   decoding="async"
                   draggable="false"
                 />
@@ -60,7 +62,7 @@
           <!-- Monster -->
           <div class="rounded-2xl overflow-hidden flex flex-col items-center justify-center p-5" :style="avatarBackgroundStyle">
             <div class="w-44 h-44 rounded-full p-2 flex items-center justify-center">
-              <img :src="imatgeMascota" alt="Monstre" class="w-full h-full object-contain drop-shadow-md" />
+              <img v-if="monsterImage" :src="monsterImage" alt="Monstre" class="w-full h-full object-contain drop-shadow-md" :style="monsterStyleBig" />
             </div>
           </div>
 
@@ -76,7 +78,7 @@
 
 <script>
 import { authFetch } from "~/utils/authFetch.js";
-import mascotaImg from "~/assets/img/Mascota.png";
+import { getMonsterImageFromUser } from "~/utils/monsterImage.js";
 import bosqueImg from "~/assets/img/Bosque.png";
 
 export default {
@@ -92,10 +94,25 @@ export default {
     return {
       profile: null,
       loading: true,
-      imatgeMascota: mascotaImg,
     };
   },
   computed: {
+    monsterImage: function () {
+      if (!this.profile) return null;
+      return getMonsterImageFromUser(this.profile);
+    },
+    monsterStyle: function () {
+      return {
+        transform: "scale(1.2) translateY(10%)",
+        filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.2))"
+      };
+    },
+    monsterStyleBig: function () {
+      return {
+        transform: "scale(1.1) translateY(5%)",
+        filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.3))"
+      };
+    },
     avatarBackgroundStyle: function() {
       return {
         backgroundImage: "url(" + bosqueImg + ")",

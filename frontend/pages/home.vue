@@ -10,8 +10,8 @@
         <!-- Mobile: monstre sobre el fons global (imatge dalt + verd #7EB356 sota) -->
         <div class="lg:hidden relative w-full flex justify-center px-2 pt-0 pb-1 overflow-visible">
           <img
-            v-if="imatgeMascota"
-            :src="imatgeMascota"
+            v-if="imatgeMascotaDinamica"
+            :src="imatgeMascotaDinamica"
             alt="El teu monstre"
             width="500"
             height="500"
@@ -57,8 +57,8 @@
           <div class="w-full flex flex-col items-center justify-start relative pt-2 shrink-0">
             <div class="flex justify-center w-full px-2 pb-2 -mt-1">
               <img
-                v-if="imatgeMascota"
-                :src="imatgeMascota"
+                v-if="imatgeMascotaDinamica"
+                :src="imatgeMascotaDinamica"
                 alt="El teu monstre"
                 width="500"
                 height="500"
@@ -240,7 +240,7 @@ import { authFetch } from "~/composables/useApi.js";
 import { useCalendar } from "~/composables/useCalendar.js";
 import { useCalendarStore } from "~/stores/calendar.js";
 import { flushPendingFocusEvents } from "~/composables/user/useFocusEventQueue.js";
-import mascotaImg from "~/assets/img/Mascota.png";
+import { getMonsterImageFromUser } from "~/utils/monsterImage.js";
 import calendarImg from "~/assets/img/calendar-loopy.png";
 import UserHomeHomeStreakSection from "~/components/user/home/HomeStreakSection.vue";
 
@@ -282,7 +282,6 @@ export default {
       weatherLon: null,
       weatherCarregant: false,
       ruletaProcessant: false,
-      imatgeMascota: mascotaImg,
       imatgeCalendari: calendarImg,
       snapshotHistoric: null,
       carregantSnapshotHistoric: false,
@@ -304,6 +303,16 @@ export default {
       return Math.round(Math.min(100, Math.max(0, percent)));
     },
     habits: function () { return this.habitStore.habits || []; },
+    monstreTipusActual: function () {
+      if (typeof window === 'undefined') return null;
+      return localStorage.getItem('loopy_monstre_tipus') || null;
+    },
+    imatgeMascotaDinamica: function () {
+      if (this.snapshotHistoric && this.snapshotHistoric.mascota_json) {
+        return getMonsterImageFromUser(this.snapshotHistoric.mascota_json);
+      }
+      return getMonsterImageFromUser(this.user);
+    },
     dataHistorialDia: function () {
       var q = this.$route && this.$route.query ? this.$route.query.date : null;
       if (!q || typeof q !== "string") return null;
@@ -388,10 +397,15 @@ export default {
     var authStore = useAuthStore();
     authStore.loadFromStorage();
     self.gameStore.sincronitzarUsuariId();
-    self.estaCarregantHabits = true;
+    self.habitStore.carregarHabitsLocal();
+    if (self.habitStore.habits && self.habitStore.habits.length > 0) {
+      self.estaCarregantHabits = false;
+    } else {
+      self.habitStore.obtenirHabitsDesDeApi()
+        .finally(function () { self.estaCarregantHabits = false; });
+    }
     self.gameStore.carregarDadesHome()
-      .then(function (dades) { if (dades && dades.logros) self.logroStore.setLogros(dades.logros); })
-      .finally(function () { self.estaCarregantHabits = false; });
+      .then(function (dades) { if (dades && dades.logros) self.logroStore.setLogros(dades.logros); });
     self.inicialitzarSocket();
 
     self.inicialitzarClima();

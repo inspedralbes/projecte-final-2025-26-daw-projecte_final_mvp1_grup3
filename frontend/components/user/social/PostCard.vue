@@ -10,7 +10,8 @@
           <div class="w-full h-full rounded-full overflow-hidden" :style="avatarBackgroundStyle">
             <div class="w-full h-full rounded-full border border-gray-200 bg-white/20 p-1 flex items-center justify-center">
               <img
-                :src="mascotaImg"
+                v-if="monsterImage"
+                :src="monsterImage"
                 alt="Monstre del perfil"
                 class="w-full h-full object-contain"
                 :style="monsterStyle"
@@ -102,7 +103,7 @@
 <script>
 import { useSocialStore } from "~/stores/useSocialStore.js";
 import { useAuthStore } from "~/stores/useAuthStore.js";
-import mascotaImg from "~/assets/img/Mascota.png";
+import { getMonsterImageFromUser } from "~/utils/monsterImage.js";
 import bosqueImg from "~/assets/img/Bosque.png";
 
 export default {
@@ -116,8 +117,7 @@ export default {
       showMenu: false,
       showComments: false,
       showProfile: false,
-      commentsCount: this.post.comments_count || 0,
-      mascotaImg: mascotaImg
+      commentsCount: this.post.comments_count || 0
     };
   },
   computed: {
@@ -125,8 +125,14 @@ export default {
       var authStore = useAuthStore();
       return this.post.user_id === authStore.user?.id;
     },
+    monsterImage: function () {
+      return getMonsterImageFromUser(this.post.user);
+    },
     monsterStyle: function () {
-      return {};
+      return {
+        transform: "scale(1.2) translateY(10%)",
+        filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.2))"
+      };
     },
     avatarBackgroundStyle: function () {
       return {

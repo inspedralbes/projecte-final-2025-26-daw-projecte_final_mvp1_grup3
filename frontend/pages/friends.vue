@@ -85,9 +85,10 @@
             <div class="w-10 h-10 rounded-full overflow-hidden shadow-inner" :style="avatarBackgroundStyle">
               <div class="w-full h-full rounded-full border border-gray-200 bg-white/20 p-1 flex items-center justify-center">
                 <img
-                  :src="mascotaImg"
+                  :src="getMonsterImage(req.requester)"
                   alt="Monstre del perfil"
                   class="w-full h-full object-contain"
+                  :style="monsterStyle"
                   decoding="async"
                   draggable="false"
                 />
@@ -132,9 +133,10 @@
               <div class="w-10 h-10 rounded-full overflow-hidden shadow-inner" :style="avatarBackgroundStyle">
                 <div class="w-full h-full rounded-full border border-gray-200 bg-white/20 p-1 flex items-center justify-center">
                   <img
-                    :src="mascotaImg"
+                    :src="getMonsterImage(user)"
                     alt="Monstre del perfil"
                     class="w-full h-full object-contain"
+                    :style="monsterStyle"
                     decoding="async"
                     draggable="false"
                   />
@@ -205,11 +207,11 @@
 <script>
 import { useFriendshipStore } from "~/stores/useFriendshipStore.js";
 import { authFetch } from "~/composables/useApi.js";
+import { getMonsterImageFromUser } from "~/utils/monsterImage.js";
 import HeaderSocial from "~/components/HeaderSocial.vue";
 import FriendCard from "~/components/user/social/FriendCard.vue";
 import ChatWindow from "~/components/user/social/ChatWindow.vue";
 import PublicProfileView from "~/components/user/social/PublicProfileView.vue";
-import mascotaImg from "~/assets/img/Mascota.png";
 import bosqueImg from "~/assets/img/Bosque.png";
 
 export default {
@@ -223,7 +225,6 @@ export default {
   data() {
     return {
       friendshipStore: useFriendshipStore(),
-      mascotaImg: mascotaImg,
       bosqueImg: bosqueImg,
       activeTab: "amigos",
       searchQuery: "",
@@ -349,6 +350,12 @@ export default {
       }
       return pages;
     },
+    monsterStyle() {
+      return {
+        transform: "scale(1.2) translateY(10%)",
+        filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.2))"
+      };
+    },
   },
   async mounted() {
     if (this.friendshipStore) {
@@ -358,6 +365,9 @@ export default {
     }
   },
   methods: {
+    getMonsterImage(user) {
+      return getMonsterImageFromUser(user);
+    },
     async fetchAllUsers() {
       this.searching = true;
       try {

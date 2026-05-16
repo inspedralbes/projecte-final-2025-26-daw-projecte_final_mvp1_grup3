@@ -110,7 +110,7 @@ class FriendshipController extends Controller
                 ->orWhere('addressee_id', $userId);
         })
             ->where('status', 'accepted')
-            ->with(['requester:id,nom,nivell,xp_total', 'addressee:id,nom,nivell,xp_total'])
+            ->with(['requester:id,nom,nivell,xp_total,monstre_tipus', 'addressee:id,nom,nivell,xp_total,monstre_tipus'])
             ->orderBy('created_at', 'desc')
             ->paginate(8)
             ->through(function ($friendship) use ($userId) {
@@ -135,7 +135,7 @@ class FriendshipController extends Controller
 
         $pending = Friendship::where('addressee_id', $userId)
             ->where('status', 'pending')
-            ->with('requester:id,nom,nivell,xp_total')
+            ->with('requester:id,nom,nivell,xp_total,monstre_tipus')
             ->get()
             ->map(function ($friendship) {
             return [

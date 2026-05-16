@@ -102,7 +102,17 @@
     "purchase_success_title": "Purchase complete!",
     "insufficient_funds": "Not enough coins",
     "loading": "Loading the shop...",
-    "empty": "No items available right now"
+    "empty": "No items available right now",
+    "items": {
+      "gorra_monster": {
+        "name": "Monster cap",
+        "description": "An exclusive cap for your monster"
+      },
+      "recuperador_racha": {
+        "name": "Streak restorer",
+        "description": "Restores your current streak to your best streak"
+      }
+    }
   },
   "inventory": {
     "title": "My inventory",

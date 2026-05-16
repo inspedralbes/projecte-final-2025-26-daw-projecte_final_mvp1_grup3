@@ -6,8 +6,8 @@ VALUES ('admin', 'admin@admin.com', '$2y$10$V8t4bNRKScWo6pn.xz9pAOq5OuwqQzhnZ662
 
 -- 2. USUARIS
 -- contrasenya sense hashear: user123
-INSERT INTO USUARIS (id, nom, email, contrasenya_hash) 
-VALUES (1, 'llorenç carnicer', 'llorcar@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG');
+INSERT INTO USUARIS (id, nom, email, contrasenya_hash, monedes) 
+VALUES (1, 'llorenç carnicer', 'llorcar@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG', 20000);
 
 INSERT INTO USUARIS (id, nom, email, contrasenya_hash, nivell, xp_total, monedes) VALUES 
 (2, 'Marta Sánchez', 'marta@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG', 5, 1200, 50),
@@ -293,6 +293,7 @@ INSERT INTO ADMIN_NOTIFICACIONS (administrador_id, tipus, titol, descripcio) VAL
 (1, 'alerta', 'Nou usuari registrat', 'L''usuari Rosalia Vila s''ha unit a la plataforma.');
 
 -- 7. BOTIGA_ITEMS (catàleg inicial de la tenda Loopy)
+-- Imatges: frontend/public/img/items/gorra_monster.png, recuperador_racha.png
 INSERT INTO BOTIGA_ITEMS (nom, descripcio, preu, tipus, imatge, metadata) VALUES
-('Gorra Monster', 'Una gorra exclusiva per a la teva mascota', 200, 'skin', '/img/items/gorra_monster.png', '{"slot":"cap","skin_key":"gorra_monster"}'),
-('Recuperador de Ratxa', 'Restaura la teva ratxa actual al màxim assolit', 50, 'consumible', '/img/items/recuperador_racha.png', '{"effect":"restore_streak"}');
+('Gorra Monster', 'Una gorra exclusiva per a la teva mascota', 200, 'skin', '/img/items/gorra_monster.png', '{"slot":"cap","skin_key":"gorra_monster","i18n_key":"gorra_monster"}'),
+('Recuperador de Ratxa', 'Restaura la teva ratxa actual al màxim assolit', 50, 'consumible', '/img/items/recuperador_racha.png', '{"effect":"restore_streak","i18n_key":"recuperador_racha"}');

@@ -1,54 +1,47 @@
 <template>
   <div class="shop-page min-h-screen overflow-x-hidden pb-24 lg:pb-8 flex flex-col">
-    <!-- Espai superior reservat: deixa veure la mascota del fons -->
     <div class="shop-spacer flex-1" aria-hidden="true"></div>
 
-    <!-- Grid d'items: cada objecte en el seu propi card blanc. Es queda a la
-         part inferior de la pàgina, just damunt de la franja verda perquè no
-         tapi la mascota del fons. Sempre 2 per fila. -->
-    <div class="shop-items-wrap max-w-5xl mx-auto px-3 sm:px-5 w-full">
-      <section v-if="!loading && items.length > 0" class="grid grid-cols-2 gap-3 sm:gap-6">
+    <div class="shop-items-wrap w-full px-4 sm:px-6">
+      <section v-if="!loading && items.length > 0" class="shop-grid">
         <article
           v-for="item in items"
           :key="item.id"
-          class="shop-card flex flex-col items-center text-center bg-white shadow-xl border border-white"
+          class="shop-card"
+          :class="{
+            'shop-card--owned': itemJaPossessionat(item),
+            'shop-card--clickable': potComprar(item),
+            'shop-card--insufficient': !itemJaPossessionat(item) && monedes < item.preu,
+          }"
+          :role="potComprar(item) ? 'button' : undefined"
+          :tabindex="potComprar(item) ? 0 : undefined"
+          @click="onCardClick(item)"
+          @keydown.enter.prevent="onCardClick(item)"
+          @keydown.space.prevent="onCardClick(item)"
         >
-          <div class="shop-card-img-wrapper flex items-center justify-center w-20 h-20 sm:w-32 sm:h-32 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-purple-50 to-indigo-100 mb-2 sm:mb-3 overflow-hidden">
-            <img
-              v-if="item.imatge"
-              :src="item.imatge"
-              :alt="item.nom"
-              class="w-16 h-16 sm:w-24 sm:h-24 object-contain"
-              decoding="async"
-              draggable="false"
-              @error="onImageError"
-            />
-            <span v-else class="text-3xl sm:text-4xl">🎁</span>
-          </div>
-          <h3 class="text-sm sm:text-lg font-bold text-gray-800 leading-tight">{{ item.nom }}</h3>
-          <p v-if="item.descripcio" class="text-[11px] sm:text-xs text-gray-500 mt-1 mb-2 sm:mb-3 px-1 sm:px-2 line-clamp-2">{{ item.descripcio }}</p>
-          <div class="flex items-center gap-1.5 mb-3 sm:mb-4">
-            <img :src="coinIcon" alt="" class="w-4 h-4 sm:w-5 sm:h-5 object-contain coin-pixel" width="20" height="20" />
-            <span class="text-sm sm:text-base font-black text-amber-700 tabular-nums">{{ item.preu }}</span>
+          <div class="shop-card-price" aria-label="Preu">
+            <span class="shop-card-price-value">{{ item.preu }}</span>
+            <img :src="coinIcon" alt="" class="shop-card-coin" width="22" height="22" />
           </div>
 
-          <span
-            v-if="item.tipus === 'skin' && shopStore.posseeixItem(item.id)"
-            class="px-4 py-2 rounded-2xl bg-emerald-100 text-emerald-700 text-sm font-bold border border-emerald-200"
-          >
+          <div class="shop-card-visual">
+            <img
+                v-if="item.imatge"
+                :src="item.imatge"
+                :alt="nomProducte(item)"
+                class="shop-card-img"
+                decoding="async"
+                draggable="false"
+                @error="onImageError"
+              />
+            <span v-else class="shop-card-emoji">🎁</span>
+          </div>
+          <h3 class="shop-card-title">{{ nomProducte(item) }}</h3>
+
+          <span v-if="itemJaPossessionat(item)" class="shop-card-owned">
             {{ $t('shop.owned') }}
           </span>
-          <button
-            v-else
-            type="button"
-            class="shop-buy-btn"
-            :disabled="comprant === item.id || monedes < item.preu"
-            @click="confirmarCompra(item)"
-          >
-            <span v-if="comprant === item.id">…</span>
-            <span v-else-if="monedes < item.preu">{{ $t('shop.insufficient_funds') }}</span>
-            <span v-else>{{ $t('shop.buy') }}</span>
-          </button>
+          <span v-else-if="comprant === item.id" class="shop-card-owned">…</span>
         </article>
       </section>
     </div>
@@ -60,17 +53,43 @@ import { ref, computed, onMounted } from 'vue';
 import coinIcon from '~/assets/img/Icones/Icona_Moneda.png';
 import { useGameStore } from '~/stores/gameStore.js';
 import { useShopStore } from '~/stores/useShopStore.js';
+import { nomProducteBotiga } from '~/utils/shopItemI18n.js';
 
 const gameStore = useGameStore();
 const shopStore = useShopStore();
 const { $swal } = useNuxtApp();
-const { t } = useI18n();
+const { t, te } = useI18n();
+
+function nomProducte(item) {
+  return nomProducteBotiga(item, t, te);
+}
 
 const comprant = ref(null);
 
 const items = computed(function () { return shopStore.items; });
 const loading = computed(function () { return shopStore.loading; });
 const monedes = computed(function () { return gameStore.monedes; });
+
+function itemJaPossessionat(item) {
+  return item.tipus === 'skin' && shopStore.posseeixItem(item.id);
+}
+
+function potComprar(item) {
+  if (comprant.value !== null) {
+    return false;
+  }
+  if (itemJaPossessionat(item)) {
+    return false;
+  }
+  return monedes.value >= item.preu;
+}
+
+function onCardClick(item) {
+  if (!potComprar(item)) {
+    return;
+  }
+  confirmarCompra(item);
+}
 
 function onImageError(event) {
   if (event && event.target) {
@@ -107,7 +126,7 @@ async function confirmarCompra(item) {
     await $swal.fire({
       icon: 'success',
       title: t('shop.purchase_success_title'),
-      text: item.nom,
+      text: nomProducte(item),
       timer: 1500,
       showConfirmButton: false
     });
@@ -129,9 +148,6 @@ onMounted(async function () {
 </script>
 
 <style scoped>
-/* Espai superior calculat a partir de l'aspect ratio real de la imatge de fons
-   (402x681 → ~1.694). Així els items aterren just damunt de la franja verda
-   de la part inferior de la imatge, sense tapar la mascota. */
 .shop-spacer {
   min-height: calc(100vw * 1.45);
 }
@@ -151,46 +167,161 @@ onMounted(async function () {
   z-index: 2;
 }
 
-.shop-card {
-  border-radius: 1.5rem;
-  padding: 1.25rem 0.75rem;
-  transition: transform 0.2s ease;
+.shop-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: end;
+  width: 100%;
+  max-width: 100%;
+  column-gap: 0.75rem;
 }
+
+.shop-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: min(46vw, 11.6875rem);
+  max-width: 11.6875rem;
+  aspect-ratio: 187 / 134;
+  padding: 0 0 0.5rem;
+  background: #ffffff;
+  border-radius: 0.875rem;
+  border: none;
+  box-shadow: none;
+  text-align: center;
+  transition: transform 0.2s ease;
+  overflow: hidden;
+}
+
+.shop-card:nth-child(odd) {
+  justify-self: start;
+}
+
+.shop-card:nth-child(even) {
+  justify-self: end;
+}
+
 @media (min-width: 640px) {
+  .shop-grid {
+    column-gap: 1.25rem;
+  }
+
   .shop-card {
-    padding: 1.5rem 1rem;
+    width: min(42vw, 11.6875rem);
+    padding: 0 0 0.55rem;
+    border-radius: 1rem;
   }
 }
-.shop-card:hover {
-  transform: translateY(-3px);
-}
-.shop-buy-btn {
-  background: linear-gradient(135deg, #8b5cf6, #6366f1);
-  color: white;
-  font-weight: 800;
-  padding: 0.625rem 1.5rem;
-  border-radius: 1rem;
-  border: none;
+
+.shop-card--clickable {
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
-  font-size: 0.875rem;
-  letter-spacing: 0.02em;
 }
-.shop-buy-btn:hover:not(:disabled) {
+
+.shop-card--clickable:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.45);
 }
-.shop-buy-btn:disabled {
-  opacity: 0.5;
+
+.shop-card--clickable:focus-visible {
+  outline: 2px solid #6fbc58;
+  outline-offset: 2px;
+}
+
+.shop-card--insufficient {
   cursor: not-allowed;
-  background: linear-gradient(135deg, #cbd5e1, #94a3b8);
-  box-shadow: none;
 }
-.coin-pixel {
+
+.shop-card--insufficient .shop-card-img {
+  opacity: 0.55;
+}
+
+.shop-card-price {
+  position: absolute;
+  top: 0.55rem;
+  right: 0.55rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  z-index: 2;
+}
+
+.shop-card-price-value {
+  font-family: "Bricolage Grotesque", system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 800;
+  line-height: 1;
+  color: #1a1a1a;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (min-width: 640px) {
+  .shop-card-price-value {
+    font-size: 1rem;
+  }
+}
+
+.shop-card-coin {
+  width: 1.1rem;
+  height: 1.1rem;
+  object-fit: contain;
+  flex-shrink: 0;
   image-rendering: pixelated;
 }
-.balance-pill {
+
+.shop-card-visual {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 0;
+  margin: 0;
+  padding: 0.2rem 0;
+  overflow: hidden;
+}
+
+.shop-card-img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 82%;
+  max-height: 100%;
+  margin: 0 auto;
+  object-fit: contain;
+  object-position: center center;
+}
+
+.shop-card-emoji {
+  font-size: 2.25rem;
+  line-height: 1;
+}
+
+.shop-card-title {
   flex-shrink: 0;
+  margin: 0;
+  padding: 0.15rem 0.4rem 0.4rem;
+  font-family: "Bricolage Grotesque", system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 800;
+  line-height: 1.15;
+  color: #111111;
+}
+
+@media (min-width: 640px) {
+  .shop-card-title {
+    font-size: 1rem;
+  }
+}
+
+.shop-card-owned {
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+  padding: 0 0.4rem 0.35rem;
+  font-family: "Bricolage Grotesque", system-ui, sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #15803d;
 }
 </style>

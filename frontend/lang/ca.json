@@ -103,7 +103,17 @@
         "purchase_success_title": "Compra realitzada!",
         "insufficient_funds": "No tens prou monedes",
         "loading": "Carregant la botiga...",
-        "empty": "No hi ha objectes disponibles ara mateix"
+        "empty": "No hi ha objectes disponibles ara mateix",
+        "items": {
+            "gorra_monster": {
+                "name": "Gorra Monster",
+                "description": "Una gorra exclusiva per a la teva mascota"
+            },
+            "recuperador_racha": {
+                "name": "Recuperador de ratxa",
+                "description": "Restaura la teva ratxa actual al màxim assolit"
+            }
+        }
     },
     "inventory": {
         "title": "El meu inventari",

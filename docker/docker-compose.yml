@@ -233,6 +233,7 @@ services:
       NUXT_PUBLIC_SOCKET_URL: http://localhost:3001
       NITRO_PORT: 3000
     volumes:
+      - ../frontend/public:/app/public
       - ../frontend/assets:/app/assets
       - ../frontend/components:/app/components
       - ../frontend/composables:/app/composables

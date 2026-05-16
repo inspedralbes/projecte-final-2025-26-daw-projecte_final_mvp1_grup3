@@ -102,7 +102,17 @@
     "purchase_success_title": "¡Compra realizada!",
     "insufficient_funds": "No tienes monedas suficientes",
     "loading": "Cargando la tienda...",
-    "empty": "No hay objetos disponibles ahora mismo"
+    "empty": "No hay objetos disponibles ahora mismo",
+    "items": {
+      "gorra_monster": {
+        "name": "Gorra Monster",
+        "description": "Una gorra exclusiva para tu mascota"
+      },
+      "recuperador_racha": {
+        "name": "Recuperador de racha",
+        "description": "Restaura tu racha actual al máximo alcanzado"
+      }
+    }
   },
   "inventory": {
     "title": "Mi inventario",

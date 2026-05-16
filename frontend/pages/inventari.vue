@@ -31,7 +31,7 @@
                 <img
                   v-if="ui.item && ui.item.imatge"
                   :src="ui.item.imatge"
-                  :alt="ui.item.nom"
+                  :alt="nomProducte(ui.item)"
                   class="w-24 h-24 object-contain"
                   decoding="async"
                   draggable="false"
@@ -39,7 +39,7 @@
                 />
                 <span v-else class="text-4xl">🎩</span>
               </div>
-              <h3 class="text-base font-bold text-gray-800">{{ ui.item ? ui.item.nom : '' }}</h3>
+              <h3 class="text-base font-bold text-gray-800">{{ ui.item ? nomProducte(ui.item) : '' }}</h3>
               <span
                 v-if="ui.equipat"
                 class="mt-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold border border-emerald-200"
@@ -73,7 +73,7 @@
                 <img
                   v-if="ui.item && ui.item.imatge"
                   :src="ui.item.imatge"
-                  :alt="ui.item.nom"
+                  :alt="nomProducte(ui.item)"
                   class="w-24 h-24 object-contain"
                   decoding="async"
                   draggable="false"
@@ -81,7 +81,7 @@
                 />
                 <span v-else class="text-4xl">💊</span>
               </div>
-              <h3 class="text-base font-bold text-gray-800">{{ ui.item ? ui.item.nom : '' }}</h3>
+              <h3 class="text-base font-bold text-gray-800">{{ ui.item ? nomProducte(ui.item) : '' }}</h3>
               <p v-if="ui.item && ui.item.descripcio" class="text-xs text-gray-500 mt-1 mb-2 px-2">{{ ui.item.descripcio }}</p>
 
               <button
@@ -107,11 +107,16 @@
 import { ref, computed, onMounted } from 'vue';
 import { useGameStore } from '~/stores/gameStore.js';
 import { useShopStore } from '~/stores/useShopStore.js';
+import { nomProducteBotiga } from '~/utils/shopItemI18n.js';
 
 const gameStore = useGameStore();
 const shopStore = useShopStore();
 const { $swal } = useNuxtApp();
-const { t } = useI18n();
+const { t, te } = useI18n();
+
+function nomProducte(item) {
+  return nomProducteBotiga(item, t, te);
+}
 
 const processant = ref(null);
 

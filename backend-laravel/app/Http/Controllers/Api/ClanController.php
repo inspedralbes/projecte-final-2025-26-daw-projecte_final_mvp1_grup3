@@ -183,7 +183,7 @@ class ClanController extends Controller
         $members = DB::table('clan_members')
             ->join('usuaris', 'clan_members.usuari_id', '=', 'usuaris.id')
             ->where('clan_members.clan_id', $id)
-            ->select('clan_members.rol', 'clan_members.data_unio', 'usuaris.id as usuari_id', 'usuaris.nom', 'usuaris.nivell')
+            ->select('clan_members.rol', 'clan_members.data_unio', 'usuaris.id as usuari_id', 'usuaris.nom', 'usuaris.nivell', 'usuaris.monstre_tipus')
             ->get();
 
         return response()->json($members);
@@ -205,7 +205,7 @@ class ClanController extends Controller
         $messages = DB::table('clan_messages')
             ->join('usuaris', 'clan_messages.usuari_id', '=', 'usuaris.id')
             ->where('clan_messages.clan_id', $id)
-            ->select('clan_messages.*', 'usuaris.nom as usuari_nom', 'usuaris.id as usuari_id')
+            ->select('clan_messages.*', 'usuaris.nom as usuari_nom', 'usuaris.id as usuari_id', 'usuaris.monstre_tipus', 'usuaris.nivell')
             ->orderBy('clan_messages.created_at', 'desc')
             ->paginate(50);
 

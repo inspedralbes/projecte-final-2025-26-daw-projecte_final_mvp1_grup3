@@ -11,13 +11,15 @@
       <div class="flex items-center gap-2 pb-1">
         <div class="w-8 h-8 rounded-full overflow-hidden shadow-inner" :style="avatarBackgroundStyle">
           <div class="w-full h-full rounded-full border border-gray-200 bg-white/20 p-0.5 flex items-center justify-center">
-            <img
-              :src="mascotaImg"
-              alt="Monstre del perfil"
-              class="w-full h-full object-contain"
-              decoding="async"
-              draggable="false"
-            />
+              <img
+                v-if="getMonsterImage(msg)"
+                :src="getMonsterImage(msg)"
+                alt="Monstre del perfil"
+                class="w-full h-full object-contain"
+                :style="getMonsterStyle(msg)"
+                decoding="async"
+                draggable="false"
+              />
           </div>
         </div>
         <span class="font-semibold text-sm text-gray-800">{{ msg.usuari_nom || msg.usuari?.nom || 'Usuari' }}</span>
@@ -54,7 +56,7 @@
 </template>
 
 <script>
-import mascotaImg from "~/assets/img/Mascota.png";
+import { getMonsterImageFromUser } from "~/utils/monsterImage.js";
 import bosqueImg from "~/assets/img/Bosque.png";
 import { useClanChatStore } from "~/stores/useClanChatStore.js";
 import { useClanStore } from "~/stores/useClanStore.js";
@@ -78,8 +80,7 @@ data: function() {
         newMessage: "",
         loading: true,
         sending: false,
-        lastMemberCount: 0,
-        mascotaImg: mascotaImg
+        lastMemberCount: 0
      }
    },
   computed: {
@@ -155,7 +156,10 @@ var msg = await store.sendMessage(this.clanId, contingut, null, null);
                 nuxtApp.$socket.emit("clan_message", {
                    clan_id: this.clanId,
                    message: contingut,
+                   usuari_id: authStore.user.id,
                    usuari_nom: authStore.user.nom,
+                   monstre_tipus: authStore.user.monstre_tipus,
+                   nivell: authStore.user.nivell,
                    created_at: new Date().toISOString()
                 });
              }
@@ -181,8 +185,10 @@ onMessageReceived: function(message) {
              this.messages.push({
                 id: message.id || Date.now(),
                 clan_id: message.clan_id,
-                usuari_id: message.sender_id,
+                usuari_id: message.sender_id || message.usuari_id,
                 usuari_nom: message.usuari_nom,
+                monstre_tipus: message.monstre_tipus,
+                nivell: message.nivell,
                 contingut: message.message,
                 created_at: message.created_at
              });
@@ -252,6 +258,29 @@ onMessageReceived: function(message) {
        } else {
           alert(store.error || "Error al importar plantilla");
        }
+    },
+    getMonsterImage: function(msg) {
+      if (!msg || msg.is_system) return null;
+      // Per missatges de sistema no mostrem monstre
+      if (msg.usuari_nom === 'Sistema') return null;
+      
+      return getMonsterImageFromUser({
+        monstre_tipus: msg.monstre_tipus,
+        nivell: msg.nivell
+      });
+    },
+    getMonsterStyle: function(msg) {
+      var n = Number(msg.nivell) || 1;
+      var scale = 1;
+      if (n < 5) scale = 1.1;
+      else if (n < 15) scale = 1.2;
+      else if (n < 30) scale = 1.35;
+      else scale = 1.5;
+      
+      return {
+        transform: "scale(" + scale + ") translateY(5%)",
+        filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.15))"
+      };
     }
   }
 }

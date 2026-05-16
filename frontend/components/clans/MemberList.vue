@@ -8,9 +8,11 @@
           <div class="w-10 h-10 rounded-full overflow-hidden shadow-inner" :style="avatarBackgroundStyle">
             <div class="w-full h-full rounded-full border border-gray-200 bg-white/20 p-1 flex items-center justify-center">
               <img
-                :src="mascotaImg"
+                v-if="getMonsterImage(member)"
+                :src="getMonsterImage(member)"
                 alt="Monstre del perfil"
                 class="w-full h-full object-contain"
+                :style="getMonsterStyle(member)"
                 decoding="async"
                 draggable="false"
               />
@@ -30,7 +32,7 @@
 </template>
 
 <script>
-import mascotaImg from "~/assets/img/Mascota.png";
+import { getMonsterImageFromUser } from "~/utils/monsterImage.js";
 import bosqueImg from "~/assets/img/Bosque.png";
 import { useClanStore } from "~/stores/useClanStore.js";
 import { useAuthStore } from "~/stores/useAuthStore.js";
@@ -52,8 +54,7 @@ export default {
   data: function() {
     return {
       loading: false,
-      currentUserId: null,
-      mascotaImg: mascotaImg
+      currentUserId: null
     }
   },
   computed: {
@@ -138,6 +139,27 @@ export default {
       } catch(e) {
         console.error(e);
       }
+    },
+    getMonsterImage: function(member) {
+      if (!member) return null;
+      // Normalment el backend retorna monstre_tipus i nivell
+      return getMonsterImageFromUser({
+        monstre_tipus: member.monstre_tipus,
+        nivell: member.nivell
+      });
+    },
+    getMonsterStyle: function(member) {
+      var n = Number(member.nivell) || 1;
+      var scale = 1;
+      if (n < 5) scale = 1.1;
+      else if (n < 15) scale = 1.2;
+      else if (n < 30) scale = 1.35;
+      else scale = 1.5;
+      
+      return {
+        transform: "scale(" + scale + ") translateY(5%)",
+        filter: "drop-shadow(0 4px 6px rgba(0,0,0,0.2))"
+      };
     }
   }
 }

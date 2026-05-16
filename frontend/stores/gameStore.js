@@ -31,6 +31,7 @@ export var useGameStore = defineStore("game", {
       missioCompletada: false,
       missioProgres: 0,
       missioObjectiu: 1,
+      monstre_tipus: null,
     };
   },
 
@@ -172,6 +173,9 @@ export var useGameStore = defineStore("game", {
       if (dades.xp_objetivo_nivel !== undefined) {
         this.xpObjetivoNivel = dades.xp_objetivo_nivel;
       }
+      if (dades.monstre_tipus !== undefined) {
+        this.monstre_tipus = dades.monstre_tipus;
+      }
     },
 
     /**
@@ -309,6 +313,7 @@ export var useGameStore = defineStore("game", {
             if (gs.missio_completada !== undefined) self.missioCompletada = gs.missio_completada;
             if (gs.missio_progres !== undefined) self.missioProgres = gs.missio_progres;
             if (gs.missio_objectiu !== undefined) self.missioObjectiu = gs.missio_objectiu;
+            if (gs.monstre_tipus !== undefined) self.monstre_tipus = gs.monstre_tipus;
           }
         }
         return dades;
@@ -367,6 +372,7 @@ export var useGameStore = defineStore("game", {
           if (gsMap.missio_completada !== undefined) self.missioCompletada = gsMap.missio_completada;
           if (gsMap.missio_progres !== undefined) self.missioProgres = gsMap.missio_progres;
           if (gsMap.missio_objectiu !== undefined) self.missioObjectiu = gsMap.missio_objectiu;
+          if (gsMap.monstre_tipus !== undefined) self.monstre_tipus = gsMap.monstre_tipus;
         }
 
         h = dades.habits || [];

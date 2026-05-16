@@ -396,6 +396,7 @@ export default {
     var self = this;
     var authStore = useAuthStore();
     authStore.loadFromStorage();
+    authStore.refrescarSessio(); // Actualitza dades de l'usuari (incloent monstre_tipus)
     self.gameStore.sincronitzarUsuariId();
     self.habitStore.carregarHabitsLocal();
     if (self.habitStore.habits && self.habitStore.habits.length > 0) {

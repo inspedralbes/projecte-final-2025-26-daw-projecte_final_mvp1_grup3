@@ -138,6 +138,7 @@ class GamificationService
             'missio_completada' => $missioCompletada,
             'missio_progres' => $missioProgres,
             'missio_objectiu' => $missioObjectiu,
+            'monstre_tipus' => $usuari->monstre_tipus,
         ];
     }
 

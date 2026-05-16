@@ -40,6 +40,7 @@ class GameStateResource extends JsonResource
             'missio_completada' => (bool) ($data['missio_completada'] ?? false),
             'missio_progres' => (int) ($data['missio_progres'] ?? 0),
             'missio_objectiu' => (int) ($data['missio_objectiu'] ?? 1),
+            'monstre_tipus' => $data['monstre_tipus'] ?? null,
         ];
     }
 }

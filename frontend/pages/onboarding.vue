@@ -627,6 +627,7 @@ async function confirmMonster() {
       if (typeof window !== 'undefined') {
         localStorage.setItem('loopy_monstre_tipus', selectedMonsterType.value);
       }
+      await authStore.refrescarSessio();
       marcarOnboardingCompletat();
       navigateTo('/home');
     } else {

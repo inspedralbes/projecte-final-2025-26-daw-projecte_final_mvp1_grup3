@@ -5,9 +5,10 @@ namespace App\Models;
 //================================ NAMESPACES / IMPORTS ============
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 
 //================================ PROPIETATS / ATRIBUTS ==========
@@ -18,9 +19,9 @@ use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
  * Usuaris de l'aplicació amb gamificació (XP, monedes, nivell).
  * Implementa JWTSubject per autenticació JWT.
  */
-class User extends Model implements JWTSubject
+class User extends Authenticatable implements JWTSubject
 {
-    use HasFactory;
+    use HasFactory, Notifiable;
 
     protected $table = 'usuaris';
 

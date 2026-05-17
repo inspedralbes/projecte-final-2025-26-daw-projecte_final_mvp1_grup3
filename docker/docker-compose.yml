@@ -207,6 +207,7 @@ services:
       LARAVEL_URL: http://backend-laravel:8000
     volumes:
       - ../backend-node/src:/app/src
+      - ../backend-node/tests:/app/tests
     depends_on:
       redis:
         condition: service_healthy

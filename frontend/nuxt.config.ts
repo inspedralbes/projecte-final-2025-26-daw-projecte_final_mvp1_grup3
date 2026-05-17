@@ -60,3 +60,5 @@ export default defineNuxtConfig({
     },
   },
 })
+// Forzar reinicio de Nuxt para registrar nuevas rutes
+

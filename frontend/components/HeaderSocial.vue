@@ -1,15 +1,15 @@
 <template>
-  <header class="w-full p-3 bg-white border-b border-gray-100">
-    <nav class="w-full flex items-center justify-center px-2 sm:px-4" aria-label="Social">
-      <ul class="flex items-center justify-center gap-8 sm:gap-12 list-none m-0 p-0">
+  <header class="social-header">
+    <nav class="social-header__nav" aria-label="Social">
+      <ul class="social-header__list">
         <li>
-          <NuxtLink to="/social" class="nav-link" :class="{ active: isForumPage }">{{ $t('nav.forum') }}</NuxtLink>
+          <NuxtLink to="/social" class="social-header__link" :class="{ 'social-header__link--active': isForumPage }">{{ $t('nav.forum') }}</NuxtLink>
         </li>
         <li>
-          <NuxtLink to="/friends" class="nav-link" :class="{ active: isFriendsPage }">{{ $t('nav.friends') }}</NuxtLink>
+          <NuxtLink to="/friends" class="social-header__link" :class="{ 'social-header__link--active': isFriendsPage }">{{ $t('nav.friends') }}</NuxtLink>
         </li>
         <li>
-          <NuxtLink to="/clans" class="nav-link" :class="{ active: isClansPage }">{{ $t('nav.clans') }}</NuxtLink>
+          <NuxtLink to="/clans" class="social-header__link" :class="{ 'social-header__link--active': isClansPage }">{{ $t('nav.clans') }}</NuxtLink>
         </li>
       </ul>
     </nav>
@@ -34,37 +34,53 @@ export default {
 </script>
 
 <style scoped>
-header {
+.social-header {
   width: 100%;
-}
-nav {
-  width: 100%;
-}
-nav ul li {
-  margin: 0;
-}
-nav a {
-  color: inherit;
-  text-decoration: none;
+  padding: 10px 0;
 }
 
-.nav-link {
-  color: #6b7280;
-  font-weight: 600;
-  transition: color 0.2s;
-  padding: 0.25rem 0;
-  font-size: 0.9375rem;
+.social-header__nav {
+  width: 100%;
 }
+
+.social-header__list {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
 @media (min-width: 640px) {
-  .nav-link {
-    font-size: 1.0625rem;
+  .social-header__list {
+    gap: 48px;
   }
 }
-.nav-link:hover {
-  color: #3b82f6;
+
+.social-header__link {
+  color: rgba(250, 249, 249, 0.55);
+  font-family: "Bricolage Grotesque", system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  text-decoration: none;
+  padding: 4px 0;
+  transition: color 0.2s;
 }
-.nav-link.active {
-  color: #3b82f6;
-  border-bottom: 2px solid #3b82f6;
+
+@media (min-width: 640px) {
+  .social-header__link {
+    font-size: 17px;
+  }
+}
+
+.social-header__link:hover {
+  color: #faf9f9;
+}
+
+.social-header__link--active {
+  color: #faf9f9;
+  border-bottom: 3px solid #79D45D;
 }
 </style>

@@ -578,6 +578,8 @@ async function confirmHabits() {
           categoria_id: mapCategoria(h.categoria),
           dificultat: mapDificultat(answers.value.obstacle),
           objectiu_vegades: mapTemps(answers.value.temps),
+          icona: getIconaPerCategoria(h.categoria),
+          color: getColorPerCategoria(h.categoria),
         }; }),
       }),
     });
@@ -586,17 +588,16 @@ async function confirmHabits() {
       if (data && Array.isArray(data.habits)) {
         habitStore.establirHabitsDesDeApi(data.habits);
       } else {
-        habitStore.establirHabitsDesDeApi(habitsToSave);
+        habitStore.establirHabitsDesDeApi([]);
       }
     } else {
-      habitStore.establirHabitsDesDeApi(habitsToSave);
+      habitStore.establirHabitsDesDeApi([]);
     }
     quizSlideDirection.value = 1;
     showMonsterSelection.value = true;
   } catch (error) {
     console.error('Error saving habits:', error);
-    var habitsToSave = selectedHabits.value.map(function (index) { return generatedHabits.value[index]; });
-    habitStore.establirHabitsDesDeApi(habitsToSave);
+    habitStore.establirHabitsDesDeApi([]);
     quizSlideDirection.value = 1;
     showMonsterSelection.value = true;
   } finally {
@@ -628,6 +629,10 @@ async function confirmMonster() {
         localStorage.setItem('loopy_monstre_tipus', selectedMonsterType.value);
       }
       await authStore.refrescarSessio();
+      var nuxt = useNuxtApp();
+      if (nuxt.$updateSocketAuth) {
+        nuxt.$updateSocketAuth();
+      }
       marcarOnboardingCompletat();
       navigateTo('/home');
     } else {
@@ -645,14 +650,40 @@ async function confirmMonster() {
   }
 }
 
+var CATEGORIA_MAP = {
+  'salut': { id: 1, icona: '🏃', color: '#10B981' },
+  'physical': { id: 1, icona: '🏃', color: '#10B981' },
+  'food': { id: 2, icona: '🥗', color: '#3B82F6' },
+  'alimentacio': { id: 2, icona: '🥗', color: '#3B82F6' },
+  'aprenentatge': { id: 3, icona: '📚', color: '#F59E0B' },
+  'study': { id: 3, icona: '📚', color: '#F59E0B' },
+  'lectura': { id: 4, icona: '📖', color: '#EF4444' },
+  'reading': { id: 4, icona: '📖', color: '#EF4444' },
+  'ment': { id: 5, icona: '🧘', color: '#8B5CF6' },
+  'wellness': { id: 5, icona: '🧘', color: '#8B5CF6' },
+  'productivitat': { id: 6, icona: '✨', color: '#EC4899' },
+  'improvement': { id: 6, icona: '✨', color: '#EC4899' },
+  'llar': { id: 7, icona: '🏠', color: '#06B6D4' },
+  'home': { id: 7, icona: '🏠', color: '#06B6D4' },
+  'hobby': { id: 8, icona: '🎨', color: '#1F2937' },
+};
+
 function mapCategoria(categoria) {
-  var map = {
-    'salut': 1,
-    'productivitat': 2,
-    'ment': 3,
-    'aprenentatge': 4,
-  };
-  return map[categoria?.toLowerCase()] || 1;
+  var key = (categoria || '').toLowerCase();
+  var entry = CATEGORIA_MAP[key];
+  return entry ? entry.id : 1;
+}
+
+function getIconaPerCategoria(categoria) {
+  var key = (categoria || '').toLowerCase();
+  var entry = CATEGORIA_MAP[key];
+  return entry ? entry.icona : '📝';
+}
+
+function getColorPerCategoria(categoria) {
+  var key = (categoria || '').toLowerCase();
+  var entry = CATEGORIA_MAP[key];
+  return entry ? entry.color : '#10B981';
 }
 
 function mapDificultat(obstacle) {

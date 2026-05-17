@@ -20,7 +20,7 @@
           <div class="flex shrink-0 items-center justify-between w-full mb-6 relative z-10">
             <div>
               <h2 class="text-2xl font-black text-gray-800 tracking-tight">
-                {{ $t('home.monster_title') }}
+                {{ user ? user.nom : 'Usuari' }}
               </h2>
               <div class="flex items-center gap-2 mt-1">
                 <span class="bg-green-100 text-green-700 px-2 py-0.5 rounded-[10px] text-[10px] font-black uppercase tracking-wider">{{ $t('home.level') }} {{ user ? user.nivell : '—' }}</span>
@@ -54,6 +54,7 @@
           </p>
         </div>
       </div>
+
       <!-- 2. Dades del perfil: separadors + panells -->
       <div class="space-y-3">
         <div class="moment-divider moment-divider--perfil" role="presentation">
@@ -73,108 +74,52 @@
         </div>
 
         <template v-else-if="user">
-          <!-- 1) Nom, correu, contrasenya + Desar (mateixes etiquetes que formulari hàbit) -->
-          <div
-            class="bento-card habit-form bg-white/95 backdrop-blur-md rounded-[10px] p-6 sm:p-8 shadow-xl border border-white/50"
-          >
-            <div class="space-y-5">
-              <div>
-                <label class="habit-form-label" for="perfil-nom">{{ $t('perfil.field_username') }}</label>
-                <input
-                  id="perfil-nom"
-                  v-model="formNom"
-                  type="text"
-                  autocomplete="username"
-                  class="habit-form-field-surface w-full bg-gray-50/50 border-gray-100 focus:outline-none focus:ring-4 focus:ring-green-500/10 focus:border-green-500 focus:bg-white transition-all"
-                />
+          <div class="perfil-level-xp-stack">
+            <div class="perfil-level-xp-stack__pills">
+              <div class="perfil-stat-pill perfil-stat-pill--nivell">
+                <p class="perfil-stat-pill__label">{{ $t('home.level') }}</p>
+                <div class="perfil-stat-pill__icon-wrap" aria-hidden="true">
+                  <img :src="xpIcon" alt="" class="perfil-stat-pill__icon" width="125" height="125" decoding="async" />
+                </div>
+                <p class="perfil-stat-pill__value">{{ user.nivell }}</p>
               </div>
-              <div>
-                <label class="habit-form-label" for="perfil-email">{{ $t('perfil.field_gmail') }}</label>
-                <input
-                  id="perfil-email"
-                  v-model="formEmail"
-                  type="text"
-                  autocomplete="email"
-                  class="habit-form-field-surface w-full bg-gray-50/50 border-gray-100 focus:outline-none focus:ring-4 focus:ring-green-500/10 focus:border-green-500 focus:bg-white transition-all"
-                />
+              <div class="perfil-stat-pill perfil-stat-pill--monedes">
+                <p class="perfil-stat-pill__label">{{ $t('home.coins') }}</p>
+                <div class="perfil-stat-pill__icon-wrap" aria-hidden="true">
+                  <img :src="coinLoopy" alt="" class="perfil-stat-pill__icon coin-pixel" width="125" height="125" decoding="async" />
+                </div>
+                <p class="perfil-stat-pill__value">{{ user.monedes }}</p>
               </div>
-              <div>
-                <label class="habit-form-label" for="perfil-pw">{{ $t('perfil.field_password') }}</label>
-                <input
-                  id="perfil-pw"
-                  v-model="formPassword"
-                  type="text"
-                  autocomplete="new-password"
-                  :placeholder="$t('perfil.password_placeholder')"
-                  class="habit-form-field-surface w-full bg-gray-50/50 border-gray-100 focus:outline-none focus:ring-4 focus:ring-green-500/10 focus:border-green-500 focus:bg-white transition-all"
-                />
-              </div>
+            </div>
 
-              <button
-                type="button"
-                class="perfil-btn-guardar w-full min-w-0 rounded-[10px] border-2 border-[#6FBC58] bg-[#79D45D] py-2.5 text-center text-base font-normal text-white transition hover:brightness-[0.97] disabled:opacity-50 disabled:pointer-events-none"
-                :disabled="guardantCompte"
-                @click="guardarCompte"
-              >
-                {{ guardantCompte ? $t('perfil.save_loading') : $t('habits.save') }}
-              </button>
+            <div class="perfil-xp-panel rounded-[10px] p-4 sm:p-5">
+              <h3 class="perfil-xp-panel__title">{{ $t('perfil.experience_section_title') }}</h3>
+              <p class="perfil-xp-panel__frac">{{ xpActualNivell }} / {{ xpObjectiuNivell }} XP</p>
+              <div class="perfil-xp-bar" role="progressbar" :aria-valuenow="xpActualNivell" :aria-valuemin="0" :aria-valuemax="xpObjectiuNivell" aria-label="XP">
+                <div class="perfil-xp-bar__fill" :style="{ width: xpBarPercent + '%' }"></div>
+              </div>
             </div>
           </div>
 
           <div class="moment-divider moment-divider--perfil" role="presentation">
             <span class="moment-divider__line" aria-hidden="true"></span>
-            <span class="moment-divider__text">{{ $t('perfil.divider_level_coins_experience') }}</span>
+            <span class="moment-divider__text">{{ $t('perfil.divider_streaks') }}</span>
             <span class="moment-divider__line" aria-hidden="true"></span>
           </div>
 
-          <div class="space-y-3">
-            <div class="perfil-level-xp-stack">
-              <div class="perfil-level-xp-stack__pills">
-                <div class="perfil-stat-pill perfil-stat-pill--nivell">
-                  <p class="perfil-stat-pill__label">{{ $t('home.level') }}</p>
-                  <div class="perfil-stat-pill__icon-wrap" aria-hidden="true">
-                    <img :src="xpIcon" alt="" class="perfil-stat-pill__icon" width="125" height="125" decoding="async" />
-                  </div>
-                  <p class="perfil-stat-pill__value">{{ user.nivell }}</p>
-                </div>
-                <div class="perfil-stat-pill perfil-stat-pill--monedes">
-                  <p class="perfil-stat-pill__label">{{ $t('home.coins') }}</p>
-                  <div class="perfil-stat-pill__icon-wrap" aria-hidden="true">
-                    <img :src="coinLoopy" alt="" class="perfil-stat-pill__icon coin-pixel" width="125" height="125" decoding="async" />
-                  </div>
-                  <p class="perfil-stat-pill__value">{{ user.monedes }}</p>
-                </div>
-              </div>
-
-              <div class="perfil-xp-panel rounded-[10px] p-4 sm:p-5">
-                <h3 class="perfil-xp-panel__title">{{ $t('perfil.experience_section_title') }}</h3>
-                <p class="perfil-xp-panel__frac">{{ xpActualNivell }} / {{ xpObjectiuNivell }} XP</p>
-                <div class="perfil-xp-bar" role="progressbar" :aria-valuenow="xpActualNivell" :aria-valuemin="0" :aria-valuemax="xpObjectiuNivell" aria-label="XP">
-                  <div class="perfil-xp-bar__fill" :style="{ width: xpBarPercent + '%' }"></div>
-                </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div class="perfil-streak-pill perfil-streak-pill--actual">
+              <p class="perfil-streak-pill__label perfil-streak-pill__label--actual">{{ $t('perfil.streak_current_title') }}</p>
+              <div class="perfil-streak-pill__media">
+                <img :src="ratxaIcon" alt="" class="perfil-streak-pill__icon" width="125" height="125" decoding="async" />
+                <p class="perfil-streak-pill__num">{{ user.ratxa_actual != null ? user.ratxa_actual : 0 }}</p>
               </div>
             </div>
-
-            <div class="moment-divider moment-divider--perfil" role="presentation">
-              <span class="moment-divider__line" aria-hidden="true"></span>
-              <span class="moment-divider__text">{{ $t('perfil.divider_streaks') }}</span>
-              <span class="moment-divider__line" aria-hidden="true"></span>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3">
-              <div class="perfil-streak-pill perfil-streak-pill--actual">
-                <p class="perfil-streak-pill__label perfil-streak-pill__label--actual">{{ $t('perfil.streak_current_title') }}</p>
-                <div class="perfil-streak-pill__media">
-                  <img :src="ratxaIcon" alt="" class="perfil-streak-pill__icon" width="125" height="125" decoding="async" />
-                  <p class="perfil-streak-pill__num">{{ user.ratxa_actual != null ? user.ratxa_actual : 0 }}</p>
-                </div>
-              </div>
-              <div class="perfil-streak-pill perfil-streak-pill--max">
-                <p class="perfil-streak-pill__label perfil-streak-pill__label--max">{{ $t('perfil.streak_max_title') }}</p>
-                <div class="perfil-streak-pill__media">
-                  <img :src="ratxaIcon" alt="" class="perfil-streak-pill__icon" width="125" height="125" decoding="async" />
-                  <p class="perfil-streak-pill__num">{{ user.ratxa_maxima != null ? user.ratxa_maxima : 0 }}</p>
-                </div>
+            <div class="perfil-streak-pill perfil-streak-pill--max">
+              <p class="perfil-streak-pill__label perfil-streak-pill__label--max">{{ $t('perfil.streak_max_title') }}</p>
+              <div class="perfil-streak-pill__media">
+                <img :src="ratxaIcon" alt="" class="perfil-streak-pill__icon" width="125" height="125" decoding="async" />
+                <p class="perfil-streak-pill__num">{{ user.ratxa_maxima != null ? user.ratxa_maxima : 0 }}</p>
               </div>
             </div>
           </div>
@@ -221,7 +166,7 @@
         </div>
       </div>
 
-      <!-- Historial diari: separador + llista estil hàbit -->
+      <!-- Historial diari -->
       <div class="space-y-3">
         <div class="moment-divider moment-divider--perfil" role="presentation">
           <span class="moment-divider__line" aria-hidden="true"></span>
@@ -244,7 +189,7 @@
               <div class="perfil-history-card__mark" aria-hidden="true">
                 <svg class="perfil-history-card__blob" width="56" height="40" viewBox="0 0 56 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path
-                    d="M1.64885 13.8624C4.80033 5.5202 12.7867 0 21.7043 0H46.8857C51.8563 0 55.8857 4.02944 55.8857 9V18.1149C55.8857 20.9967 55.1982 23.8369 53.8802 26.3997L53.3295 27.4705C49.3729 35.1639 41.4476 40 32.7964 40H18.4113C11.3613 40 4.93035 35.9742 1.85018 29.6327C-0.361252 25.0797 -0.600734 19.8171 1.18804 15.0821L1.64885 13.8624Z"
+                    d="M1.64885 13.8624C4.80033 5.5202 12.7867 0 21.7043 0H46.8857C51.8563 0 55.8857 4.0294.5857 9V18.1149C55.8857 20.9967 55.1982 23.8369 53.8802 26.3997L53.3295 27.4705C49.3729 35.1639 41.4476 40 32.7964 40H18.4113C11.3613 40 4.93035 35.9742 1.85018 29.6327C-0.361252 25.0797 -0.600734 19.8171 1.18804 15.0821L1.64885 13.8624Z"
                     :fill="colorMarcaHistorial(log)"
                   />
                 </svg>
@@ -266,6 +211,8 @@
 </template>
 
 <script setup>
+import { ref, computed, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
 import mascotaImg from "~/assets/img/Mascota.png";
 import coinLoopy from "~/assets/img/Icones/Icona_Moneda.png";
 import xpIcon from "~/assets/img/Icones/Icona_Experiencia.png";
@@ -277,22 +224,17 @@ import { getDefaultColorForCategoryId } from "~/utils/habitCategoryColor.js";
 import { normalizeHex } from "~/utils/colorSpace.js";
 import { authFetch, getBaseUrl } from "~/composables/useApi.js";
 
+var route = useRoute();
+var userId = route.params.id;
+
 var user = ref(null);
 var loading = ref(true);
 var logs = ref([]);
 var loadingLogs = ref(true);
 var showcaseLogros = ref([]);
-var guardantShowcase = ref(false);
-var showcaseChanged = ref(false);
-var originalShowcase = ref([]);
-
-var formNom = ref("");
-var formEmail = ref("");
-var formPassword = ref("");
-var guardantCompte = ref(false);
 
 var imatgeMascota = computed(function () {
-  return getMonsterImageFromUser(user.value);
+  return getMonsterImageFromUser(user.value) || mascotaImg;
 });
 
 var xpActualNivell = computed(function () {
@@ -318,16 +260,6 @@ var xpBarPercent = computed(function () {
   return pct;
 });
 
-function syncFormFromUser() {
-  if (!user.value) {
-    return;
-  }
-  formNom.value = user.value.nom || "";
-  formEmail.value = user.value.email || "";
-  formPassword.value = "";
-}
-
-var nuxtApp = useNuxtApp();
 var t = useI18n().t;
 
 function traduirLogroNom(nom) {
@@ -386,89 +318,18 @@ function historialMetaText(log) {
   return parts.join(" · ");
 }
 
-function guardarCompte() {
-  if (!user.value) {
-    return;
-  }
-  guardantCompte.value = true;
-  var body = {
-    nom: formNom.value.trim(),
-    email: formEmail.value.trim(),
-  };
-  if (formPassword.value.trim() !== "") {
-    body.password = formPassword.value;
-  }
-  authFetch(getBaseUrl() + "/api/users/self/account", {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  })
-    .then(function(r) {
-      return r.json().then(function(d) {
-        return { ok: r.ok, d: d };
-      });
-    })
-    .then(function(res) {
-      guardantCompte.value = false;
-      if (res.ok && res.d && res.d.success) {
-        user.value.nom = res.d.data.nom;
-        user.value.email = res.d.data.email;
-        syncFormFromUser();
-        if (nuxtApp.$swal) {
-          nuxtApp.$swal.fire({
-            icon: "success",
-            title: t("perfil.save_success_title"),
-            text: t("perfil.save_success_text"),
-          });
-        } else {
-          alert(t("perfil.save_success_text"));
-        }
-        return;
-      }
-      var errMsg = t("perfil.save_error_generic");
-      if (res.d && res.d.errors) {
-        var e = res.d.errors;
-        if (e.email === "taken") {
-          errMsg = t("perfil.save_error_email_taken");
-        } else if (e.email === "invalid") {
-          errMsg = t("perfil.save_error_email_invalid");
-        } else if (e.password === "min_6") {
-          errMsg = t("perfil.save_error_password_min");
-        } else if (e.nom === "required" || e.email === "required") {
-          errMsg = t("perfil.save_error_required");
-        }
-      }
-      if (nuxtApp.$swal) {
-        nuxtApp.$swal.fire({ icon: "error", title: t("perfil.save_error_title"), text: errMsg });
-      } else {
-        alert(errMsg);
-      }
-    })
-    .catch(function(err) {
-      guardantCompte.value = false;
-      console.error("Error guardant compte:", err);
-      if (nuxtApp.$swal) {
-        nuxtApp.$swal.fire({ icon: "error", title: t("perfil.save_error_title"), text: t("perfil.save_error_generic") });
-      } else {
-        alert(t("perfil.save_error_generic"));
-      }
-    });
-}
-
 onMounted(function() {
   loading.value = true;
   loadingLogs.value = true;
-  var profilePromise = authFetch(getBaseUrl() + '/api/user/profile')
+  var profilePromise = authFetch(getBaseUrl() + '/api/users/' + userId + '/profile')
     .then(function(r) { return r.json(); })
     .then(function(d) { 
       user.value = d.data || d; 
-      syncFormFromUser();
       if (user.value.logros_showcase) {
-        originalShowcase.value = user.value.logros_showcase.map(function(l) { return l.id; });
-        showcaseLogros.value = [].concat(originalShowcase.value);
+        showcaseLogros.value = user.value.logros_showcase.map(function(l) { return l.id; });
       }
     });
-  var logsPromise = authFetch(getBaseUrl() + '/api/habits/logs')
+  var logsPromise = authFetch(getBaseUrl() + '/api/users/' + userId + '/logs')
     .then(function(r) { return r.json(); })
     .then(function(d) { logs.value = d.data || d || []; });
   Promise.all([profilePromise, logsPromise])
@@ -482,7 +343,6 @@ onMounted(function() {
       loadingLogs.value = false;
     });
 });
-
 </script>
 
 <style scoped>
@@ -490,12 +350,10 @@ onMounted(function() {
   image-rendering: pixelated;
 }
 
-/* Sobreescriu el rounded-2xl global de .habit-form-field-surface dins aquesta pàgina */
 .perfil-page :deep(.habit-form-field-surface) {
   border-radius: 10px;
 }
 
-/* Separador com a home / plantilles */
 .moment-divider--perfil {
   margin-top: 2px;
 }
@@ -617,7 +475,6 @@ onMounted(function() {
   transition: width 0.45s ease;
 }
 
-/* Ratxes (sobre experiència del nivell) */
 .perfil-streak-pill {
   display: flex;
   flex-direction: column;
@@ -689,7 +546,6 @@ onMounted(function() {
   pointer-events: none;
 }
 
-/* Nivell + monedes + experiència: mateix gap entre nivell↔monedes i fila↔panell XP */
 .perfil-level-xp-stack {
   --perfil-level-xp-gap: 1.25rem;
   display: flex;
@@ -703,7 +559,6 @@ onMounted(function() {
   gap: var(--perfil-level-xp-gap);
 }
 
-/* Logros: targetes estil ruleta (tirada-card) + inclinació alternada */
 .perfil-logros-hint {
   margin: 0;
   text-align: center;
@@ -826,7 +681,6 @@ onMounted(function() {
   pointer-events: none;
 }
 
-/* Historial diari: mateix patró visual que HomeHabitCard (blob + icona + títol) */
 .perfil-history-card {
   position: relative;
   display: flex;

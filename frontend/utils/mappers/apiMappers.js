@@ -106,12 +106,19 @@ function mapPlantillaFromApi(plantilla, mapHabitFn) {
     }
   }
 
+  var esGuardadaPlantilla = plantilla.hasOwnProperty("es_guardada") ? !!plantilla.es_guardada : (plantilla.hasOwnProperty("guardada") ? !!plantilla.guardada : (plantilla.origen === 'forum' || !!plantilla.importada));
+  var esAmicPlantilla = plantilla.hasOwnProperty("es_amic") ? !!plantilla.es_amic : (plantilla.hasOwnProperty("is_friend") ? !!plantilla.is_friend : false);
+  var creadorNomPlantilla = plantilla.creador_nom || plantilla.nom_creador || "Usuari";
+
   return {
     id: plantilla.id,
     titol: titolPlantilla,
     categoria: categoriaPlantilla,
     esPublica: esPublicaPlantilla,
     creadorId: creadorIdPlantilla,
+    esGuardada: esGuardadaPlantilla,
+    esAmic: esAmicPlantilla,
+    creadorNom: creadorNomPlantilla,
     habits: mappedHabits
   };
 }

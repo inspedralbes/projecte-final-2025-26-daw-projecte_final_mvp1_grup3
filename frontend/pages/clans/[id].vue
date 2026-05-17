@@ -1,38 +1,35 @@
 <template>
-  <div class="min-h-screen overflow-x-hidden pb-24 lg:pb-20">
-    <div class="w-full max-w-6xl mx-auto min-w-0 box-border px-2 sm:px-4 md:px-6 pt-2 sm:pt-3">
-      <div
-        class="rounded-2xl sm:rounded-3xl overflow-hidden bg-white shadow-md border border-gray-100"
-      >
-        <HeaderSocial />
-        <div class="px-3 sm:px-5 py-4 sm:py-8 relative">
-          <div v-if="loading" class="text-center py-8">Carregant...</div>
-          <div v-else-if="clan">
-            <div class="mb-6">
-              <h1 class="text-2xl font-bold text-gray-800">{{ clan.nom }}</h1>
-              <p class="text-sm text-gray-500 mt-1">{{ clan.descripcio || 'Sense descripció' }}</p>
-              <div class="flex gap-2 mt-2">
-                <span v-if="clan.es_public" class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">Públic</span>
-                <span v-else class="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded">Privat</span>
-                <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">{{ memberCount }} membres</span>
-              </div>
+  <div class="clan-detail-page min-h-screen bg-transparent overflow-x-hidden pb-24 lg:pb-20">
+    <div class="max-w-6xl mx-auto px-3 sm:px-6 pt-2 sm:pt-3">
+      <HeaderSocial />
+
+      <div class="clan-detail-area mt-4">
+        <div v-if="loading" class="text-center py-8 clan-loading-text">Carregant...</div>
+        <div v-else-if="clan">
+          <div class="clan-detail-header">
+            <h1 class="clan-detail-title">{{ clan.nom }}</h1>
+            <p class="clan-detail-desc">{{ clan.descripcio || 'Sense descripció' }}</p>
+            <div class="flex gap-2 mt-2">
+              <span v-if="clan.es_public" class="clan-badge clan-badge--public">Públic</span>
+              <span v-else class="clan-badge clan-badge--private">Privat</span>
+              <span class="clan-badge clan-badge--members">{{ memberCount }} membres</span>
             </div>
-
-            <div v-if="isMember" class="flex gap-2 mb-4">
-              <button @click="showInvite = true" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-sm font-medium">
-                Convidar Amic
-              </button>
-              <button @click="leaveClan" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sm font-medium">
-                Sortir del Clan
-              </button>
-            </div>
-
-            <MemberList :clan-id="clanId" :is-leader="isLeader" />
-            
-            <RequestManager v-if="isLeader" :clan-id="clanId" />
-
-            <ClanChat v-if="isMember" :clan-id="clanId" />
           </div>
+
+          <div v-if="isMember" class="flex gap-2 mb-4">
+            <button @click="showInvite = true" class="clan-btn clan-btn--primary">
+              Convidar Amic
+            </button>
+            <button @click="leaveClan" class="clan-btn clan-btn--danger">
+              Sortir del Clan
+            </button>
+          </div>
+
+          <MemberList :clan-id="clanId" :is-leader="isLeader" />
+          
+          <RequestManager v-if="isLeader" :clan-id="clanId" />
+
+          <ClanChat v-if="isMember" :clan-id="clanId" />
         </div>
       </div>
     </div>
@@ -227,3 +224,81 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.clan-detail-page {
+  font-family: "Comfortaa", system-ui, sans-serif;
+}
+
+.clan-loading-text {
+  color: #b0b0b0;
+  font-size: 14px;
+}
+
+.clan-detail-header {
+  margin-bottom: 16px;
+}
+
+.clan-detail-title {
+  margin: 0;
+  font-family: "Bricolage Grotesque", system-ui, sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: #faf9f9;
+}
+
+.clan-detail-desc {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: rgba(250, 249, 249, 0.7);
+}
+
+.clan-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 8px;
+}
+
+.clan-badge--public {
+  background: rgba(121, 212, 93, 0.2);
+  color: #79D45D;
+}
+
+.clan-badge--private {
+  background: rgba(148, 190, 240, 0.2);
+  color: #94bef0;
+}
+
+.clan-badge--members {
+  background: rgba(250, 249, 249, 0.1);
+  color: rgba(250, 249, 249, 0.7);
+}
+
+.clan-btn {
+  padding: 8px 16px;
+  border: 0;
+  border-radius: 10px;
+  font-family: "Comfortaa", system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.15s;
+}
+
+.clan-btn:hover {
+  filter: brightness(0.97);
+}
+
+.clan-btn--primary {
+  border: 2px solid #6FBC58;
+  background: #79D45D;
+  color: #ffffff;
+}
+
+.clan-btn--danger {
+  background: #ff6b8a;
+  color: #ffffff;
+}
+</style>

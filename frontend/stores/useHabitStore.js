@@ -10,7 +10,16 @@ function carregarHabitsInicial() {
     var stored = localStorage.getItem('loopy_onboarding_habits');
     if (stored) {
       var parsed = JSON.parse(stored);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        if (parsed[0] && parsed[0].categoria_id !== undefined && parsed[0].categoriaId === undefined) {
+          var mapejats = [];
+          for (var i = 0; i < parsed.length; i++) {
+            mapejats.push(mapHabitFromApi(parsed[i]));
+          }
+          return mapejats;
+        }
+        return parsed;
+      }
     }
   } catch (e) {}
   return [];
@@ -52,7 +61,7 @@ export var useHabitStore = defineStore("habit", {
         mapejats.push(mapHabitFromApi(llistaHabits[i]));
       }
       this.habits = mapejats;
-      desarHabitsLocal(llistaHabits);
+      desarHabitsLocal(mapejats);
     },
 
     /**

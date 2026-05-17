@@ -41,19 +41,51 @@ class UserProfileController extends Controller
         $ratxaActual = $ratxa ? $ratxa->ratxa_actual : 0;
         $ratxaMaxima = $ratxa ? $ratxa->ratxa_maxima : 0;
 
+        $user->load('logros');
+        $logrosAll = [];
+        foreach ($user->logros as $logro) {
+            $dataObtencio = null;
+            if ($logro->pivot && isset($logro->pivot->data_obtencio)) {
+                $dataObtencio = $logro->pivot->data_obtencio;
+            }
+            $logrosAll[] = [
+                'id' => $logro->id,
+                'nom' => $logro->nom,
+                'descripcio' => $logro->descripcio,
+                'tipus' => $logro->tipus,
+                'data_obtencio' => $dataObtencio,
+            ];
+        }
+
         $response = [
             'id' => $user->id,
             'nom' => $user->nom,
-            'nivell' => $user->nivell,
-            'xp_total' => $user->xp_total,
-            'streak' => $ratxaActual,
-            'streak_maxima' => $ratxaMaxima,
+            'nivell' => (int) $user->nivell,
+            'xp_total' => (int) $user->xp_total,
+            'xp_actual_nivel' => (int) ($user->xp_actual_nivel ?? 0),
+            'xp_objetivo_nivel' => (int) ($user->xp_objetivo_nivel ?? 1000),
+            'monedes' => (int) $user->monedes,
+            'streak' => (int) $ratxaActual,
+            'streak_maxima' => (int) $ratxaMaxima,
+            'ratxa_actual' => (int) $ratxaActual,
+            'ratxa_maxima' => (int) $ratxaMaxima,
+            'logros' => $logrosAll,
             'logros_showcase' => $logrosShowcase,
             'monstre_tipus' => $user->monstre_tipus,
         ];
 
         return response()->json($response);
     }
+
+    public function getPublicLogs(int $id, \App\Services\HabitService $habitService): JsonResponse
+    {
+        User::findOrFail($id);
+
+        $resultat = $habitService->obtenirLogsHistorics($id);
+
+        return (new \App\Http\Resources\HabitProgressLogResource($resultat))->toResponse(request());
+    }
+
 
     public function getSelfProfile(Request $request): JsonResponse
     {

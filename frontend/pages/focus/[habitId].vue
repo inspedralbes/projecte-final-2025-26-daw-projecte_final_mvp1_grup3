@@ -178,6 +178,7 @@
 
     <div v-if="currentTrackEmbedUrl" class="focus-audio-embed" aria-hidden="true">
       <iframe
+        ref="youtubeIframeEl"
         :src="currentTrackEmbedUrl"
         title="Focus audio player"
         width="0"
@@ -220,6 +221,7 @@ var searchResults = ref([]);
 var searchLoading = ref(false);
 var searchError = ref("");
 var searchInputEl = ref(null);
+var youtubeIframeEl = ref(null);
 var searchDebounceTimer = null;
 var searchAbortController = null;
 var trackProgressTimer = null;
@@ -318,7 +320,7 @@ var currentTrackEmbedUrl = computed(function () {
   if (!currentTrackVideoId.value || isTrackPaused.value) {
     return "";
   }
-  return "https://www.youtube.com/embed/" + currentTrackVideoId.value + "?autoplay=1&controls=0&rel=0&modestbranding=1";
+  return "https://www.youtube.com/embed/" + currentTrackVideoId.value + "?autoplay=1&controls=0&rel=0&modestbranding=1&enablejsapi=1";
 });
 
 var currentModeLabel = computed(function () {
@@ -609,7 +611,18 @@ function updateProgressFromSlider(rawValue) {
     trackElapsedSeconds.value = 0;
     return;
   }
-  trackElapsedSeconds.value = Math.floor((nextProgress / 100) * total);
+  var targetSeconds = Math.floor((nextProgress / 100) * total);
+  trackElapsedSeconds.value = targetSeconds;
+
+  if (youtubeIframeEl.value && youtubeIframeEl.value.contentWindow) {
+    try {
+      youtubeIframeEl.value.contentWindow.postMessage(JSON.stringify({
+        event: "command",
+        func: "seekTo",
+        args: [targetSeconds, true]
+      }), "*");
+    } catch (e) {}
+  }
 }
 
 async function runVideoSearch(query) {

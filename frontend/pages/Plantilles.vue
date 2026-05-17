@@ -45,21 +45,18 @@
               v-model="selectedFilter"
               class="templates-filter-select"
             >
-              <option value="all">{{ $t('templates.filter_all') }}</option>
-              <option value="public">{{ $t('templates.public') }}</option>
-              <option value="private">{{ $t('templates.private') }}</option>
+              <option value="all">{{ $t('templates.filter_all') || 'Totes' }}</option>
+              <option value="public">{{ $t('templates.public') || 'Públiques' }}</option>
+              <option value="personals">{{ $t('templates.personal') || 'Personals' }}</option>
+              <option value="friends">{{ $t('templates.friends') || 'Amics' }}</option>
+              <option value="saved">{{ $t('templates.saved') || 'Guardades' }}</option>
             </select>
             <span class="templates-filter-chevron" aria-hidden="true"></span>
           </div>
         </div>
       </div>
 
-      <div class="moment-divider mt-1 mb-4" role="presentation">
-        <span class="moment-divider__line" aria-hidden="true"></span>
-        <span class="moment-divider__text">totes les plantilles</span>
-        <span class="moment-divider__line" aria-hidden="true"></span>
-      </div>
-
+      <!-- Estats de càrrega i error -->
       <div v-if="plantillaStore.loading" class="text-center py-10">
         <p class="text-gray-500">{{ $t('templates.loading') }}</p>
       </div>
@@ -68,7 +65,7 @@
         <p>{{ $t('templates.error_prefix') }}{{ plantillaStore.error }}</p>
       </div>
 
-      <div v-else-if="filteredPlantilles.length === 0" class="text-center py-10 text-gray-400 space-y-4">
+      <div v-else-if="baseFilteredPlantilles.length === 0" class="text-center py-10 text-gray-400 space-y-4">
         <p>{{ $t('templates.no_templates') }}</p>
         <p class="text-sm">{{ $t('templates.create_first') }}</p>
         <button
@@ -80,139 +77,403 @@
         </button>
       </div>
 
-      <div v-else class="templates-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-        <button
-          type="button"
-          class="create-category-trigger create-category-trigger--grid"
-          :aria-expanded="plantillaSheetObert ? 'true' : 'false'"
-          @click="obrirSheetCrearPlantilla"
-        >
-          <span class="create-category-trigger__icon" aria-hidden="true">
-            <svg width="33" height="33" viewBox="0 0 33 33" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <line x1="17" y1="2" x2="17" y2="31" stroke="white" stroke-width="4" stroke-linecap="round"/>
-              <line x1="2" y1="16" x2="31" y2="16" stroke="white" stroke-width="4" stroke-linecap="round"/>
-            </svg>
-          </span>
-        </button>
+      <div v-else class="space-y-12">
+        <!-- 1. SECCIÓ PÚBLIQUES -->
+        <div v-if="selectedFilter === 'all' || selectedFilter === 'public'" class="template-section">
+          <div class="moment-divider mt-1 mb-4" role="presentation">
+            <span class="moment-divider__line" aria-hidden="true"></span>
+            <span class="moment-divider__text">{{ $t('templates.public') || 'Públiques' }}</span>
+            <span class="moment-divider__line" aria-hidden="true"></span>
+          </div>
 
-        <div
-          v-for="plantilla in filteredPlantilles"
-          :key="plantilla.id"
-          class="template-expandable"
-          :class="isPlantillaExpandida(plantilla.id) ? 'template-expandable--active' : ''"
-        >
-          <button
-            type="button"
-            class="template-card w-full text-left"
-            @click="togglePlantillaExpandida(plantilla.id)"
-          >
-            <div class="template-card__mark" aria-hidden="true">
-              <svg class="template-card__blob" width="57" height="54" viewBox="0 0 57 54" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M1.33093 20.8883C4.84845 8.52703 16.1404 0 28.9924 0H47.2749C52.2455 0 56.2749 4.02944 56.2749 9V25.1665C56.2749 28.2757 55.6987 31.358 54.5756 34.2573L54.3455 34.8512C50.0838 45.8525 39.4989 53.1035 27.701 53.1035H24.1663C14.0216 53.1035 4.95681 46.7675 1.4712 37.2404C-0.281291 32.4504 -0.473285 27.2287 0.922704 22.3229L1.33093 20.8883Z" :fill="getHabitColor({ categoria_id: plantilla.categoria })" />
-              </svg>
-              <span class="template-card__icona">{{ getCategoryIcon(plantilla.categoria) }}</span>
-            </div>
-
-            <div class="template-card__content">
-              <p class="template-card__title">{{ plantilla.titol }}</p>
-              <div class="template-card__meta">
-                <span class="template-card__meta-item">
-                  <span aria-hidden="true">
-                    <svg width="14" height="10" viewBox="0 0 14 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M4.33333 1H13M4.33333 5H13M4.33333 9H13M1 1H1.00667M1 5H1.00667M1 9H1.00667" stroke="#707070" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                  </span>
-                  {{ (plantilla.habits && plantilla.habits.length) || 0 }} hàbits
-                </span>
-                <span class="template-card__meta-item">
-                  <span aria-hidden="true">
-                    <svg width="16" height="13" viewBox="0 0 16 13" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M0.666748 6.33333C0.666748 6.33333 3.33341 1 8.00008 1C12.6667 1 15.3334 6.33333 15.3334 6.33333C15.3334 6.33333 12.6667 11.6667 8.00008 11.6667C3.33341 11.6667 0.666748 6.33333 0.666748 6.33333Z" stroke="#707070" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                      <path d="M8.00008 8.33333C9.10465 8.33333 10.0001 7.4379 10.0001 6.33333C10.0001 5.22876 9.10465 4.33333 8.00008 4.33333C6.89551 4.33333 6.00008 5.22876 6.00008 6.33333C6.00008 7.4379 6.89551 8.33333 8.00008 8.33333Z" stroke="#707070" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                  </span>
-                  {{ plantilla.esPublica ? 'Pública' : 'Privada' }}
-                </span>
-              </div>
-            </div>
-          </button>
-
-          <div v-if="isPlantillaExpandida(plantilla.id)" class="template-expand-inline">
-            <div class="template-expand-top">
-              <button class="template-expand-close" type="button" @click="tancarPlantillaExpandida">
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M11.2917 6.54167L6.54167 11.2917M6.54167 6.54167L11.2917 11.2917M16.8333 8.91667C16.8333 13.2889 13.2889 16.8333 8.91667 16.8333C4.54441 16.8333 1 13.2889 1 8.91667C1 4.54441 4.54441 1 8.91667 1C13.2889 1 16.8333 4.54441 16.8333 8.91667Z" stroke="#FAF9F9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <div v-if="plantillesPubliques.length === 0" class="text-center py-6 text-gray-400 text-sm">
+            No hi ha plantilles públiques disponibles.
+          </div>
+          <div v-else class="templates-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            <button
+              v-if="selectedFilter === 'public' || selectedFilter === 'all'"
+              type="button"
+              class="create-category-trigger create-category-trigger--grid"
+              :aria-expanded="plantillaSheetObert ? 'true' : 'false'"
+              @click="obrirSheetCrearPlantilla"
+            >
+              <span class="create-category-trigger__icon" aria-hidden="true">
+                <svg width="33" height="33" viewBox="0 0 33 33" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <line x1="17" y1="2" x2="17" y2="31" stroke="white" stroke-width="4" stroke-linecap="round"/>
+                  <line x1="2" y1="16" x2="31" y2="16" stroke="white" stroke-width="4" stroke-linecap="round"/>
                 </svg>
-              </button>
-              <button class="template-expand-edit" type="button" @click="editarPlantilla(plantilla.id)">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M7 2.41421H2.33333C1.97971 2.41421 1.64057 2.55469 1.39052 2.80474C1.14048 3.05479 1 3.39392 1 3.74755V13.0809C1 13.4345 1.14048 13.7736 1.39052 14.0237C1.64057 14.2737 1.97971 14.4142 2.33333 14.4142H11.6667C12.0203 14.4142 12.3594 14.2737 12.6095 14.0237C12.8595 13.7736 13 13.4345 13 13.0809V8.41421M12 1.41421C12.2652 1.149 12.6249 1 13 1C13.3751 1 13.7348 1.149 14 1.41421C14.2652 1.67943 14.4142 2.03914 14.4142 2.41421C14.4142 2.78929 14.2652 3.149 14 3.41421L7.66667 9.74755L5 10.4142L5.66667 7.74755L12 1.41421Z" stroke="#FAF9F9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <span>Editar Plantilla</span>
-              </button>
-            </div>
+              </span>
+            </button>
 
-            <div class="template-expand-panel">
-              <div class="template-spec-card">
-                <div class="template-expand-actions">
-                  <button
-                    type="button"
-                    class="template-expand-btn template-expand-btn--forum"
-                    @click="exportarAForum(plantilla)"
-                  >
-                    Exportar
+            <!-- Llista de targetes de plantilles públiques -->
+            <div
+              v-for="plantilla in plantillesPubliques"
+              :key="plantilla.id"
+              class="template-expandable"
+              :class="isPlantillaExpandida(plantilla.id) ? 'template-expandable--active' : ''"
+            >
+              <button
+                type="button"
+                class="template-card w-full text-left"
+                @click="togglePlantillaExpandida(plantilla.id)"
+              >
+                <div class="template-card__mark" aria-hidden="true">
+                  <svg class="template-card__blob" width="57" height="54" viewBox="0 0 57 54" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1.33093 20.8883C4.84845 8.52703 16.1404 0 28.9924 0H47.2749C52.2455 0 56.2749 4.02944 56.2749 9V25.1665C56.2749 28.2757 55.6987 31.358 54.5756 34.2573L54.3455 34.8512C50.0838 45.8525 39.4989 53.1035 27.701 53.1035H24.1663C14.0216 53.1035 4.95681 46.7675 1.4712 37.2404C-0.281291 32.4504 -0.473285 27.2287 0.922704 22.3229L1.33093 20.8883Z" :fill="getHabitColor({ categoria_id: plantilla.categoria })" />
+                  </svg>
+                  <span class="template-card__icona">{{ getCategoryIcon(plantilla.categoria) }}</span>
+                </div>
+
+                <div class="template-card__content">
+                  <p class="template-card__title">{{ plantilla.titol }}</p>
+                  <div class="template-card__meta">
+                    <span class="template-card__meta-item">
+                      <span aria-hidden="true">
+                        <svg width="14" height="10" viewBox="0 0 14 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M4.33333 1H13M4.33333 5H13M4.33333 9H13M1 1H1.00667M1 5H1.00667M1 9H1.00667" stroke="#707070" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                      </span>
+                      {{ (plantilla.habits && plantilla.habits.length) || 0 }} hàbits
+                    </span>
+                    <span class="template-card__meta-item">
+                      <span aria-hidden="true">
+                        <svg width="16" height="13" viewBox="0 0 16 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M0.666748 6.33333C0.666748 6.33333 3.33341 1 8.00008 1C12.6667 1 15.3334 6.33333 15.3334 6.33333C15.3334 6.33333 12.6667 11.6667 8.00008 11.6667C3.33341 11.6667 0.666748 6.33333 0.666748 6.33333Z" stroke="#707070" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                          <path d="M8.00008 8.33333C9.10465 8.33333 10.0001 7.4379 10.0001 6.33333C10.0001 5.22876 9.10465 4.33333 8.00008 4.33333C6.89551 4.33333 6.00008 5.22876 6.00008 6.33333C6.00008 7.4379 6.89551 8.33333 8.00008 8.33333Z" stroke="#707070" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                      </span>
+                      {{ plantilla.esPublica ? 'Pública' : 'Privada' }}
+                    </span>
+                  </div>
+                </div>
+              </button>
+
+              <!-- DESPLEGABLE EXPANDIT -->
+              <div v-if="isPlantillaExpandida(plantilla.id)" class="template-expand-inline">
+                <div class="template-expand-top">
+                  <button class="template-expand-close" type="button" @click="tancarPlantillaExpandida">
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M11.2917 6.54167L6.54167 11.2917M6.54167 6.54167L11.2917 11.2917M16.8333 8.91667C16.8333 13.2889 13.2889 16.8333 8.91667 16.8333C4.54441 16.8333 1 13.2889 1 8.91667C1 4.54441 4.54441 1 8.91667 1C13.2889 1 16.8333 4.54441 16.8333 8.91667Z" stroke="#FAF9F9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
                   </button>
-                  <button
-                    type="button"
-                    class="template-expand-btn template-expand-btn--import"
-                    @click="obrirModalImportarHabits(plantilla)"
-                  >
-                    Importar
-                  </button>
-                  <button
-                    type="button"
-                    class="template-expand-btn template-expand-btn--delete"
-                    @click="eliminarPlantilla(plantilla.id)"
-                  >
-                    Eliminar
+                  <button class="template-expand-edit" type="button" @click="editarPlantilla(plantilla.id)">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M7 2.41421H2.33333C1.97971 2.41421 1.64057 2.55469 1.39052 2.80474C1.14048 3.05479 1 3.39392 1 3.74755V13.0809C1 13.4345 1.14048 13.7736 1.39052 14.0237C1.64057 14.2737 1.97971 14.4142 2.33333 14.4142H11.6667C12.0203 14.4142 12.3594 14.2737 12.6095 14.0237C12.8595 13.7736 13 13.4345 13 13.0809V8.41421M12 1.41421C12.2652 1.149 12.6249 1 13 1C13.3751 1 13.7348 1.149 14 1.41421C14.2652 1.67943 14.4142 2.03914 14.4142 2.41421C14.4142 2.7892: 14.2652 3.149 14 3.41421L7.66667 9.74755L5 10.4142L5.66667 7.74755L12 1.41421Z" stroke="#FAF9F9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span>Editar Plantilla</span>
                   </button>
                 </div>
-              </div>
 
-              <div class="moment-divider moment-divider--expanded-habits" role="presentation">
-                <span class="moment-divider__line" aria-hidden="true"></span>
-                <span class="moment-divider__text">{{ $t('templates.expanded_habits_section') }}</span>
-                <span class="moment-divider__line" aria-hidden="true"></span>
-              </div>
+                <div class="template-expand-panel">
+                  <div class="template-spec-card">
+                    <div class="template-expand-actions">
+                      <button type="button" class="template-expand-btn template-expand-btn--forum" @click="exportarAForum(plantilla)">Exportar</button>
+                      <button type="button" class="template-expand-btn template-expand-btn--import" @click="obrirModalImportarHabits(plantilla)">Importar</button>
+                      <button type="button" class="template-expand-btn template-expand-btn--delete" @click="eliminarPlantilla(plantilla.id)">Eliminar</button>
+                    </div>
+                  </div>
 
-              <div class="template-habits-stack">
-                <p v-if="!plantilla.habits || plantilla.habits.length === 0" class="template-habits-list__empty">
-                  {{ $t('templates.no_habits_to_select') }}
-                </p>
-                <button
-                  v-for="habit in plantilla.habits"
-                  :key="habit.id"
-                  type="button"
-                  class="template-habit-card"
-                >
-                  <span class="template-habit-card__mark" aria-hidden="true">
-                    <svg class="template-habit-card__blob" width="56" height="40" viewBox="0 0 56 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M1.64885 13.8624C4.80033 5.5202 12.7867 0 21.7043 0H46.8857C51.8563 0 55.8857 4.02944 55.8857 9V18.1149C55.8857 20.9967 55.1982 23.8369 53.8802 26.3997L53.3295 27.4705C49.3729 35.1639 41.4476 40 32.7964 40H18.4113C11.3613 40 4.93035 35.9742 1.85018 29.6327C-0.361252 25.0797 -0.600734 19.8171 1.18804 15.0821L1.64885 13.8624Z" :fill="habit.color || '#79D45D'" />
-                    </svg>
-                    <span class="template-habit-card__icona">{{ habit.icona || '✨' }}</span>
-                  </span>
-                  <span class="template-habit-card__content">
-                    <span class="template-habit-card__title">{{ habit.nom || habit.titol }}</span>
-                  </span>
-                </button>
+                  <div class="moment-divider moment-divider--expanded-habits" role="presentation">
+                    <span class="moment-divider__line" aria-hidden="true"></span>
+                    <span class="moment-divider__text">{{ $t('templates.expanded_habits_section') }}</span>
+                    <span class="moment-divider__line" aria-hidden="true"></span>
+                  </div>
+
+                  <div class="template-habits-stack">
+                    <p v-if="!plantilla.habits || plantilla.habits.length === 0" class="template-habits-list__empty">{{ $t('templates.no_habits_to_select') }}</p>
+                    <button v-for="habit in plantilla.habits" :key="habit.id" type="button" class="template-habit-card">
+                      <span class="template-habit-card__mark" aria-hidden="true">
+                        <svg class="template-habit-card__blob" width="56" height="40" viewBox="0 0 56 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M1.64885 13.8624C4.80033 5.5202 12.7867 0 21.7043 0H46.8857C51.8563 0 55.8857 4.02944 55.8857 9V18.1149C55.8857 20.9967 55.1982 23.8369 53.8802 26.3997L53.3295 27.4705C49.3729 35.1639 41.4476 40 32.7964 40H18.4113C11.3613 40 4.93035 35.9742 1.85018 29.6327C-0.361252 25.0797 -0.600734 19.8171 1.18804 15.0821L1.64885 13.8624Z" :fill="habit.color || '#79D45D'" />
+                        </svg>
+                        <span class="template-habit-card__icona">{{ habit.icona || '✨' }}</span>
+                      </span>
+                      <span class="template-habit-card__content">
+                        <span class="template-habit-card__title">{{ habit.nom || habit.titol }}</span>
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. SECCIÓ PERSONALS -->
+        <div v-if="selectedFilter === 'all' || selectedFilter === 'personals'" class="template-section">
+          <div class="moment-divider mt-1 mb-4" role="presentation">
+            <span class="moment-divider__line" aria-hidden="true"></span>
+            <span class="moment-divider__text">{{ $t('templates.personal') || 'Personals' }}</span>
+            <span class="moment-divider__line" aria-hidden="true"></span>
+          </div>
+
+          <div v-if="plantillesPersonals.length === 0" class="text-center py-6 text-gray-400 text-sm">
+            No tens plantilles personals creades.
+          </div>
+          <div v-else class="templates-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            <button
+              v-if="selectedFilter === 'personals'"
+              type="button"
+              class="create-category-trigger create-category-trigger--grid"
+              :aria-expanded="plantillaSheetObert ? 'true' : 'false'"
+              @click="obrirSheetCrearPlantilla"
+            >
+              <span class="create-category-trigger__icon" aria-hidden="true">
+                <svg width="33" height="33" viewBox="0 0 33 33" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <line x1="17" y1="2" x2="17" y2="31" stroke="white" stroke-width="4" stroke-linecap="round"/>
+                  <line x1="2" y1="16" x2="31" y2="16" stroke="white" stroke-width="4" stroke-linecap="round"/>
+                </svg>
+              </span>
+            </button>
+
+            <!-- Llista de targetes de plantilles personals -->
+            <div
+              v-for="plantilla in plantillesPersonals"
+              :key="plantilla.id"
+              class="template-expandable"
+              :class="isPlantillaExpandida(plantilla.id) ? 'template-expandable--active' : ''"
+            >
+              <button type="button" class="template-card w-full text-left" @click="togglePlantillaExpandida(plantilla.id)">
+                <div class="template-card__mark" aria-hidden="true">
+                  <svg class="template-card__blob" width="57" height="54" viewBox="0 0 57 54" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1.33093 20.8883C4.84845 8.52703 16.1404 0 28.9924 0H47.2749C52.2455 0 56.2749 4.02944 56.2749 9V25.1665C56.2749 28.2757 55.6987 31.358 54.5756 34.2573L54.3455 34.8512C50.0838 45.8525 39.4989 53.1035 27.701 53.1035H24.1663C14.0216 53.1035 4.95681 46.7675 1.4712 37.2404C-0.281291 32.4504 -0.473285 27.2287 0.922704 22.3229L1.33093 20.8883Z" :fill="getHabitColor({ categoria_id: plantilla.categoria })" />
+                  </svg>
+                  <span class="template-card__icona">{{ getCategoryIcon(plantilla.categoria) }}</span>
+                </div>
+
+                <div class="template-card__content">
+                  <p class="template-card__title">{{ plantilla.titol }}</p>
+                  <div class="template-card__meta">
+                    <span class="template-card__meta-item">
+                      <span aria-hidden="true">
+                        <svg width="14" height="10" viewBox="0 0 14 10" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4.33333 1H13M4.33333 5H13M4.33333 9H13M1 1H1.00667M1 5H1.00667M1 9H1.00667" stroke="#707070" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                      </span>
+                      {{ (plantilla.habits && plantilla.habits.length) || 0 }} hàbits
+                    </span>
+                    <span class="template-card__meta-item">
+                      <span aria-hidden="true">
+                        <svg width="16" height="13" viewBox="0 0 16 13" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0.666748 6.33333C0.666748 6.33333 3.33341 1 8.00008 1C12.6667 1 15.3334 6.33333 15.3334 6.33333C15.3334 6.33333 12.6667 11.6667 8.00008 11.6667C3.33341 11.6667 0.666748 6.33333 0.666748 6.33333Z" stroke="#707070" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.00008 8.33333C9.10465 8.33333 10.0001 7.4379 10.0001 6.33333C10.0001 5.22876 9.10465 4.33333 8.00008 4.33333C6.89551 4.33333 6.00008 5.22876 6.00008 6.33333C6.00008 7.4379 6.89551 8.33333 8.00008 8.33333Z" stroke="#707070" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                      </span>
+                      {{ plantilla.esPublica ? 'Pública' : 'Privada' }}
+                    </span>
+                  </div>
+                </div>
+              </button>
+
+              <div v-if="isPlantillaExpandida(plantilla.id)" class="template-expand-inline">
+                <div class="template-expand-top">
+                  <button class="template-expand-close" type="button" @click="tancarPlantillaExpandida">
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11.2917 6.54167L6.54167 11.2917M6.54167 6.54167L11.2917 11.2917M16.8333 8.91667C16.8333 13.2889 13.2889 16.8333 8.91667 16.8333C4.54441 16.8333 1 13.2889 1 8.91667C1 4.54441 4.54441 1 8.91667 1C13.2889 1 16.8333 4.54441 16.8333 8.91667Z" stroke="#FAF9F9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </button>
+                  <button class="template-expand-edit" type="button" @click="editarPlantilla(plantilla.id)">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 2.41421H2.33333C1.97971 2.41421 1.64057 2.55469 1.39052 2.80474C1.14048 3.05479 1 3.39392 1 3.74755V13.0809C1 13.4345 1.14048 13.7736 1.39052 14.0237C1.64057 14.2737 1.97971 14.4142 2.33333 14.4142H11.6667C12.0203 14.4142 12.3594 14.2737 12.6095 14.0237C12.8595 13.7736 13 13.4345 13 13.0809V8.41421M12 1.41421C12.2652 1.149 12.6249 1 13 1C13.3751 1 13.7348 1.149 14 1.41421C14.2652 1.67943 14.4142 2.03914 14.4142 2.41421C14.4142 2.78929 14.2652 3.149 14 3.41421L7.66667 9.74755L5 10.4142L5.66667 7.74755L12 1.41421Z" stroke="#FAF9F9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <span>Editar Plantilla</span>
+                  </button>
+                </div>
+
+                <div class="template-expand-panel">
+                  <div class="template-spec-card">
+                    <div class="template-expand-actions">
+                      <button type="button" class="template-expand-btn template-expand-btn--forum" @click="exportarAForum(plantilla)">Exportar</button>
+                      <button type="button" class="template-expand-btn template-expand-btn--import" @click="obrirModalImportarHabits(plantilla)">Importar</button>
+                      <button type="button" class="template-expand-btn template-expand-btn--delete" @click="eliminarPlantilla(plantilla.id)">Eliminar</button>
+                    </div>
+                  </div>
+
+                  <div class="moment-divider moment-divider--expanded-habits" role="presentation">
+                    <span class="moment-divider__line" aria-hidden="true"></span>
+                    <span class="moment-divider__text">{{ $t('templates.expanded_habits_section') }}</span>
+                    <span class="moment-divider__line" aria-hidden="true"></span>
+                  </div>
+
+                  <div class="template-habits-stack">
+                    <p v-if="!plantilla.habits || plantilla.habits.length === 0" class="template-habits-list__empty">{{ $t('templates.no_habits_to_select') }}</p>
+                    <button v-for="habit in plantilla.habits" :key="habit.id" type="button" class="template-habit-card">
+                      <span class="template-habit-card__mark" aria-hidden="true">
+                        <svg class="template-habit-card__blob" width="56" height="40" viewBox="0 0 56 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.64885 13.8624C4.80033 5.5202 12.7867 0 21.7043 0H46.8857C51.8563 0 55.8857 4.02944 55.8857 9V18.1149C55.8857 20.9967 55.1982 23.8369 53.8802 26.3997L53.3295 27.4705C49.3729 35.1639 41.4476 40 32.7964 40H18.4113C11.3613 40 4.93035 35.9742 1.85018 29.6327C-0.361252 25.0797 -0.600734 19.8171 1.18804 15.0821L1.64885 13.8624Z" :fill="habit.color || '#79D45D'" /></svg>
+                        <span class="template-habit-card__icona">{{ habit.icona || '✨' }}</span>
+                      </span>
+                      <span class="template-habit-card__content">
+                        <span class="template-habit-card__title">{{ habit.nom || habit.titol }}</span>
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. SECCIÓ D'AMICS -->
+        <div v-if="selectedFilter === 'friends' || (selectedFilter === 'all' && plantillesAmics.length > 0)" class="template-section">
+          <div class="moment-divider mt-1 mb-4" role="presentation">
+            <span class="moment-divider__line" aria-hidden="true"></span>
+            <span class="moment-divider__text">{{ $t('templates.friends') || 'Amics' }}</span>
+            <span class="moment-divider__line" aria-hidden="true"></span>
+          </div>
+
+          <div v-if="plantillesAmics.length === 0" class="text-center py-6 text-gray-400 text-sm">
+            No hi ha plantilles d'amics disponibles.
+          </div>
+          <div v-else class="templates-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            <div
+              v-for="plantilla in plantillesAmics"
+              :key="plantilla.id"
+              class="template-expandable"
+              :class="isPlantillaExpandida(plantilla.id) ? 'template-expandable--active' : ''"
+            >
+              <button type="button" class="template-card w-full text-left" @click="togglePlantillaExpandida(plantilla.id)">
+                <div class="template-card__mark" aria-hidden="true">
+                  <svg class="template-card__blob" width="57" height="54" viewBox="0 0 57 54" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1.33093 20.8883C4.84845 8.52703 16.1404 0 28.9924 0H47.2749C52.2455 0 56.2749 4.02944 56.2749 9V25.1665C56.2749 28.2757 55.6987 31.358 54.5756 34.2573L54.3455 34.8512C50.0838 45.8525 39.4989 53.1035 27.701 53.1035H24.1663C14.0216 53.1035 4.95681 46.7675 1.4712 37.2404C-0.281291 32.4504 -0.473285 27.2287 0.922704 22.3229L1.33093 20.8883Z" :fill="getHabitColor({ categoria_id: plantilla.categoria })" />
+                  </svg>
+                  <span class="template-card__icona">{{ getCategoryIcon(plantilla.categoria) }}</span>
+                </div>
+
+                <div class="template-card__content">
+                  <p class="template-card__title">{{ plantilla.titol }}</p>
+                  <div class="template-card__meta">
+                    <span class="template-card__meta-item">
+                      <span aria-hidden="true">
+                        <svg width="14" height="10" viewBox="0 0 14 10" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4.33333 1H13M4.33333 5H13M4.33333 9H13M1 1H1.00667M1 5H1.00667M1 9H1.00667" stroke="#707070" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                      </span>
+                      {{ (plantilla.habits && plantilla.habits.length) || 0 }} hàbits
+                    </span>
+                    <span class="template-card__meta-item font-bold text-blue-600">
+                      👤 {{ plantilla.creadorNom || 'Amic' }}
+                    </span>
+                  </div>
+                </div>
+              </button>
+
+              <div v-if="isPlantillaExpandida(plantilla.id)" class="template-expand-inline">
+                <div class="template-expand-top">
+                  <button class="template-expand-close" type="button" @click="tancarPlantillaExpandida">
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11.2917 6.54167L6.54167 11.2917M6.54167 6.54167L11.2917 11.2917M16.8333 8.91667C16.8333 13.2889 13.2889 16.8333 8.91667 16.8333C4.54441 16.8333 1 13.2889 1 8.91667C1 4.54441 4.54441 1 8.91667 1C13.2889 1 16.8333 4.54441 16.8333 8.91667Z" stroke="#FAF9F9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </button>
+                </div>
+
+                <div class="template-expand-panel">
+                  <div class="template-spec-card">
+                    <div class="template-expand-actions">
+                      <button type="button" class="template-expand-btn template-expand-btn--import" @click="obrirModalImportarHabits(plantilla)">Importar</button>
+                    </div>
+                  </div>
+
+                  <div class="moment-divider moment-divider--expanded-habits" role="presentation">
+                    <span class="moment-divider__line" aria-hidden="true"></span>
+                    <span class="moment-divider__text">{{ $t('templates.expanded_habits_section') }}</span>
+                    <span class="moment-divider__line" aria-hidden="true"></span>
+                  </div>
+
+                  <div class="template-habits-stack">
+                    <p v-if="!plantilla.habits || plantilla.habits.length === 0" class="template-habits-list__empty">{{ $t('templates.no_habits_to_select') }}</p>
+                    <button v-for="habit in plantilla.habits" :key="habit.id" type="button" class="template-habit-card">
+                      <span class="template-habit-card__mark" aria-hidden="true">
+                        <svg class="template-habit-card__blob" width="56" height="40" viewBox="0 0 56 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.64885 13.8624C4.80033 5.5202 12.7867 0 21.7043 0H46.8857C51.8563 0 55.8857 4.02944 55.8857 9V18.1149C55.8857 20.9967 55.1982 23.8369 53.8802 26.3997L53.3295 27.4705C49.3729 35.1639 41.4476 40 32.7.64 40H18.4113C11.3613 40 4.93035 35.9742 1.85018 29.6327C-0.361252 25.0797 -0.600734 19.8171 1.18804 15.0821L1.64885 13.8624Z" :fill="habit.color || '#79D45D'" /></svg>
+                        <span class="template-habit-card__icona">{{ habit.icona || '✨' }}</span>
+                      </span>
+                      <span class="template-habit-card__content">
+                        <span class="template-habit-card__title">{{ habit.nom || habit.titol }}</span>
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. SECCIÓ GUARDADES -->
+        <div v-if="selectedFilter === 'saved' || (selectedFilter === 'all' && plantillesGuardades.length > 0)" class="template-section">
+          <div class="moment-divider mt-1 mb-4" role="presentation">
+            <span class="moment-divider__line" aria-hidden="true"></span>
+            <span class="moment-divider__text">{{ $t('templates.saved') || 'Guardades' }}</span>
+            <span class="moment-divider__line" aria-hidden="true"></span>
+          </div>
+
+          <div v-if="plantillesGuardades.length === 0" class="text-center py-6 text-gray-400 text-sm">
+            No tens plantilles guardades o importades del fòrum.
+          </div>
+          <div v-else class="templates-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            <div
+              v-for="plantilla in plantillesGuardades"
+              :key="plantilla.id"
+              class="template-expandable"
+              :class="isPlantillaExpandida(plantilla.id) ? 'template-expandable--active' : ''"
+            >
+              <button type="button" class="template-card w-full text-left" @click="togglePlantillaExpandida(plantilla.id)">
+                <div class="template-card__mark" aria-hidden="true">
+                  <svg class="template-card__blob" width="57" height="54" viewBox="0 0 57 54" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1.33093 20.8883C4.84845 8.52703 16.1404 0 28.9924 0H47.2749C52.2455 0 56.2749 4.02944 56.2749 9V25.1665C56.2749 28.2757 55.6987 31.358 54.5756 34.2573L54.3455 34.8512C50.0838 45.8525 39.4989 53.1035 27.701 53.1035H24.1663C14.0216 53.1035 4.95681 46.7675 1.4712 37.2404C-0.281291 32.4504 -0.473285 27.2287 0.922704 22.3229L1.33093 20.8883Z" :fill="getHabitColor({ categoria_id: plantilla.categoria })" />
+                  </svg>
+                  <span class="template-card__icona">{{ getCategoryIcon(plantilla.categoria) }}</span>
+                </div>
+
+                <div class="template-card__content">
+                  <p class="template-card__title">{{ plantilla.titol }}</p>
+                  <div class="template-card__meta">
+                    <span class="template-card__meta-item">
+                      <span aria-hidden="true">
+                        <svg width="14" height="10" viewBox="0 0 14 10" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4.33333 1H13M4.33333 5H13M4.33333 9H13M1 1H1.00667M1 5H1.00667M1 9H1.00667" stroke="#707070" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                      </span>
+                      {{ (plantilla.habits && plantilla.habits.length) || 0 }} hàbits
+                    </span>
+                    <span class="template-card__meta-item font-bold text-purple-600">
+                      🏷️ Importada
+                    </span>
+                  </div>
+                </div>
+              </button>
+
+              <div v-if="isPlantillaExpandida(plantilla.id)" class="template-expand-inline">
+                <div class="template-expand-top">
+                  <button class="template-expand-close" type="button" @click="tancarPlantillaExpandida">
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11.2917 6.54167L6.54167 11.2917M6.54167 6.54167L11.2917 11.2917M16.8333 8.91667C16.8333 13.2889 13.2889 16.8333 8.91667 16.8333C4.54441 16.8333 1 13.2889 1 8.91667C1 4.54441 4.54441 1 8.91667 1C13.2889 1 16.8333 4.54441 16.8333 8.91667Z" stroke="#FAF9F9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </button>
+                  <button class="template-expand-edit" type="button" @click="editarPlantilla(plantilla.id)">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 2.41421H2.33333C1.97971 2.41421 1.64057 2.55469 1.39052 2.80474C1.14048 3.05479 1 3.39392 1 3.74755V13.0809C1 13.4345 1.14048 13.7736 1.39052 14.0237C1.64057 14.2737 1.97971 14.4142 2.33333 14.4142H11.6667C12.0203 14.4142 12.3594 14.2737 12.6095 14.0237C12.8595 13.7736 13 13.4345 13 13.0809V8.41421M12 1.41421C12.2652 1.149 12.6249 1 13 1C13.3751 1 13.7348 1.149 14 1.41421C14.2652 1.67943 14.4142 2.03914 14.4142 2.41421C14.4142 2.78929 14.2652 3.149 14 3.41421L7.66667 9.74755L5 10.4142L5.66667 7.74755L12 1.41421Z" stroke="#FAF9F9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <span>Editar Plantilla</span>
+                  </button>
+                </div>
+
+                <div class="template-expand-panel">
+                  <div class="template-spec-card">
+                    <div class="template-expand-actions">
+                      <button type="button" class="template-expand-btn template-expand-btn--forum" @click="exportarAForum(plantilla)">Exportar</button>
+                      <button type="button" class="template-expand-btn template-expand-btn--import" @click="obrirModalImportarHabits(plantilla)">Importar</button>
+                      <button type="button" class="template-expand-btn template-expand-btn--delete" @click="eliminarPlantilla(plantilla.id)">Eliminar</button>
+                    </div>
+                  </div>
+
+                  <div class="moment-divider moment-divider--expanded-habits" role="presentation">
+                    <span class="moment-divider__line" aria-hidden="true"></span>
+                    <span class="moment-divider__text">{{ $t('templates.expanded_habits_section') }}</span>
+                    <span class="moment-divider__line" aria-hidden="true"></span>
+                  </div>
+
+                  <div class="template-habits-stack">
+                    <p v-if="!plantilla.habits || plantilla.habits.length === 0" class="template-habits-list__empty">{{ $t('templates.no_habits_to_select') }}</p>
+                    <button v-for="habit in plantilla.habits" :key="habit.id" type="button" class="template-habit-card">
+                      <span class="template-habit-card__mark" aria-hidden="true">
+                        <svg class="template-habit-card__blob" width="56" height="40" viewBox="0 0 56 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.64885 13.8624C4.80033 5.5202 12.7867 0 21.7043 0H46.8857C51.8563 0 55.8857 4.02944 55.8857 9V18.1149C55.8857 20.9967 55.1982 23.8369 53.8802 26.3997L53.3295 27.4705C49.3729 35.1639 41.4476 40 32.7964 40H18.4113C11.3613 40 4.93035 35.9742 1.85018 29.6327C-0.361252 25.0797 -0.600734 19.8171 1.18804 15.0821L1.64885 13.8624Z" :fill="habit.color || '#79D45D'" /></svg>
+                        <span class="template-habit-card__icona">{{ habit.icona || '✨' }}</span>
+                      </span>
+                      <span class="template-habit-card__content">
+                        <span class="template-habit-card__title">{{ habit.nom || habit.titol }}</span>
+                      </span>
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
+  </div>
 
-    <Teleport to="body">
+  <Teleport to="body">
       <!-- Modal per crear/editar plantilla -->
       <div
         v-if="modalVisible"
@@ -350,44 +611,44 @@
         </div>
       </div>
 
-      <!-- Modal per importar/exportar hàbits de plantilla -->
+      <!-- Modal per importar hàbits de plantilla -->
       <div
-        v-if="modalExportarVisible"
+        v-if="modalImportarVisible"
         class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center z-[100]"
-        @click.self="tancarModalExportar"
+        @click.self="tancarModalImportar"
       >
         <div
           class="relative bg-white rounded-2xl shadow-xl p-8 m-4 max-w-2xl w-full"
         >
           <button
-            @click="tancarModalExportar"
+            @click="tancarModalImportar"
             class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl"
           >
             &times;
           </button>
 
           <h2 class="habit-form-label text-gray-800 text-2xl mb-6">
-            {{ $t('templates.import_title', { titol: plantillaAExportar ? plantillaAExportar.titol : '' }) }}
+            {{ $t('templates.import_title', { titol: plantillaAImportar ? plantillaAImportar.titol : '' }) }}
           </h2>
 
           <div class="space-y-6">
-            <!-- Selecció d'Hàbits per exportar -->
+            <!-- Selecció d'Hàbits per importar -->
             <div>
               <h3 class="habit-form-label text-gray-800 mb-4">{{ $t('templates.import_select_habits') }}</h3>
-              <div v-if="!plantillaAExportar || !plantillaAExportar.habits || plantillaAExportar.habits.length === 0" class="text-center py-4 text-gray-400">
+              <div v-if="!plantillaAImportar || !plantillaAImportar.habits || plantillaAImportar.habits.length === 0" class="text-center py-4 text-gray-400">
                 <p>{{ $t('templates.import_no_habits') }}</p>
               </div>
               <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-80 overflow-y-auto pr-2">
                 <button
-                  v-for="habit in plantillaAExportar.habits"
+                  v-for="habit in plantillaAImportar.habits"
                   :key="habit.id"
                   type="button"
                   class="template-habit-selection-card"
-                  :class="{ 'template-habit-selection-card--selected': habitsAExportarSeleccionats.indexOf(habit.id) !== -1 }"
-                  @click="toggleHabitAExportarSeleccionat(habit.id)"
+                  :class="{ 'template-habit-selection-card--selected': habitsAImportarSeleccionats.indexOf(habit.id) !== -1 }"
+                  @click="toggleHabitAImportarSeleccionat(habit.id)"
                 >
                   <div class="template-habit-selection-card__check">
-                    <SharedMissionStyleCheckIcon :selected="habitsAExportarSeleccionats.indexOf(habit.id) !== -1" :size="32" />
+                    <SharedMissionStyleCheckIcon :selected="habitsAImportarSeleccionats.indexOf(habit.id) !== -1" :size="32" />
                   </div>
                   <div class="template-habit-selection-card__content">
                     <div class="template-habit-selection-card__icon-blob">
@@ -402,16 +663,16 @@
               </div>
             </div>
 
-            <!-- Botons d'Acció per exportar -->
+            <!-- Botons d'Acció per importar -->
             <div class="flex justify-end gap-3 mt-8">
               <button
-                @click="tancarModalExportar"
+                @click="tancarModalImportar"
                 class="px-6 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-100 transition-colors"
               >
                 {{ $t('habits.cancel') }}
               </button>
               <button
-                @click="confirmarExportacioHabits"
+                @click="confirmarImportacioHabits"
                 class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl shadow-lg transition-all transform active:scale-95"
               >
                 {{ $t('templates.import_button') }}
@@ -591,7 +852,6 @@
         </div>
       </Transition>
     </Teleport>
-  </div>
 </template>
 
 <script>
@@ -642,9 +902,9 @@ export default {
       ],
       userCategories: [],
       categoriaAnterior: null,
-      modalExportarVisible: false, // New: Controla la visibilitat del modal d'exportació.
-      plantillaAExportar: null,    // New: Objecte de plantilla seleccionada per exportar.
-      habitsAExportarSeleccionats: [], // New: Array d'IDs d'hàbits seleccionats per a l'exportació.
+      modalImportarVisible: false,
+      plantillaAImportar: null,
+      habitsAImportarSeleccionats: [],
       modalEliminarVisible: false, // New: Controla la visibilitat del modal d'eliminació.
       plantillaAEliminar: null,   // New: Objecte de plantilla seleccionada per eliminar.
       plantillaExpandidaId: null,
@@ -653,35 +913,49 @@ export default {
     };
   },
   computed: {
-    filteredPlantilles: function () {
+    baseFilteredPlantilles: function () {
       var self = this;
       if (!Array.isArray(self.plantillaStore.plantilles)) {
         return [];
       }
-      
-      var filtered = self.plantillaStore.plantilles;
-
-      // Filtre per visibilitat
-      if (self.selectedFilter === 'public') {
-        filtered = filtered.filter(function (plantilla) {
-          return plantilla.esPublica === true;
-        });
-      } else if (self.selectedFilter === 'private') {
-        filtered = filtered.filter(function (plantilla) {
-          return plantilla.esPublica !== true;
-        });
-      }
-
-      // Filtre per cerca de text
+      var llista = self.plantillaStore.plantilles;
       if (self.searchQuery.trim() !== '') {
         var query = self.searchQuery.toLowerCase();
-        filtered = filtered.filter(function (plantilla) {
-          var titol = (plantilla.titol || '').toLowerCase();
-          return titol.indexOf(query) !== -1;
+        llista = llista.filter(function (p) {
+          return (p.titol || '').toLowerCase().indexOf(query) !== -1;
         });
       }
-
-      return filtered;
+      return llista;
+    },
+    plantillesPubliques: function () {
+      var uid = this.gameStore.userId || 1;
+      return this.baseFilteredPlantilles.filter(function (p) {
+        return p.esPublica === true && !p.esGuardada && !p.esAmic && p.creadorId !== uid;
+      });
+    },
+    plantillesPersonals: function () {
+      var uid = this.gameStore.userId || 1;
+      return this.baseFilteredPlantilles.filter(function (p) {
+        return (p.creadorId === uid || !p.esPublica) && !p.esGuardada;
+      });
+    },
+    plantillesAmics: function () {
+      var uid = this.gameStore.userId || 1;
+      return this.baseFilteredPlantilles.filter(function (p) {
+        return p.esAmic === true || (p.esPublica === true && p.creadorId !== uid && p.creadorId !== 1 && !p.esGuardada);
+      });
+    },
+    plantillesGuardades: function () {
+      return this.baseFilteredPlantilles.filter(function (p) {
+        return p.esGuardada === true || p.origen === 'forum' || p.importada === true;
+      });
+    },
+    filteredPlantilles: function () {
+      if (this.selectedFilter === 'public') return this.plantillesPubliques;
+      if (this.selectedFilter === 'personals') return this.plantillesPersonals;
+      if (this.selectedFilter === 'friends') return this.plantillesAmics;
+      if (this.selectedFilter === 'saved') return this.plantillesGuardades;
+      return this.baseFilteredPlantilles;
     }
   },
   // Hook de cicle de vida: s'executa quan el component és muntat.
@@ -909,8 +1183,8 @@ export default {
         });
         return;
       }
-      self.tancar(); // Close creation modal if open
-      self.tancarModalExportar(); // Close export modal if open
+      self.tancar();
+      self.tancarModalImportar();
       // Buscar la plantilla per mostrar el seu titol al modal
       var p = self.plantillaStore.plantilles.find(function(item) { return item.id === id; });
       self.plantillaAEliminar = p;
@@ -1226,8 +1500,7 @@ export default {
         });
         self.carregarPlantilles();
       } else if (payload.action === "EXPORT_HABITS") {
-          // After habits are exported, show the confirmation to create a new template
-          self.handleExportHabitsConfirmation(payload);
+          self.handleImportHabitsConfirmation(payload);
       }
     },
 
@@ -1255,17 +1528,16 @@ export default {
      */
     obrirModalImportarHabits: function (plantilla) {
       var self = this;
-      self.tancar(); // Close creation modal if open
-      self.tancarModalEliminar(); // Close delete modal if open
-      self.plantillaAExportar = plantilla;
-      self.modalExportarVisible = true;
+      self.tancar();
+      self.tancarModalEliminar();
+      self.plantillaAImportar = plantilla;
+      self.modalImportarVisible = true;
 
-      // Seleccionar tots els hàbits de la plantilla per defecte per a la importació.
-      self.habitsAExportarSeleccionats = [];
+      self.habitsAImportarSeleccionats = [];
       if (plantilla.habits && Array.isArray(plantilla.habits)) {
         var i;
         for (i = 0; i < plantilla.habits.length; i++) {
-          self.habitsAExportarSeleccionats.push(plantilla.habits[i].id);
+          self.habitsAImportarSeleccionats.push(plantilla.habits[i].id);
         }
       }
     },
@@ -1279,39 +1551,29 @@ export default {
       navigateTo('/social');
     },
 
-    /**
-     * Tanca el modal d'exportació d'hàbits.
-     */
-    tancarModalExportar: function () {
-      this.modalExportarVisible = false;
-      this.plantillaAExportar = null;
-      this.habitsAExportarSeleccionats = [];
+    tancarModalImportar: function () {
+      this.modalImportarVisible = false;
+      this.plantillaAImportar = null;
+      this.habitsAImportarSeleccionats = [];
     },
 
-    /**
-     * Afegeix o treu un hàbit de la llista de seleccionats per a l'exportació.
-     * @param {number} habitId - L'ID de l'hàbit a alternar.
-     */
-    toggleHabitAExportarSeleccionat: function (habitId) {
+    toggleHabitAImportarSeleccionat: function (habitId) {
       var self = this;
-      var pos = self.habitsAExportarSeleccionats.indexOf(habitId);
+      var pos = self.habitsAImportarSeleccionats.indexOf(habitId);
       if (pos === -1) {
-        self.habitsAExportarSeleccionats.push(habitId);
+        self.habitsAImportarSeleccionats.push(habitId);
       } else {
-        self.habitsAExportarSeleccionats.splice(pos, 1);
+        self.habitsAImportarSeleccionats.splice(pos, 1);
       }
     },
 
-    /**
-     * Confirma la selecció d'hàbits per a l'exportació i sol·licita confirmació a l'usuari.
-     */
-    confirmarExportacioHabits: function () {
+    confirmarImportacioHabits: function () {
       var self = this;
-      var plantilla = self.plantillaAExportar;
+      var plantilla = self.plantillaAImportar;
       var habitsConfirmacio = [];
       var i;
 
-      if (!plantilla || self.habitsAExportarSeleccionats.length === 0) {
+      if (!plantilla || self.habitsAImportarSeleccionats.length === 0) {
         self.$swal.fire({
           icon: 'warning',
           title: 'Atenció',
@@ -1320,9 +1582,8 @@ export default {
         return;
       }
 
-      // Preparar el missatge de confirmació amb els noms dels hàbits seleccionats.
       for (i = 0; i < plantilla.habits.length; i++) {
-        if (self.habitsAExportarSeleccionats.indexOf(plantilla.habits[i].id) !== -1) {
+        if (self.habitsAImportarSeleccionats.indexOf(plantilla.habits[i].id) !== -1) {
           habitsConfirmacio.push(plantilla.habits[i].nom || plantilla.habits[i].titol);
         }
       }
@@ -1333,27 +1594,24 @@ export default {
       });
 
       self.$swal.fire({
-        title: 'Confirmar exportació',
+        title: 'Confirmar importació',
         text: missatgeConfirmacio,
         icon: 'question',
         showCancelButton: true,
-        confirmButtonText: 'Exporta',
+        confirmButtonText: 'Importa',
         cancelButtonText: 'Cancel·la',
         confirmButtonColor: '#28a745',
         cancelButtonColor: '#d33'
       }).then(function (result) {
         if (result.isConfirmed) {
-          self.exportarHabitsSeleccionats();
+          self.importarHabitsSeleccionats();
         }
       });
     },
 
-    /**
-     * Envia els hàbits seleccionats al servidor per a la seva exportació a l'usuari.
-     */
-    exportarHabitsSeleccionats: function () {
+    importarHabitsSeleccionats: function () {
       var self = this;
-      var plantilla = self.plantillaAExportar;
+      var plantilla = self.plantillaAImportar;
 
       if (!self.socket) {
         self.$swal.fire({
@@ -1364,7 +1622,7 @@ export default {
         return;
       }
 
-      if (!plantilla || self.habitsAExportarSeleccionats.length === 0) {
+      if (!plantilla || self.habitsAImportarSeleccionats.length === 0) {
         self.$swal.fire({
           icon: 'error',
           title: 'Error',
@@ -1373,21 +1631,16 @@ export default {
         return;
       }
 
-      // A. Emitir l'acció de "export_habits" via socket.
       self.socket.emit("habit_action", {
         action: "EXPORT_HABITS",
         plantilla_id: plantilla.id,
-        selected_habits: self.habitsAExportarSeleccionats,
+        selected_habits: self.habitsAImportarSeleccionats,
         user_id: self.gameStore.userId,
       });
-      self.tancarModalExportar(); // Close the export modal immediately.
+      self.tancarModalImportar();
     },
 
-    /**
-     * Gestiona la confirmació per crear una nova plantilla després d'exportar hàbits.
-     * @param {object} payload - Les dades de resposta del servidor amb els hàbits exportats.
-     */
-    handleExportHabitsConfirmation: async function (payload) { // Keep async
+    handleImportHabitsConfirmation: async function (payload) {
         var self = this;
         var exportedHabitNames = [];
         var i;
@@ -1418,7 +1671,7 @@ export default {
             title: 'Nova plantilla?',
             text: this.$t('templates.export_confirm_save_template', {
                 habits: exportedHabitNames.join(", "),
-                titol: this.$t('templates.export_template_title_prefix') + self.plantillaAExportar.titol
+                titol: this.$t('templates.export_template_title_prefix') + self.plantillaAImportar.titol
             }),
             icon: 'question',
             showCancelButton: true,
@@ -1431,10 +1684,10 @@ export default {
                 self.socket.emit("plantilla_action", {
                     action: "CREATE", // Creating a new template from exported habits
                     plantilla_data: {
-                        titol: self.$t('templates.export_template_title_prefix') + self.plantillaAExportar.titol,
+                        titol: self.$t('templates.export_template_title_prefix') + self.plantillaAImportar.titol,
                         categoria: "Personal", // Default category for exported templates
                         es_publica: false, // Exported templates are private by default
-                        habits_ids: self.habitsAExportarSeleccionats,
+                        habits_ids: self.habitsAImportarSeleccionats,
                     },
                     user_id: self.gameStore.userId,
                     // Add a flag to indicate this is a follow-up creation from export, if needed by backend

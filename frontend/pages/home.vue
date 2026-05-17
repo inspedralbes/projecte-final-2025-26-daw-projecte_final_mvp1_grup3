@@ -155,6 +155,7 @@
           @habit-creat="refrescarDespresCrearHabit"
           @incrementar-habit="incrementarHabitInline"
           @decrementar-habit="decrementarHabitInline"
+          @completar-habit="completarHabitInline"
           @start-focus-habit="iniciarSessioFocus"
         >
           <template v-if="!vistaHistorialDia" #below-daily-progress>
@@ -203,18 +204,18 @@
       @close="tancarModalRatxa"
     />
 
+    <StreakCelebrationModal
+      :is-open="esObertModalRatxaCelebracio"
+      :ratxa="ratxa"
+      @close="tancarModalRatxaCelebracio"
+    />
+
     <LogrosModal
       :is-open="esObertModalLogros"
       :logros="logroStore.logros"
       @close="tancarModalLogros"
     />
 
-    <RouletteModal
-      :is-open="esObertModalRuleta"
-      :can-spin="canSpinRoulette"
-      @close="tancarModalRuleta"
-      @spin="enviarSpinRuleta"
-    />
   </div>
 </template>
 
@@ -226,8 +227,8 @@ import { useAuthStore } from "~/stores/useAuthStore.js";
 
 import HabitProgressModal from "~/components/home/HabitProgressModal.vue";
 import StreakBrokenModal from "~/components/home/StreakBrokenModal.vue";
+import StreakCelebrationModal from "~/components/home/StreakCelebrationModal.vue";
 import LogrosModal from "~/components/home/LogrosModal.vue";
-import RouletteModal from "~/components/home/RouletteModal.vue";
 import HabitDetailsModal from "~/components/user/home/HabitDetailsModal.vue";
 import UserHomeHomeMissionCard from "~/components/user/home/HomeMissionCard.vue";
 import UserHomeHomeDailyRouletteCard from "~/components/user/home/HomeDailyRouletteCard.vue";
@@ -249,8 +250,8 @@ export default {
     HabitProgressModal,
     HabitDetailsModal,
     StreakBrokenModal,
+    StreakCelebrationModal,
     LogrosModal,
-    RouletteModal,
     UserHomeHomeMissionCard,
     UserHomeHomeDailyRouletteCard,
     UserHomeHomeProfileCard,
@@ -267,10 +268,11 @@ export default {
       estaCarregantHabits: false,
       errorMissatge: "",
       esObertModalLogros: false,
-      esObertModalRuleta: false,
       esObertModalHabit: false,
       esObertModalDetalls: false,
       esObertModalRatxa: false,
+      esObertModalRatxaCelebracio: false,
+      rachaInicialCarregada: false,
       ratxaAnteriorModal: 0,
       habitSeleccionat: null,
       habitDetallsSeleccionat: null,
@@ -396,17 +398,18 @@ export default {
     var self = this;
     var authStore = useAuthStore();
     authStore.loadFromStorage();
-    authStore.refrescarSessio(); // Actualitza dades de l'usuari (incloent monstre_tipus)
     self.gameStore.sincronitzarUsuariId();
     self.habitStore.carregarHabitsLocal();
-    if (self.habitStore.habits && self.habitStore.habits.length > 0) {
-      self.estaCarregantHabits = false;
-    } else {
-      self.habitStore.obtenirHabitsDesDeApi()
-        .finally(function () { self.estaCarregantHabits = false; });
+    if (!self.habitStore.habits || self.habitStore.habits.length === 0) {
+      self.estaCarregantHabits = true;
     }
+    self.habitStore.obtenirHabitsDesDeApi()
+      .finally(function () { self.estaCarregantHabits = false; });
     self.gameStore.carregarDadesHome()
-      .then(function (dades) { if (dades && dades.logros) self.logroStore.setLogros(dades.logros); });
+      .then(function (dades) {
+        if (dades && dades.logros) self.logroStore.setLogros(dades.logros);
+        self.rachaInicialCarregada = true;
+      });
     self.inicialitzarSocket();
 
     self.inicialitzarClima();
@@ -434,6 +437,11 @@ export default {
     }
   },
   watch: {
+    ratxa: function (novaRatxa, vellaRatxa) {
+      if (this.rachaInicialCarregada && vellaRatxa !== undefined && novaRatxa > vellaRatxa) {
+        this.esObertModalRatxaCelebracio = true;
+      }
+    },
     weatherCiutat: function (nova) {
       if (typeof window !== "undefined" && nova && nova.trim() !== "") {
         localStorage.setItem("loopy_weather_city", nova.trim());
@@ -755,6 +763,10 @@ export default {
       this.ratxaAnteriorModal = 0;
     },
 
+    tancarModalRatxaCelebracio: function () {
+      this.esObertModalRatxaCelebracio = false;
+    },
+
     /**
      * Actualitza el progrés local al store (per feedback immediat a la UI).
      */
@@ -785,6 +797,15 @@ export default {
       if (!habit) return;
       this.habitSeleccionat = habit;
       this.incrementarHabit();
+    },
+    completarHabitInline: function (habit) {
+      if (this.vistaHistorialDia) return;
+      if (!habit) return;
+      var id = habit.id;
+      var objectiu = habit.objectiuVegades || 1;
+      this.habitSeleccionat = habit;
+      this.actualitzarProgresLocal(id, objectiu, true);
+      this.gameStore.completarHabit(id, this.socket);
     },
 
     /**
@@ -891,8 +912,17 @@ export default {
      */
     inicialitzarSocket: function () {
       var self = this;
-      self.socket = useNuxtApp().$socket;
+      var nuxt = useNuxtApp();
+      self.socket = nuxt.$socket;
       if (!self.socket) return;
+
+      if (!self.socket.connected) {
+        var authStore = useAuthStore();
+        if (authStore.token && authStore.isAuthenticated) {
+          self.socket.auth = { token: authStore.token };
+          self.socket.connect();
+        }
+      }
 
       if (self.socket.connected) {
         flushPendingFocusEvents(self.socket);
@@ -971,7 +1001,7 @@ export default {
       if (!this.canSpinRoulette) {
         return;
       }
-      this.esObertModalRuleta = true;
+      navigateTo("/roulette");
     },
 
     /**

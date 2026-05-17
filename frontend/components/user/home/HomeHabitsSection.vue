@@ -50,7 +50,7 @@
             v-for="h in habitsSenseMoment"
             :key="'tot-dia-' + h.id"
             class="habit-expandable"
-            :class="isHabitExpandit(h) ? 'habit-expandable--active' : ''"
+            :class="[isHabitExpandit(h) ? 'habit-expandable--active' : '', habitCompletatAvui(h.id) ? 'habit-expandable--completed' : '']"
           >
             <UserHomeHomeHabitCard
               :habit="h"
@@ -77,6 +77,17 @@
                 </button>
               </div>
               <div class="habit-expand-panel">
+                <Transition name="habit-done">
+                  <div v-if="isJustCompleted(h.id) || habitCompletatAvui(h.id)" class="habit-done-overlay">
+                    <span class="habit-done-check">✓</span>
+                    <span class="habit-done-text">Completat!</span>
+                    <span class="habit-done-label">+{{ recompensaXP }} XP &nbsp; +{{ recompensaMonedes }} monedes</span>
+                    <span v-if="isJustCompleted(h.id)" class="habit-done-burst habit-done-burst--1"></span>
+                    <span v-if="isJustCompleted(h.id)" class="habit-done-burst habit-done-burst--2"></span>
+                    <span v-if="isJustCompleted(h.id)" class="habit-done-burst habit-done-burst--3"></span>
+                    <span v-if="isJustCompleted(h.id)" class="habit-done-burst habit-done-burst--4"></span>
+                  </div>
+                </Transition>
                 <div class="habit-expand-info">
                   <div class="habit-expand-meta">
                     <p><span class="meta-icon" :style="{ color: colorHabitExpandit }">↻</span>{{ textRepeticioHabit }}</p>
@@ -105,7 +116,7 @@
                 <div class="habit-expand-controls">
                   <button type="button" class="habit-expand-action" @click="$emit('decrementar-habit', habitExpanditActual)">−</button>
                   <span class="habit-expand-count">{{ obtenirProgres(habitExpanditActual.id) }}</span>
-                  <button type="button" class="habit-expand-action" @click="$emit('incrementar-habit', habitExpanditActual)">+</button>
+                  <button type="button" class="habit-expand-action" @click="onIncrementarHabit(habitExpanditActual)">+</button>
                 </div>
               </div>
             </div>
@@ -121,7 +132,7 @@
             v-for="h in habitsMatins"
             :key="'mati-' + h.id"
             class="habit-expandable"
-            :class="isHabitExpandit(h) ? 'habit-expandable--active' : ''"
+            :class="[isHabitExpandit(h) ? 'habit-expandable--active' : '', habitCompletatAvui(h.id) ? 'habit-expandable--completed' : '']"
           >
             <UserHomeHomeHabitCard
               :habit="h"
@@ -144,6 +155,17 @@
                 </button>
               </div>
               <div class="habit-expand-panel">
+                <Transition name="habit-done">
+                  <div v-if="isJustCompleted(h.id) || habitCompletatAvui(h.id)" class="habit-done-overlay">
+                    <span class="habit-done-check">✓</span>
+                    <span class="habit-done-text">Completat!</span>
+                    <span class="habit-done-label">+{{ recompensaXP }} XP &nbsp; +{{ recompensaMonedes }} monedes</span>
+                    <span v-if="isJustCompleted(h.id)" class="habit-done-burst habit-done-burst--1"></span>
+                    <span v-if="isJustCompleted(h.id)" class="habit-done-burst habit-done-burst--2"></span>
+                    <span v-if="isJustCompleted(h.id)" class="habit-done-burst habit-done-burst--3"></span>
+                    <span v-if="isJustCompleted(h.id)" class="habit-done-burst habit-done-burst--4"></span>
+                  </div>
+                </Transition>
                 <div class="habit-expand-info">
                   <div class="habit-expand-meta">
                     <p><span class="meta-icon" :style="{ color: colorHabitExpandit }">↻</span>{{ textRepeticioHabit }}</p>
@@ -172,7 +194,7 @@
                 <div class="habit-expand-controls">
                   <button type="button" class="habit-expand-action" @click="$emit('decrementar-habit', habitExpanditActual)">−</button>
                   <span class="habit-expand-count">{{ obtenirProgres(habitExpanditActual.id) }}</span>
-                  <button type="button" class="habit-expand-action" @click="$emit('incrementar-habit', habitExpanditActual)">+</button>
+                  <button type="button" class="habit-expand-action" @click="onIncrementarHabit(habitExpanditActual)">+</button>
                 </div>
               </div>
             </div>
@@ -189,7 +211,7 @@
             v-for="h in habitsTarda"
             :key="'tarda-' + h.id"
             class="habit-expandable"
-            :class="isHabitExpandit(h) ? 'habit-expandable--active' : ''"
+            :class="[isHabitExpandit(h) ? 'habit-expandable--active' : '', habitCompletatAvui(h.id) ? 'habit-expandable--completed' : '']"
           >
             <UserHomeHomeHabitCard
               :habit="h"
@@ -207,6 +229,17 @@
                 <button class="habit-expand-edit" type="button" @click="editarHabitExpandit"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 2.41421H2.33333C1.97971 2.41421 1.64057 2.55469 1.39052 2.80474C1.14048 3.05479 1 3.39392 1 3.74755V13.0809C1 13.4345 1.14048 13.7736 1.39052 14.0237C1.64057 14.2737 1.97971 14.4142 2.33333 14.4142H11.6667C12.0203 14.4142 12.3594 14.2737 12.6095 14.0237C12.8595 13.7736 13 13.4345 13 13.0809V8.41421M12 1.41421C12.2652 1.149 12.6249 1 13 1C13.3751 1 13.7348 1.149 14 1.41421C14.2652 1.67943 14.4142 2.03914 14.4142 2.41421C14.4142 2.78929 14.2652 3.149 14 3.41421L7.66667 9.74755L5 10.4142L5.66667 7.74755L12 1.41421Z" stroke="#FAF9F9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Editar Habit</span></button>
               </div>
               <div class="habit-expand-panel">
+                <Transition name="habit-done">
+                  <div v-if="isJustCompleted(h.id) || habitCompletatAvui(h.id)" class="habit-done-overlay">
+                    <span class="habit-done-check">✓</span>
+                    <span class="habit-done-text">Completat!</span>
+                    <span class="habit-done-label">+{{ recompensaXP }} XP &nbsp; +{{ recompensaMonedes }} monedes</span>
+                    <span v-if="isJustCompleted(h.id)" class="habit-done-burst habit-done-burst--1"></span>
+                    <span v-if="isJustCompleted(h.id)" class="habit-done-burst habit-done-burst--2"></span>
+                    <span v-if="isJustCompleted(h.id)" class="habit-done-burst habit-done-burst--3"></span>
+                    <span v-if="isJustCompleted(h.id)" class="habit-done-burst habit-done-burst--4"></span>
+                  </div>
+                </Transition>
                 <div class="habit-expand-info">
                   <div class="habit-expand-meta">
                     <p><span class="meta-icon" :style="{ color: colorHabitExpandit }">↻</span>{{ textRepeticioHabit }}</p>
@@ -235,7 +268,7 @@
                 <div class="habit-expand-controls">
                   <button type="button" class="habit-expand-action" @click="$emit('decrementar-habit', habitExpanditActual)">−</button>
                   <span class="habit-expand-count">{{ obtenirProgres(habitExpanditActual.id) }}</span>
-                  <button type="button" class="habit-expand-action" @click="$emit('incrementar-habit', habitExpanditActual)">+</button>
+                  <button type="button" class="habit-expand-action" @click="onIncrementarHabit(habitExpanditActual)">+</button>
                 </div>
               </div>
             </div>
@@ -252,7 +285,7 @@
             v-for="h in habitsNit"
             :key="'nit-' + h.id"
             class="habit-expandable"
-            :class="isHabitExpandit(h) ? 'habit-expandable--active' : ''"
+            :class="[isHabitExpandit(h) ? 'habit-expandable--active' : '', habitCompletatAvui(h.id) ? 'habit-expandable--completed' : '']"
           >
             <UserHomeHomeHabitCard
               :habit="h"
@@ -270,6 +303,17 @@
                 <button class="habit-expand-edit" type="button" @click="editarHabitExpandit"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 2.41421H2.33333C1.97971 2.41421 1.64057 2.55469 1.39052 2.80474C1.14048 3.05479 1 3.39392 1 3.74755V13.0809C1 13.4345 1.14048 13.7736 1.39052 14.0237C1.64057 14.2737 1.97971 14.4142 2.33333 14.4142H11.6667C12.0203 14.4142 12.3594 14.2737 12.6095 14.0237C12.8595 13.7736 13 13.4345 13 13.0809V8.41421M12 1.41421C12.2652 1.149 12.6249 1 13 1C13.3751 1 13.7348 1.149 14 1.41421C14.2652 1.67943 14.4142 2.03914 14.4142 2.41421C14.4142 2.78929 14.2652 3.149 14 3.41421L7.66667 9.74755L5 10.4142L5.66667 7.74755L12 1.41421Z" stroke="#FAF9F9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Editar Habit</span></button>
               </div>
               <div class="habit-expand-panel">
+                <Transition name="habit-done">
+                  <div v-if="isJustCompleted(h.id) || habitCompletatAvui(h.id)" class="habit-done-overlay">
+                    <span class="habit-done-check">✓</span>
+                    <span class="habit-done-text">Completat!</span>
+                    <span class="habit-done-label">+{{ recompensaXP }} XP &nbsp; +{{ recompensaMonedes }} monedes</span>
+                    <span v-if="isJustCompleted(h.id)" class="habit-done-burst habit-done-burst--1"></span>
+                    <span v-if="isJustCompleted(h.id)" class="habit-done-burst habit-done-burst--2"></span>
+                    <span v-if="isJustCompleted(h.id)" class="habit-done-burst habit-done-burst--3"></span>
+                    <span v-if="isJustCompleted(h.id)" class="habit-done-burst habit-done-burst--4"></span>
+                  </div>
+                </Transition>
                 <div class="habit-expand-info">
                   <div class="habit-expand-meta">
                     <p><span class="meta-icon" :style="{ color: colorHabitExpandit }">↻</span>{{ textRepeticioHabit }}</p>
@@ -298,7 +342,7 @@
                 <div class="habit-expand-controls">
                   <button type="button" class="habit-expand-action" @click="$emit('decrementar-habit', habitExpanditActual)">−</button>
                   <span class="habit-expand-count">{{ obtenirProgres(habitExpanditActual.id) }}</span>
-                  <button type="button" class="habit-expand-action" @click="$emit('incrementar-habit', habitExpanditActual)">+</button>
+                  <button type="button" class="habit-expand-action" @click="onIncrementarHabit(habitExpanditActual)">+</button>
                 </div>
               </div>
             </div>
@@ -360,7 +404,9 @@ export default {
       habitExpanditId: null,
       prioritatsLocals: {},
       coinIcon: coinIcon,
-      xpIcon: xpIcon
+      xpIcon: xpIcon,
+      completedAnimHabitId: null,
+      _completedAnimTimer: null
     };
   },
   props: {
@@ -510,6 +556,29 @@ export default {
         return false;
       }
       return CATEGORIES_EXTERIOR.indexOf(habit.categoriaId) >= 0;
+    },
+    onIncrementarHabit: function (habit) {
+      var self = this;
+      var progresActual = self.obtenirProgres(habit.id);
+      var objectiu = habit.objectiuVegades || 1;
+      var willComplete = (progresActual + 1 >= objectiu);
+      self.$emit('incrementar-habit', habit);
+      if (willComplete) {
+        self.completedAnimHabitId = habit.id;
+        if (self._completedAnimTimer) {
+          clearTimeout(self._completedAnimTimer);
+        }
+        self._completedAnimTimer = setTimeout(function () {
+          self.completedAnimHabitId = null;
+          self._completedAnimTimer = null;
+        }, 2200);
+        setTimeout(function () {
+          self.$emit('completar-habit', habit);
+        }, 350);
+      }
+    },
+    isJustCompleted: function (habitId) {
+      return this.completedAnimHabitId === habitId;
     }
   }
 };
@@ -572,6 +641,8 @@ export default {
 }
 
 .habit-expand-panel {
+  position: relative;
+  overflow: hidden;
   background: #FAF9F9;
   border-radius: 14px;
   padding: 12px;
@@ -814,5 +885,119 @@ export default {
   height: 3px;
   background: #FAF9F9;
   border-radius: 999px;
+}
+
+.habit-expandable {
+  position: relative;
+}
+
+
+
+.habit-done-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(121, 212, 93, 0.94);
+  border-radius: 10px;
+  gap: 4px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.habit-done-check {
+  font-size: 36px;
+  font-weight: 900;
+  color: #fff;
+  line-height: 1;
+  animation: habit-done-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.habit-done-text {
+  font-family: "Bricolage Grotesque", system-ui, sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 0.03em;
+  animation: habit-done-slide-up 0.4s 0.12s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.habit-done-label {
+  font-family: "Bricolage Grotesque", system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+  animation: habit-done-slide-up 0.4s 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.habit-done-burst {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #fff;
+  opacity: 0;
+}
+
+.habit-done-burst--1 {
+  top: 8px;
+  left: 20%;
+  animation: habit-burst 0.7s 0.1s ease-out both;
+}
+
+.habit-done-burst--2 {
+  top: 10px;
+  right: 18%;
+  animation: habit-burst 0.7s 0.2s ease-out both;
+}
+
+.habit-done-burst--3 {
+  bottom: 10px;
+  left: 28%;
+  animation: habit-burst 0.7s 0.15s ease-out both;
+}
+
+.habit-done-burst--4 {
+  bottom: 8px;
+  right: 25%;
+  animation: habit-burst 0.7s 0.25s ease-out both;
+}
+
+@keyframes habit-done-pop {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.3); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes habit-done-slide-up {
+  0% { transform: translateY(8px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes habit-burst {
+  0% { transform: scale(0); opacity: 0.9; }
+  50% { transform: scale(1.8); opacity: 0.6; }
+  100% { transform: scale(2.5) translateY(-6px); opacity: 0; }
+}
+
+.habit-done-enter-active {
+  transition: opacity 0.2s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.habit-done-leave-active {
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.habit-done-enter-from {
+  opacity: 0;
+  transform: scale(0.85);
+}
+
+.habit-done-leave-to {
+  opacity: 0;
+  transform: scale(0.92);
 }
 </style>

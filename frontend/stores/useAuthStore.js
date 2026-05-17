@@ -324,14 +324,15 @@ export var useAuthStore = defineStore('auth', {
           credentials: 'include'
         });
         if (!resposta.ok) {
-          await this.logout();
+          if (resposta.status === 401 || resposta.status === 403) {
+            await this.logout();
+          }
           return false;
         }
         var dades = await resposta.json();
         this.aplicarSessio(dades);
         return true;
       } catch (e) {
-        await this.logout();
         return false;
       }
     }

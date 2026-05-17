@@ -1,0 +1,89 @@
+name: CI/CD Tests
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main", "develop" ]
+
+jobs:
+  laravel-tests:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: loopy_test
+          POSTGRES_USER: loopy
+          POSTGRES_PASSWORD: loopy_secret
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
+        extensions: pdo_pgsql, pgsql, redis
+
+    - name: Set up testing environment
+      working-directory: ./backend-laravel
+      run: |
+        cp .env.testing .env
+        sed -i 's/DB_HOST=postgres/DB_HOST=127.0.0.1/g' .env
+        sed -i 's/REDIS_HOST=redis/REDIS_HOST=127.0.0.1/g' .env
+
+    - name: Install Composer Dependencies
+      working-directory: ./backend-laravel
+      run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+
+    - name: Setup Laravel Keys & Migrations
+      working-directory: ./backend-laravel
+      run: |
+        php artisan key:generate
+        php artisan jwt:secret --force
+        php artisan migrate --env=testing --force
+
+    - name: Execute Laravel Tests
+      working-directory: ./backend-laravel
+      run: php artisan test --env=testing
+
+  node-tests:
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+          
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        
+    - name: Install Dependencies
+      working-directory: ./backend-node
+      run: npm install
+      
+    - name: Execute Node.js Tests
+      working-directory: ./backend-node
+      run: |
+        export REDIS_URL=redis://127.0.0.1:6379
+        export JWT_SECRET=test_secret_for_ci
+        npm test

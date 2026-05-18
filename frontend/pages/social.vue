@@ -17,29 +17,31 @@
           class="social-compose-textarea"
         ></textarea>
 
-        <div v-if="selectedAttachment" class="social-compose-attachment">
-          <div class="social-compose-attachment__info">
-            <div
-              class="social-compose-attachment__icon"
-              :class="selectedAttachment.type === 'habit' ? 'social-compose-attachment__icon--habit' : 'social-compose-attachment__icon--template'"
-            >
-              <svg v-if="selectedAttachment.type === 'habit'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
-              </svg>
-              <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/>
-              </svg>
+        <div v-if="selectedAttachments && selectedAttachments.length > 0" class="social-compose-attachments-list">
+          <div v-for="(att, index) in selectedAttachments" :key="att.type + '-' + att.id" class="social-compose-attachment">
+            <div class="social-compose-attachment__info">
+              <div
+                class="social-compose-attachment__icon"
+                :class="att.type === 'habit' ? 'social-compose-attachment__icon--habit' : 'social-compose-attachment__icon--template'"
+              >
+                <svg v-if="att.type === 'habit'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                </svg>
+                <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/>
+                </svg>
+              </div>
+              <div>
+                <span class="social-compose-attachment__type">{{ att.type === 'habit' ? $t('social.habit') : $t('social.template') }}</span>
+                <p class="social-compose-attachment__name">{{ att.titol || att.nom }}</p>
+              </div>
             </div>
-            <div>
-              <span class="social-compose-attachment__type">{{ selectedAttachment.type === 'habit' ? $t('social.habit') : $t('social.template') }}</span>
-              <p class="social-compose-attachment__name">{{ selectedAttachment.titol || selectedAttachment.nom }}</p>
-            </div>
+            <button @click="removeAttachment(index)" class="social-compose-attachment__remove">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
           </div>
-          <button @click="selectedAttachment = null" class="social-compose-attachment__remove">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-            </svg>
-          </button>
         </div>
 
         <div class="social-compose-actions">
@@ -92,13 +94,22 @@
           :post="post"
           @import="openImportWizard"
           @deleted="onPostDeleted"
+          @report="openReportModal"
         />
       </div>
 
       <UserSocialImportWizard
         :show="showImportWizard"
         :post="selectedPost"
+        :attachment="selectedAttachmentToImport"
         @close="closeImportWizard"
+      />
+
+      <ReportUserModal
+        :show="showReportModal"
+        :userId="selectedReportUserId"
+        @close="showReportModal = false"
+        @success="handleReportSuccess"
       />
 
       <UserSocialAttachmentSelector
@@ -113,11 +124,13 @@
 <script>
 import { useSocialStore } from "~/stores/useSocialStore.js";
 import HeaderSocial from "~/components/HeaderSocial.vue";
+import ReportUserModal from "~/components/user/social/ReportUserModal.vue";
 
 export default {
   name: "SocialPage",
   components: {
     HeaderSocial,
+    ReportUserModal
   },
   middleware: ["auth"],
   data: function () {
@@ -129,8 +142,11 @@ export default {
       posts: [],
       showImportWizard: false,
       selectedPost: null,
+      selectedAttachmentToImport: null,
       showAttachmentSelector: false,
-      selectedAttachment: null
+      selectedAttachments: [],
+      showReportModal: false,
+      selectedReportUserId: null
     };
   },
   mounted: function () {
@@ -156,15 +172,15 @@ export default {
       this.postError = null;
 
       var postData = {
-        content: this.newPostContent
+        content: this.newPostContent,
+        attachments: this.selectedAttachments
       };
 
-      if (this.selectedAttachment) {
-        if (this.selectedAttachment.type === 'habit') {
-          postData.habit_id = this.selectedAttachment.id;
-        } else {
-          postData.plantilla_id = this.selectedAttachment.id;
-        }
+      if (this.selectedAttachments.length > 0) {
+        var firstHabit = this.selectedAttachments.find(function (a) { return a.type === 'habit'; });
+        var firstPlantilla = this.selectedAttachments.find(function (a) { return a.type === 'plantilla'; });
+        if (firstHabit) postData.habit_id = firstHabit.id;
+        if (firstPlantilla) postData.plantilla_id = firstPlantilla.id;
       }
 
       var socialStore = useSocialStore();
@@ -172,7 +188,7 @@ export default {
 
       if (result) {
         this.newPostContent = "";
-        this.selectedAttachment = null;
+        this.selectedAttachments = [];
       } else {
         this.postError = socialStore.error || this.$t('social.error_post');
       }
@@ -180,20 +196,53 @@ export default {
       this.posting = false;
     },
     onAttachmentSelected: function (attachment) {
-      this.selectedAttachment = attachment;
+      if (!this.selectedAttachments) {
+        this.selectedAttachments = [];
+      }
+      var exists = this.selectedAttachments.some(function (item) {
+        return item.id === attachment.id && item.type === attachment.type;
+      });
+      if (!exists) {
+        this.selectedAttachments.push(attachment);
+      }
     },
-    openImportWizard: function (post) {
-      this.selectedPost = post;
+    removeAttachment: function (index) {
+      this.selectedAttachments.splice(index, 1);
+    },
+    openImportWizard: function (data) {
+      if (data && data.post && data.attachment) {
+        this.selectedPost = data.post;
+        this.selectedAttachmentToImport = data.attachment;
+      } else {
+        this.selectedPost = data;
+        this.selectedAttachmentToImport = null;
+      }
       this.showImportWizard = true;
     },
     closeImportWizard: function () {
       this.showImportWizard = false;
       this.selectedPost = null;
+      this.selectedAttachmentToImport = null;
     },
     onPostDeleted: function (postId) {
       this.posts = this.posts.filter(function (p) {
         return p.id !== postId;
       });
+    },
+    openReportModal: function (userId) {
+      this.selectedReportUserId = userId;
+      this.showReportModal = true;
+    },
+    handleReportSuccess: function () {
+      this.showReportModal = false;
+      if (this.$swal) {
+        this.$swal.fire({
+          icon: "success",
+          title: "Report enviat",
+          text: "El report s'ha enviat correctament per a la seva revisió.",
+          confirmButtonColor: "#79D45D"
+        });
+      }
     }
   }
 };
@@ -258,8 +307,14 @@ export default {
   box-shadow: 0 0 0 2px rgba(121, 212, 93, 0.15);
 }
 
-.social-compose-attachment {
+.social-compose-attachments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   margin-top: 8px;
+}
+
+.social-compose-attachment {
   padding: 8px 12px;
   background: #ecfdf3;
   border-radius: 10px;

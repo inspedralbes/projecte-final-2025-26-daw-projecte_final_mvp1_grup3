@@ -2,7 +2,7 @@
   <button
     type="button"
     class="tirada-card"
-    :class="potTirar ? '' : 'tirada-card--disabled'"
+    :class="potTirar ? '' : 'tirada-card--disabled tirada-card--completed'"
     @click="$emit('obrir-ruleta')"
   >
     <div class="tirada-card__icon" aria-hidden="true">
@@ -25,7 +25,7 @@
       </p>
     </div>
 
-    <span class="tirada-card__dots" aria-hidden="true">
+    <span v-if="potTirar" class="tirada-card__dots" aria-hidden="true">
       <span></span>
       <span></span>
       <span></span>
@@ -59,14 +59,14 @@ export default {
   min-height: 70px;
   padding: 6px 36px 6px 66px;
   margin: 0;
-  border: none;
+  border: 2px solid transparent;
   text-align: left;
   cursor: pointer;
   background-color: #faf9f9;
   border-radius: 10px;
   overflow: hidden;
   box-sizing: border-box;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.2s ease, background-color 0.2s ease;
 }
 
 .tirada-card:not(.tirada-card--disabled):hover {
@@ -84,6 +84,11 @@ export default {
 
 .tirada-card--disabled {
   cursor: default;
+}
+
+.tirada-card--completed {
+  border-color: #79d45d;
+  background-color: #ecfdf3;
 }
 
 .tirada-card__icon {

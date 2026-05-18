@@ -16,17 +16,9 @@
         class="attach-sheet"
       >
         <!-- Header -->
-        <div class="attach-sheet__header">
-          <h3 class="attach-sheet__title">Seleccionar Adjunt</h3>
-          <button
-            type="button"
-            class="attach-sheet__close"
-            aria-label="Tancar"
-            @click="$emit('close')"
-          >
-            <span class="attach-sheet__close-line attach-sheet__close-line--1" aria-hidden="true"></span>
-            <span class="attach-sheet__close-line attach-sheet__close-line--2" aria-hidden="true"></span>
-          </button>
+        <div class="flex flex-col items-center border-b border-gray-100 shrink-0 w-full pt-4 px-6">
+          <div class="w-12 h-1.5 bg-gray-300 rounded-full mb-4"></div>
+          <h3 class="text-2xl font-['Bricolage_Grotesque'] font-bold text-[#949494] text-center w-full mb-4">Seleccionar Adjunt</h3>
         </div>
 
         <!-- Body -->

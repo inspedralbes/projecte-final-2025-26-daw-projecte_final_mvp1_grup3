@@ -1,6 +1,6 @@
 <template>
-  <!-- Top header (ocult a /calendar*: només barra inferior + footer layout) -->
-  <header v-if="!isCalendarRoute" class="w-full p-3">
+  <!-- Top header (ocult a /calendar i /social) -->
+  <header v-if="!isCalendarRoute && !isSocialRoute" class="w-full p-3">
     <!-- Mòbil: hamburguesa | stats al centre | clima a la dreta -->
     <nav class="w-full lg:hidden">
       <div class="flex w-full items-center gap-1 px-1 min-h-[2.75rem]">
@@ -146,10 +146,11 @@
       @click.self="weatherCityModalOpen = false"
     >
       <div
-        class="w-full max-w-sm rounded-2xl bg-white p-4 shadow-xl border border-gray-200"
+        class="w-full max-w-sm rounded-2xl bg-white p-4 shadow-xl border border-gray-200 flex flex-col items-center"
         @click.stop
       >
-        <h2 class="text-sm font-bold text-gray-800 mb-3">{{ $t('header.weather_modal_title') }}</h2>
+        <div class="w-10 h-1 bg-gray-300 rounded-full mb-3"></div>
+        <h2 class="text-sm font-bold text-[#949494] mb-3 text-center w-full">{{ $t('header.weather_modal_title') }}</h2>
         <input
           v-model="weatherCityInput"
           type="search"
@@ -292,6 +293,7 @@ const HEADER_WEATHER_EMOJI = {
 
 const route = useRoute()
 const isCalendarRoute = computed(() => String(route.path || '').startsWith('/calendar'))
+const isSocialRoute = computed(() => route.path === '/social' || String(route.path || '').startsWith('/friends') || String(route.path || '').startsWith('/clans'))
 
 const authStore = useAuthStore()
 const gameStore = useGameStore()

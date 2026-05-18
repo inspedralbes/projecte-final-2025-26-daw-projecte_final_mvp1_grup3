@@ -5,6 +5,20 @@
 
       <div class="clan-detail-area mt-4">
         <div v-if="loading" class="text-center py-8 clan-loading-text">Carregant...</div>
+        
+        <div v-else-if="insufficientLevel" class="max-w-md mx-auto mt-10">
+          <div class="text-center bg-white p-8 rounded-[32px] border-4 border-gray-100 shadow-xl font-['Outfit',sans-serif]">
+            <img src="~/assets/img/Icones/Icona_Logo_Perfil.png" class="w-32 h-auto mx-auto mb-6 drop-shadow-md pixelated" alt="Loopy" />
+            <h2 class="text-2xl font-black text-gray-800 mb-4 tracking-tight">Falta nivell!</h2>
+            <p class="text-gray-500 mb-8 font-semibold text-[15px] leading-snug">
+              Has de ser <strong class="text-emerald-500 text-lg">Nivell 5</strong> o superior per poder accedir a l'apartat de Clans. Segueix completant hàbits per pujar de nivell!
+            </p>
+            <NuxtLink to="/home" class="inline-block px-8 py-3 bg-[#FF6B8A] text-white rounded-[16px] font-extrabold text-base transition-transform active:translate-y-[2px] shadow-[0_4px_0_#D14D6B] border-none cursor-pointer">
+              Seguir jugant
+            </NuxtLink>
+          </div>
+        </div>
+
         <div v-else-if="clan">
           <div class="clan-detail-header">
             <h1 class="clan-detail-title">{{ clan.nom }}</h1>
@@ -25,7 +39,7 @@
             </button>
           </div>
 
-          <MemberList :clan-id="clanId" :is-leader="isLeader" />
+          <MemberList :clan-id="clanId" :is-leader="isLeader" @view-profile="openProfile" />
           
           <RequestManager v-if="isLeader" :clan-id="clanId" />
 
@@ -62,7 +76,8 @@ export default {
     return {
       loading: true,
       showInvite: false,
-      alreadyExpelled: false
+      alreadyExpelled: false,
+      insufficientLevel: false
     }
   },
   computed: {
@@ -97,8 +112,8 @@ export default {
     var authCheck = function() {
       var authStore = useAuthStore();
       if (authStore.user && authStore.user.nivell < 5) {
-        alert("Has de ser nivell 5 o superior per accedir als clans.");
-        self.$router.push("/social");
+        self.insufficientLevel = true;
+        self.loading = false;
         return;
       }
       self.setupSocketListener();
@@ -219,6 +234,16 @@ export default {
       var nuxtApp = useNuxtApp();
       if (nuxtApp.$socket) {
         nuxtApp.$socket.off("clan_member_left");
+      }
+    },
+    openProfile: function(userId) {
+      if (userId) {
+        var authStore = useAuthStore();
+        if (Number(userId) === Number(authStore.user?.id)) {
+          this.$router.push('/perfil');
+        } else {
+          this.$router.push('/user/' + userId);
+        }
       }
     }
   }

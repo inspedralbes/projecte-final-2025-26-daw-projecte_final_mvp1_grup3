@@ -218,19 +218,12 @@
       @click.self="tancarModalLlistaEditarHabits"
     >
       <div class="w-full max-w-md max-h-[min(85vh,32rem)] flex flex-col rounded-3xl bg-white shadow-2xl border border-gray-100 overflow-hidden" @click.stop>
-        <div class="px-5 py-4 border-b border-gray-100 flex items-start justify-between gap-3 shrink-0">
-          <div class="min-w-0">
-            <h3 class="text-lg font-black text-gray-800">{{ $t('habits.my_habits') }}</h3>
-            <p class="text-xs text-gray-500 mt-1">{{ $t('habits.pick_habit_modal_subtitle') }}</p>
+        <div class="px-5 border-b border-gray-100 flex flex-col items-center shrink-0 w-full pt-4">
+          <div class="w-12 h-1.5 bg-gray-300 rounded-full mb-4"></div>
+          <div class="min-w-0 text-center w-full">
+            <h3 class="text-2xl font-['Bricolage_Grotesque'] font-bold text-[#949494] text-center w-full mb-1">{{ $t('habits.my_habits') }}</h3>
+            <p class="text-xs text-gray-400 mb-4">{{ $t('habits.pick_habit_modal_subtitle') }}</p>
           </div>
-          <button
-            type="button"
-            class="shrink-0 w-10 h-10 rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-200 font-bold text-lg leading-none"
-            :aria-label="$t('habits.cancel')"
-            @click="tancarModalLlistaEditarHabits"
-          >
-            ×
-          </button>
         </div>
         <div class="flex-1 min-h-0 overflow-y-auto p-4">
           <div v-if="habitStore.habits.length === 0" class="text-center py-12 px-4 rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50/50">

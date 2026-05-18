@@ -20,11 +20,13 @@ class SocialPost extends Model
         'content',
         'habit_id',
         'plantilla_id',
+        'attachments',
     ];
 
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'attachments' => 'array',
     ];
 
     public function user(): BelongsTo

@@ -31,9 +31,11 @@ class SocialImportController extends Controller
             $request->validate([
                 'post_id' => 'required',
                 'dies_setmana' => 'required|array',
+                'habit_id' => 'nullable|integer',
             ]);
 
             $postId = $request->input('post_id');
+            $habitId = $request->input('habit_id');
             $diesIndices = $request->input('dies_setmana');
 
             $post = SocialPost::with('habit')->find($postId);
@@ -42,14 +44,20 @@ class SocialImportController extends Controller
                 return response()->json(['message' => 'Post no trobat: ' . $postId], 422);
             }
 
-            if (!$post->habit) {
-                error_log('Import Error: Post has no habit ' . $postId);
-                return response()->json(['message' => 'El post no té cap hàbit associat'], 422);
+            $original = null;
+            if ($habitId) {
+                $original = Habit::find($habitId);
+            } elseif ($post->habit) {
+                $original = $post->habit;
+            }
+
+            if (!$original) {
+                error_log('Import Error: Habit not found for post ' . $postId);
+                return response()->json(['message' => 'L\'hàbit especificat no existeix o el post no té cap hàbit associat'], 422);
             }
 
             $userId = $request->user_id;
 
-            // Augmentem el límit a 100 per evitar bloquejos durant proves
             $currentCount = UsuariHabit::where('usuari_id', $userId)
                 ->where('actiu', true)
                 ->count();
@@ -61,7 +69,6 @@ class SocialImportController extends Controller
                 ], 422);
             }
 
-            // Transformar l'array d'índexs [1, 2] a format Postgres {t,f,t,f,f,f,f}
             $booleanDaysArr = array_fill(0, 7, 'f');
             foreach ($diesIndices as $dayIndex) {
                 if ($dayIndex >= 1 && $dayIndex <= 7) {
@@ -70,7 +77,6 @@ class SocialImportController extends Controller
             }
             $postgresArray = '{' . implode(',', $booleanDaysArr) . '}';
 
-            $original = $post->habit;
             $newHabit = $original->replicate();
             $newHabit->usuari_id = $userId;
             $newHabit->dies_setmana = $postgresArray;
@@ -121,14 +127,18 @@ class SocialImportController extends Controller
                 'post_id' => 'required|integer',
                 'habit_ids' => 'required|array',
                 'habit_ids.*' => 'integer',
+                'plantilla_id' => 'nullable|integer',
             ]);
 
             $postId = $validated['post_id'];
+            $plantillaId = $request->input('plantilla_id');
             $habitIds = $validated['habit_ids'];
 
             $post = SocialPost::with('plantilla.habits')->findOrFail($postId);
 
-            if (!$post->plantilla) {
+            $targetPlantillaId = $plantillaId ?? $post->plantilla_id;
+
+            if (!$targetPlantillaId) {
                 error_log('Post has no template: ' . $postId);
                 return response()->json(['message' => 'El post no té cap plantilla associada'], 422);
             }
@@ -137,7 +147,7 @@ class SocialImportController extends Controller
 
             $result = $this->habitService->exportarHabitsDePlantilla(
                 $userId,
-                $post->plantilla_id,
+                $targetPlantillaId,
                 $habitIds
             );
 

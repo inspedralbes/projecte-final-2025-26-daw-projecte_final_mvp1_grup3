@@ -294,17 +294,21 @@ export var useSocialStore = defineStore("social", {
       }
     },
 
-    importHabit: async function (postId, diesSetmana) {
+    importHabit: async function (postId, diesSetmana, habitId) {
       this.loading = true;
       this.error = null;
 
       try {
+        var bodyData = {
+          post_id: postId,
+          dies_setmana: diesSetmana,
+        };
+        if (habitId) {
+          bodyData.habit_id = habitId;
+        }
         var resposta = await authFetch("/api/social/import/habit", {
           method: "POST",
-          body: JSON.stringify({
-            post_id: postId,
-            dies_setmana: diesSetmana,
-          }),
+          body: JSON.stringify(bodyData),
         });
         if (!resposta.ok) {
           throw new Error("Error en importar hàbit: " + resposta.status);
@@ -320,17 +324,21 @@ export var useSocialStore = defineStore("social", {
       }
     },
 
-    importPlantilla: async function (postId, habitIds) {
+    importPlantilla: async function (postId, habitIds, plantillaId) {
       this.loading = true;
       this.error = null;
 
       try {
+        var bodyData = {
+          post_id: postId,
+          habit_ids: habitIds,
+        };
+        if (plantillaId) {
+          bodyData.plantilla_id = plantillaId;
+        }
         var resposta = await authFetch("/api/social/import/plantilla", {
           method: "POST",
-          body: JSON.stringify({
-            post_id: postId,
-            habit_ids: habitIds,
-          }),
+          body: JSON.stringify(bodyData),
         });
         if (!resposta.ok) {
           throw new Error("Error en importar plantilla: " + resposta.status);

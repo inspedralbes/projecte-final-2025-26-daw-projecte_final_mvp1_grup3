@@ -8,6 +8,20 @@
           <div class="clans-spinner"></div>
           <p class="clans-loading-text">Carregant...</p>
         </div>
+        
+        <div v-else-if="insufficientLevel" class="max-w-md mx-auto mt-10">
+          <div class="text-center bg-white p-8 rounded-[32px] border-4 border-gray-100 shadow-xl font-['Outfit',sans-serif]">
+            <img src="~/assets/img/Icones/Icona_Logo_Perfil.png" class="w-32 h-auto mx-auto mb-6 drop-shadow-md pixelated" alt="Loopy" />
+            <h2 class="text-2xl font-black text-gray-800 mb-4 tracking-tight">Falta nivell!</h2>
+            <p class="text-gray-500 mb-8 font-semibold text-[15px] leading-snug">
+              Has de ser <strong class="text-emerald-500 text-lg">Nivell 5</strong> o superior per poder accedir a l'apartat de Clans. Segueix completant hàbits per pujar de nivell!
+            </p>
+            <NuxtLink to="/home" class="inline-block px-8 py-3 bg-[#FF6B8A] text-white rounded-[16px] font-extrabold text-base transition-transform active:translate-y-[2px] shadow-[0_4px_0_#D14D6B] border-none cursor-pointer">
+              Seguir jugant
+            </NuxtLink>
+          </div>
+        </div>
+
         <template v-else>
           <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
             <h1 class="clans-page-title">{{ $t('nav.clans') }}</h1>
@@ -33,7 +47,7 @@
             <ClanSettings v-if="showCreate" @cancel="showCreate = false" @saved="onClanCreated" />
             <ClanList v-else-if="!userClanId" />
             <div v-else class="text-center py-12">
-              <p class="clans-redirect-text">Ja estas en un clan. Redirigint...</p>
+              <p class="clans-redirect-text">Ja estàs en un clan. Redirigint...</p>
             </div>
           </transition>
         </template>
@@ -62,17 +76,19 @@ export default {
      return {
         showCreate: false,
         userClanId: null,
-        loading: true
+        loading: true,
+        insufficientLevel: false
      }
   },
-async mounted() {
+  async mounted() {
      var self = this;
      var authStore = useAuthStore();
      if (authStore.user && authStore.user.nivell < 5) {
-        alert("Has de ser nivell 5 o superior per accedir als clans.");
-        this.$router.push("/social");
+        this.insufficientLevel = true;
+        this.loading = false;
         return;
      }
+     
      var setupSocketListeners = function() {
         var nuxtApp = useNuxtApp();
         if (nuxtApp.$socket && nuxtApp.$socket.connected) {
@@ -100,6 +116,7 @@ async mounted() {
         }
      };
      setupSocketListeners();
+     
      var store = useClanStore();
      var myClan = await store.getMyClan();
      this.loading = false;
@@ -107,7 +124,7 @@ async mounted() {
         this.userClanId = myClan.id;
         this.$router.push('/clans/' + myClan.id);
      }
-   },
+  },
   methods: {
      onClanCreated: function (payload) {
         var store = useClanStore();

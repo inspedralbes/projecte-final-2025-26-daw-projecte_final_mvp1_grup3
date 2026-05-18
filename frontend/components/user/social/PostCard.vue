@@ -45,7 +45,7 @@
       </div>
 
       <div class="post-expand-panel">
-        <div class="post-expand-header">
+        <div class="post-expand-header flex justify-between items-start">
           <div class="post-expand-avatar-row">
             <button type="button" class="post-expand-avatar-btn" @click="openProfile">
               <div class="post-card__avatar-ring post-card__avatar-ring--lg" :style="avatarBackgroundStyle">
@@ -64,27 +64,35 @@
             </button>
             <div>
               <p class="post-expand-author">
-                <span class="post-expand-author__name" @click="openProfile">{{ post.user?.nom }}</span>
+                <span class="post-expand-author__name">{{ post.user?.nom }}</span>
               </p>
               <p class="post-expand-time">{{ formatDate(post.created_at) }}</p>
             </div>
           </div>
+          
+          <button v-if="!isOwner" type="button" @click="$emit('report', post.user_id)" class="text-[#FF8DA6] hover:text-[#ff4d6d] p-1 transition-colors" title="Reportar usuari">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+              <line x1="12" y1="9" x2="12" y2="13"></line>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+          </button>
         </div>
 
         <p class="post-expand-content">{{ post.content }}</p>
 
-        <div v-if="post.habit || post.plantilla" class="post-expand-attachment">
-          <div v-if="post.habit" class="post-expand-attachment__item">
-            <span class="post-expand-attachment__badge post-expand-attachment__badge--habit">{{ $t('social.habit') }}</span>
-            <span class="post-expand-attachment__name">{{ post.habit.titol }}</span>
+        <div v-if="post.attachments && post.attachments.length > 0" class="post-expand-attachments-container">
+          <div v-for="att in post.attachments" :key="att.type + '-' + att.id" class="post-expand-attachment">
+            <div class="post-expand-attachment__info">
+              <span class="post-expand-attachment__badge" :class="att.type === 'habit' ? 'post-expand-attachment__badge--habit' : 'post-expand-attachment__badge--template'">
+                {{ att.type === 'habit' ? $t('social.habit') : $t('social.template') }}
+              </span>
+              <span class="post-expand-attachment__name">{{ att.titol || (att.habit ? att.habit.titol : (att.plantilla ? att.plantilla.titol : '')) }}</span>
+            </div>
+            <button type="button" class="post-expand-import-btn" @click="$emit('import', { post: post, attachment: att })">
+              {{ $t('social.import') }}
+            </button>
           </div>
-          <div v-if="post.plantilla" class="post-expand-attachment__item">
-            <span class="post-expand-attachment__badge post-expand-attachment__badge--template">{{ $t('social.template') }}</span>
-            <span class="post-expand-attachment__name">{{ post.plantilla.titol }}</span>
-          </div>
-          <button type="button" class="post-expand-import-btn" @click="$emit('import', post)">
-            {{ $t('social.import') }}
-          </button>
         </div>
 
         <div class="post-expand-actions">
@@ -104,10 +112,19 @@
 
         <div class="post-expand-comments-section">
           <UserSocialCommentForm :post-id="post.id" />
-          <UserSocialCommentList :post-id="post.id" :initial-comments="post.comments || []" />
+          <UserSocialCommentList :post-id="post.id" :initial-comments="post.comments || []" @report="$emit('report', $event)" />
         </div>
       </div>
     </div>
+
+    <UserSocialConfirmModal
+      :show="showDeleteConfirm"
+      :title="'Eliminar post'"
+      :message="'Segur que vols eliminar aquest post? Aquesta acció no es pot desfer.'"
+      confirm-text="Eliminar"
+      @confirm="confirmDeletePost"
+      @cancel="showDeleteConfirm = false"
+    />
   </div>
 </template>
 
@@ -122,10 +139,11 @@ export default {
   props: {
     post: { type: Object, required: true }
   },
-  emits: ["import", "deleted"],
+  emits: ["import", "deleted", "report"],
   data: function () {
     return {
       showComments: false,
+      showDeleteConfirm: false,
       commentsCount: this.post.comments_count || 0
     };
   },
@@ -185,12 +203,13 @@ export default {
       if (diffDays < 7) return diffDays + "d";
       return d.toLocaleDateString();
     },
-    deletePost: async function () {
-      if (!confirm(this.$t('social.confirm_delete'))) return;
-
+    deletePost: function () {
+      this.showDeleteConfirm = true;
+    },
+    confirmDeletePost: async function () {
+      this.showDeleteConfirm = false;
       var socialStore = useSocialStore();
       var result = await socialStore.deletePost(this.post.id);
-
       if (result) {
         this.$emit("deleted", this.post.id);
       }
@@ -386,12 +405,6 @@ export default {
   font-size: 18px;
   font-weight: 700;
   color: #2b2d42;
-  cursor: pointer;
-  transition: color 0.15s;
-}
-
-.post-expand-author__name:hover {
-  color: #79D45D;
 }
 
 .post-expand-time {
@@ -410,19 +423,29 @@ export default {
 }
 
 /* --- Attachment block --- */
-.post-expand-attachment {
-  padding: 10px;
-  background: #ecfdf3;
-  border-radius: 10px;
-  border: 1px solid #bbf7d0;
+.post-expand-attachments-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   margin-bottom: 12px;
 }
 
-.post-expand-attachment__item {
+.post-expand-attachment {
+  padding: 12px;
+  background: #ecfdf3;
+  border-radius: 10px;
+  border: 1px solid #bbf7d0;
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 6px;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.post-expand-attachment__info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
 }
 
 .post-expand-attachment__badge {
@@ -430,9 +453,10 @@ export default {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  padding: 2px 8px;
+  padding: 3px 8px;
   border-radius: 6px;
   color: #ffffff;
+  flex-shrink: 0;
 }
 
 .post-expand-attachment__badge--habit {
@@ -448,6 +472,9 @@ export default {
   font-size: 14px;
   font-weight: 600;
   color: #2b2d42;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .post-expand-import-btn {

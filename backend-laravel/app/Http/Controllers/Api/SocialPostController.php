@@ -28,6 +28,10 @@ class SocialPostController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(15);
 
+        foreach ($posts as $post) {
+            $post->attachments = $this->loadAttachmentsModels($post);
+        }
+
         return response()->json($posts);
     }
 
@@ -37,6 +41,7 @@ class SocialPostController extends Controller
             'content' => 'required|string|max:2000',
             'habit_id' => 'nullable|integer|exists:habits,id',
             'plantilla_id' => 'nullable|integer|exists:plantilles,id',
+            'attachments' => 'nullable|array',
         ]);
 
         $post = SocialPost::create([
@@ -44,6 +49,7 @@ class SocialPostController extends Controller
             'content' => $validated['content'],
             'habit_id' => $validated['habit_id'] ?? null,
             'plantilla_id' => $validated['plantilla_id'] ?? null,
+            'attachments' => $validated['attachments'] ?? [],
         ]);
 
         $post->load(['user', 'habit', 'plantilla.habits']);
@@ -51,6 +57,8 @@ class SocialPostController extends Controller
         $post->loadExists(['likes as liked_by_current_user' => function ($query) use ($request) {
             $query->where('user_id', $request->user_id);
         }]);
+
+        $post->attachments = $this->loadAttachmentsModels($post);
 
         // Emetre esdeveniment per a temps real
         $this->redisFeedback->publicarPayload([
@@ -71,6 +79,8 @@ class SocialPostController extends Controller
         }])
             ->findOrFail($id);
 
+        $post->attachments = $this->loadAttachmentsModels($post);
+
         return response()->json($post);
     }
 
@@ -83,5 +93,53 @@ class SocialPostController extends Controller
         $post->delete();
 
         return response()->json(['message' => 'Post eliminat']);
+    }
+
+    protected function loadAttachmentsModels($post)
+    {
+        $attachments = $post->attachments;
+        if (is_string($attachments)) {
+            $attachments = json_decode($attachments, true);
+        }
+        if (!is_array($attachments)) {
+            $attachments = [];
+        }
+
+        if (empty($attachments)) {
+            if ($post->habit_id) {
+                $attachments[] = [
+                    'type' => 'habit',
+                    'id' => $post->habit_id,
+                ];
+            }
+            if ($post->plantilla_id) {
+                $attachments[] = [
+                    'type' => 'plantilla',
+                    'id' => $post->plantilla_id,
+                ];
+            }
+        }
+
+        $result = [];
+        foreach ($attachments as $att) {
+            if (isset($att['type']) && isset($att['id'])) {
+                if ($att['type'] === 'habit') {
+                    $habit = \App\Models\Habit::find($att['id']);
+                    if ($habit) {
+                        $att['habit'] = $habit;
+                        $att['titol'] = $habit->titol;
+                        $result[] = $att;
+                    }
+                } elseif ($att['type'] === 'plantilla') {
+                    $plantilla = \App\Models\Plantilla::with('habits')->find($att['id']);
+                    if ($plantilla) {
+                        $att['plantilla'] = $plantilla;
+                        $att['titol'] = $plantilla->titol;
+                        $result[] = $att;
+                    }
+                }
+            }
+        }
+        return $result;
     }
 }

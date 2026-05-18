@@ -14,7 +14,7 @@
           <template v-for="item in menuPrincipal" :key="item.nom">
             <NuxtLink v-if="item.ruta" :to="item.ruta"
               class="flex items-center gap-3 px-4 py-3 rounded-[10px] transition-all font-black text-xs uppercase tracking-widest text-gray-500 hover:text-gray-900 group font-bricolage"
-              active-class="bg-[#3b82f6] !text-white shadow-lg shadow-blue-100">
+              active-class="bg-[#79D45D] !text-white shadow-lg shadow-green-100">
               <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
               {{ item.nom }}
             </NuxtLink>
@@ -42,7 +42,7 @@
           <p class="px-4 text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 font-bricolage">Sistema</p>
           <NuxtLink v-for="item in menuSistema" :key="item.ruta" :to="item.ruta"
             class="flex items-center gap-3 px-4 py-3 rounded-[10px] transition-all font-black text-xs uppercase tracking-widest text-gray-500 hover:text-gray-900 group font-bricolage"
-            active-class="bg-[#7c3aed] !text-white shadow-lg shadow-purple-100">
+            active-class="bg-[#79D45D] !text-white shadow-lg shadow-green-100">
             <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
             {{ item.nom }}
           </NuxtLink>

@@ -12,13 +12,15 @@
     }"
   >
     <div class="global-content-wrapper">
-      <HeaderPublicProfile v-if="isPublicProfileRoute" />
-      <HeaderUser v-else />
-      <main class="mx-auto w-full min-w-0 max-w-7xl px-3 sm:px-4 pt-0 pb-28 lg:pb-8">
+      <HeaderUser />
+      <main
+        class="mx-auto w-full min-w-0 pt-0 pb-28 lg:pb-8"
+        :class="isShopRoute ? 'max-w-none px-0' : 'max-w-7xl px-3 sm:px-4'"
+      >
         <slot />
       </main>
       <!-- Footer escriptori: accés ràpid a la Botiga (la barra inferior mòbil també inclou /shop) -->
-      <footer v-if="!isPublicProfileRoute" class="app-footer-bar hidden lg:flex" aria-label="Peu de pàgina">
+      <footer class="app-footer-bar hidden lg:flex" aria-label="Peu de pàgina">
         <div class="app-footer-inner mx-auto w-full max-w-7xl px-4 py-3 flex items-center justify-center gap-2 border-t border-gray-200/80 bg-white/90 backdrop-blur-sm">
           <NuxtLink to="/shop" class="app-footer-shop-link">
             <svg xmlns="http://www.w3.org/2000/svg" class="app-footer-shop-svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -40,7 +42,6 @@ const route = useRoute();
 const isFocusRoute = computed(() => route.path.startsWith("/focus/"));
 const isShopRoute = computed(() => route.path === "/shop" || route.path.startsWith("/shop/"));
 const isCalendarRoute = computed(() => route.path.startsWith("/calendar"));
-const isPublicProfileRoute = computed(() => route.path.startsWith("/user/"));
 </script>
 
 <style scoped>

@@ -2,30 +2,41 @@
   <div class="shop-page min-h-screen overflow-x-hidden pb-24 lg:pb-8 flex flex-col">
     <div class="shop-spacer flex-1" aria-hidden="true"></div>
 
-    <div class="shop-items-wrap w-full px-4 sm:px-6">
-      <section v-if="!loading && items.length > 0" class="shop-grid">
-        <article
-          v-for="item in items"
-          :key="item.id"
-          class="shop-card"
-          :class="{
-            'shop-card--owned': itemJaPossessionat(item),
-            'shop-card--clickable': potComprar(item),
-            'shop-card--insufficient': !itemJaPossessionat(item) && monedes < item.preu,
-          }"
-          :role="potComprar(item) ? 'button' : undefined"
-          :tabindex="potComprar(item) ? 0 : undefined"
-          @click="onCardClick(item)"
-          @keydown.enter.prevent="onCardClick(item)"
-          @keydown.space.prevent="onCardClick(item)"
+    <div class="shop-items-wrap w-full">
+      <div v-if="!loading && items.length > 0" class="shop-sections">
+        <div
+          v-for="bloc in blocsBotiga"
+          :key="bloc.id"
+          class="shop-section"
         >
+          <div class="moment-divider moment-divider--shop" role="presentation">
+            <span class="moment-divider__line" aria-hidden="true"></span>
+            <span class="moment-divider__text">{{ $t(bloc.labelKey) }}</span>
+            <span class="moment-divider__line" aria-hidden="true"></span>
+          </div>
+
+          <section class="shop-grid">
+            <button
+              v-for="item in bloc.items"
+              :key="item.id"
+              type="button"
+              class="shop-card"
+              :class="{
+                'shop-card--owned': itemJaPossessionat(item),
+                'shop-card--clickable': potInteractuar(item),
+                'shop-card--insufficient': !itemJaPossessionat(item) && !teSaldo(item),
+              }"
+              :disabled="!potInteractuar(item)"
+              @click="onCardClick(item)"
+            >
           <div class="shop-card-price" aria-label="Preu">
             <span class="shop-card-price-value">{{ item.preu }}</span>
             <img :src="coinIcon" alt="" class="shop-card-coin" width="22" height="22" />
           </div>
 
-          <div class="shop-card-visual">
-            <img
+          <div class="shop-card-row">
+            <div class="shop-card-visual">
+              <img
                 v-if="item.imatge"
                 :src="item.imatge"
                 :alt="nomProducte(item)"
@@ -34,16 +45,21 @@
                 draggable="false"
                 @error="onImageError"
               />
-            <span v-else class="shop-card-emoji">🎁</span>
-          </div>
-          <h3 class="shop-card-title">{{ nomProducte(item) }}</h3>
+              <span v-else class="shop-card-emoji">🎁</span>
+            </div>
 
-          <span v-if="itemJaPossessionat(item)" class="shop-card-owned">
-            {{ $t('shop.owned') }}
-          </span>
-          <span v-else-if="comprant === item.id" class="shop-card-owned">…</span>
-        </article>
-      </section>
+            <div class="shop-card-body">
+              <h3 class="shop-card-title">{{ nomProducte(item) }}</h3>
+              <span v-if="itemJaPossessionat(item)" class="shop-card-owned">
+                {{ $t('shop.owned') }}
+              </span>
+              <span v-else-if="comprant === item.id" class="shop-card-owned">…</span>
+            </div>
+          </div>
+            </button>
+          </section>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -53,7 +69,7 @@ import { ref, computed, onMounted } from 'vue';
 import coinIcon from '~/assets/img/Icones/Icona_Moneda.png';
 import { useGameStore } from '~/stores/gameStore.js';
 import { useShopStore } from '~/stores/useShopStore.js';
-import { nomProducteBotiga } from '~/utils/shopItemI18n.js';
+import { nomProducteBotiga, categoriaProducteBotiga } from '~/utils/shopItemI18n.js';
 
 const gameStore = useGameStore();
 const shopStore = useShopStore();
@@ -70,22 +86,50 @@ const items = computed(function () { return shopStore.items; });
 const loading = computed(function () { return shopStore.loading; });
 const monedes = computed(function () { return gameStore.monedes; });
 
+const blocsBotiga = computed(function () {
+  var ordre = ['fons', 'skin', 'inventari'];
+  return ordre.map(function (id) {
+    return {
+      id: id,
+      labelKey: 'shop.divider_' + id,
+      items: items.value.filter(function (it) {
+        return categoriaProducteBotiga(it) === id;
+      }),
+    };
+  }).filter(function (bloc) {
+    return bloc.items.length > 0;
+  });
+});
+
 function itemJaPossessionat(item) {
   return item.tipus === 'skin' && shopStore.posseeixItem(item.id);
 }
 
-function potComprar(item) {
-  if (comprant.value !== null) {
+function preuItem(item) {
+  return Number(item && item.preu != null ? item.preu : 0);
+}
+
+function teSaldo(item) {
+  return monedes.value >= preuItem(item);
+}
+
+function potInteractuar(item) {
+  if (comprant.value !== null || shopStore.loading) {
     return false;
   }
-  if (itemJaPossessionat(item)) {
-    return false;
-  }
-  return monedes.value >= item.preu;
+  return !itemJaPossessionat(item);
 }
 
 function onCardClick(item) {
-  if (!potComprar(item)) {
+  if (!potInteractuar(item)) {
+    return;
+  }
+  if (!teSaldo(item)) {
+    $swal.fire({
+      icon: 'warning',
+      title: t('shop.insufficient_funds'),
+      confirmButtonColor: '#7c3aed',
+    });
     return;
   }
   confirmarCompra(item);
@@ -101,7 +145,7 @@ async function confirmarCompra(item) {
   if (!item || comprant.value !== null) {
     return;
   }
-  if (gameStore.monedes < item.preu) {
+  if (gameStore.monedes < preuItem(item)) {
     return;
   }
   const result = await $swal.fire({
@@ -149,7 +193,9 @@ onMounted(async function () {
 
 <style scoped>
 .shop-spacer {
+  flex-shrink: 0;
   min-height: calc(100vw * 1.45);
+  pointer-events: none;
 }
 @media (min-width: 640px) {
   .shop-spacer {
@@ -162,55 +208,125 @@ onMounted(async function () {
   }
 }
 
+.shop-page {
+  width: 100%;
+  max-width: 100%;
+}
+
 .shop-items-wrap {
   position: relative;
-  z-index: 2;
+  z-index: 5;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  padding-inline: 0.625rem;
+}
+
+@media (min-width: 640px) {
+  .shop-items-wrap {
+    padding-inline: 0.75rem;
+  }
+}
+
+.shop-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.shop-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.moment-divider--shop {
+  margin-top: 0.25rem;
+}
+
+.moment-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.moment-divider__text {
+  flex-shrink: 0;
+  color: #faf9f9;
+  font-size: 15px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.moment-divider__line {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 3px;
+  background: #faf9f9;
+  border-radius: 999px;
 }
 
 .shop-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  align-items: end;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
   width: 100%;
   max-width: 100%;
-  column-gap: 0.75rem;
+  gap: 1rem;
 }
 
 .shop-card {
   position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  width: min(46vw, 11.6875rem);
-  max-width: 11.6875rem;
-  aspect-ratio: 187 / 134;
-  padding: 0 0 0.5rem;
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-height: 5.375rem;
+  padding: 0.75rem 0.875rem;
+  padding-right: 3.25rem;
   background: #ffffff;
   border-radius: 0.875rem;
   border: none;
   box-shadow: none;
-  text-align: center;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  appearance: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
   transition: transform 0.2s ease;
   overflow: hidden;
 }
 
-.shop-card:nth-child(odd) {
-  justify-self: start;
+.shop-card:disabled {
+  cursor: default;
 }
 
-.shop-card:nth-child(even) {
-  justify-self: end;
+.shop-card-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  min-width: 0;
 }
 
 @media (min-width: 640px) {
   .shop-grid {
-    column-gap: 1.25rem;
+    gap: 1.25rem;
   }
 
   .shop-card {
-    width: min(42vw, 11.6875rem);
-    padding: 0 0 0.55rem;
+    min-height: 5.75rem;
+    padding: 0.875rem 1rem;
+    padding-right: 3.5rem;
     border-radius: 1rem;
+  }
+
+  .shop-card-row {
+    gap: 1rem;
   }
 }
 
@@ -227,8 +343,8 @@ onMounted(async function () {
   outline-offset: 2px;
 }
 
-.shop-card--insufficient {
-  cursor: not-allowed;
+.shop-card--insufficient:not(:disabled) {
+  cursor: pointer;
 }
 
 .shop-card--insufficient .shop-card-img {
@@ -269,42 +385,47 @@ onMounted(async function () {
 }
 
 .shop-card-visual {
-  position: relative;
   display: flex;
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  min-height: 0;
-  margin: 0;
-  padding: 0.2rem 0;
+  width: 3.5rem;
+  height: 4.5rem;
   overflow: hidden;
 }
 
 .shop-card-img {
   display: block;
-  width: auto;
-  height: auto;
-  max-width: 82%;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
   max-height: 100%;
-  margin: 0 auto;
   object-fit: contain;
   object-position: center center;
 }
 
 .shop-card-emoji {
-  font-size: 2.25rem;
+  font-size: 2rem;
   line-height: 1;
 }
 
+.shop-card-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
 .shop-card-title {
-  flex-shrink: 0;
   margin: 0;
-  padding: 0.15rem 0.4rem 0.4rem;
+  padding: 0;
   font-family: "Bricolage Grotesque", system-ui, sans-serif;
   font-size: 0.9375rem;
   font-weight: 800;
-  line-height: 1.15;
+  line-height: 1.2;
   color: #111111;
 }
 
@@ -315,13 +436,19 @@ onMounted(async function () {
 }
 
 .shop-card-owned {
-  flex-shrink: 0;
-  margin-top: 0.1rem;
-  padding: 0 0.4rem 0.35rem;
+  margin: 0;
+  padding: 0;
   font-family: "Bricolage Grotesque", system-ui, sans-serif;
   font-size: 0.6875rem;
   font-weight: 700;
   line-height: 1.2;
   color: #15803d;
+}
+
+@media (min-width: 640px) {
+  .shop-card-visual {
+    width: 3.75rem;
+    height: 4.75rem;
+  }
 }
 </style>

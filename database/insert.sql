@@ -293,7 +293,9 @@ INSERT INTO ADMIN_NOTIFICACIONS (administrador_id, tipus, titol, descripcio) VAL
 (1, 'alerta', 'Nou usuari registrat', 'L''usuari Rosalia Vila s''ha unit a la plataforma.');
 
 -- 7. BOTIGA_ITEMS (catàleg inicial de la tenda Loopy)
--- Imatges: frontend/public/img/items/gorra_monster.png, recuperador_racha.png
+-- Imatges: frontend/public/img/items/
 INSERT INTO BOTIGA_ITEMS (nom, descripcio, preu, tipus, imatge, metadata) VALUES
 ('Gorra Monster', 'Una gorra exclusiva per a la teva mascota', 200, 'skin', '/img/items/gorra_monster.png', '{"slot":"cap","skin_key":"gorra_monster","i18n_key":"gorra_monster"}'),
-('Recuperador de Ratxa', 'Restaura la teva ratxa actual al màxim assolit', 50, 'consumible', '/img/items/recuperador_racha.png', '{"effect":"restore_streak","i18n_key":"recuperador_racha"}');
+('Recuperador de Ratxa', 'Restaura la teva ratxa actual al màxim assolit', 50, 'consumible', '/img/items/recuperador_racha.png', '{"effect":"restore_streak","i18n_key":"recuperador_racha"}'),
+('Fons Platja', 'Un fons solellat de platja per personalitzar l''app', 150, 'skin', '/img/items/fons_platja.png', '{"slot":"fons","skin_key":"fons_platja","i18n_key":"fons_platja"}'),
+('Fons Sala', 'Un fons acollidor de sala per personalitzar l''app', 150, 'skin', '/img/items/fons_sala.png', '{"slot":"fons","skin_key":"fons_sala","i18n_key":"fons_sala"}');

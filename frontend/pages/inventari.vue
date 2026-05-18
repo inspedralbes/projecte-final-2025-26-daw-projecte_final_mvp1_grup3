@@ -1,5 +1,5 @@
 <template>
-  <div class="inventari-page min-h-screen overflow-x-hidden pb-24 lg:pb-8">
+  <div class="min-h-screen overflow-x-hidden pb-24 lg:pb-8">
     <div class="max-w-5xl mx-auto px-3 sm:px-5 pt-4 sm:pt-6">
       <header class="bento-card mb-6 bg-white/95 backdrop-blur-md shadow-2xl border border-white/50">
         <h1 class="text-2xl sm:text-3xl font-black text-gray-800">{{ $t('inventory.title') }}</h1>
@@ -198,9 +198,6 @@ onMounted(async function () {
 </script>
 
 <style scoped>
-.inventari-page {
-  background: linear-gradient(135deg, #f5f3ff 0%, #fdf2f8 100%);
-}
 .inv-card {
   border-radius: 1.5rem;
   padding: 1.25rem 1rem;

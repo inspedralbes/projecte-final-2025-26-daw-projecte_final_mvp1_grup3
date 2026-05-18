@@ -2,7 +2,7 @@
  * Clau i18n per a productes de la botiga (BOTIGA_ITEMS).
  * Es deriva de metadata.skin_key, metadata.effect o metadata.i18n_key.
  */
-export function clauProducteBotiga(item) {
+export function metadataProducteBotiga(item) {
   if (!item) {
     return null;
   }
@@ -14,6 +14,14 @@ export function clauProducteBotiga(item) {
       meta = null;
     }
   }
+  return meta && typeof meta === 'object' ? meta : null;
+}
+
+export function clauProducteBotiga(item) {
+  if (!item) {
+    return null;
+  }
+  var meta = metadataProducteBotiga(item);
   if (meta && meta.i18n_key) {
     return meta.i18n_key;
   }
@@ -36,4 +44,24 @@ export function nomProducteBotiga(item, t, te) {
     return t(path);
   }
   return (item && item.nom) ? item.nom : '';
+}
+
+/**
+ * Categoria de botiga per als separadors: fons | skin | inventari
+ */
+export function categoriaProducteBotiga(item) {
+  if (!item) {
+    return 'skin';
+  }
+  if (item.tipus === 'consumible') {
+    return 'inventari';
+  }
+  var meta = metadataProducteBotiga(item);
+  if (meta && meta.slot === 'fons') {
+    return 'fons';
+  }
+  if (item.tipus === 'skin') {
+    return 'skin';
+  }
+  return 'skin';
 }

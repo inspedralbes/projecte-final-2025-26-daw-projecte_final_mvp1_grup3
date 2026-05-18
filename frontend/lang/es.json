@@ -103,6 +103,9 @@
     "insufficient_funds": "No tienes monedas suficientes",
     "loading": "Cargando la tienda...",
     "empty": "No hay objetos disponibles ahora mismo",
+    "divider_fons": "fondos",
+    "divider_skin": "skins",
+    "divider_inventari": "inventario",
     "items": {
       "gorra_monster": {
         "name": "Gorra Monster",
@@ -111,6 +114,14 @@
       "recuperador_racha": {
         "name": "Recuperador de racha",
         "description": "Restaura tu racha actual al máximo alcanzado"
+      },
+      "fons_platja": {
+        "name": "Fondo playa",
+        "description": "Un fondo soleado de playa para personalizar la app"
+      },
+      "fons_sala": {
+        "name": "Fondo salón",
+        "description": "Un fondo acogedor de salón para personalizar la app"
       }
     }
   },
@@ -403,9 +414,6 @@
     "category_label": "Categoría: ",
     "public": "Pública",
     "private": "Privada",
-    "personal": "Personales",
-    "friends": "Amigos",
-    "saved": "Guardadas",
     "edit": "Editar",
     "delete": "Eliminar",
     "edit_title": "Editar Plantilla",
@@ -430,20 +438,20 @@
     "alert_updated": "¡Plantilla actualizada con éxito!",
     "alert_deleted": "¡Plantilla eliminada con éxito!",
     "error_processing": "Error al procesar la acción de la plantilla",
-    "export_button": "Importar Hábitos",
+    "export_button": "Exportar Hábitos",
     "import_title": "Importar Hábitos de Plantilla: {titol}",
     "import_select_habits": "Selecciona los hábitos a importar",
     "import_no_habits": "Esta plantilla no contiene hábitos.",
     "import_button": "Importar Hábitos",
-    "export_error_no_selection": "Por favor, selecciona al menos un hábito para importar.",
-    "export_confirm_msg": "¿Quieres importar los siguientes hábitos de la plantilla '{titol}':\n\n{habits}\n\nEstos hábitos se añadirán a tus hábitos actuales.",
-    "export_error_socket": "Socket no disponible para importar los hábitos.",
-    "export_error_no_data": "Error: No hay plantilla o hábitos seleccionados para importar.",
-    "export_success_error_info": "Se han importado los hábitos con éxito, pero no se ha podido obtener la información para la nueva plantilla.",
-    "export_confirm_save_template": "¡Los hábitos han sido importados con éxito! ¿Quieres guardarlos como una nueva plantilla personal con los siguientes hábitos:\n\n{habits}\n\nEsta nueva plantilla se creará con el título '{titol}'.",
-    "export_template_title_prefix": "Plantilla Importada de ",
+    "export_error_no_selection": "Por favor, selecciona al menos un hábito para exportar.",
+    "export_confirm_msg": "¿Quieres exportar los siguientes hábitos de la plantilla '{titol}':\n\n{habits}\n\nEstos hábitos se añadirán a tus hábitos actuales.",
+    "export_error_socket": "Socket no disponible para exportar los hábitos.",
+    "export_error_no_data": "Error: No hay plantilla o hábitos seleccionados para exportar.",
+    "export_success_error_info": "Se han exportado los hábitos con éxito, pero no se ha podido obtener la información para la nueva plantilla.",
+    "export_confirm_save_template": "¡Los hábitos han sido exportados con éxito! ¿Quieres guardarlos como una nueva plantilla personal con los siguientes hábitos:\n\n{habits}\n\nEsta nueva plantilla se creará con el título '{titol}'.",
+    "export_template_title_prefix": "Plantilla Exportada de ",
     "export_creating_template": "La nueva plantilla personal se está creando.",
-    "export_no_template_created": "Los hábitos han sido importados. No se ha creado una nueva plantilla personal."
+    "export_no_template_created": "Los hábitos han sido exportados. No se ha creado una nueva plantilla personal."
   },
   "social": {
     "title": "Foro Social",

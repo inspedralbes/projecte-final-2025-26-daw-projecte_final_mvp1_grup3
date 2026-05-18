@@ -103,6 +103,9 @@
     "insufficient_funds": "Not enough coins",
     "loading": "Loading the shop...",
     "empty": "No items available right now",
+    "divider_fons": "backgrounds",
+    "divider_skin": "skins",
+    "divider_inventari": "inventory",
     "items": {
       "gorra_monster": {
         "name": "Monster cap",
@@ -111,6 +114,14 @@
       "recuperador_racha": {
         "name": "Streak restorer",
         "description": "Restores your current streak to your best streak"
+      },
+      "fons_platja": {
+        "name": "Beach background",
+        "description": "A sunny beach background to customize the app"
+      },
+      "fons_sala": {
+        "name": "Cozy room background",
+        "description": "A cozy living room background to customize the app"
       }
     }
   },
@@ -405,9 +416,6 @@
     "category_label": "Category: ",
     "public": "Public",
     "private": "Private",
-    "personal": "Personal",
-    "friends": "Friends",
-    "saved": "Saved",
     "edit": "Edit",
     "delete": "Delete",
     "edit_title": "Edit Template",
@@ -432,20 +440,20 @@
     "alert_updated": "Template updated successfully!",
     "alert_deleted": "Template deleted successfully!",
     "error_processing": "Error processing template action",
-    "export_button": "Import Habits",
+    "export_button": "Export Habits",
     "import_title": "Import Template Habits: {titol}",
     "import_select_habits": "Select the habits to import",
     "import_no_habits": "This template contains no habits.",
     "import_button": "Import Habits",
-    "export_error_no_selection": "Please select at least one habit to import.",
-    "export_confirm_msg": "Do you want to import the following habits from the template '{titol}':\n\n{habits}\n\nThese habits will be added to your current habits.",
-    "export_error_socket": "Socket not available to import habits.",
-    "export_error_no_data": "Error: No template or habits selected to import.",
-    "export_success_error_info": "Habits imported successfully, but template information could not be retrieved.",
-    "export_confirm_save_template": "Habits have been imported successfully! Do you want to save them as a new personal template with the following habits:\n\n{habits}\n\nThis new template will be created with the title '{titol}'.",
-    "export_template_title_prefix": "Template Imported from ",
+    "export_error_no_selection": "Please select at least one habit to export.",
+    "export_confirm_msg": "Do you want to export the following habits from the template '{titol}':\n\n{habits}\n\nThese habits will be added to your current habits.",
+    "export_error_socket": "Socket no available to export habits.",
+    "export_error_no_data": "Error: No template or habits selected to export.",
+    "export_success_error_info": "Habits exported successfully, but template information could not be retrieved.",
+    "export_confirm_save_template": "Habits have been exported successfully! Do you want to save them as a new personal template with the following habits:\n\n{habits}\n\nThis new template will be created with the title '{titol}'.",
+    "export_template_title_prefix": "Template Exported from ",
     "export_creating_template": "The new personal template is being created.",
-    "export_no_template_created": "Habits imported. No new personal template created."
+    "export_no_template_created": "Habits exported. No new personal template created."
   },
   "social": {
     "title": "Social Forum",

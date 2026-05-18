@@ -152,6 +152,7 @@ function mapGameStateFromApi(gs) {
   if (gs.missio_progres !== undefined) result.missio_progres = gs.missio_progres;
   if (gs.missio_objectiu !== undefined) result.missio_objectiu = gs.missio_objectiu;
   if (gs.monstre_tipus !== undefined) result.monstre_tipus = gs.monstre_tipus;
+  if (gs.streak_incremented !== undefined) result.streak_incremented = !!gs.streak_incremented;
   return result;
 }
 

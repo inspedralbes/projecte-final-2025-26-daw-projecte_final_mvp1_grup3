@@ -57,6 +57,7 @@ class GamificationService
                 'monedes' => 0,
                 'missio_diaria' => null,
                 'missio_completada' => false,
+                'streak_incremented' => false,
             ];
         }
 
@@ -64,7 +65,7 @@ class GamificationService
         $this->comprovarResetIAssignarMissio($usuari);
 
         // B2. Actualitzar ratxa per entrar a l'app
-        $this->actualitzarRatxa($usuariId);
+        $streakIncremented = $this->actualitzarRatxa($usuariId);
 
         // C. Recuperar ratxa (reload usuari per si s'ha actualitzat)
         $usuari = $usuari->fresh();
@@ -139,6 +140,7 @@ class GamificationService
             'missio_progres' => $missioProgres,
             'missio_objectiu' => $missioObjectiu,
             'monstre_tipus' => $usuari->monstre_tipus,
+            'streak_incremented' => $streakIncremented,
         ];
     }
 
@@ -198,7 +200,7 @@ class GamificationService
      *
      * @param int $usuariId
      */
-    public function actualitzarRatxa(int $usuariId): void
+    public function actualitzarRatxa(int $usuariId): bool
     {
         $timezone = config('app.timezone', 'Europe/Madrid');
         $avui = Carbon::now($timezone)->startOfDay();
@@ -223,7 +225,7 @@ class GamificationService
 
         // B. Si és el mateix dia, no modifiquem la ratxa
         if ($ultimaData !== null && $ultimaData->isSameDay($avui)) {
-            return;
+            return false;
         }
 
         // C. Si és el dia següent, incrementem
@@ -241,5 +243,7 @@ class GamificationService
             'ratxa_maxima' => $ratxaMaxima,
             'ultima_data' => $avui->toDateString(),
         ]);
+
+        return true;
     }
 }

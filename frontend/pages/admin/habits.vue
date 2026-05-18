@@ -150,7 +150,7 @@ function confirmarEliminacio() {
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100/50">
-            <tr v-for="habit in habits" :key="habit.id" class="group hover:bg-white/50 transition-all">
+            <tr v-for="habit in habits" :key="habit.id" class="group transition-all">
               <td class="py-5 font-black text-gray-800 text-base tracking-tight leading-none font-bricolage">{{ habit.titol }}</td>
               <td class="py-5 text-xs font-bold text-gray-500">{{ habit.usuari ? habit.usuari.nom : 'Usuari #' + habit.usuari_id }}</td>
               <td class="py-5">

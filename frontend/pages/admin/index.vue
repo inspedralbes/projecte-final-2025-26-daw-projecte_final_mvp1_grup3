@@ -125,7 +125,7 @@ function tancaPopup() {
     <!-- Bento Grid Dashboard (Cohesive rounded-[10px] Glassmorphism) -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       <!-- Usuaris Connectats -->
-      <div @click="obrePopup('connectats')" class="bg-white/95 backdrop-blur-md rounded-[10px] p-6 shadow-xl border border-white/50 hover:-translate-y-1 transition-all duration-300 cursor-pointer group flex flex-col justify-between min-h-[190px]">
+      <div @click="obrePopup('connectats')" class="bg-white/95 backdrop-blur-md rounded-[10px] p-6 shadow-xl border border-white/50 cursor-pointer flex flex-col justify-between min-h-[190px]">
         <div>
           <div class="flex justify-between items-center mb-6">
             <div class="w-12 h-12 bg-blue-50 border border-blue-100 rounded-[10px] flex items-center justify-center text-xs font-black text-blue-600 uppercase font-bricolage">USR</div>
@@ -133,11 +133,11 @@ function tancaPopup() {
           </div>
           <h3 class="text-4xl font-black text-[#2b2d42] tracking-tighter mb-1 font-bricolage">{{ stats.connectats }}</h3>
         </div>
-        <p class="text-[10px] text-gray-400 font-extrabold uppercase group-hover:text-green-600 transition-colors font-bricolage">Veure Llista →</p>
+        <p class="text-[10px] text-gray-400 font-extrabold uppercase font-bricolage">Veure Llista →</p>
       </div>
 
       <!-- Usuaris Totals -->
-      <div @click="obrePopup('usuaris_totals')" class="bg-white/95 backdrop-blur-md rounded-[10px] p-6 shadow-xl border border-white/50 hover:-translate-y-1 transition-all duration-300 cursor-pointer group flex flex-col justify-between min-h-[190px]">
+      <div @click="obrePopup('usuaris_totals')" class="bg-white/95 backdrop-blur-md rounded-[10px] p-6 shadow-xl border border-white/50 cursor-pointer flex flex-col justify-between min-h-[190px]">
         <div>
           <div class="flex justify-between items-center mb-6">
             <div class="w-12 h-12 bg-indigo-50 border border-indigo-100 rounded-[10px] flex items-center justify-center text-xs font-black text-indigo-600 uppercase font-bricolage">ALL</div>
@@ -145,27 +145,27 @@ function tancaPopup() {
           </div>
           <h3 class="text-4xl font-black text-[#2b2d42] tracking-tighter mb-1 font-bricolage">{{ stats.totalUsuaris }}</h3>
         </div>
-        <p class="text-[10px] text-gray-400 font-extrabold uppercase group-hover:text-indigo-600 transition-colors font-bricolage">Usuaris Registrats →</p>
+        <p class="text-[10px] text-gray-400 font-extrabold uppercase font-bricolage">Usuaris Registrats →</p>
       </div>
 
       <!-- Logs del Sistema -->
-      <div @click="obrePopup('logs')" class="bg-white/95 backdrop-blur-md rounded-[10px] p-6 shadow-xl border border-white/50 hover:-translate-y-1 transition-all duration-300 cursor-pointer group flex flex-col justify-between min-h-[190px]">
+      <div @click="obrePopup('logs')" class="bg-white/95 backdrop-blur-md rounded-[10px] p-6 shadow-xl border border-white/50 cursor-pointer flex flex-col justify-between min-h-[190px]">
         <div>
           <div class="flex justify-between items-center mb-6">
             <div class="w-12 h-12 bg-gray-50 border border-gray-100 rounded-[10px] flex items-center justify-center text-xs font-black text-gray-600 uppercase font-bricolage">LOG</div>
             <span class="text-[10px] font-black text-gray-500 bg-gray-50 px-2 py-0.5 border border-gray-100 rounded-[10px] uppercase tracking-widest font-bricolage">Temps Real</span>
           </div>
-          <div class="space-y-2 opacity-60 group-hover:opacity-100 transition-opacity">
+          <div class="space-y-2 opacity-80">
             <div class="h-1.5 w-full bg-gray-200 rounded-full"></div>
             <div class="h-1.5 w-2/3 bg-gray-200 rounded-full"></div>
             <div class="h-1.5 w-4/5 bg-gray-200 rounded-full"></div>
           </div>
         </div>
-        <p class="text-[10px] text-gray-400 font-extrabold uppercase group-hover:text-gray-600 transition-colors font-bricolage">Auditoria Completa →</p>
+        <p class="text-[10px] text-gray-400 font-extrabold uppercase font-bricolage">Auditoria Completa →</p>
       </div>
 
       <!-- Rankings Globals -->
-      <div @click="obrePopup('rankings')" class="bg-white/95 backdrop-blur-md rounded-[10px] p-6 shadow-xl border border-white/50 hover:-translate-y-1 transition-all duration-300 cursor-pointer group flex flex-col justify-between min-h-[190px]">
+      <div @click="obrePopup('rankings')" class="bg-white/95 backdrop-blur-md rounded-[10px] p-6 shadow-xl border border-white/50 cursor-pointer flex flex-col justify-between min-h-[190px]">
         <div>
           <div class="flex justify-between items-center mb-4">
             <div class="w-12 h-12 bg-orange-50 border border-orange-100 rounded-[10px] flex items-center justify-center text-xs font-black text-orange-600 uppercase font-bricolage">TOP</div>
@@ -178,7 +178,7 @@ function tancaPopup() {
             </div>
           </div>
         </div>
-        <p class="text-[10px] text-gray-400 font-extrabold uppercase group-hover:text-orange-600 transition-colors font-bricolage">Veure detalls →</p>
+        <p class="text-[10px] text-gray-400 font-extrabold uppercase font-bricolage">Veure detalls →</p>
       </div>
     </div>
 
@@ -200,7 +200,7 @@ function tancaPopup() {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="user in usuaris.slice(0, 4)" :key="user.id" class="group hover:bg-gray-50/50 transition-all">
+            <tr v-for="user in usuaris.slice(0, 4)" :key="user.id" class="group transition-all">
               <td class="py-4">
                 <div class="flex items-center gap-4">
                   <div class="w-9 h-9 rounded-[10px] bg-gradient-to-br from-blue-100 to-blue-200 text-blue-700 flex items-center justify-center font-black text-sm font-bricolage">{{ user.nom.charAt(0) }}</div>
@@ -218,7 +218,7 @@ function tancaPopup() {
     </div>
 
     <!-- Rankings Section -->
-    <div @click="obrePopup('rankings')" class="bg-white/95 backdrop-blur-md rounded-[10px] p-6 sm:p-8 shadow-xl border border-white/50 cursor-pointer hover:-translate-y-1 transition-all duration-300">
+    <div @click="obrePopup('rankings')" class="bg-white/95 backdrop-blur-md rounded-[10px] p-6 sm:p-8 shadow-xl border border-white/50 cursor-pointer">
       <h2 class="text-[10px] font-black text-orange-600 bg-orange-50/50 border border-orange-100/50 rounded-[10px] px-3 py-1.5 inline-block uppercase tracking-wider mb-6 font-bricolage">🔝 Rankings Globals</h2>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <div v-for="(r, i) in rankings" :key="i" class="flex items-center justify-between p-4 rounded-[10px] bg-gray-50/50 border border-gray-100/60 shadow-sm font-comfortaa">
@@ -266,7 +266,7 @@ function tancaPopup() {
             <!-- Popup Totals (Database) -->
             <div v-if="popupActiu === 'usuaris_totals'" class="space-y-3">
               <div v-if="carregantLlista" class="text-center py-10 animate-pulse text-xs font-black uppercase text-gray-400 font-bricolage">Carregant llista completa...</div>
-              <div v-for="u in usuarisLlista" :key="u.id" class="flex justify-between items-center p-4 rounded-[10px] bg-gray-50 border border-gray-100 group hover:bg-white hover:shadow-md transition-all font-comfortaa">
+              <div v-for="u in usuarisLlista" :key="u.id" class="flex justify-between items-center p-4 rounded-[10px] bg-gray-50 border border-gray-100 group transition-all font-comfortaa">
                 <div class="flex items-center gap-3">
                   <div class="w-8 h-8 rounded-[10px] bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center font-black text-xs font-bricolage">{{ u.nom.charAt(0) }}</div>
                   <div>

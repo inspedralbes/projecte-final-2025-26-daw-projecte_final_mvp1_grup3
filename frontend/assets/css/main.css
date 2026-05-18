@@ -10,6 +10,15 @@
     }
 }
 
+@layer utilities {
+    .font-bricolage {
+        font-family: "Bricolage Grotesque", system-ui, sans-serif !important;
+    }
+    .font-comfortaa {
+        font-family: "Comfortaa", system-ui, sans-serif !important;
+    }
+}
+
 @layer components {
     /* Formulari crear / editar hàbit: etiquetes de camp */
     .habit-form-label {

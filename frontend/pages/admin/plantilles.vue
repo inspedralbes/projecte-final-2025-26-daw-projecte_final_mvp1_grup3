@@ -117,7 +117,7 @@ function confirmarEliminacio() {
 
     <!-- Grid de Plantilles Bento Glass -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-      <div v-for="p in plantilles" :key="p.id" class="bg-white/95 backdrop-blur-md rounded-[10px] p-6 shadow-xl border border-white/50 hover:shadow-2xl transition-all group relative overflow-hidden flex flex-col justify-between">
+      <div v-for="p in plantilles" :key="p.id" class="bg-white/95 backdrop-blur-md rounded-[10px] p-6 shadow-xl border border-white/50 transition-all group relative overflow-hidden flex flex-col justify-between">
         <div>
           <div class="flex justify-between items-start mb-6">
             <span class="bg-blue-50 text-blue-600 px-4 py-1.5 rounded-[10px] font-black text-[10px] uppercase border border-blue-100 font-bricolage">{{ p.categoria }}</span>

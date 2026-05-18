@@ -32,24 +32,26 @@ var formulari = ref({
   nom: "",
   email: "",
   password: "", // Nova contrasenya per a crear
-  motiuProhibicio: ""
+  motiuProhibicio: "",
+  duradaProhibicio: "permanent"
 });
 
 // 2. METHODS (FUNCTION)
 function obreCrear() {
-  formulari.value = { nom: "", email: "", nivell: 1, motiuProhibicio: "" };
+  formulari.value = { nom: "", email: "", password: "", motiuProhibicio: "", duradaProhibicio: "permanent" };
   popupObert.value = 'crear';
 }
 
 function obreEditar(user) {
   usuariSeleccionat.value = user;
-  formulari.value = { nom: user.nom, email: user.email, nivell: user.nivell, motiuProhibicio: "" };
+  formulari.value = { nom: user.nom, email: user.email, password: "", motiuProhibicio: "", duradaProhibicio: "permanent" };
   popupObert.value = 'editar';
 }
 
 function obreProhibir(user) {
   usuariSeleccionat.value = user;
   formulari.value.motiuProhibicio = "";
+  formulari.value.duradaProhibicio = "permanent";
   popupObert.value = 'prohibir';
 }
 
@@ -94,17 +96,41 @@ function guardarUsuari() {
 function confirmarProhibicio() {
   if (!$socket || !usuariSeleccionat.value) return;
   
+  var duradesLabels = {
+    "1_dia": "1 Dia",
+    "3_dies": "3 Dies",
+    "7_dies": "7 Dies",
+    "30_dies": "30 Dies",
+    "permanent": "Permanent"
+  };
+  var durada = duradesLabels[formulari.value.duradaProhibicio] || "Permanent";
+  var motiuFinal = "[" + durada + "] " + (formulari.value.motiuProhibicio || "Sense motiu especificat");
+
   $socket.emit('admin_action', {
     action: 'UPDATE',
     entity: 'usuari',
     data: {
       id: usuariSeleccionat.value.id,
       prohibit: true,
-      motiu_prohibicio: formulari.value.motiuProhibicio
+      motiu_prohibicio: motiuFinal
     }
   });
   
   tancaPopup();
+}
+
+function desprohibirUsuari(user) {
+  if (!$socket) return;
+  
+  $socket.emit('admin_action', {
+    action: 'UPDATE',
+    entity: 'usuari',
+    data: {
+      id: user.id,
+      prohibit: false,
+      motiu_prohibicio: null
+    }
+  });
 }
 </script>
 
@@ -135,7 +161,7 @@ function confirmarProhibicio() {
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100/50">
-            <tr v-for="user in usuaris" :key="user.id" class="group hover:bg-white/50 transition-all">
+            <tr v-for="user in usuaris" :key="user.id" class="group transition-all">
               <td class="py-5">
                 <div class="flex items-center gap-5">
                   <div class="w-12 h-12 rounded-[10px] bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center font-black text-lg shadow-md font-bricolage">{{ user.nom.charAt(0) }}</div>
@@ -154,13 +180,14 @@ function confirmarProhibicio() {
               <td class="py-5 text-center">
                 <div v-if="user.prohibit" class="flex flex-col items-center">
                   <span class="bg-red-500 text-white px-3 py-1 rounded-[10px] font-black text-[9px] uppercase shadow-sm font-bricolage">Prohibit</span>
-                  <p class="text-[8px] text-red-400 font-bold uppercase mt-1 max-w-[80px] truncate" :title="user.motiu">{{ user.motiu }}</p>
+                  <p class="text-[8px] text-red-400 font-bold uppercase mt-1 max-w-[120px] truncate" :title="user.motiu">{{ user.motiu }}</p>
                 </div>
                 <span v-else class="bg-green-100 text-green-600 px-3 py-1 rounded-[10px] font-black text-[9px] uppercase border border-green-200 font-bricolage">Actiu</span>
               </td>
               <td class="py-5 text-right space-x-3">
                 <button @click="obreEditar(user)" class="text-[10px] font-black text-gray-400 uppercase hover:text-blue-600 transition-colors font-bricolage">Editar</button>
-                <button v-if="!user.prohibit" @click="obreProhibir(user)" class="text-[10px] font-black text-gray-400 uppercase hover:text-red-500 transition-colors font-bricolage">🚫 Prohibir</button>
+                <button v-if="user.prohibit" @click="desprohibirUsuari(user)" class="text-[10px] font-black text-green-600 uppercase hover:text-green-800 transition-colors font-bricolage">🔓 Desbanear</button>
+                <button v-else @click="obreProhibir(user)" class="text-[10px] font-black text-gray-400 uppercase hover:text-red-500 transition-colors font-bricolage">🚫 Prohibir</button>
               </td>
             </tr>
           </tbody>
@@ -209,11 +236,24 @@ function confirmarProhibicio() {
             <template v-if="popupObert === 'prohibir'">
               <div class="bg-red-50 p-6 rounded-[10px] border border-red-100 mb-6">
                 <p class="text-xs font-bold text-red-600 leading-relaxed uppercase font-bricolage">Compte: <span class="text-red-800">{{ usuariSeleccionat?.nom }}</span></p>
-                <p class="text-[10px] text-red-400 font-bold mt-1 uppercase">Aquesta acció impedirà que l'usuari entri al sistema.</p>
+                <p class="text-[10px] text-red-400 font-bold mt-1 uppercase">Aquesta acció impedirà que l'usuari entri al sistema temporalment o permanent.</p>
               </div>
-              <div class="space-y-2">
-                <label class="text-[10px] font-black text-red-400 uppercase tracking-widest ml-1 font-bricolage">Motiu de la Prohibició</label>
-                <textarea v-model="formulari.motiuProhibicio" rows="3" class="w-full bg-white/50 border border-gray-200 rounded-[10px] px-5 py-3 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-red-100 transition-all placeholder:text-gray-300" placeholder="Incompliment de les normes..."></textarea>
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-2">
+                  <label class="text-[10px] font-black text-red-400 uppercase tracking-widest ml-1 font-bricolage">Durada del Ban</label>
+                  <select v-model="formulari.duradaProhibicio" class="w-full bg-white/50 border border-gray-200 rounded-[10px] px-5 py-3 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-red-100 transition-all appearance-none font-comfortaa">
+                    <option value="1_dia">1 Dia</option>
+                    <option value="3_dies">3 Dies</option>
+                    <option value="7_dies">7 Dies (1 Setmana)</option>
+                    <option value="30_dies">30 Dies (1 Mes)</option>
+                    <option value="permanent">Permanent</option>
+                  </select>
+                </div>
+                <div class="space-y-2">
+                  <label class="text-[10px] font-black text-red-400 uppercase tracking-widest ml-1 font-bricolage">Motiu del Ban</label>
+                  <input v-model="formulari.motiuProhibicio" type="text" class="w-full bg-white/50 border border-gray-200 rounded-[10px] px-5 py-3 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-red-100 transition-all placeholder:text-gray-300 font-comfortaa" placeholder="Spam, comportament inadequat..." />
+                </div>
               </div>
             </template>
           </div>

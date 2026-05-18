@@ -128,14 +128,14 @@ async function guardarCanvis() {
           <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-8 font-bricolage">Configuració de Seguretat</h4>
           
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6 font-comfortaa">
-            <button @click="obreEditar" class="group p-6 rounded-[10px] bg-white/50 border border-gray-200 hover:border-blue-300 hover:bg-blue-50/10 transition-all text-left">
-              <div class="w-10 h-10 rounded-[10px] bg-blue-100 flex items-center justify-center text-[10px] font-black text-blue-600 mb-4 group-hover:scale-105 transition-transform font-bricolage">PERFIL</div>
+            <button @click="obreEditar" class="group p-6 rounded-[10px] bg-white/50 border border-gray-200 transition-all text-left">
+              <div class="w-10 h-10 rounded-[10px] bg-blue-100 flex items-center justify-center text-[10px] font-black text-blue-600 mb-4 transition-transform font-bricolage">PERFIL</div>
               <p class="font-black text-gray-800 text-sm uppercase font-bricolage">Dades Personals</p>
               <p class="text-[10px] text-gray-400 font-bold uppercase mt-2">Canviar nom i correu electrònic.</p>
             </button>
 
-            <button @click="obrePass" class="group p-6 rounded-[10px] bg-white/50 border border-gray-200 hover:border-red-300 hover:bg-red-50/10 transition-all text-left">
-              <div class="w-10 h-10 rounded-[10px] bg-red-100 flex items-center justify-center text-[10px] font-black text-red-600 mb-4 group-hover:scale-105 transition-transform font-bricolage">PASS</div>
+            <button @click="obrePass" class="group p-6 rounded-[10px] bg-white/50 border border-gray-200 transition-all text-left">
+              <div class="w-10 h-10 rounded-[10px] bg-red-100 flex items-center justify-center text-[10px] font-black text-red-600 mb-4 transition-transform font-bricolage">PASS</div>
               <p class="font-black text-gray-800 text-sm uppercase font-bricolage">Contrasenya</p>
               <p class="text-[10px] text-gray-400 font-bold uppercase mt-2">Millora la seguretat de l'accés.</p>
             </button>

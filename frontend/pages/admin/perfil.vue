@@ -94,59 +94,59 @@ async function guardarCanvis() {
   <div class="space-y-12 pb-20">
     <div class="flex justify-between items-end">
       <div>
-        <h2 class="text-3xl font-black text-gray-900 uppercase tracking-tighter leading-none">El meu Perfil</h2>
-        <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mt-2">Gestió del compte d'administrador</p>
+        <h2 class="text-3xl font-black text-[#faf9f9] drop-shadow-sm uppercase tracking-tighter leading-none font-bricolage">El meu Perfil</h2>
+        <p class="text-xs font-bold text-white/80 uppercase tracking-widest mt-2 font-comfortaa">Gestió del compte d'administrador</p>
       </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
-      <!-- Card d'Informació -->
-      <div class="lg:col-span-4 bg-white rounded-[3rem] p-10 shadow-2xl border border-gray-100 flex flex-col items-center">
-        <div class="w-32 h-32 rounded-[2.5rem] bg-gradient-to-br from-gray-800 to-black text-white flex items-center justify-center text-4xl font-black shadow-xl shadow-gray-200 mb-8">{{ admin.avatar }}</div>
-        <h3 class="text-2xl font-black text-gray-900 uppercase tracking-tighter">{{ admin.nom }}</h3>
-        <span class="bg-blue-50 text-blue-600 px-4 py-1.5 rounded-xl font-black text-[10px] uppercase border border-blue-100 mt-3 tracking-widest">{{ admin.rol }}</span>
+      <!-- Card d'Informació Bento Glass -->
+      <div class="lg:col-span-4 bg-white/95 backdrop-blur-md rounded-[10px] p-8 shadow-xl border border-white/50 flex flex-col items-center">
+        <div class="w-24 h-24 rounded-[10px] bg-gradient-to-br from-gray-800 to-black text-white flex items-center justify-center text-3xl font-black shadow-md mb-6 font-bricolage">{{ admin.avatar }}</div>
+        <h3 class="text-2xl font-black text-gray-900 uppercase tracking-tighter font-bricolage leading-none">{{ admin.nom }}</h3>
+        <span class="bg-blue-50 text-blue-600 px-4 py-1.5 rounded-[10px] font-black text-[10px] uppercase border border-blue-100 mt-4 tracking-widest font-bricolage">{{ admin.rol }}</span>
         
-        <div class="w-full mt-10 space-y-4 border-t border-gray-50 pt-10">
+        <div class="w-full mt-8 space-y-4 border-t border-gray-100/50 pt-6 font-comfortaa">
           <div class="flex justify-between items-center">
-            <span class="text-[9px] font-black text-gray-300 uppercase tracking-widest">Correu</span>
+            <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest font-bricolage">Correu</span>
             <span class="text-xs font-bold text-gray-600">{{ admin.email }}</span>
           </div>
           <div class="flex justify-between items-center">
-            <span class="text-[9px] font-black text-gray-300 uppercase tracking-widest">Alta</span>
+            <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest font-bricolage">Alta</span>
             <span class="text-xs font-bold text-gray-600">{{ admin.dataUnio }}</span>
           </div>
           <div class="flex justify-between items-center">
-            <span class="text-[9px] font-black text-gray-300 uppercase tracking-widest">Darrer Accés</span>
+            <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest font-bricolage">Darrer Accés</span>
             <span class="text-xs font-bold text-gray-600">{{ admin.ultimAcces }}</span>
           </div>
         </div>
       </div>
 
-      <!-- Accions i Seguretat -->
+      <!-- Accions i Seguretat Bento Glass -->
       <div class="lg:col-span-8 space-y-8">
-        <div class="bg-white rounded-[3rem] p-10 shadow-2xl border border-gray-100 h-full">
-          <h4 class="text-[10px] font-black text-gray-300 uppercase tracking-[0.2em] mb-10">Configuració de Seguretat</h4>
+        <div class="bg-white/95 backdrop-blur-md rounded-[10px] p-8 shadow-xl border border-white/50 h-full">
+          <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-8 font-bricolage">Configuració de Seguretat</h4>
           
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <button @click="obreEditar" class="group p-8 rounded-[2rem] border border-gray-100 hover:border-blue-200 hover:bg-blue-50/10 transition-all text-left">
-              <div class="w-12 h-12 rounded-2xl bg-blue-100 flex items-center justify-center text-[10px] font-black text-blue-600 mb-6 group-hover:scale-110 transition-transform">PERFIL</div>
-              <p class="font-black text-gray-800 text-sm uppercase">Dades Personals</p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 font-comfortaa">
+            <button @click="obreEditar" class="group p-6 rounded-[10px] bg-white/50 border border-gray-200 hover:border-blue-300 hover:bg-blue-50/10 transition-all text-left">
+              <div class="w-10 h-10 rounded-[10px] bg-blue-100 flex items-center justify-center text-[10px] font-black text-blue-600 mb-4 group-hover:scale-105 transition-transform font-bricolage">PERFIL</div>
+              <p class="font-black text-gray-800 text-sm uppercase font-bricolage">Dades Personals</p>
               <p class="text-[10px] text-gray-400 font-bold uppercase mt-2">Canviar nom i correu electrònic.</p>
             </button>
 
-            <button @click="obrePass" class="group p-8 rounded-[2rem] border border-gray-100 hover:border-red-200 hover:bg-red-50/10 transition-all text-left">
-              <div class="w-12 h-12 rounded-2xl bg-red-100 flex items-center justify-center text-[10px] font-black text-red-600 mb-6 group-hover:scale-110 transition-transform">PASS</div>
-              <p class="font-black text-gray-800 text-sm uppercase">Contrasenya</p>
+            <button @click="obrePass" class="group p-6 rounded-[10px] bg-white/50 border border-gray-200 hover:border-red-300 hover:bg-red-50/10 transition-all text-left">
+              <div class="w-10 h-10 rounded-[10px] bg-red-100 flex items-center justify-center text-[10px] font-black text-red-600 mb-4 group-hover:scale-105 transition-transform font-bricolage">PASS</div>
+              <p class="font-black text-gray-800 text-sm uppercase font-bricolage">Contrasenya</p>
               <p class="text-[10px] text-gray-400 font-bold uppercase mt-2">Millora la seguretat de l'accés.</p>
             </button>
           </div>
 
-          <div class="mt-10 p-8 rounded-[2rem] bg-gray-50 border border-gray-100 flex items-center justify-between">
+          <div class="mt-8 p-6 rounded-[10px] bg-gray-50/50 border border-gray-100/50 flex items-center justify-between font-comfortaa">
             <div>
-              <p class="text-xs font-black text-gray-800 uppercase tracking-tight">Autenticació en dos passos (2FA)</p>
+              <p class="text-xs font-black text-gray-800 uppercase tracking-tight font-bricolage">Autenticació en dos passos (2FA)</p>
               <p class="text-[10px] text-gray-400 font-bold uppercase mt-1">Estat: Desactivat</p>
             </div>
-            <button class="bg-gray-200 text-gray-400 px-6 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest cursor-not-allowed">Properament</button>
+            <button class="bg-gray-200/50 text-gray-400 px-6 py-2 rounded-[10px] text-[9px] font-black uppercase tracking-widest cursor-not-allowed font-bricolage">Properament</button>
           </div>
         </div>
       </div>
@@ -162,45 +162,45 @@ async function guardarCanvis() {
       leave-to-class="opacity-0 scale-95"
     >
       <div v-if="popupObert" class="fixed inset-0 z-50 flex items-center justify-center p-6 bg-gray-900/60 backdrop-blur-md" @click.self="tancaPopup">
-        <div class="bg-white w-full max-w-xl rounded-[3rem] shadow-2xl relative overflow-hidden flex flex-col border border-white/20">
+        <div class="bg-white/95 backdrop-blur-md w-full max-w-xl rounded-[10px] shadow-2xl relative overflow-hidden flex flex-col border border-white/50">
           
-          <div class="p-10 border-b border-gray-100 flex justify-between items-center bg-gray-50/30">
+          <div class="p-8 border-b border-gray-100 flex justify-between items-center bg-white/50">
             <div>
-              <h3 class="text-2xl font-black text-gray-900 uppercase tracking-tighter">
+              <h3 class="text-2xl font-black text-gray-900 uppercase tracking-tighter font-bricolage">
                 {{ popupObert === 'editar_perfil' ? 'Editar Dades' : 'Canviar Contrasenya' }}
               </h3>
-              <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Sistemes de privacitat</p>
+              <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1 font-comfortaa">Sistemes de privacitat</p>
             </div>
-            <button @click="tancaPopup" class="w-12 h-12 rounded-full bg-white border border-gray-100 flex items-center justify-center font-black text-gray-400 hover:bg-red-50 hover:text-red-500 transition-all">X</button>
+            <button @click="tancaPopup" class="w-10 h-10 rounded-[10px] bg-white border border-gray-200 flex items-center justify-center font-black text-gray-400 hover:bg-red-50 hover:text-red-500 transition-all uppercase text-[10px] font-bricolage">Tancar</button>
           </div>
 
-          <div class="p-12 space-y-6">
+          <div class="p-8 space-y-6 font-comfortaa">
             <template v-if="popupObert === 'editar_perfil'">
               <div class="space-y-2">
-                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">Nom Administrativ</label>
-                <input v-model="formulari.nom" type="text" class="w-full bg-gray-50 border border-gray-100 rounded-[1.5rem] px-6 py-4 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-blue-100 transition-all" />
+                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 font-bricolage">Nom Administratiu</label>
+                <input v-model="formulari.nom" type="text" class="w-full bg-white/50 border border-gray-200 rounded-[10px] px-5 py-3 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-[#79D45D]/10 focus:border-[#79D45D]/50 transition-all font-comfortaa" />
               </div>
               <div class="space-y-2">
-                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">Email Corporatiu</label>
-                <input v-model="formulari.email" type="email" class="w-full bg-gray-50 border border-gray-100 rounded-[1.5rem] px-6 py-4 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-blue-100 transition-all" />
+                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 font-bricolage">Email Corporatiu</label>
+                <input v-model="formulari.email" type="email" class="w-full bg-white/50 border border-gray-200 rounded-[10px] px-5 py-3 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-[#79D45D]/10 focus:border-[#79D45D]/50 transition-all font-comfortaa" />
               </div>
             </template>
 
             <template v-if="popupObert === 'canviar_pass'">
               <div class="space-y-2">
-                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">Contrasenya Actual</label>
-                <input v-model="formulari.passVella" type="password" class="w-full bg-gray-50 border border-gray-100 rounded-[1.5rem] px-6 py-4 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-red-100 transition-all" />
+                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 font-bricolage">Contrasenya Actual</label>
+                <input v-model="formulari.passVella" type="password" class="w-full bg-white/50 border border-gray-200 rounded-[10px] px-5 py-3 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-red-100 transition-all font-comfortaa" />
               </div>
               <div class="space-y-2">
-                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">Nova Contrasenya</label>
-                <input v-model="formulari.passNova" type="password" class="w-full bg-gray-50 border border-gray-100 rounded-[1.5rem] px-6 py-4 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-red-100 transition-all" />
+                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 font-bricolage">Nova Contrasenya</label>
+                <input v-model="formulari.passNova" type="password" class="w-full bg-white/50 border border-gray-200 rounded-[10px] px-5 py-3 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-red-100 transition-all font-comfortaa" />
               </div>
             </template>
           </div>
 
-          <div class="p-10 border-t border-gray-100 bg-gray-50/30 flex justify-end gap-4">
-            <button @click="tancaPopup" class="px-8 py-4 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest text-gray-400 hover:bg-gray-100 transition-all">Cancel·lar</button>
-            <button @click="guardarCanvis" class="px-10 py-4 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest bg-gray-900 text-white shadow-xl shadow-gray-100 hover:bg-black transition-all">Guardar Canvis</button>
+          <div class="p-6 border-t border-gray-100 bg-white/50 flex justify-end gap-4">
+            <button @click="tancaPopup" class="px-6 py-3 rounded-[10px] text-[10px] font-black uppercase tracking-widest text-gray-400 hover:bg-gray-100 transition-all font-bricolage">Cancel·lar</button>
+            <button @click="guardarCanvis" class="px-8 py-3 rounded-[10px] text-[10px] font-black uppercase tracking-widest bg-[#79D45D] hover:bg-[#6fbc58] text-white border border-[#6fbc58] shadow-md transition-all font-bricolage">Guardar Canvis</button>
           </div>
         </div>
       </div>

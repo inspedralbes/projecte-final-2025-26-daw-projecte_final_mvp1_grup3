@@ -127,41 +127,41 @@ function confirmarEliminacio() {
   <div class="space-y-8 pb-20">
     <div class="flex justify-between items-end">
       <div>
-        <h2 class="text-3xl font-black text-gray-900 uppercase tracking-tighter leading-none">Gestió d'Hàbits</h2>
-        <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mt-2">Seguiment global d'activitats</p>
+        <h2 class="text-3xl font-black text-[#faf9f9] drop-shadow-sm uppercase tracking-tighter leading-none font-bricolage">Gestió d'Hàbits</h2>
+        <p class="text-xs font-bold text-white/80 uppercase tracking-widest mt-2 font-comfortaa">Seguiment global d'activitats</p>
       </div>
-      <button @click="obreCrear" class="bg-green-600 text-white px-8 py-4 rounded-[2rem] text-xs font-black uppercase tracking-widest hover:bg-green-700 transition-all shadow-xl shadow-green-100 flex items-center gap-3">
+      <button @click="obreCrear" class="bg-[#79D45D] hover:bg-[#6fbc58] text-white border-2 border-[#6fbc58] px-8 py-4 rounded-[10px] text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-green-200/20 flex items-center gap-3 font-bricolage">
         <span class="text-lg leading-none">+</span>
         Nou Hàbit
       </button>
     </div>
 
-    <!-- Taula d'Hàbits -->
-    <div class="bg-white rounded-[3rem] p-10 shadow-2xl border border-gray-100 overflow-hidden">
+    <!-- Taula d'Hàbits en targeta Bento -->
+    <div class="bg-white/95 backdrop-blur-md rounded-[10px] p-8 shadow-xl border border-white/50 overflow-hidden">
       <div class="overflow-x-auto">
-        <table class="w-full text-left">
+        <table class="w-full text-left font-comfortaa">
           <thead>
-            <tr class="text-[10px] font-black text-gray-300 uppercase tracking-widest border-b border-gray-50">
-              <th class="pb-8">Activitat</th>
-              <th class="pb-8">Propietari</th>
-              <th class="pb-8">Categoria</th>
-              <th class="pb-8 text-center">Dificultat</th>
-              <th class="pb-8 text-right">Accions</th>
+            <tr class="text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100 font-bricolage">
+              <th class="pb-6">Activitat</th>
+              <th class="pb-6">Propietari</th>
+              <th class="pb-6">Categoria</th>
+              <th class="pb-6 text-center">Dificultat</th>
+              <th class="pb-6 text-right">Accions</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-gray-50">
-            <tr v-for="habit in habits" :key="habit.id" class="group hover:bg-gray-50/50 transition-all">
-              <td class="py-6 font-black text-gray-800 text-base tracking-tight leading-none">{{ habit.titol }}</td>
-              <td class="py-6 text-xs font-bold text-gray-500">{{ habit.usuari ? habit.usuari.nom : 'Usuari #' + habit.usuari_id }}</td>
-              <td class="py-6">
-                <span class="bg-green-50 text-green-600 px-3 py-1 rounded-lg font-black text-[9px] uppercase border border-green-100 italic">CAT #{{ habit.categoria_id }}</span>
+          <tbody class="divide-y divide-gray-100/50">
+            <tr v-for="habit in habits" :key="habit.id" class="group hover:bg-white/50 transition-all">
+              <td class="py-5 font-black text-gray-800 text-base tracking-tight leading-none font-bricolage">{{ habit.titol }}</td>
+              <td class="py-5 text-xs font-bold text-gray-500">{{ habit.usuari ? habit.usuari.nom : 'Usuari #' + habit.usuari_id }}</td>
+              <td class="py-5">
+                <span class="bg-green-50 text-green-600 px-3 py-1 rounded-[10px] font-black text-[9px] uppercase border border-green-100 italic font-bricolage">CAT #{{ habit.categoria_id }}</span>
               </td>
-              <td class="py-6 text-center">
-                <span class="bg-orange-50 text-orange-600 px-3 py-1 rounded-lg font-black text-[9px] uppercase border border-orange-100">{{ habit.dificultat }}</span>
+              <td class="py-5 text-center">
+                <span class="bg-orange-50 text-orange-600 px-3 py-1 rounded-[10px] font-black text-[9px] uppercase border border-orange-100 font-bricolage">{{ habit.dificultat }}</span>
               </td>
-              <td class="py-6 text-right space-x-3">
-                <button @click="obreEditar(habit)" class="text-[10px] font-black text-gray-400 uppercase hover:text-green-600 transition-colors">Editar</button>
-                <button @click="obreEliminar(habit)" class="text-[10px] font-black text-gray-400 uppercase hover:text-red-500 transition-colors">Eliminar</button>
+              <td class="py-5 text-right space-x-3">
+                <button @click="obreEditar(habit)" class="text-[10px] font-black text-gray-400 uppercase hover:text-green-600 transition-colors font-bricolage">Editar</button>
+                <button @click="obreEliminar(habit)" class="text-[10px] font-black text-gray-400 uppercase hover:text-red-500 transition-colors font-bricolage">Eliminar</button>
               </td>
             </tr>
           </tbody>
@@ -179,32 +179,32 @@ function confirmarEliminacio() {
       leave-to-class="opacity-0 scale-95"
     >
       <div v-if="popupObert" class="fixed inset-0 z-50 flex items-center justify-center p-6 bg-gray-900/60 backdrop-blur-md" @click.self="tancaPopup">
-        <div class="bg-white w-full max-w-xl rounded-[3rem] shadow-2xl relative overflow-hidden flex flex-col border border-white/20">
+        <div class="bg-white/95 backdrop-blur-md w-full max-w-xl rounded-[10px] shadow-2xl relative overflow-hidden flex flex-col border border-white/50">
           
-          <div class="p-10 border-b border-gray-100 flex justify-between items-center bg-gray-50/30">
+          <div class="p-8 border-b border-gray-100 flex justify-between items-center bg-white/50">
             <div>
-              <h3 class="text-2xl font-black text-gray-900 uppercase tracking-tighter">
+              <h3 class="text-2xl font-black text-gray-900 uppercase tracking-tighter font-bricolage">
                 {{ popupObert === 'crear' ? 'Nou Hàbit' : (popupObert === 'editar' ? 'Editar Hàbit' : 'Eliminar Hàbit') }}
               </h3>
-              <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Configuració d'activitat</p>
+              <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1 font-comfortaa">Configuració d'activitat</p>
             </div>
-            <button @click="tancaPopup" class="w-12 h-12 rounded-full bg-white border border-gray-100 flex items-center justify-center font-black text-gray-400 hover:bg-red-50 hover:text-red-500 transition-all uppercase text-[10px]">Tancar</button>
+            <button @click="tancaPopup" class="w-10 h-10 rounded-[10px] bg-white border border-gray-200 flex items-center justify-center font-black text-gray-400 hover:bg-red-50 hover:text-red-500 transition-all uppercase text-[10px] font-bricolage">Tancar</button>
           </div>
 
-          <div class="p-12 space-y-6">
+          <div class="p-8 space-y-6 font-comfortaa">
             <template v-if="popupObert === 'crear' || popupObert === 'editar'">
               <div class="space-y-2">
-                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">Títol de l'Hàbit</label>
-                <input v-model="formulari.titol" type="text" class="w-full bg-gray-50 border border-gray-100 rounded-[1.5rem] px-6 py-4 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-green-100 transition-all placeholder:text-gray-300" placeholder="Beure aigua, Llegir..." />
+                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 font-bricolage">Títol de l'Hàbit</label>
+                <input v-model="formulari.titol" type="text" class="w-full bg-white/50 border border-gray-200 rounded-[10px] px-5 py-3 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-[#79D45D]/10 focus:border-[#79D45D]/50 transition-all placeholder:text-gray-300" placeholder="Beure aigua, Llegir..." />
               </div>
               <div v-if="popupObert === 'crear'" class="space-y-2">
-                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">ID de l'Usuari</label>
-                <input v-model="formulari.usuari_id" type="number" class="w-full bg-gray-50 border border-gray-100 rounded-[1.5rem] px-6 py-4 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-green-100 transition-all placeholder:text-gray-300" placeholder="ID usuari" required />
+                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 font-bricolage">ID de l'Usuari</label>
+                <input v-model="formulari.usuari_id" type="number" class="w-full bg-white/50 border border-gray-200 rounded-[10px] px-5 py-3 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-[#79D45D]/10 focus:border-[#79D45D]/50 transition-all placeholder:text-gray-300" placeholder="ID usuari" required />
               </div>
               <div class="grid grid-cols-2 gap-6">
                 <div class="space-y-2">
-                  <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">Categoria</label>
-                  <select v-model="formulari.categoria_id" class="w-full bg-gray-50 border border-gray-100 rounded-[1.5rem] px-6 py-4 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-green-100 transition-all appearance-none">
+                  <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 font-bricolage">Categoria</label>
+                  <select v-model="formulari.categoria_id" class="w-full bg-white/50 border border-gray-200 rounded-[10px] px-5 py-3 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-[#79D45D]/10 focus:border-[#79D45D]/50 transition-all appearance-none">
                     <option :value="1">Salut / Esport</option>
                     <option :value="2">Alimentació</option>
                     <option :value="3">Estudi</option>
@@ -216,8 +216,8 @@ function confirmarEliminacio() {
                   </select>
                 </div>
                 <div class="space-y-2">
-                  <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">Dificultat</label>
-                  <select v-model="formulari.dificultat" class="w-full bg-gray-50 border border-gray-100 rounded-[1.5rem] px-6 py-4 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-green-100 transition-all appearance-none">
+                  <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 font-bricolage">Dificultat</label>
+                  <select v-model="formulari.dificultat" class="w-full bg-white/50 border border-gray-200 rounded-[10px] px-5 py-3 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-[#79D45D]/10 focus:border-[#79D45D]/50 transition-all appearance-none">
                     <option value="facil">Baixa (Fàcil)</option>
                     <option value="media">Mitjana (Media)</option>
                     <option value="dificil">Alta (Difícil)</option>
@@ -227,36 +227,36 @@ function confirmarEliminacio() {
               
               <div class="grid grid-cols-2 gap-6">
                 <div class="space-y-2">
-                  <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">Freqüència</label>
-                  <select v-model="formulari.frequencia_tipus" class="w-full bg-gray-50 border border-gray-100 rounded-[1.5rem] px-6 py-4 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-green-100 transition-all appearance-none">
+                  <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 font-bricolage">Freqüència</label>
+                  <select v-model="formulari.frequencia_tipus" class="w-full bg-white/50 border border-gray-200 rounded-[10px] px-5 py-3 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-[#79D45D]/10 focus:border-[#79D45D]/50 transition-all appearance-none">
                     <option value="diaria">Diària</option>
                     <option value="semanal">Setmanal</option>
                   </select>
                 </div>
                 <div class="space-y-2">
-                  <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">Objectiu (Vegades)</label>
-                  <input v-model="formulari.objectiu_vegades" type="number" class="w-full bg-gray-50 border border-gray-100 rounded-[1.5rem] px-6 py-4 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-green-100 transition-all placeholder:text-gray-300" placeholder="1" />
+                  <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 font-bricolage">Objectiu (Vegades)</label>
+                  <input v-model="formulari.objectiu_vegades" type="number" class="w-full bg-white/50 border border-gray-200 rounded-[10px] px-5 py-3 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-[#79D45D]/10 focus:border-[#79D45D]/50 transition-all placeholder:text-gray-300" placeholder="1" />
                 </div>
               </div>
 
               <div class="space-y-2">
-                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">Dies (separats per coma: 1,2,3...)</label>
-                <input v-model="formulari.dies_setmana" type="text" class="w-full bg-gray-50 border border-gray-100 rounded-[1.5rem] px-6 py-4 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-green-100 transition-all placeholder:text-gray-300" placeholder="1,2,3,4,5,6,7" />
+                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 font-bricolage">Dies (separats per coma: 1,2,3...)</label>
+                <input v-model="formulari.dies_setmana" type="text" class="w-full bg-white/50 border border-gray-200 rounded-[10px] px-5 py-3 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-[#79D45D]/10 focus:border-[#79D45D]/50 transition-all placeholder:text-gray-300" placeholder="1,2,3,4,5,6,7" />
               </div>
             </template>
 
             <template v-if="popupObert === 'eliminar'">
-              <div class="bg-red-50 p-8 rounded-[2.5rem] border border-red-100 text-center">
-                <p class="text-base font-black text-red-600 uppercase tracking-tighter mb-2">Eliminar Definitivament?</p>
+              <div class="bg-red-50 p-6 rounded-[10px] border border-red-100 text-center">
+                <p class="text-base font-black text-red-600 uppercase tracking-tighter mb-2 font-bricolage">Eliminar Definitivament?</p>
                 <p class="text-xs font-bold text-red-400 uppercase tracking-widest">Estàs a punt d'esborrar l'hàbit: <span class="text-red-700">{{ habitSeleccionat?.titol }}</span></p>
               </div>
             </template>
           </div>
 
-          <div class="p-10 border-t border-gray-100 bg-gray-50/30 flex justify-end gap-4">
-            <button @click="tancaPopup" class="px-8 py-4 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest text-gray-400 hover:bg-gray-100 transition-all">Cancel·lar</button>
-            <button v-if="popupObert === 'eliminar'" @click="confirmarEliminacio" class="px-10 py-4 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest bg-red-600 text-white shadow-xl shadow-red-100 hover:bg-red-700 transition-all">Esborrar</button>
-            <button v-else @click="guardarHabit" class="px-10 py-4 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest bg-green-600 text-white shadow-xl shadow-green-100 hover:bg-green-700 transition-all">Guardar Hàbit</button>
+          <div class="p-6 border-t border-gray-100 bg-white/50 flex justify-end gap-4">
+            <button @click="tancaPopup" class="px-6 py-3 rounded-[10px] text-[10px] font-black uppercase tracking-widest text-gray-400 hover:bg-gray-100 transition-all font-bricolage">Cancel·lar</button>
+            <button v-if="popupObert === 'eliminar'" @click="confirmarEliminacio" class="px-8 py-3 rounded-[10px] text-[10px] font-black uppercase tracking-widest bg-red-600 text-white shadow-md hover:bg-red-700 transition-all font-bricolage">Esborrar</button>
+            <button v-else @click="guardarHabit" class="px-8 py-3 rounded-[10px] text-[10px] font-black uppercase tracking-widest bg-[#79D45D] hover:bg-[#6fbc58] text-white border border-[#6fbc58] shadow-md transition-all font-bricolage">Guardar Hàbit</button>
           </div>
         </div>
       </div>

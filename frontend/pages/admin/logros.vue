@@ -34,13 +34,18 @@ var formulari = ref({
 
 // 2. METHODS (FUNCTION)
 function obreCrear() {
-  formulari.value = { nom: "", tipus: "Consistència", desc: "", xp: 100 };
+  formulari.value = { nom: "", tipus: "Consistència", descripcio: "", recompensa_xp: 100 };
   popupObert.value = 'crear';
 }
 
 function obreEditar(l) {
   logroSeleccionat.value = l;
-  formulari.value = { nom: l.nom, tipus: l.tipus, desc: l.desc, xp: l.xp };
+  formulari.value = { 
+    nom: l.nom, 
+    tipus: l.tipus, 
+    descripcio: l.descripcio, 
+    recompensa_xp: l.recompensa_xp 
+  };
   popupObert.value = 'editar';
 }
 
@@ -104,35 +109,35 @@ function confirmarEliminacio() {
   <div class="space-y-8 pb-20">
     <div class="flex justify-between items-end">
       <div>
-        <h2 class="text-3xl font-black text-gray-900 uppercase tracking-tighter leading-none">Medalles i Logros</h2>
-        <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mt-2">Sistema de recompenses del sistema</p>
+        <h2 class="text-3xl font-black text-[#faf9f9] drop-shadow-sm uppercase tracking-tighter leading-none font-bricolage">Medalles i Logros</h2>
+        <p class="text-xs font-bold text-white/80 uppercase tracking-widest mt-2 font-comfortaa">Sistema de recompenses del sistema</p>
       </div>
-      <button @click="obreCrear" class="bg-orange-600 text-white px-8 py-4 rounded-[2rem] text-xs font-black uppercase tracking-widest hover:bg-orange-700 transition-all shadow-xl shadow-orange-100 flex items-center gap-3">
+      <button @click="obreCrear" class="bg-[#79D45D] hover:bg-[#6fbc58] text-white border-2 border-[#6fbc58] px-8 py-4 rounded-[10px] text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-green-200/20 flex items-center gap-3 font-bricolage">
         <span class="text-lg leading-none">+</span>
         Crear Logro
       </button>
     </div>
 
-    <!-- Grid de Logros -->
+    <!-- Grid de Logros Bento Glass -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-      <div v-for="l in logros" :key="l.id" class="bg-white rounded-[3rem] p-8 shadow-xl border border-gray-50 flex items-center gap-8 group hover:-translate-y-1 transition-all">
-        <div class="w-24 h-24 rounded-full bg-orange-100 flex items-center justify-center text-[8px] font-black text-orange-600 border-8 border-orange-50 shrink-0 shadow-inner tracking-widest uppercase">
+      <div v-for="l in logros" :key="l.id" class="bg-white/95 backdrop-blur-md rounded-[10px] p-6 shadow-xl border border-white/50 flex items-center gap-8 group hover:-translate-y-1 transition-all">
+        <div class="w-20 h-20 rounded-[10px] bg-orange-50 flex items-center justify-center text-[8px] font-black text-orange-600 border-4 border-orange-100 shrink-0 shadow-inner tracking-widest uppercase font-bricolage">
           MEDALLA
         </div>
         <div class="flex-1">
           <div class="flex justify-between items-start">
-            <h3 class="text-xl font-black text-gray-800 uppercase tracking-tighter">{{ l.nom }}</h3>
-            <span class="bg-orange-50 text-orange-500 px-3 py-1 rounded-xl font-black text-[9px] uppercase border border-orange-100 tracking-widest">{{ l.tipus }}</span>
+            <h3 class="text-xl font-black text-gray-800 uppercase tracking-tighter font-bricolage leading-none">{{ l.nom }}</h3>
+            <span class="bg-orange-50 text-orange-500 px-3 py-1 rounded-[10px] font-black text-[9px] uppercase border border-orange-100 tracking-widest font-bricolage">{{ l.tipus }}</span>
           </div>
-          <p class="text-xs text-gray-400 font-bold mt-2 leading-relaxed">{{ l.descripcio }}</p>
-          <div class="mt-6 flex justify-between items-center">
+          <p class="text-xs text-gray-400 font-bold mt-3 leading-relaxed font-comfortaa">{{ l.descripcio }}</p>
+          <div class="mt-4 flex justify-between items-center font-comfortaa">
             <div class="flex items-center gap-2">
               <span class="w-2 h-2 rounded-full bg-blue-500"></span>
-              <span class="text-[10px] font-black text-blue-600 uppercase">{{ l.recompensa_xp }} XP</span>
+              <span class="text-[10px] font-black text-blue-600 uppercase font-bricolage">{{ l.recompensa_xp }} XP</span>
             </div>
             <div class="space-x-4">
-              <button @click="obreEditar(l)" class="text-[9px] font-black text-gray-400 uppercase hover:text-blue-600">Editar</button>
-              <button @click="obreEliminar(l)" class="text-[9px] font-black text-gray-400 uppercase hover:text-red-500">Eliminar</button>
+              <button @click="obreEditar(l)" class="text-[9px] font-black text-gray-400 uppercase hover:text-blue-600 font-bricolage">Editar</button>
+              <button @click="obreEliminar(l)" class="text-[9px] font-black text-gray-400 uppercase hover:text-red-500 font-bricolage">Eliminar</button>
             </div>
           </div>
         </div>
@@ -149,28 +154,28 @@ function confirmarEliminacio() {
       leave-to-class="opacity-0 scale-95"
     >
       <div v-if="popupObert" class="fixed inset-0 z-50 flex items-center justify-center p-6 bg-gray-900/60 backdrop-blur-md" @click.self="tancaPopup">
-        <div class="bg-white w-full max-w-xl rounded-[3rem] shadow-2xl relative overflow-hidden flex flex-col border border-white/20">
+        <div class="bg-white/95 backdrop-blur-md w-full max-w-xl rounded-[10px] shadow-2xl relative overflow-hidden flex flex-col border border-white/50">
           
-          <div class="p-10 border-b border-gray-100 flex justify-between items-center bg-gray-50/30">
+          <div class="p-8 border-b border-gray-100 flex justify-between items-center bg-white/50">
             <div>
-              <h3 class="text-2xl font-black text-gray-900 uppercase tracking-tighter">
+              <h3 class="text-2xl font-black text-gray-900 uppercase tracking-tighter font-bricolage">
                 {{ popupObert === 'crear' ? 'Nou Logro' : (popupObert === 'editar' ? 'Editar Logro' : 'Eliminar Logro') }}
               </h3>
-              <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Configuració de medalles</p>
+              <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1 font-comfortaa">Configuració de medalles</p>
             </div>
-            <button @click="tancaPopup" class="w-12 h-12 rounded-full bg-white border border-gray-100 flex items-center justify-center font-black text-gray-400 hover:bg-red-50 hover:text-red-500 transition-all">X</button>
+            <button @click="tancaPopup" class="w-10 h-10 rounded-[10px] bg-white border border-gray-200 flex items-center justify-center font-black text-gray-400 hover:bg-red-50 hover:text-red-500 transition-all uppercase text-[10px] font-bricolage">Tancar</button>
           </div>
 
-          <div class="p-12 space-y-6">
+          <div class="p-8 space-y-6 font-comfortaa">
             <template v-if="popupObert === 'crear' || popupObert === 'editar'">
               <div class="space-y-2">
-                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">Nom de la Medalla</label>
-                <input v-model="formulari.nom" type="text" class="w-full bg-gray-50 border border-gray-100 rounded-[1.5rem] px-6 py-4 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-orange-100 transition-all placeholder:text-gray-300" placeholder="Ex: Super Consistent..." />
+                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 font-bricolage">Nom de la Medalla</label>
+                <input v-model="formulari.nom" type="text" class="w-full bg-white/50 border border-gray-200 rounded-[10px] px-5 py-3 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-[#79D45D]/10 focus:border-[#79D45D]/50 transition-all placeholder:text-gray-300" placeholder="Ex: Super Consistent..." />
               </div>
               <div class="grid grid-cols-2 gap-6">
                 <div class="space-y-2">
-                  <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">Categoria</label>
-                  <select v-model="formulari.tipus" class="w-full bg-gray-50 border border-gray-100 rounded-[1.5rem] px-6 py-4 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-orange-100 transition-all appearance-none">
+                  <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 font-bricolage">Categoria</label>
+                  <select v-model="formulari.tipus" class="w-full bg-white/50 border border-gray-200 rounded-[10px] px-5 py-3 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-[#79D45D]/10 focus:border-[#79D45D]/50 transition-all appearance-none">
                     <option>Consistència</option>
                     <option>Nivell</option>
                     <option>Comunitat</option>
@@ -178,28 +183,28 @@ function confirmarEliminacio() {
                   </select>
                 </div>
                 <div class="space-y-2">
-                  <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">Recompensa (XP)</label>
-                  <input v-model="formulari.xp" type="number" class="w-full bg-gray-50 border border-gray-100 rounded-[1.5rem] px-6 py-4 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-orange-100 transition-all" />
+                  <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 font-bricolage">Recompensa (XP)</label>
+                  <input v-model="formulari.recompensa_xp" type="number" class="w-full bg-white/50 border border-gray-200 rounded-[10px] px-5 py-3 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-[#79D45D]/10 focus:border-[#79D45D]/50 transition-all" />
                 </div>
               </div>
               <div class="space-y-2">
-                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">Descripció del Logro</label>
-                <textarea v-model="formulari.desc" rows="3" class="w-full bg-gray-50 border border-gray-100 rounded-[1.5rem] px-6 py-4 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-orange-100 transition-all placeholder:text-gray-300" placeholder="Condicions per guanyar la medalla..."></textarea>
+                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 font-bricolage">Descripció del Logro</label>
+                <textarea v-model="formulari.descripcio" rows="3" class="w-full bg-white/50 border border-gray-200 rounded-[10px] px-5 py-3 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-[#79D45D]/10 focus:border-[#79D45D]/50 transition-all placeholder:text-gray-300" placeholder="Condicions per guanyar la medalla..."></textarea>
               </div>
             </template>
 
             <template v-if="popupObert === 'eliminar'">
-              <div class="bg-red-50 p-8 rounded-[2.5rem] border border-red-100 text-center">
-                <p class="text-base font-black text-red-600 uppercase tracking-tighter mb-2">Eliminar Logro?</p>
+              <div class="bg-red-50 p-6 rounded-[10px] border border-red-100 text-center">
+                <p class="text-base font-black text-red-600 uppercase tracking-tighter mb-2 font-bricolage">Eliminar Logro?</p>
                 <p class="text-xs font-bold text-red-400 uppercase tracking-widest">Aquesta medalla s'eliminarà de l'historial de tots els usuaris que la tinguin.</p>
               </div>
             </template>
           </div>
 
-          <div class="p-10 border-t border-gray-100 bg-gray-50/30 flex justify-end gap-4">
-            <button @click="tancaPopup" class="px-8 py-4 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest text-gray-400 hover:bg-gray-100 transition-all">Cancel·lar</button>
-            <button v-if="popupObert === 'eliminar'" @click="confirmarEliminacio" class="px-10 py-4 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest bg-red-600 text-white shadow-xl shadow-red-100 hover:bg-red-700 transition-all">Esborrar</button>
-            <button v-else @click="guardarLogro" class="px-10 py-4 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest bg-orange-600 text-white shadow-xl shadow-orange-100 hover:bg-orange-700 transition-all">Guardar Medalla</button>
+          <div class="p-6 border-t border-gray-100 bg-white/50 flex justify-end gap-4">
+            <button @click="tancaPopup" class="px-6 py-3 rounded-[10px] text-[10px] font-black uppercase tracking-widest text-gray-400 hover:bg-gray-100 transition-all font-bricolage">Cancel·lar</button>
+            <button v-if="popupObert === 'eliminar'" @click="confirmarEliminacio" class="px-8 py-3 rounded-[10px] text-[10px] font-black uppercase tracking-widest bg-red-600 text-white shadow-md hover:bg-red-700 transition-all font-bricolage">Esborrar</button>
+            <button v-else @click="guardarLogro" class="px-8 py-3 rounded-[10px] text-[10px] font-black uppercase tracking-widest bg-[#79D45D] hover:bg-[#6fbc58] text-white border border-[#6fbc58] shadow-md transition-all font-bricolage">Guardar Medalla</button>
           </div>
         </div>
       </div>

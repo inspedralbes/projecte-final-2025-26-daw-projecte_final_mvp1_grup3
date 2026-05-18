@@ -1,13 +1,9 @@
 <template>
   <div v-if="show" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
     <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="text-lg font-bold text-gray-800">{{ $t('social.import_data') }}</h3>
-        <button @click="close" class="text-gray-400 hover:text-gray-600">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-          </svg>
-        </button>
+      <div class="flex flex-col items-center border-b border-gray-100 pb-2">
+        <div class="w-12 h-1.5 bg-gray-300 rounded-full mb-4"></div>
+        <h3 class="text-2xl font-['Bricolage_Grotesque'] font-bold text-[#949494] text-center w-full mb-4">{{ $t('social.import_data') }}</h3>
       </div>
 
       <div v-if="step === 1" class="space-y-4">
@@ -123,7 +119,8 @@ export default {
   name: "ImportWizard",
   props: {
     show: { type: Boolean, default: false },
-    post: { type: Object, default: null }
+    post: { type: Object, default: null },
+    attachment: { type: Object, default: null }
   },
   emits: ["close"],
   data: function () {
@@ -147,6 +144,22 @@ export default {
       ]
     };
   },
+  watch: {
+    show: function (newVal) {
+      if (newVal) {
+        this.reset();
+        if (this.attachment) {
+          this.importType = this.attachment.type;
+          if (this.attachment.type === "plantilla") {
+            this.loadHabitsFromAttachment();
+          }
+          this.step = 2;
+        } else {
+          this.step = 1;
+        }
+      }
+    }
+  },
   methods: {
     close: function () {
       this.reset();
@@ -164,14 +177,17 @@ export default {
     selectType: function (type) {
       this.importType = type;
       if (type === "plantilla") {
-        this.loadHabits();
+        this.loadHabitsFromAttachment();
       }
       this.step = 2;
     },
-    loadHabits: function () {
-      if (this.post?.plantilla?.habits) {
+    loadHabitsFromAttachment: function () {
+      if (this.attachment?.plantilla?.habits) {
+        this.habits = this.attachment.plantilla.habits;
+        this.selectedHabitIds = this.habits.map(function (h) { return h.id; });
+      } else if (this.post?.plantilla?.habits) {
         this.habits = this.post.plantilla.habits;
-        this.selectedHabitIds = this.habits.map(function(h) { return h.id; });
+        this.selectedHabitIds = this.habits.map(function (h) { return h.id; });
       } else {
         this.habits = [];
         this.selectedHabitIds = [];
@@ -197,8 +213,9 @@ export default {
       this.loading = true;
       this.error = null;
 
+      var habitId = this.attachment ? this.attachment.id : (this.post?.habit?.id);
       var socialStore = useSocialStore();
-      var result = await socialStore.importHabit(this.post.id, this.selectedDays);
+      var result = await socialStore.importHabit(this.post.id, this.selectedDays, habitId);
 
       if (result && result.success) {
         this.step = 3;
@@ -212,8 +229,9 @@ export default {
       this.loading = true;
       this.error = null;
 
+      var plantillaId = this.attachment ? this.attachment.id : (this.post?.plantilla?.id);
       var socialStore = useSocialStore();
-      var result = await socialStore.importPlantilla(this.post.id, this.selectedHabitIds);
+      var result = await socialStore.importPlantilla(this.post.id, this.selectedHabitIds, plantillaId);
 
       if (result && result.success) {
         this.step = 3;

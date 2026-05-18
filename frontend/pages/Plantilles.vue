@@ -77,7 +77,7 @@
         </button>
       </div>
 
-      <div v-else class="space-y-12">
+      <div v-else class="space-y-6">
         <!-- 1. SECCIÓ PÚBLIQUES -->
         <div v-if="selectedFilter === 'all' || selectedFilter === 'public'" class="template-section">
           <div class="moment-divider mt-1 mb-4" role="presentation">
@@ -181,16 +181,24 @@
 
                   <div class="template-habits-stack">
                     <p v-if="!plantilla.habits || plantilla.habits.length === 0" class="template-habits-list__empty">{{ $t('templates.no_habits_to_select') }}</p>
-                    <button v-for="habit in plantilla.habits" :key="habit.id" type="button" class="template-habit-card">
-                      <span class="template-habit-card__mark" aria-hidden="true">
-                        <svg class="template-habit-card__blob" width="56" height="40" viewBox="0 0 56 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M1.64885 13.8624C4.80033 5.5202 12.7867 0 21.7043 0H46.8857C51.8563 0 55.8857 4.02944 55.8857 9V18.1149C55.8857 20.9967 55.1982 23.8369 53.8802 26.3997L53.3295 27.4705C49.3729 35.1639 41.4476 40 32.7964 40H18.4113C11.3613 40 4.93035 35.9742 1.85018 29.6327C-0.361252 25.0797 -0.600734 19.8171 1.18804 15.0821L1.64885 13.8624Z" :fill="habit.color || '#79D45D'" />
+                    <button v-for="habit in plantilla.habits" :key="habit.id" type="button" class="template-habit-card w-full flex items-center justify-between text-left">
+                      <div class="flex items-center gap-3">
+                        <span class="template-habit-card__mark relative" aria-hidden="true">
+                          <svg class="template-habit-card__blob" width="56" height="40" viewBox="0 0 56 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M1.64885 13.8624C4.80033 5.5202 12.7867 0 21.7043 0H46.8857C51.8563 0 55.8857 4.02944 55.8857 9V18.1149C55.8857 20.9967 55.1982 23.8369 53.8802 26.3997L53.3295 27.4705C49.3729 35.1639 41.4476 40 32.7964 40H18.4113C11.3613 40 4.93035 35.9742 1.85018 29.6327C-0.361252 25.0797 -0.600734 19.8171 1.18804 15.0821L1.64885 13.8624Z" :fill="habit.color || '#79D45D'" />
+                          </svg>
+                          <span class="template-habit-card__icona">{{ habit.icona || '✨' }}</span>
+                        </span>
+                        <span class="template-habit-card__content">
+                          <span class="template-habit-card__title">{{ habit.nom || habit.titol }}</span>
+                        </span>
+                      </div>
+                      <div v-if="estaHabitImplementat(habit)" class="flex items-center gap-1.5 px-3 py-1 bg-green-50 rounded-full border border-green-200 shrink-0 mr-2">
+                        <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
                         </svg>
-                        <span class="template-habit-card__icona">{{ habit.icona || '✨' }}</span>
-                      </span>
-                      <span class="template-habit-card__content">
-                        <span class="template-habit-card__title">{{ habit.nom || habit.titol }}</span>
-                      </span>
+                        <span class="text-xs font-bold text-green-600 uppercase tracking-wider">Actiu</span>
+                      </div>
                     </button>
                   </div>
                 </div>
@@ -288,14 +296,22 @@
 
                   <div class="template-habits-stack">
                     <p v-if="!plantilla.habits || plantilla.habits.length === 0" class="template-habits-list__empty">{{ $t('templates.no_habits_to_select') }}</p>
-                    <button v-for="habit in plantilla.habits" :key="habit.id" type="button" class="template-habit-card">
-                      <span class="template-habit-card__mark" aria-hidden="true">
-                        <svg class="template-habit-card__blob" width="56" height="40" viewBox="0 0 56 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.64885 13.8624C4.80033 5.5202 12.7867 0 21.7043 0H46.8857C51.8563 0 55.8857 4.02944 55.8857 9V18.1149C55.8857 20.9967 55.1982 23.8369 53.8802 26.3997L53.3295 27.4705C49.3729 35.1639 41.4476 40 32.7964 40H18.4113C11.3613 40 4.93035 35.9742 1.85018 29.6327C-0.361252 25.0797 -0.600734 19.8171 1.18804 15.0821L1.64885 13.8624Z" :fill="habit.color || '#79D45D'" /></svg>
-                        <span class="template-habit-card__icona">{{ habit.icona || '✨' }}</span>
-                      </span>
-                      <span class="template-habit-card__content">
-                        <span class="template-habit-card__title">{{ habit.nom || habit.titol }}</span>
-                      </span>
+                    <button v-for="habit in plantilla.habits" :key="habit.id" type="button" class="template-habit-card w-full flex items-center justify-between text-left">
+                      <div class="flex items-center gap-3">
+                        <span class="template-habit-card__mark relative" aria-hidden="true">
+                          <svg class="template-habit-card__blob" width="56" height="40" viewBox="0 0 56 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.64885 13.8624C4.80033 5.5202 12.7867 0 21.7043 0H46.8857C51.8563 0 55.8857 4.02944 55.8857 9V18.1149C55.8857 20.9967 55.1982 23.8369 53.8802 26.3997L53.3295 27.4705C49.3729 35.1639 41.4476 40 32.7964 40H18.4113C11.3613 40 4.93035 35.9742 1.85018 29.6327C-0.361252 25.0797 -0.600734 19.8171 1.18804 15.0821L1.64885 13.8624Z" :fill="habit.color || '#79D45D'" /></svg>
+                          <span class="template-habit-card__icona">{{ habit.icona || '✨' }}</span>
+                        </span>
+                        <span class="template-habit-card__content">
+                          <span class="template-habit-card__title">{{ habit.nom || habit.titol }}</span>
+                        </span>
+                      </div>
+                      <div v-if="estaHabitImplementat(habit)" class="flex items-center gap-1.5 px-3 py-1 bg-green-50 rounded-full border border-green-200 shrink-0 mr-2">
+                        <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <span class="text-xs font-bold text-green-600 uppercase tracking-wider">Actiu</span>
+                      </div>
                     </button>
                   </div>
                 </div>
@@ -368,14 +384,22 @@
 
                   <div class="template-habits-stack">
                     <p v-if="!plantilla.habits || plantilla.habits.length === 0" class="template-habits-list__empty">{{ $t('templates.no_habits_to_select') }}</p>
-                    <button v-for="habit in plantilla.habits" :key="habit.id" type="button" class="template-habit-card">
-                      <span class="template-habit-card__mark" aria-hidden="true">
-                        <svg class="template-habit-card__blob" width="56" height="40" viewBox="0 0 56 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.64885 13.8624C4.80033 5.5202 12.7867 0 21.7043 0H46.8857C51.8563 0 55.8857 4.02944 55.8857 9V18.1149C55.8857 20.9967 55.1982 23.8369 53.8802 26.3997L53.3295 27.4705C49.3729 35.1639 41.4476 40 32.7.64 40H18.4113C11.3613 40 4.93035 35.9742 1.85018 29.6327C-0.361252 25.0797 -0.600734 19.8171 1.18804 15.0821L1.64885 13.8624Z" :fill="habit.color || '#79D45D'" /></svg>
-                        <span class="template-habit-card__icona">{{ habit.icona || '✨' }}</span>
-                      </span>
-                      <span class="template-habit-card__content">
-                        <span class="template-habit-card__title">{{ habit.nom || habit.titol }}</span>
-                      </span>
+                    <button v-for="habit in plantilla.habits" :key="habit.id" type="button" class="template-habit-card w-full flex items-center justify-between text-left">
+                      <div class="flex items-center gap-3">
+                        <span class="template-habit-card__mark relative" aria-hidden="true">
+                          <svg class="template-habit-card__blob" width="56" height="40" viewBox="0 0 56 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.64885 13.8624C4.80033 5.5202 12.7867 0 21.7043 0H46.8857C51.8563 0 55.8857 4.02944 55.8857 9V18.1149C55.8857 20.9967 55.1982 23.8369 53.8802 26.3997L53.3295 27.4705C49.3729 35.1639 41.4476 40 32.7.64 40H18.4113C11.3613 40 4.93035 35.9742 1.85018 29.6327C-0.361252 25.0797 -0.600734 19.8171 1.18804 15.0821L1.64885 13.8624Z" :fill="habit.color || '#79D45D'" /></svg>
+                          <span class="template-habit-card__icona">{{ habit.icona || '✨' }}</span>
+                        </span>
+                        <span class="template-habit-card__content">
+                          <span class="template-habit-card__title">{{ habit.nom || habit.titol }}</span>
+                        </span>
+                      </div>
+                      <div v-if="estaHabitImplementat(habit)" class="flex items-center gap-1.5 px-3 py-1 bg-green-50 rounded-full border border-green-200 shrink-0 mr-2">
+                        <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <span class="text-xs font-bold text-green-600 uppercase tracking-wider">Actiu</span>
+                      </div>
                     </button>
                   </div>
                 </div>
@@ -454,14 +478,22 @@
 
                   <div class="template-habits-stack">
                     <p v-if="!plantilla.habits || plantilla.habits.length === 0" class="template-habits-list__empty">{{ $t('templates.no_habits_to_select') }}</p>
-                    <button v-for="habit in plantilla.habits" :key="habit.id" type="button" class="template-habit-card">
-                      <span class="template-habit-card__mark" aria-hidden="true">
-                        <svg class="template-habit-card__blob" width="56" height="40" viewBox="0 0 56 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.64885 13.8624C4.80033 5.5202 12.7867 0 21.7043 0H46.8857C51.8563 0 55.8857 4.02944 55.8857 9V18.1149C55.8857 20.9967 55.1982 23.8369 53.8802 26.3997L53.3295 27.4705C49.3729 35.1639 41.4476 40 32.7964 40H18.4113C11.3613 40 4.93035 35.9742 1.85018 29.6327C-0.361252 25.0797 -0.600734 19.8171 1.18804 15.0821L1.64885 13.8624Z" :fill="habit.color || '#79D45D'" /></svg>
-                        <span class="template-habit-card__icona">{{ habit.icona || '✨' }}</span>
-                      </span>
-                      <span class="template-habit-card__content">
-                        <span class="template-habit-card__title">{{ habit.nom || habit.titol }}</span>
-                      </span>
+                    <button v-for="habit in plantilla.habits" :key="habit.id" type="button" class="template-habit-card w-full flex items-center justify-between text-left">
+                      <div class="flex items-center gap-3">
+                        <span class="template-habit-card__mark relative" aria-hidden="true">
+                          <svg class="template-habit-card__blob" width="56" height="40" viewBox="0 0 56 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.64885 13.8624C4.80033 5.5202 12.7867 0 21.7043 0H46.8857C51.8563 0 55.8857 4.02944 55.8857 9V18.1149C55.8857 20.9967 55.1982 23.8369 53.8802 26.3997L53.3295 27.4705C49.3729 35.1639 41.4476 40 32.7964 40H18.4113C11.3613 40 4.93035 35.9742 1.85018 29.6327C-0.361252 25.0797 -0.600734 19.8171 1.18804 15.0821L1.64885 13.8624Z" :fill="habit.color || '#79D45D'" /></svg>
+                          <span class="template-habit-card__icona">{{ habit.icona || '✨' }}</span>
+                        </span>
+                        <span class="template-habit-card__content">
+                          <span class="template-habit-card__title">{{ habit.nom || habit.titol }}</span>
+                        </span>
+                      </div>
+                      <div v-if="estaHabitImplementat(habit)" class="flex items-center gap-1.5 px-3 py-1 bg-green-50 rounded-full border border-green-200 shrink-0 mr-2">
+                        <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <span class="text-xs font-bold text-green-600 uppercase tracking-wider">Actiu</span>
+                      </div>
                     </button>
                   </div>
                 </div>
@@ -737,19 +769,11 @@
           v-if="plantillaSheetObert"
           class="fixed left-0 right-0 bottom-0 z-[81] bg-white rounded-t-3xl shadow-2xl max-h-[90vh] flex flex-col pb-[max(0.5rem,env(safe-area-inset-bottom))]"
         >
-          <div class="plantilla-sheet__header sticky top-0 z-[1] bg-white rounded-t-3xl px-4 pt-3 pb-2">
-            <h3 class="plantilla-sheet__title">
+          <div class="sticky top-0 z-[1] bg-white rounded-t-3xl flex flex-col items-center shrink-0 border-b border-gray-100 w-full pt-4 px-6">
+            <div class="w-12 h-1.5 bg-gray-300 rounded-full mb-4"></div>
+            <h3 class="text-2xl font-['Bricolage_Grotesque'] font-bold text-[#949494] mb-4 text-center w-full">
               {{ modoEdicio ? $t('templates.edit_title') : $t('templates.create_sheet_heading') }}
             </h3>
-            <button
-              type="button"
-              class="plantilla-sheet__close"
-              :aria-label="$t('templates.close_create_sheet')"
-              @click="tancarSheetCrearPlantilla"
-            >
-              <span class="plantilla-sheet__close-line plantilla-sheet__close-line--1" aria-hidden="true"></span>
-              <span class="plantilla-sheet__close-line plantilla-sheet__close-line--2" aria-hidden="true"></span>
-            </button>
           </div>
           <div class="flex-1 min-h-0 overflow-y-auto px-4 py-3 space-y-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
             <div>
@@ -826,7 +850,7 @@
               <button
                 type="button"
                 @click="eliminarPlantilla(plantillaAEditar.id)"
-                class="w-full py-3 bg-red-50 text-red-500 rounded-xl font-bold border border-red-100 hover:bg-red-100 transition-colors uppercase text-sm tracking-wider"
+                class="w-full rounded-xl border-2 border-[#D14D6B] bg-[#FF6B8A] py-2.5 text-center text-base font-bold text-white transition hover:brightness-[0.97]"
               >
                 {{ $t('templates.delete_button') }}
               </button>
@@ -1001,6 +1025,13 @@ export default {
   },
   // Mètodes del component.
   methods: {
+    estaHabitImplementat: function (habit) {
+      if (!habit || !this.habitStore.habits) return false;
+      var nomHabit = (habit.nom || habit.titol || '').toLowerCase().trim();
+      return this.habitStore.habits.some(function (h) {
+        return (h.nom || h.titol || '').toLowerCase().trim() === nomHabit;
+      });
+    },
     // --- Mètodes de la vista principal de Plantilles ---
 
     /**
@@ -1153,10 +1184,23 @@ export default {
         }
       }
 
-      // Carregar els IDs dels hàbits que ja té la plantilla
+      // Carregar els IDs dels hàbits que ja té la plantilla (mapejats als hàbits de l'usuari per títol/nom de forma robusta)
       if (self.plantillaAEditar.habits && Array.isArray(self.plantillaAEditar.habits)) {
         for (i = 0; i < self.plantillaAEditar.habits.length; i++) {
-          self.form.habitsSeleccionats.push(self.plantillaAEditar.habits[i].id);
+          var tHabit = self.plantillaAEditar.habits[i];
+          var tNom = (tHabit.nom || tHabit.titol || "").toLowerCase().trim();
+          
+          // Cercar si l'usuari té un hàbit actiu amb el mateix nom
+          var matchingUserHabit = self.habitStore.habits.find(function (h) {
+            return (h.nom || h.titol || "").toLowerCase().trim() === tNom;
+          });
+          
+          if (matchingUserHabit) {
+            self.form.habitsSeleccionats.push(matchingUserHabit.id);
+          } else {
+            // Si no en té cap, per seguretat afegim el seu ID original per no perdre'l
+            self.form.habitsSeleccionats.push(tHabit.id);
+          }
         }
       }
 

@@ -51,9 +51,11 @@
         </svg>
       </button>
 
-      <h1 class="calendar-page__month-title">
-        {{ titolMes }}
-      </h1>
+      <transition :name="slideDirection" mode="out-in">
+        <h1 class="calendar-page__month-title" :key="titolMes">
+          {{ titolMes }}
+        </h1>
+      </transition>
 
       <button
         type="button"
@@ -78,17 +80,19 @@
       </button>
     </div>
 
-    <div class="calendar-page__grid-area">
+    <div class="calendar-page__grid-area relative overflow-hidden">
       <div v-if="calendarStore.loading" class="calendar-page__loading">
         Carregant…
       </div>
-      <UserCalendarCalendarMonthGrid
-        v-else
-        :days="diesMes"
-        :year="calendarStore.selectedYear"
-        :month="calendarStore.selectedMonth"
-        @select-day="onSelectDay"
-      />
+      <transition :name="slideDirection" mode="out-in" v-else>
+        <UserCalendarCalendarMonthGrid
+          :key="`${calendarStore.selectedYear}-${calendarStore.selectedMonth}`"
+          :days="diesMes"
+          :year="calendarStore.selectedYear"
+          :month="calendarStore.selectedMonth"
+          @select-day="onSelectDay"
+        />
+      </transition>
     </div>
   </div>
 </template>
@@ -119,6 +123,7 @@ export default {
       diesMes: [],
       clockLabel: "",
       clockTimer: null,
+      slideDirection: 'social-slide-left'
     };
   },
   computed: {
@@ -162,6 +167,7 @@ export default {
       this.diesMes = dades || [];
     },
     mesAnterior: function () {
+      this.slideDirection = 'social-slide-right';
       var cal = useCalendar();
       var resultat = cal.prevMonth(
         this.calendarStore.selectedYear,
@@ -172,6 +178,7 @@ export default {
       this.carregarMes();
     },
     mesSeguent: function () {
+      this.slideDirection = 'social-slide-left';
       var cal = useCalendar();
       var resultat = cal.nextMonth(
         this.calendarStore.selectedYear,

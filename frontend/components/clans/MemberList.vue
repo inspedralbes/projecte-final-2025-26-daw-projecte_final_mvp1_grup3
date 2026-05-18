@@ -4,8 +4,8 @@
     <div v-if="loading" class="text-center py-4 text-gray-500">Carregant...</div>
     <ul v-else class="space-y-3">
       <li v-for="member in members" :key="member.usuari_id" class="flex justify-between items-center bg-gray-50 p-3 rounded-lg border">
-        <div class="flex items-center gap-3 cursor-pointer flex-1" @click="$emit('view-profile', member.usuari_id)">
-          <div class="w-10 h-10 rounded-full overflow-hidden shadow-inner" :style="avatarBackgroundStyle">
+        <div class="flex items-center gap-3 flex-1">
+          <div class="w-10 h-10 rounded-full overflow-hidden shadow-inner cursor-pointer" :style="avatarBackgroundStyle" @click="$emit('view-profile', member.usuari_id)">
             <div class="w-full h-full rounded-full border border-gray-200 bg-white/20 p-1 flex items-center justify-center">
               <img
                 v-if="getMonsterImage(member)"

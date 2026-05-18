@@ -60,7 +60,6 @@ import { getMonsterImageFromUser } from "~/utils/monsterImage.js";
 import bosqueImg from "~/assets/img/Bosque.png";
 import { useClanChatStore } from "~/stores/useClanChatStore.js";
 import { useClanStore } from "~/stores/useClanStore.js";
-import { format } from "date-fns";
 
 export default {
   name: "ClanChat",
@@ -232,14 +231,17 @@ onMessageReceived: function(message) {
           }
        }.bind(this));
     },
-    formatDate: function(dateStr) {
-       if (!dateStr) return "";
-       try {
-          return format(new Date(dateStr), "HH:mm");
-       } catch(e) {
-          return dateStr;
-       }
-    },
+     formatDate: function(dateStr) {
+        if (!dateStr) return "";
+        try {
+           var d = new Date(dateStr);
+           var hours = String(d.getHours()).padStart(2, '0');
+           var minutes = String(d.getMinutes()).padStart(2, '0');
+           return hours + ":" + minutes;
+        } catch(e) {
+           return dateStr;
+        }
+     },
     importHabit: async function(msgId) {
        var store = useClanChatStore();
        var result = await store.importHabit(msgId);

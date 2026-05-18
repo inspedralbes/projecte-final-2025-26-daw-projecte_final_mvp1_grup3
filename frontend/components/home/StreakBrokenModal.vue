@@ -3,14 +3,9 @@
     <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="tancar"></div>
 
     <div class="bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl relative">
-      <button
-        @click="tancar"
-        class="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-600"
-        title="Tancar"
-      >
-        <span class="text-2xl">×</span>
-      </button>
-
+      <div class="w-full flex justify-center mb-3">
+        <div class="w-10 h-1 bg-gray-300 rounded-full"></div>
+      </div>
       <div class="flex flex-col items-center gap-4 text-center">
         <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center text-2xl">
           💔

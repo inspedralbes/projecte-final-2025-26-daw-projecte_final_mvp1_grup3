@@ -1,9 +1,9 @@
 <template>
   <div v-if="isOpen" data-testid="habit-details-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
     <div class="w-full max-w-lg rounded-3xl bg-white shadow-2xl border border-gray-100 overflow-hidden">
-      <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-        <h3 class="text-lg font-black text-gray-800">detalls</h3>
-        <button class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200" @click="$emit('close')">×</button>
+      <div class="px-6 border-b border-gray-100 flex flex-col items-center w-full pt-4">
+        <div class="w-12 h-1.5 bg-gray-300 rounded-full mb-4"></div>
+        <h3 class="text-2xl font-['Bricolage_Grotesque'] font-bold text-[#949494] text-center w-full mb-4">Detalls</h3>
       </div>
 
       <div class="px-6 py-5 space-y-4">

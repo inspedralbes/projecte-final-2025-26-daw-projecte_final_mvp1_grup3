@@ -3,19 +3,12 @@
     <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="tancar"></div>
 
     <div class="bg-white rounded-3xl w-full max-w-2xl max-h-[80vh] flex flex-col shadow-2xl relative">
-      <button
-        @click="tancar"
-        class="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-600 z-10"
-        title="Tancar"
-      >
-        <span class="text-2xl">×</span>
-      </button>
-
-      <div class="p-8 border-b border-gray-100">
-        <h2 class="text-2xl font-black text-gray-800 tracking-tight">
+      <div class="p-8 border-b border-gray-100 flex flex-col items-center">
+        <div class="w-10 h-1 bg-gray-300 rounded-full mb-3"></div>
+        <h2 class="text-2xl font-bold text-[#949494] tracking-tight text-center">
           {{ $t('home.achievements_modal_title') }}
         </h2>
-        <p class="text-sm text-gray-500 font-medium mt-1">
+        <p class="text-sm text-gray-400 font-medium mt-1 text-center">
           {{ $t('home.achievements_modal_subtitle') }}
         </p>
       </div>

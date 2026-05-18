@@ -441,6 +441,7 @@ export default {
         var resposta = await fetch(base + '/api/auth/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({
             nom: f.nom,
             email: f.email,

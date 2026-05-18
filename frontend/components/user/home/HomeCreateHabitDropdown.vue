@@ -29,20 +29,12 @@
           class="fixed left-0 right-0 bottom-0 z-[81] bg-white rounded-t-3xl shadow-2xl max-h-[85vh] flex flex-col pb-[max(0.5rem,env(safe-area-inset-bottom))]"
         >
           <div
-            class="create-habit-sheet__header sticky top-0 z-[1] bg-white rounded-t-3xl px-4 pt-3 pb-2"
+            class="sticky top-0 z-[1] bg-white rounded-t-3xl flex flex-col items-center shrink-0 border-b border-gray-100 w-full pt-4 px-6"
           >
-            <h3 class="create-habit-sheet__title">
+            <div class="w-12 h-1.5 bg-gray-300 rounded-full mb-4"></div>
+            <h3 class="text-2xl font-['Bricolage_Grotesque'] font-bold text-[#949494] mb-4 text-center w-full">
               {{ editantHabitId !== null ? $t("habits.edit_sheet_heading") : $t("habits.create_sheet_heading") }}
             </h3>
-            <button
-              type="button"
-              class="create-habit-sheet__close"
-              :aria-label="$t('habits.close_create_sheet')"
-              @click="tancarFormulari"
-            >
-              <span class="create-habit-sheet__close-line create-habit-sheet__close-line--1" aria-hidden="true"></span>
-              <span class="create-habit-sheet__close-line create-habit-sheet__close-line--2" aria-hidden="true"></span>
-            </button>
           </div>
 
           <div
@@ -123,16 +115,13 @@
           v-if="formulariObert && apiSectionOberta"
           class="fixed left-0 right-0 bottom-0 z-[87] bg-white rounded-t-3xl shadow-2xl max-h-[82vh] flex flex-col pb-[max(0.5rem,env(safe-area-inset-bottom))] habit-form"
         >
-          <div class="create-habit-sheet__header sticky top-0 z-[1] bg-white rounded-t-3xl px-4 pt-3 pb-2">
-            <h3 class="create-habit-sheet__title">Context extern (opcional)</h3>
-            <button
-              type="button"
-              class="create-habit-sheet__close"
-              @click="tancarApiSheet"
-            >
-              <span class="create-habit-sheet__close-line create-habit-sheet__close-line--1" aria-hidden="true"></span>
-              <span class="create-habit-sheet__close-line create-habit-sheet__close-line--2" aria-hidden="true"></span>
-            </button>
+          <div
+            class="sticky top-0 z-[1] bg-white rounded-t-3xl flex flex-col items-center shrink-0 border-b border-gray-100 w-full pt-4 px-6"
+          >
+            <div class="w-12 h-1.5 bg-gray-300 rounded-full mb-4"></div>
+            <h3 class="text-2xl font-['Bricolage_Grotesque'] font-bold text-[#949494] mb-4 text-center w-full">
+              Context extern
+            </h3>
           </div>
           <div class="habit-sheet-body">
             <div class="habit-sheet-body-inner space-y-3">

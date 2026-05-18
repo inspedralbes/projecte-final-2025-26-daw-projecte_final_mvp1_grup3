@@ -16,17 +16,9 @@
         :aria-label="$t('habits.category_create_sheet_title')"
         @click.stop
       >
-        <header class="create-habit-sheet__header sticky top-0 z-[2] shrink-0 bg-white px-4 pt-3 pb-2">
-          <button
-            type="button"
-            class="create-habit-sheet__close create-habit-sheet__close--start"
-            :aria-label="$t('habits.cancel')"
-            @click="tancar"
-          >
-            <span class="create-habit-sheet__close-line create-habit-sheet__close-line--1" aria-hidden="true"></span>
-            <span class="create-habit-sheet__close-line create-habit-sheet__close-line--2" aria-hidden="true"></span>
-          </button>
-          <h3 class="create-habit-sheet__title">
+        <header class="sticky top-0 z-[2] shrink-0 bg-white flex flex-col items-center border-b border-gray-100 w-full pt-4 px-6">
+          <div class="w-12 h-1.5 bg-gray-300 rounded-full mb-4"></div>
+          <h3 class="text-2xl font-['Bricolage_Grotesque'] font-bold text-[#949494] mb-4 text-center w-full">
             {{ $t('habits.category_create_sheet_title') }}
           </h3>
         </header>
@@ -363,13 +355,13 @@ export default {
 }
 
 .create-habit-sheet__header {
-  position: relative;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   min-height: 2.75rem;
-  padding-left: 2.75rem;
-  padding-right: 2.75rem;
+  padding-left: 0;
+  padding-right: 0;
 }
 .create-habit-sheet__title {
   margin: 0;

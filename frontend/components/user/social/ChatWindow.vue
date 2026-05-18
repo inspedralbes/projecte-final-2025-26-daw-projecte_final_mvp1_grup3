@@ -186,7 +186,8 @@ export default {
   max-width: 480px;
   width: 100%;
   margin: 0 auto;
-  max-height: 80vh;
+  height: 90vh;
+  max-height: 90vh;
   display: flex;
   flex-direction: column;
   font-family: "Comfortaa", system-ui, sans-serif;

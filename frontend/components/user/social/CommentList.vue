@@ -16,6 +16,8 @@
         :comment="comment"
         :depth="0"
         @replySubmitted="onReplySubmitted"
+        @commentDeleted="loadComments"
+        @report="$emit('report', $event)"
       />
     </div>
   </div>
@@ -30,6 +32,7 @@ export default {
     postId: { type: Number, required: true },
     initialComments: { type: Array, default: function () { return []; } }
   },
+  emits: ["report"],
   data: function () {
     return {
       comments: this.initialComments,

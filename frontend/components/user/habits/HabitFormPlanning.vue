@@ -34,17 +34,9 @@
         v-if="selectorObert"
         class="fixed bottom-0 left-0 right-0 z-[85] flex max-h-[80vh] flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl habit-form"
       >
-        <header class="create-habit-sheet__header sticky top-0 z-[1] shrink-0 bg-white px-4 pt-3 pb-2">
-          <button
-            type="button"
-            class="create-habit-sheet__close create-habit-sheet__close--start"
-            :aria-label="$t('habits.cancel')"
-            @click="tancarSelectorRepeticio"
-          >
-            <span class="create-habit-sheet__close-line create-habit-sheet__close-line--1" aria-hidden="true"></span>
-            <span class="create-habit-sheet__close-line create-habit-sheet__close-line--2" aria-hidden="true"></span>
-          </button>
-          <h3 class="create-habit-sheet__title">
+        <header class="sticky top-0 z-[1] shrink-0 bg-white flex flex-col items-center border-b border-gray-100 w-full pt-4 px-6">
+          <div class="w-12 h-1.5 bg-gray-300 rounded-full mb-4"></div>
+          <h3 class="text-2xl font-['Bricolage_Grotesque'] font-bold text-[#949494] mb-4 text-center w-full">
             {{ $t('habits.define_repetition') }}
           </h3>
         </header>
@@ -116,17 +108,9 @@
         v-if="customSheetObert"
         class="fixed bottom-0 left-0 right-0 z-[89] flex max-h-[82vh] flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl habit-form"
       >
-        <header class="create-habit-sheet__header sticky top-0 z-[1] shrink-0 bg-white px-4 pt-3 pb-2">
-          <button
-            type="button"
-            class="create-habit-sheet__close create-habit-sheet__close--start"
-            :aria-label="$t('habits.cancel')"
-            @click="tancarCustomSheet"
-          >
-            <span class="create-habit-sheet__close-line create-habit-sheet__close-line--1" aria-hidden="true"></span>
-            <span class="create-habit-sheet__close-line create-habit-sheet__close-line--2" aria-hidden="true"></span>
-          </button>
-          <h3 class="create-habit-sheet__title">
+        <header class="sticky top-0 z-[1] shrink-0 bg-white flex flex-col items-center border-b border-gray-100 w-full pt-4 px-6">
+          <div class="w-12 h-1.5 bg-gray-300 rounded-full mb-4"></div>
+          <h3 class="text-2xl font-['Bricolage_Grotesque'] font-bold text-[#949494] mb-4 text-center w-full">
             {{ $t('habits.custom_repetition_title') }}
           </h3>
         </header>
@@ -467,13 +451,13 @@ export default {
 }
 
 .create-habit-sheet__header {
-  position: relative;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   min-height: 2.75rem;
-  padding-left: 2.75rem;
-  padding-right: 2.75rem;
+  padding-left: 0;
+  padding-right: 0;
 }
 
 .create-habit-sheet__title {

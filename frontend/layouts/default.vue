@@ -42,6 +42,8 @@ const route = useRoute();
 const isFocusRoute = computed(() => route.path.startsWith("/focus/"));
 const isShopRoute = computed(() => route.path === "/shop" || route.path.startsWith("/shop/"));
 const isCalendarRoute = computed(() => route.path.startsWith("/calendar"));
+const isPublicProfileRoute = computed(() => route.path.startsWith("/user/"));
+const isSocialRoute = computed(() => route.path === "/social" || route.path.startsWith("/friends") || route.path.startsWith("/clans"));
 </script>
 
 <style scoped>

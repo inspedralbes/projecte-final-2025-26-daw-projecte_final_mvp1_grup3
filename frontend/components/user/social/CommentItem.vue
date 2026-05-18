@@ -29,6 +29,22 @@
             @click="openProfile"
           >{{ comment.user?.nom }}</span>
           <span class="comment-item__time">{{ formatDate(comment.created_at) }}</span>
+          
+          <button v-if="isOwner" type="button" @click="showDeleteConfirm = true" class="ml-auto text-gray-400 hover:text-red-500 p-1 transition-colors animate-fade-in" title="Eliminar comentari">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              <line x1="10" y1="11" x2="10" y2="17"></line>
+              <line x1="14" y1="11" x2="14" y2="17"></line>
+            </svg>
+          </button>
+          <button v-else type="button" @click="$emit('report', comment.user_id)" class="ml-auto text-[#FF8DA6] hover:text-[#ff4d6d] p-1 transition-colors" title="Reportar usuari">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+              <line x1="12" y1="9" x2="12" y2="13"></line>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+          </button>
         </div>
         <p class="comment-item__text">
           <span v-if="comment._replyToUserName" class="comment-item__mention">@{{ comment._replyToUserName }}</span>
@@ -65,9 +81,20 @@
           :comment="child"
           :depth="depth + 1"
           :root-comment-id="rootId"
+          @report="$emit('report', $event)"
+          @commentDeleted="$emit('commentDeleted')"
         />
       </div>
     </div>
+
+    <UserSocialConfirmModal
+      :show="showDeleteConfirm"
+      :title="'Eliminar comentari'"
+      :message="'Segur que vols eliminar aquest comentari? Aquesta acció no es pot desfer.'"
+      confirm-text="Eliminar"
+      @confirm="confirmDeleteComment"
+      @cancel="showDeleteConfirm = false"
+    />
   </div>
 </template>
 
@@ -83,9 +110,11 @@ export default {
     depth: { type: Number, default: 0 },
     rootCommentId: { type: Number, default: null }
   },
+  emits: ["replySubmitted", "report", "commentDeleted"],
   data: function () {
     return {
-      showReply: false
+      showReply: false,
+      showDeleteConfirm: false
     };
   },
   computed: {
@@ -116,6 +145,10 @@ export default {
     replyToName: function () {
       if (this.depth === 0) return null;
       return this.comment.user ? this.comment.user.nom : null;
+    },
+    isOwner: function () {
+      var authStore = useAuthStore();
+      return this.comment.user_id === authStore.user?.id;
     }
   },
   methods: {
@@ -150,6 +183,14 @@ export default {
     onReplySubmitted: function () {
       this.showReply = false;
       this.$emit("replySubmitted");
+    },
+    confirmDeleteComment: async function () {
+      var socialStore = useSocialStore();
+      var ok = await socialStore.deleteComment(this.comment.id);
+      if (ok) {
+        this.showDeleteConfirm = false;
+        this.$emit("commentDeleted");
+      }
     }
   }
 };

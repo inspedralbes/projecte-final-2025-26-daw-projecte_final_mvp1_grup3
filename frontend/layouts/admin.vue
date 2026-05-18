@@ -1,25 +1,25 @@
 <template>
   <div class="global-app-container flex">
-    <!-- Sidebar Fix -->
-    <aside class="w-64 bg-white/90 backdrop-blur-md border-r border-gray-200 flex flex-col fixed h-full shadow-sm z-20">
-      <div class="p-8 border-b border-gray-100 flex items-center gap-3">
-        <div class="w-10 h-10 bg-gray-900 rounded-xl flex items-center justify-center font-black text-white text-xl shadow-lg">L</div>
-        <h1 class="font-black text-lg text-gray-900 uppercase tracking-tighter leading-none">Loopy Admin</h1>
+    <!-- Sidebar Redesign -->
+    <aside class="w-64 bg-white/95 backdrop-blur-md border-r border-white/50 flex flex-col fixed h-full shadow-xl z-20">
+      <div class="p-6 border-b border-gray-100/50 flex items-center gap-3">
+        <div class="w-10 h-10 bg-[#79D45D] border border-[#6fbc58] rounded-[10px] flex items-center justify-center font-black text-white text-xl shadow-md">L</div>
+        <h1 class="font-black text-lg text-gray-800 uppercase tracking-tighter leading-none font-bricolage">Loopy Admin</h1>
       </div>
 
-      <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto scrollbar-thin">
+      <nav class="flex-1 px-4 py-6 space-y-4 overflow-y-auto scrollbar-thin">
         <!-- Navegació Principal -->
-        <div class="mb-4">
-          <p class="text-[9px] font-black text-gray-300 uppercase tracking-[0.2em] px-4 mb-2">Principal</p>
+        <div>
+          <p class="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] px-4 mb-2 font-bricolage">Principal</p>
           <template v-for="item in menuPrincipal" :key="item.nom">
             <NuxtLink v-if="item.ruta" :to="item.ruta"
-              class="flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold text-xs uppercase tracking-widest text-gray-400 hover:bg-gray-50 hover:text-gray-900 group"
-              active-class="bg-gray-900 !text-white shadow-lg shadow-gray-200">
+              class="flex items-center gap-3 px-4 py-3 rounded-[10px] transition-all font-black text-xs uppercase tracking-widest text-gray-500 hover:bg-gray-50 hover:text-gray-900 group font-bricolage"
+              active-class="bg-[#3b82f6] !text-white shadow-lg shadow-blue-100">
               <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
               {{ item.nom }}
             </NuxtLink>
             <div v-else
-              class="flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest text-gray-300 cursor-not-allowed opacity-50">
+              class="flex items-center gap-3 px-4 py-3 rounded-[10px] font-black text-xs uppercase tracking-widest text-gray-300 cursor-not-allowed opacity-50 font-bricolage">
               <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
               {{ item.nom }}
             </div>
@@ -27,11 +27,11 @@
         </div>
 
         <!-- Gestió CRUD -->
-        <div class="mb-4">
-          <p class="px-3 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Gestió</p>
+        <div>
+          <p class="px-4 text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 font-bricolage">Gestió</p>
           <NuxtLink v-for="item in menuGestio" :key="item.ruta" :to="item.ruta"
-            class="flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold text-xs uppercase tracking-widest text-gray-400 hover:bg-gray-50 hover:text-gray-900 group"
-            active-class="bg-green-600 !text-white shadow-lg shadow-green-100">
+            class="flex items-center gap-3 px-4 py-3 rounded-[10px] transition-all font-black text-xs uppercase tracking-widest text-gray-500 hover:bg-gray-50 hover:text-gray-900 group font-bricolage"
+            active-class="bg-[#79D45D] !text-white shadow-lg shadow-green-100">
             <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
             {{ item.nom }}
           </NuxtLink>
@@ -39,10 +39,10 @@
 
         <!-- Sistema -->
         <div>
-          <p class="px-3 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Sistema</p>
+          <p class="px-4 text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 font-bricolage">Sistema</p>
           <NuxtLink v-for="item in menuSistema" :key="item.ruta" :to="item.ruta"
-            class="flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold text-xs uppercase tracking-widest text-gray-400 hover:bg-gray-50 hover:text-gray-900 group"
-            active-class="bg-gray-900 !text-white shadow-lg shadow-gray-200">
+            class="flex items-center gap-3 px-4 py-3 rounded-[10px] transition-all font-black text-xs uppercase tracking-widest text-gray-500 hover:bg-gray-50 hover:text-gray-900 group font-bricolage"
+            active-class="bg-[#7c3aed] !text-white shadow-lg shadow-purple-100">
             <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
             {{ item.nom }}
           </NuxtLink>
@@ -51,7 +51,7 @@
 
       <!-- Footer SideBar -->
       <div class="p-6 border-t border-gray-100 bg-gray-50/50">
-        <button id="btn-admin-logout" type="button" data-cy="admin-logout" @click="sortir" class="flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-black text-red-500 hover:bg-red-50 transition-all uppercase tracking-widest w-full text-left">
+        <button id="btn-admin-logout" type="button" data-cy="admin-logout" @click="sortir" class="flex items-center gap-3 px-4 py-3 rounded-[10px] text-xs font-black text-red-500 hover:bg-red-50 transition-all uppercase tracking-widest w-full text-left font-bricolage">
           <div class="w-2 h-2 rounded-full bg-red-400"></div>
           Sortir
         </button>
@@ -119,6 +119,10 @@ var menuSistema = [
 </script>
 
 <style scoped>
+.font-bricolage {
+  font-family: "Bricolage Grotesque", system-ui, sans-serif;
+}
+
 /* Scrollbar silenciós per a escriptori */
 .scrollbar-thin::-webkit-scrollbar {
   width: 4px;

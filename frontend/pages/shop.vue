@@ -2,63 +2,177 @@
   <div class="shop-page min-h-screen overflow-x-hidden pb-24 lg:pb-8 flex flex-col">
     <div class="shop-spacer flex-1" aria-hidden="true"></div>
 
-    <div class="shop-items-wrap w-full">
-      <div v-if="!loading && items.length > 0" class="shop-sections">
-        <div
-          v-for="bloc in blocsBotiga"
-          :key="bloc.id"
-          class="shop-section"
-        >
-          <div class="moment-divider moment-divider--shop" role="presentation">
+    <div class="shop-items-wrap w-full px-4 sm:px-6">
+      <div v-if="!loading && items.length > 0" class="shop-sections-container">
+        
+        <!-- Categoría Inventario (Consumibles) -->
+        <section v-if="consumibles.length > 0" class="shop-category-section">
+          <div class="moment-divider mt-1 mb-4" role="presentation">
             <span class="moment-divider__line" aria-hidden="true"></span>
-            <span class="moment-divider__text">{{ $t(bloc.labelKey) }}</span>
+            <span class="moment-divider__text divider-text--capitalize">{{ $t('shop.divider_inventari') }}</span>
             <span class="moment-divider__line" aria-hidden="true"></span>
           </div>
-
-          <section class="shop-grid">
-            <button
-              v-for="item in bloc.items"
+          <div class="shop-grid">
+            <article
+              v-for="item in consumibles"
               :key="item.id"
-              type="button"
               class="shop-card"
               :class="{
                 'shop-card--owned': itemJaPossessionat(item),
-                'shop-card--clickable': potInteractuar(item),
-                'shop-card--insufficient': !itemJaPossessionat(item) && !teSaldo(item),
+                'shop-card--clickable': potComprar(item),
+                'shop-card--insufficient': !itemJaPossessionat(item) && monedes < item.preu,
               }"
-              :disabled="!potInteractuar(item)"
+              :role="potComprar(item) ? 'button' : undefined"
+              :tabindex="potComprar(item) ? 0 : undefined"
               @click="onCardClick(item)"
+              @keydown.enter.prevent="onCardClick(item)"
+              @keydown.space.prevent="onCardClick(item)"
             >
-          <div class="shop-card-price" aria-label="Preu">
-            <span class="shop-card-price-value">{{ item.preu }}</span>
-            <img :src="coinIcon" alt="" class="shop-card-coin" width="22" height="22" />
-          </div>
+              <div class="template-card__mark" aria-hidden="true">
+                <img
+                  v-if="item.imatge"
+                  :src="item.imatge"
+                  :alt="nomProducte(item)"
+                  class="shop-card-img"
+                  decoding="async"
+                  draggable="false"
+                  @error="onImageError"
+                />
+                <span v-else class="shop-card-emoji">🎁</span>
+              </div>
 
-          <div class="shop-card-row">
-            <div class="shop-card-visual">
-              <img
-                v-if="item.imatge"
-                :src="item.imatge"
-                :alt="nomProducte(item)"
-                class="shop-card-img"
-                decoding="async"
-                draggable="false"
-                @error="onImageError"
-              />
-              <span v-else class="shop-card-emoji">🎁</span>
-            </div>
-
-            <div class="shop-card-body">
-              <h3 class="shop-card-title">{{ nomProducte(item) }}</h3>
-              <span v-if="itemJaPossessionat(item)" class="shop-card-owned">
-                {{ $t('shop.owned') }}
-              </span>
-              <span v-else-if="comprant === item.id" class="shop-card-owned">…</span>
-            </div>
+              <div class="template-card__content">
+                <h3 class="template-card__title">{{ nomProducte(item) }}</h3>
+                <div class="template-card__meta">
+                  <span v-if="itemJaPossessionat(item)" class="shop-card-owned flex items-center gap-1 text-green-700 font-bold">
+                    <svg width="14" height="10" viewBox="0 0 14 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M1 5L4.5 8.5L13 1.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    {{ $t('shop.owned') }}
+                  </span>
+                  <span v-else-if="comprant === item.id" class="shop-card-owned">…</span>
+                  <span v-else class="template-card__meta-item flex items-center">
+                    <span class="shop-card-price-value text-gray-800 font-bold mr-1">{{ item.preu }}</span>
+                    <img :src="coinIcon" alt="" class="shop-card-coin" width="18" height="18" />
+                  </span>
+                </div>
+              </div>
+            </article>
           </div>
-            </button>
-          </section>
-        </div>
+        </section>
+
+        <!-- Categoría skin (Skins excepto fondos) -->
+        <section v-if="skins.length > 0" class="shop-category-section">
+          <div class="moment-divider mt-1 mb-4" role="presentation">
+            <span class="moment-divider__line" aria-hidden="true"></span>
+            <span class="moment-divider__text divider-text--lowercase">{{ $t('shop.divider_skin') }}</span>
+            <span class="moment-divider__line" aria-hidden="true"></span>
+          </div>
+          <div class="shop-grid">
+            <article
+              v-for="item in skins"
+              :key="item.id"
+              class="shop-card"
+              :class="{
+                'shop-card--owned': itemJaPossessionat(item),
+                'shop-card--clickable': potComprar(item),
+                'shop-card--insufficient': !itemJaPossessionat(item) && monedes < item.preu,
+              }"
+              :role="potComprar(item) ? 'button' : undefined"
+              :tabindex="potComprar(item) ? 0 : undefined"
+              @click="onCardClick(item)"
+              @keydown.enter.prevent="onCardClick(item)"
+              @keydown.space.prevent="onCardClick(item)"
+            >
+              <div class="template-card__mark" aria-hidden="true">
+                <img
+                  v-if="item.imatge"
+                  :src="item.imatge"
+                  :alt="nomProducte(item)"
+                  class="shop-card-img"
+                  decoding="async"
+                  draggable="false"
+                  @error="onImageError"
+                />
+                <span v-else class="shop-card-emoji">🎁</span>
+              </div>
+
+              <div class="template-card__content">
+                <h3 class="template-card__title">{{ nomProducte(item) }}</h3>
+                <div class="template-card__meta">
+                  <span v-if="itemJaPossessionat(item)" class="shop-card-owned flex items-center gap-1 text-green-700 font-bold">
+                    <svg width="14" height="10" viewBox="0 0 14 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M1 5L4.5 8.5L13 1.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    {{ $t('shop.owned') }}
+                  </span>
+                  <span v-else-if="comprant === item.id" class="shop-card-owned">…</span>
+                  <span v-else class="template-card__meta-item flex items-center">
+                    <span class="shop-card-price-value text-gray-800 font-bold mr-1">{{ item.preu }}</span>
+                    <img :src="coinIcon" alt="" class="shop-card-coin" width="18" height="18" />
+                  </span>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <!-- Categoría fondos -->
+        <section v-if="fondos.length > 0" class="shop-category-section">
+          <div class="moment-divider mt-1 mb-4" role="presentation">
+            <span class="moment-divider__line" aria-hidden="true"></span>
+            <span class="moment-divider__text divider-text--lowercase">{{ $t('shop.divider_fons') }}</span>
+            <span class="moment-divider__line" aria-hidden="true"></span>
+          </div>
+          <div class="shop-grid">
+            <article
+              v-for="item in fondos"
+              :key="item.id"
+              class="shop-card"
+              :class="{
+                'shop-card--owned': itemJaPossessionat(item),
+                'shop-card--clickable': potComprar(item),
+                'shop-card--insufficient': !itemJaPossessionat(item) && monedes < item.preu,
+              }"
+              :role="potComprar(item) ? 'button' : undefined"
+              :tabindex="potComprar(item) ? 0 : undefined"
+              @click="onCardClick(item)"
+              @keydown.enter.prevent="onCardClick(item)"
+              @keydown.space.prevent="onCardClick(item)"
+            >
+              <div class="template-card__mark" aria-hidden="true">
+                <img
+                  v-if="item.imatge"
+                  :src="item.imatge"
+                  :alt="nomProducte(item)"
+                  class="shop-card-img"
+                  decoding="async"
+                  draggable="false"
+                  @error="onImageError"
+                />
+                <span v-else class="shop-card-emoji">🎁</span>
+              </div>
+
+              <div class="template-card__content">
+                <h3 class="template-card__title">{{ nomProducte(item) }}</h3>
+                <div class="template-card__meta">
+                  <span v-if="itemJaPossessionat(item)" class="shop-card-owned flex items-center gap-1 text-green-700 font-bold">
+                    <svg width="14" height="10" viewBox="0 0 14 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M1 5L4.5 8.5L13 1.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    {{ $t('shop.owned') }}
+                  </span>
+                  <span v-else-if="comprant === item.id" class="shop-card-owned">…</span>
+                  <span v-else class="template-card__meta-item flex items-center">
+                    <span class="shop-card-price-value text-gray-800 font-bold mr-1">{{ item.preu }}</span>
+                    <img :src="coinIcon" alt="" class="shop-card-coin" width="18" height="18" />
+                  </span>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+
       </div>
     </div>
   </div>
@@ -69,7 +183,7 @@ import { ref, computed, onMounted } from 'vue';
 import coinIcon from '~/assets/img/Icones/Icona_Moneda.png';
 import { useGameStore } from '~/stores/gameStore.js';
 import { useShopStore } from '~/stores/useShopStore.js';
-import { nomProducteBotiga, categoriaProducteBotiga } from '~/utils/shopItemI18n.js';
+import { nomProducteBotiga } from '~/utils/shopItemI18n.js';
 
 const gameStore = useGameStore();
 const shopStore = useShopStore();
@@ -86,18 +200,22 @@ const items = computed(function () { return shopStore.items; });
 const loading = computed(function () { return shopStore.loading; });
 const monedes = computed(function () { return gameStore.monedes; });
 
-const blocsBotiga = computed(function () {
-  var ordre = ['fons', 'skin', 'inventari'];
-  return ordre.map(function (id) {
-    return {
-      id: id,
-      labelKey: 'shop.divider_' + id,
-      items: items.value.filter(function (it) {
-        return categoriaProducteBotiga(it) === id;
-      }),
-    };
-  }).filter(function (bloc) {
-    return bloc.items.length > 0;
+// Computed properties para separar por categorías
+const consumibles = computed(function () {
+  return items.value.filter(function (it) {
+    return it && it.tipus === 'consumible';
+  });
+});
+
+const skins = computed(function () {
+  return items.value.filter(function (it) {
+    return it && it.tipus === 'skin' && (!it.metadata || (it.metadata.slot !== 'fons' && it.metadata.slot !== 'fondo'));
+  });
+});
+
+const fondos = computed(function () {
+  return items.value.filter(function (it) {
+    return it && it.tipus === 'skin' && it.metadata && (it.metadata.slot === 'fons' || it.metadata.slot === 'fondo');
   });
 });
 
@@ -105,31 +223,18 @@ function itemJaPossessionat(item) {
   return item.tipus === 'skin' && shopStore.posseeixItem(item.id);
 }
 
-function preuItem(item) {
-  return Number(item && item.preu != null ? item.preu : 0);
-}
-
-function teSaldo(item) {
-  return monedes.value >= preuItem(item);
-}
-
-function potInteractuar(item) {
-  if (comprant.value !== null || shopStore.loading) {
+function potComprar(item) {
+  if (comprant.value !== null) {
     return false;
   }
-  return !itemJaPossessionat(item);
+  if (itemJaPossessionat(item)) {
+    return false;
+  }
+  return monedes.value >= item.preu;
 }
 
 function onCardClick(item) {
-  if (!potInteractuar(item)) {
-    return;
-  }
-  if (!teSaldo(item)) {
-    $swal.fire({
-      icon: 'warning',
-      title: t('shop.insufficient_funds'),
-      confirmButtonColor: '#7c3aed',
-    });
+  if (!potComprar(item)) {
     return;
   }
   confirmarCompra(item);
@@ -145,7 +250,7 @@ async function confirmarCompra(item) {
   if (!item || comprant.value !== null) {
     return;
   }
-  if (gameStore.monedes < preuItem(item)) {
+  if (gameStore.monedes < item.preu) {
     return;
   }
   const result = await $swal.fire({
@@ -193,9 +298,7 @@ onMounted(async function () {
 
 <style scoped>
 .shop-spacer {
-  flex-shrink: 0;
   min-height: calc(100vw * 1.45);
-  pointer-events: none;
 }
 @media (min-width: 640px) {
   .shop-spacer {
@@ -208,54 +311,41 @@ onMounted(async function () {
   }
 }
 
-.shop-page {
-  width: 100%;
-  max-width: 100%;
-}
-
 .shop-items-wrap {
   position: relative;
-  z-index: 5;
-  box-sizing: border-box;
+  z-index: 2;
+}
+
+.shop-sections-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
   width: 100%;
-  max-width: 100%;
-  padding-inline: 0.625rem;
 }
 
-@media (min-width: 640px) {
-  .shop-items-wrap {
-    padding-inline: 0.75rem;
-  }
-}
-
-.shop-sections {
+.shop-category-section {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  align-items: center;
+  width: 100%;
 }
 
-.shop-section {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.moment-divider--shop {
-  margin-top: 0.25rem;
-}
-
+/* Divisor de categorías idéntico al de Plantilles.vue */
 .moment-divider {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.75rem;
+  gap: 30px;
   width: 100%;
+  margin: 1.5rem 0 1.25rem;
 }
 
 .moment-divider__text {
   flex-shrink: 0;
   color: #faf9f9;
+  font-family: "Bricolage Grotesque", system-ui, sans-serif;
   font-size: 15px;
+  font-weight: 700;
   line-height: 1.2;
   white-space: nowrap;
 }
@@ -268,66 +358,42 @@ onMounted(async function () {
   border-radius: 999px;
 }
 
+.divider-text--capitalize {
+  text-transform: capitalize;
+}
+
+.divider-text--lowercase {
+  text-transform: lowercase;
+}
+
+/* Grid de una sola columna y centrado */
 .shop-grid {
   display: flex;
   flex-direction: column;
-  align-items: stretch;
+  align-items: center;
   width: 100%;
-  max-width: 100%;
-  gap: 1rem;
+  max-width: 32rem;
+  margin: 0 auto;
+  row-gap: 1rem;
 }
 
+/* Tarjeta horizontal idéntica a .template-card de Plantilles.vue */
 .shop-card {
   position: relative;
-  display: block;
-  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: 57px minmax(0, 1fr);
+  column-gap: 23px;
+  align-items: center;
   width: 100%;
-  max-width: 100%;
-  min-height: 5.375rem;
-  padding: 0.75rem 0.875rem;
-  padding-right: 3.25rem;
-  background: #ffffff;
-  border-radius: 0.875rem;
+  min-height: 86px;
+  padding: 16px 18px;
+  background-color: #faf9f9;
+  border-radius: 10px;
   border: none;
   box-shadow: none;
+  transition: transform 0.2s ease, background-color 0.2s ease;
   text-align: left;
-  font: inherit;
-  color: inherit;
-  appearance: none;
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-  transition: transform 0.2s ease;
   overflow: hidden;
-}
-
-.shop-card:disabled {
-  cursor: default;
-}
-
-.shop-card-row {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 0.75rem;
-  width: 100%;
-  min-width: 0;
-}
-
-@media (min-width: 640px) {
-  .shop-grid {
-    gap: 1.25rem;
-  }
-
-  .shop-card {
-    min-height: 5.75rem;
-    padding: 0.875rem 1rem;
-    padding-right: 3.5rem;
-    border-radius: 1rem;
-  }
-
-  .shop-card-row {
-    gap: 1rem;
-  }
 }
 
 .shop-card--clickable {
@@ -336,29 +402,89 @@ onMounted(async function () {
 
 .shop-card--clickable:hover {
   transform: translateY(-2px);
+  background-color: #f3f2f2;
 }
 
 .shop-card--clickable:focus-visible {
-  outline: 2px solid #6fbc58;
+  outline: 2px solid #79d45d;
   outline-offset: 2px;
 }
 
-.shop-card--insufficient:not(:disabled) {
-  cursor: pointer;
+.shop-card--insufficient {
+  cursor: not-allowed;
+  opacity: 0.85;
+}
+
+.shop-card--insufficient:hover {
+  transform: none;
+  background-color: #faf9f9;
 }
 
 .shop-card--insufficient .shop-card-img {
   opacity: 0.55;
 }
 
-.shop-card-price {
-  position: absolute;
-  top: 0.55rem;
-  right: 0.55rem;
+/* Contenedor de la Imagen */
+.template-card__mark {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
-  z-index: 2;
+  justify-content: center;
+  width: 57px;
+  height: 54px;
+}
+
+.shop-card-img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.shop-card-emoji {
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
+/* Contenido del lado derecho */
+.template-card__content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+}
+
+.template-card__title {
+  margin: 0;
+  font-family: "Bricolage Grotesque", system-ui, sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.15;
+  color: #2b2d42;
+}
+
+@media (min-width: 640px) {
+  .template-card__title {
+    font-size: 20px;
+  }
+}
+
+.template-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: #707070;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.template-card__meta-item {
+  display: inline-flex;
+  align-items: center;
+  color: #707070;
+  line-height: 1;
 }
 
 .shop-card-price-value {
@@ -366,7 +492,6 @@ onMounted(async function () {
   font-size: 0.9375rem;
   font-weight: 800;
   line-height: 1;
-  color: #1a1a1a;
   font-variant-numeric: tabular-nums;
 }
 
@@ -384,71 +509,9 @@ onMounted(async function () {
   image-rendering: pixelated;
 }
 
-.shop-card-visual {
-  display: flex;
-  flex: 0 0 auto;
-  align-items: center;
-  justify-content: center;
-  width: 3.5rem;
-  height: 4.5rem;
-  overflow: hidden;
-}
-
-.shop-card-img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-  object-position: center center;
-}
-
-.shop-card-emoji {
-  font-size: 2rem;
-  line-height: 1;
-}
-
-.shop-card-body {
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
-  gap: 0.2rem;
-  min-width: 0;
-}
-
-.shop-card-title {
-  margin: 0;
-  padding: 0;
-  font-family: "Bricolage Grotesque", system-ui, sans-serif;
-  font-size: 0.9375rem;
-  font-weight: 800;
-  line-height: 1.2;
-  color: #111111;
-}
-
-@media (min-width: 640px) {
-  .shop-card-title {
-    font-size: 1rem;
-  }
-}
-
 .shop-card-owned {
-  margin: 0;
-  padding: 0;
   font-family: "Bricolage Grotesque", system-ui, sans-serif;
-  font-size: 0.6875rem;
-  font-weight: 700;
-  line-height: 1.2;
-  color: #15803d;
-}
-
-@media (min-width: 640px) {
-  .shop-card-visual {
-    width: 3.75rem;
-    height: 4.75rem;
-  }
+  font-size: 0.8125rem;
+  line-height: 1;
 }
 </style>

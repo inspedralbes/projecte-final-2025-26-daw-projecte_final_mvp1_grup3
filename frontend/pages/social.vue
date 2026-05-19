@@ -109,7 +109,7 @@
         :show="showReportModal"
         :userId="selectedReportUserId"
         @close="showReportModal = false"
-        @success="handleReportSuccess"
+        @submit="handleReportSubmit"
       />
 
       <UserSocialAttachmentSelector
@@ -123,6 +123,7 @@
 
 <script>
 import { useSocialStore } from "~/stores/useSocialStore.js";
+import { authFetch } from "~/composables/useApi.js";
 import HeaderSocial from "~/components/HeaderSocial.vue";
 import ReportUserModal from "~/components/user/social/ReportUserModal.vue";
 
@@ -233,15 +234,49 @@ export default {
       this.selectedReportUserId = userId;
       this.showReportModal = true;
     },
-    handleReportSuccess: function () {
-      this.showReportModal = false;
-      if (this.$swal) {
-        this.$swal.fire({
-          icon: "success",
-          title: "Report enviat",
-          text: "El report s'ha enviat correctament per a la seva revisió.",
-          confirmButtonColor: "#79D45D"
+    handleReportSubmit: async function (reportData) {
+      const motiusMap = {
+        nom: "Nom inapropiat",
+        insult: "Text insultant",
+        us_indegut: "Ús indegut de l'app",
+        comentari: "Comentari ofensiu",
+        altres: "Altres"
+      };
+      const motiuText = motiusMap[reportData.motiu] || reportData.motiu;
+      const reasonText = "[" + motiuText + "]" + (reportData.detalls ? " - " + reportData.detalls : "");
+
+      try {
+        const resposta = await authFetch("/api/social/report", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            content_type: "user",
+            content_id: reportData.userId,
+            motiu: motiuText,
+            detalls: reportData.detalls || ""
+          })
         });
+
+        if (resposta.ok) {
+          this.showReportModal = false;
+          if (this.$swal) {
+            this.$swal.fire({
+              icon: "success",
+              title: "Report enviat",
+              text: "El report s'ha enviat correctament per a la seva revisió.",
+              confirmButtonColor: "#79D45D"
+            });
+          } else {
+            alert("El report s'ha enviat correctament.");
+          }
+        } else {
+          alert("Error a l'enviar el report. Si us plau, torna-ho a provar.");
+        }
+      } catch (e) {
+        console.error("Error reportant usuari:", e);
+        alert("Error de connexió a l'enviar el report.");
       }
     }
   }

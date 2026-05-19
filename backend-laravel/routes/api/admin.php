@@ -33,6 +33,7 @@ Route::prefix('admin')->middleware('ensure.admin')->group(function () {
     Route::get('/logros/{page}/{per_page}', [AdminLogroController::class, 'index']);
     Route::get('/missions/{page}/{per_page}', [AdminMissioController::class, 'index']);
     Route::get('/reports/{page}/{per_page}', [AdminReportController::class, 'index']);
+    Route::delete('/reports/{id}', [AdminReportController::class, 'destroy']);
     Route::get('/perfil', [AdminPerfilController::class, 'show']);
     Route::put('/perfil', [AdminPerfilController::class, 'update']);
     Route::patch('/perfil/password', [AdminPerfilController::class, 'canviarPassword']);

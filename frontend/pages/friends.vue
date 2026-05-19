@@ -465,13 +465,42 @@ export default {
       this.showReportModal = true;
       this.tancarUserExpandida();
     },
-    handleReportSubmit: function(reportData) {
-      // TODO: Implementar crida al backend
-      console.log("Reportant usuari:", reportData);
-      this.showReportModal = false;
-      setTimeout(() => {
-        alert("Gràcies! L'usuari ha sigut reportat i ho revisarem.");
-      }, 300);
+    handleReportSubmit: async function(reportData) {
+      const motiusMap = {
+        nom: "Nom inapropiat",
+        insult: "Text insultant",
+        us_indegut: "Ús indegut de l'app",
+        comentari: "Comentari ofensiu",
+        altres: "Altres"
+      };
+      const motiuText = motiusMap[reportData.motiu] || reportData.motiu;
+      const reasonText = "[" + motiuText + "]" + (reportData.detalls ? " - " + reportData.detalls : "");
+
+      try {
+        const resposta = await authFetch("/api/social/report", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            content_type: "user",
+            content_id: reportData.userId,
+            motiu: motiuText,
+            detalls: reportData.detalls || ""
+          })
+        });
+        if (resposta.ok) {
+          this.showReportModal = false;
+          setTimeout(() => {
+            alert("Gràcies! L'usuari ha sigut reportat i ho revisarem.");
+          }, 300);
+        } else {
+          alert("Error a l'enviar el report. Si us plau, torna-ho a provar.");
+        }
+      } catch (e) {
+        console.error("Error reportant usuari:", e);
+        alert("Error de connexió a l'enviar el report.");
+      }
     },
     openChat: function (friendId, friendNom) {
       this.chatFriendId = friendId;

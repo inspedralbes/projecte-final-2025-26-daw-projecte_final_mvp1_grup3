@@ -7,11 +7,16 @@ use App\Models\Report;
 use App\Models\UserReport;
 use App\Models\SocialPost;
 use App\Models\SocialComment;
+use App\Services\AdminReportBroadcastService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class SocialReportController extends Controller
 {
+    public function __construct(
+        private AdminReportBroadcastService $reportBroadcast
+    ) {}
+
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -35,6 +40,7 @@ class SocialReportController extends Controller
                 'detalls' => $validated['detalls'] ?? '',
                 'estat' => 'pendent',
             ]);
+            $this->reportBroadcast->notificarUserReportCreat($report);
         } else {
             if ($contentType === 'post') {
                 SocialPost::findOrFail($contentId);
@@ -49,6 +55,7 @@ class SocialReportController extends Controller
                 'post_id' => $contentId,
                 'estat' => 'pendent',
             ]);
+            $this->reportBroadcast->notificarReportCreat($report);
         }
 
         return response()->json(['success' => true, 'report' => $report], 201);

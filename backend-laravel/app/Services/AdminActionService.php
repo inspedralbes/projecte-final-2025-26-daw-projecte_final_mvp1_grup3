@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Models\Administrador;
 use App\Models\Habit;
 use App\Models\Ratxa;
+use App\Services\UserProhibitionService;
 use App\Models\LogroMedalla;
 use App\Models\MissioDiaria;
 use App\Models\Plantilla;
@@ -188,13 +189,17 @@ class AdminActionService
                 $usuari->contrasenya_hash = bcrypt($data['contrasenya']);
             }
             if (isset($data['prohibit'])) {
-                $usuari->prohibit = (bool) $data['prohibit'];
-                if ($usuari->prohibit) {
-                    $usuari->data_prohibicio = now();
-                    $usuari->motiu_prohibicio = $data['motiu'] ?? null;
+                if ((bool) $data['prohibit']) {
+                    UserProhibitionService::omplirProhibicio(
+                        $usuari,
+                        $data['motiu_prohibicio'] ?? $data['motiu'] ?? null,
+                        $data['durada_prohibicio'] ?? null
+                    );
                 } else {
+                    $usuari->prohibit = false;
                     $usuari->data_prohibicio = null;
                     $usuari->motiu_prohibicio = null;
+                    $usuari->dies_prohibicio = null;
                 }
             }
             $usuari->save();

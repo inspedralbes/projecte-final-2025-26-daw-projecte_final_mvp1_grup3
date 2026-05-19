@@ -65,6 +65,7 @@ CREATE TABLE USUARIS (
     prohibit BOOLEAN DEFAULT FALSE,
     data_prohibicio TIMESTAMP,
     motiu_prohibicio TEXT,
+    dies_prohibicio INT DEFAULT NULL,
     ultim_reset_missio DATE,
     monstre_tipus VARCHAR(2) DEFAULT NULL,
     data_naixement_monstre TIMESTAMP DEFAULT NULL

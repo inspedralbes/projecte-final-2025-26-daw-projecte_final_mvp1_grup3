@@ -28,7 +28,8 @@ function register(io, socket) {
     }
     socket.adminId = adminId;
     socket.join("admin_" + adminId);
-    console.log("Admin " + adminId + " units a la sala admin_" + adminId);
+    socket.join("admins_broadcast");
+    console.log("Admin " + adminId + " units a la sala admin_" + adminId + " i admins_broadcast");
   });
 
   socket.on("admin_action", async function (payload) {
@@ -40,6 +41,7 @@ function register(io, socket) {
         return;
       }
       socket.join("admin_" + adminId);
+      socket.join("admins_broadcast");
       await adminQueue.pushToLaravel(
         payload.action || "CREATE",
         adminId,

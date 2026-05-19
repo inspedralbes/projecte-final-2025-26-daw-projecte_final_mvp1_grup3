@@ -9,6 +9,7 @@ use App\Models\Administrador;
 use App\Models\Ratxa;
 use App\Models\User;
 use App\Services\AuthService;
+use App\Services\UserProhibitionService;
 use App\Services\WelcomeEmailService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -34,8 +35,11 @@ class UserAuthController extends Controller
 
     private WelcomeEmailService $welcomeEmailService;
 
-    public function __construct(AuthService $authService, WelcomeEmailService $welcomeEmailService)
-    {
+    public function __construct(
+        AuthService $authService,
+        WelcomeEmailService $welcomeEmailService,
+        private UserProhibitionService $prohibitionService
+    ) {
         $this->authService = $authService;
         $this->welcomeEmailService = $welcomeEmailService;
     }
@@ -58,8 +62,9 @@ class UserAuthController extends Controller
             return response()->json(['message' => 'Credencials incorrectes'], 401);
         }
 
-        if (!empty($usuari->prohibit)) {
-            return response()->json(['message' => 'El compte està prohibit'], 403);
+        $respostaBan = $this->respostaSiUsuariProhibit($usuari);
+        if ($respostaBan !== null) {
+            return $respostaBan;
         }
 
         $token = JWTAuth::fromUser($usuari);
@@ -217,8 +222,9 @@ class UserAuthController extends Controller
 
             $requiresOnboarding = $usuari->necessitaOnboarding();
 
-            if (!empty($usuari->prohibit)) {
-                return response()->json(['message' => 'El compte esta prohibit'], 403);
+            $respostaBan = $this->respostaSiUsuariProhibit($usuari);
+            if ($respostaBan !== null) {
+                return $respostaBan;
             }
 
             $token = JWTAuth::fromUser($usuari);
@@ -237,5 +243,28 @@ class UserAuthController extends Controller
                 'error'   => $e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * Resposta 403 amb detall del ban, o null si pot continuar el login.
+     */
+    private function respostaSiUsuariProhibit(User $usuari): ?JsonResponse
+    {
+        if (empty($usuari->prohibit)) {
+            return null;
+        }
+
+        $info = $this->prohibitionService->evaluarProhibicio($usuari);
+        if ($info === null) {
+            $usuari->refresh();
+
+            return null;
+        }
+
+        return response()->json([
+            'message' => 'El compte està prohibit',
+            'code' => 'account_banned',
+            'ban' => $info,
+        ], 403);
     }
 }

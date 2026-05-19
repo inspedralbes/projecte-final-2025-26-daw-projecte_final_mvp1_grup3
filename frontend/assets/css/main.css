@@ -147,6 +147,10 @@
         @apply bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl text-sm font-medium;
     }
 
+    .login-error-msg--ban {
+        @apply bg-amber-50 border-amber-500 text-amber-900;
+    }
+
     .login-input {
         font-family: "Comfortaa", system-ui, sans-serif;
         font-size: 1.0625rem;

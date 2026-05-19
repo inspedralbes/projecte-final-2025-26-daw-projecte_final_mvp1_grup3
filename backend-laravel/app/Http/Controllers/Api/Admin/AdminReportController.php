@@ -5,10 +5,15 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Report;
 use App\Models\UserReport;
+use App\Services\AdminReportBroadcastService;
 use Illuminate\Http\JsonResponse;
 
 class AdminReportController extends Controller
 {
+    public function __construct(
+        private AdminReportBroadcastService $reportBroadcast
+    ) {}
+
     /**
      * Retorna la llista de reports de les dues taules paginada.
      */
@@ -93,6 +98,8 @@ class AdminReportController extends Controller
         }
 
         $report->delete();
+
+        $this->reportBroadcast->notificarReportEliminat($id, $table);
 
         return response()->json([
             'success' => true,

@@ -51,6 +51,7 @@ class User extends Model implements JWTSubject
         'prohibit',
         'data_prohibicio',
         'motiu_prohibicio',
+        'dies_prohibicio',
         'logros_showcase',
         'primer_login_correu_enviat_at',
         'monstre_tipus',

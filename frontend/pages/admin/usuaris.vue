@@ -6,9 +6,10 @@
 definePageMeta({ layout: 'admin' });
 
 import { ref } from 'vue';
+import { authFetch } from '~/composables/useApi.js';
 
 // 1. DADES (VAR)
-var { $socket } = useNuxtApp();
+var { $socket, $swal } = useNuxtApp();
 var config = useRuntimeConfig();
 
 // Usuaris via API
@@ -96,44 +97,60 @@ function guardarUsuari() {
   tancaPopup();
 }
 
-function confirmarProhibicio() {
-  if (!$socket || !usuariSeleccionat.value) return;
-  
-  var duradesLabels = {
-    "1_dia": "1 Dia",
-    "3_dies": "3 Dies",
-    "7_dies": "7 Dies",
-    "30_dies": "30 Dies",
-    "permanent": "Permanent"
-  };
-  var durada = duradesLabels[formulari.value.duradaProhibicio] || "Permanent";
-  var motiuFinal = "[" + durada + "] " + (formulari.value.motiuProhibicio || "Sense motiu especificat");
+async function confirmarProhibicio() {
+  if (!usuariSeleccionat.value) {
+    return;
+  }
 
-  $socket.emit('admin_action', {
-    action: 'UPDATE',
-    entity: 'usuari',
-    data: {
-      id: usuariSeleccionat.value.id,
-      prohibit: true,
-      motiu_prohibicio: motiuFinal
+  try {
+    var resposta = await authFetch('/api/admin/usuaris/' + usuariSeleccionat.value.id + '/prohibir', {
+      method: 'PATCH',
+      body: JSON.stringify({
+        prohibit: true,
+        durada_prohibicio: formulari.value.duradaProhibicio,
+        motiu_prohibicio: formulari.value.motiuProhibicio || 'Sense motiu especificat'
+      })
+    });
+    var json = await resposta.json().catch(function () { return {}; });
+    if (!resposta.ok) {
+      throw new Error(json.message || json.error || 'Error en prohibir');
     }
-  });
-  
-  tancaPopup();
+    await refreshUsuaris();
+    tancaPopup();
+    if ($swal) {
+      $swal.fire({ icon: 'success', title: 'Usuari prohibit', timer: 1200, showConfirmButton: false });
+    }
+  } catch (e) {
+    if ($swal) {
+      $swal.fire({ icon: 'error', title: 'Error', text: e && e.message ? e.message : 'Error' });
+    }
+  }
 }
 
-function desprohibirUsuari(user) {
-  if (!$socket) return;
-  
-  $socket.emit('admin_action', {
-    action: 'UPDATE',
-    entity: 'usuari',
-    data: {
-      id: user.id,
-      prohibit: false,
-      motiu_prohibicio: null
+async function desprohibirUsuari(user) {
+  if (!user || !user.id) {
+    return;
+  }
+  if (!confirm('Vols tornar a permetre l\'accés a aquest usuari?')) {
+    return;
+  }
+  try {
+    var resposta = await authFetch('/api/admin/usuaris/' + user.id + '/prohibir', {
+      method: 'PATCH',
+      body: JSON.stringify({ prohibit: false })
+    });
+    if (!resposta.ok) {
+      throw new Error('Error en desprohibir');
     }
-  });
+    await refreshUsuaris();
+    if ($swal) {
+      $swal.fire({ icon: 'success', title: 'Usuari desprohibit', timer: 1200, showConfirmButton: false });
+    }
+  } catch (e) {
+    if ($swal) {
+      $swal.fire({ icon: 'error', title: 'Error', text: e && e.message ? e.message : 'Error' });
+    }
+  }
 }
 </script>
 

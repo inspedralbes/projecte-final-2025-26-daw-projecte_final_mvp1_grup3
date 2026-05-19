@@ -58,7 +58,7 @@
         </div>
 
       <form class="login-form" novalidate @submit.prevent="ferLogin">
-        <div v-if="errorMissatge" class="login-error-msg">
+        <div v-if="errorMissatge && !authStore.loginBanShow" class="login-error-msg">
           {{ errorMissatge }}
         </div>
         
@@ -203,11 +203,22 @@
       </div>
     </div>
   </div>
+
+  <Teleport to="body">
+    <LoginBanSheet
+      :show="authStore.loginBanShow"
+      :ban="authStore.loginBanInfo"
+      @close="authStore.tancarLoginBan()"
+    />
+  </Teleport>
 </template>
 
 <script setup>
 definePageMeta({ layout: false });
 import videoEntradaUrl from '~/assets/img/Onboarding/video/1-VideoEntradaApp.mp4';
+import LoginBanSheet from '~/components/auth/LoginBanSheet.vue';
+
+var authStore = useAuthStore();
 </script>
 
 <script>
@@ -373,6 +384,7 @@ export default {
     },
     ferLogin: async function () {
       var self = this;
+      var authStore = useAuthStore();
       var email = (self.formulari.email || "").trim();
       var contrasenya = self.formulari.contrasenya || "";
       if (!email || !contrasenya) {
@@ -380,9 +392,9 @@ export default {
         return;
       }
       self.errorMissatge = "";
+      authStore.tancarLoginBan();
       self.estaCarregant = true;
       try {
-        var authStore = useAuthStore();
         var nuxtApp = useNuxtApp();
         try {
           await authStore.loginUser(email, contrasenya);
@@ -400,6 +412,10 @@ export default {
           }
           return;
         } catch (errUser) {
+          if (authStore.esErrorBanLogin(errUser)) {
+            self.errorMissatge = "";
+            return;
+          }
           try {
             await authStore.loginAdmin(email, contrasenya);
             if (nuxtApp.$updateSocketAuth) nuxtApp.$updateSocketAuth();

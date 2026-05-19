@@ -60,6 +60,8 @@ async function init(io) {
 
       if (payload.social_event !== undefined) {
         socialFeedbackEmitter.emit(io, payload);
+      } else if (payload.broadcast_admin === true) {
+        adminFeedbackEmitter.emitBroadcast(io, payload);
       } else if (payload.admin_id !== undefined) {
         adminFeedbackEmitter.emit(io, payload);
       } else if (payload.user_id !== undefined) {

@@ -6,10 +6,11 @@
  */
 definePageMeta({ layout: 'admin' });
 
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+import { authFetch } from '~/composables/useApi.js';
 
 // 1. DADES (VAR)
-var { $socket } = useNuxtApp();
+var { $socket, $swal } = useNuxtApp();
 var config = useRuntimeConfig();
 
 // Reports via API
@@ -50,14 +51,31 @@ function tancaPopup() {
   usuariSeleccionat.value = null;
 }
 
-// Escoltarem confirmacions de socket per refrescar
+function onAdminActionConfirmed(payload) {
+  if (payload && payload.success && payload.entity === 'usuari') {
+    refreshReports();
+  }
+}
+
+function onAdminReportUpdated(payload) {
+  if (!payload || !payload.success) {
+    return;
+  }
+  refreshReports();
+}
+
 onMounted(function() {
   if ($socket) {
-    $socket.on('admin_action_confirmed', function(payload) {
-      if (payload.entity === 'usuari' && payload.success) {
-        refreshReports();
-      }
-    });
+    $socket.emit('admin_join', {});
+    $socket.on('admin_action_confirmed', onAdminActionConfirmed);
+    $socket.on('admin_report_updated', onAdminReportUpdated);
+  }
+});
+
+onBeforeUnmount(function() {
+  if ($socket) {
+    $socket.off('admin_action_confirmed', onAdminActionConfirmed);
+    $socket.off('admin_report_updated', onAdminReportUpdated);
   }
 });
 
@@ -78,52 +96,58 @@ async function resoldreReport(reportId, tableName) {
   }
 }
 
-function confirmarProhibicio() {
-  if (!$socket || !usuariSeleccionat.value) return;
+async function confirmarProhibicio() {
+  if (!usuariSeleccionat.value) {
+    return;
+  }
 
-  var duradesLabels = {
-    "1_dia": "1 Dia",
-    "3_dies": "3 Dies",
-    "7_dies": "7 Dies",
-    "30_dies": "30 Dies",
-    "permanent": "Permanent"
-  };
-  var durada = duradesLabels[formulari.value.duradaProhibicio] || "Permanent";
-  var motiuFinal = "[" + durada + "] " + (formulari.value.motiuProhibicio || "Violació de les normes de la comunitat");
-
-  $socket.emit('admin_action', {
-    action: 'UPDATE',
-    entity: 'usuari',
-    data: {
-      id: usuariSeleccionat.value.id,
-      prohibit: true,
-      motiu_prohibicio: motiuFinal
+  try {
+    var resposta = await authFetch('/api/admin/usuaris/' + usuariSeleccionat.value.id + '/prohibir', {
+      method: 'PATCH',
+      body: JSON.stringify({
+        prohibit: true,
+        durada_prohibicio: formulari.value.duradaProhibicio,
+        motiu_prohibicio: formulari.value.motiuProhibicio || 'Violació de les normes de la comunitat'
+      })
+    });
+    var json = await resposta.json().catch(function () { return {}; });
+    if (!resposta.ok) {
+      throw new Error(json.message || json.error || 'Error en prohibir');
     }
-  });
-
-  tancaPopup();
-  setTimeout(() => {
-    refreshReports();
-  }, 500);
+    tancaPopup();
+    await refreshReports();
+    if ($swal) {
+      $swal.fire({ icon: 'success', title: 'Usuari prohibit', timer: 1200, showConfirmButton: false });
+    }
+  } catch (e) {
+    if ($swal) {
+      $swal.fire({ icon: 'error', title: 'Error', text: e && e.message ? e.message : 'Error' });
+    }
+  }
 }
 
-function desprohibirUsuari(reportedUserId) {
-  if (!$socket) return;
-  if (!confirm("Vols tornar a permetre l'accés a aquest usuari?")) return;
+async function desprohibirUsuari(reportedUserId) {
+  if (!confirm("Vols tornar a permetre l'accés a aquest usuari?")) {
+    return;
+  }
 
-  $socket.emit('admin_action', {
-    action: 'UPDATE',
-    entity: 'usuari',
-    data: {
-      id: reportedUserId,
-      prohibit: false,
-      motiu_prohibicio: null
+  try {
+    var resposta = await authFetch('/api/admin/usuaris/' + reportedUserId + '/prohibir', {
+      method: 'PATCH',
+      body: JSON.stringify({ prohibit: false })
+    });
+    if (!resposta.ok) {
+      throw new Error('Error en desprohibir');
     }
-  });
-
-  setTimeout(() => {
-    refreshReports();
-  }, 500);
+    await refreshReports();
+    if ($swal) {
+      $swal.fire({ icon: 'success', title: 'Usuari desprohibit', timer: 1200, showConfirmButton: false });
+    }
+  } catch (e) {
+    if ($swal) {
+      $swal.fire({ icon: 'error', title: 'Error', text: e && e.message ? e.message : 'Error' });
+    }
+  }
 }
 </script>
 
@@ -165,7 +189,7 @@ function desprohibirUsuari(reportedUserId) {
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100/50">
-            <tr v-for="rep in reports" :key="rep.id" class="group transition-all">
+            <tr v-for="rep in reports" :key="rep.table + '-' + rep.id" class="group transition-all">
               <!-- Tipus -->
               <td class="py-5">
                 <span v-if="rep.tipus === 'user'" class="bg-yellow-50 text-yellow-600 px-3 py-1 rounded-[10px] font-black text-[9px] uppercase border border-yellow-100 font-bricolage">Usuari</span>

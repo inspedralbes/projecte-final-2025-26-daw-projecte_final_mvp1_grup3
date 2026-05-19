@@ -33,7 +33,10 @@ var formulari = ref({
   frequencia_tipus: "diaria",
   dies_setmana: "1,2,3,4,5,6,7",
   objectiu_vegades: 1,
-  moment_dia: "tot_dia"
+  moment_dia: "tot_dia",
+  unitat: "vegades",
+  icona: "🏃",
+  color: "#65A30D"
 });
 
 // 2. METHODS (FUNCTION)
@@ -46,7 +49,10 @@ function obreCrear() {
     frequencia_tipus: "diaria",
     dies_setmana: "1,2,3,4,5,6,7",
     objectiu_vegades: 1,
-    moment_dia: "tot_dia"
+    moment_dia: "tot_dia",
+    unitat: "vegades",
+    icona: "🏃",
+    color: "#65A30D"
   };
   popupObert.value = 'crear';
 }
@@ -61,7 +67,10 @@ function obreEditar(h) {
     frequencia_tipus: h.frequencia_tipus || 'diaria',
     dies_setmana: h.dies_setmana || '1,2,3,4,5,6,7',
     objectiu_vegades: h.objectiu_vegades || 1,
-    moment_dia: h.moment_dia || "tot_dia"
+    moment_dia: h.moment_dia || "tot_dia",
+    unitat: h.unitat || "vegades",
+    icona: h.icona || "🏃",
+    color: h.color || "#65A30D"
   };
   popupObert.value = 'editar';
 }
@@ -100,7 +109,10 @@ function guardarHabit() {
       frequencia_tipus: formulari.value.frequencia_tipus,
       dies_setmana: formulari.value.dies_setmana,
       objectiu_vegades: parseInt(formulari.value.objectiu_vegades) || 1,
-      moment_dia: formulari.value.moment_dia
+      moment_dia: formulari.value.moment_dia,
+      unitat: formulari.value.unitat,
+      icona: formulari.value.icona,
+      color: formulari.value.color
     }
   };
   
@@ -200,6 +212,20 @@ function confirmarEliminacio() {
               <div class="space-y-2">
                 <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 font-bricolage">Títol de l'Hàbit</label>
                 <input v-model="formulari.titol" type="text" class="w-full bg-white/50 border border-gray-200 rounded-[10px] px-5 py-3 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-[#79D45D]/10 focus:border-[#79D45D]/50 transition-all placeholder:text-gray-300" placeholder="Beure aigua, Llegir..." />
+              </div>
+              <div class="grid grid-cols-3 gap-6">
+                <div class="space-y-2">
+                  <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 font-bricolage">Icona (Emoji)</label>
+                  <input v-model="formulari.icona" type="text" class="w-full bg-white/50 border border-gray-200 rounded-[10px] px-5 py-3 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-[#79D45D]/10 focus:border-[#79D45D]/50 transition-all placeholder:text-gray-300" placeholder="🏃" />
+                </div>
+                <div class="space-y-2">
+                  <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 font-bricolage">Color (Hex)</label>
+                  <input v-model="formulari.color" type="color" class="w-full h-[46px] bg-white/50 border border-gray-200 rounded-[10px] px-2 py-1 cursor-pointer transition-all" />
+                </div>
+                <div class="space-y-2">
+                  <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 font-bricolage">Unitat</label>
+                  <input v-model="formulari.unitat" type="text" class="w-full bg-white/50 border border-gray-200 rounded-[10px] px-5 py-3 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-[#79D45D]/10 focus:border-[#79D45D]/50 transition-all placeholder:text-gray-300" placeholder="vegades, ml, min..." />
+                </div>
               </div>
               <div v-if="popupObert === 'crear'" class="space-y-2">
                 <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 font-bricolage">ID de l'Usuari</label>

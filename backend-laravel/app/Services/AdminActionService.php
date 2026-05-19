@@ -249,6 +249,9 @@ class AdminActionService
                 'dies_setmana' => $data['dies_setmana'] ?? '1,2,3,4,5,6,7',
                 'objectiu_vegades' => $data['objectiu_vegades'] ?? 1,
                 'moment_dia' => $data['moment_dia'] ?? 'tot_dia',
+                'unitat' => $data['unitat'] ?? 'vegades',
+                'icona' => $data['icona'] ?? '🏃',
+                'color' => $data['color'] ?? '#65A30D',
             ]);
             $despres = $habit->toArray();
             $this->adminLogService->registrar($adminId, 'Crear habit', 'Habit ID ' . $habit->id . ': ' . $habit->titol, null, $despres, null);
@@ -266,6 +269,9 @@ class AdminActionService
             $habit->dies_setmana = $data['dies_setmana'] ?? $habit->dies_setmana;
             $habit->objectiu_vegades = $data['objectiu_vegades'] ?? $habit->objectiu_vegades;
             $habit->moment_dia = $data['moment_dia'] ?? $habit->moment_dia;
+            $habit->unitat = $data['unitat'] ?? $habit->unitat;
+            $habit->icona = $data['icona'] ?? $habit->icona;
+            $habit->color = $data['color'] ?? $habit->color;
             $habit->save();
             $despres = $habit->toArray();
             $this->adminLogService->registrar($adminId, 'Editar habit', 'Habit ID ' . $id . ': ' . $habit->titol, $abans, $despres, null);

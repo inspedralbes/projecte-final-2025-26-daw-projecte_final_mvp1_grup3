@@ -5,25 +5,7 @@
     <nav class="w-full lg:hidden">
       <div class="flex w-full items-center gap-1 px-1 min-h-[2.75rem]">
         <div class="flex shrink-0 w-10 justify-start">
-          <button class="hamburger-btn" @click="drawerOpen = !drawerOpen" aria-label="Menu">
-            <svg
-              class="hamburger-menu-svg"
-              width="14"
-              height="10"
-              viewBox="0 0 14 10"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              aria-hidden="true"
-            >
-              <path
-                d="M1 1H13M1 5H13M1 9H13"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-            </svg>
-          </button>
+          <!-- Hamburger menu eliminated -->
         </div>
         <div class="mobile-stats-bar mobile-stats-bar--center flex flex-1 justify-center min-w-0">
           <div class="stat-item">
@@ -82,25 +64,7 @@
     <!-- Escriptori -->
     <nav class="hidden lg:flex w-full items-center px-4 nav-bar-desktop">
       <div class="flex-1 min-w-0 flex justify-start">
-        <button class="hamburger-btn hamburger-btn-desktop" @click="drawerOpen = !drawerOpen" aria-label="Menu">
-          <svg
-            class="hamburger-menu-svg"
-            width="14"
-            height="10"
-            viewBox="0 0 14 10"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            aria-hidden="true"
-          >
-            <path
-              d="M1 1H13M1 5H13M1 9H13"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
-        </button>
+        <!-- Hamburger menu eliminated -->
       </div>
 
       <!-- Desktop nav -->
@@ -122,16 +86,8 @@
         </li>
       </ul>
 
-      <!-- Desktop: idioma + logout -->
       <div class="flex-1 min-w-0 flex justify-end">
-        <div class="desktop-actions">
-          <LanguageSwitcher />
-          <button @click="handleLogout" class="logout-btn" :title="$t('nav.logout')">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-          </button>
-        </div>
+        <!-- Actions eliminated -->
       </div>
 
     </nav>
@@ -179,59 +135,7 @@
     </div>
   </Teleport>
 
-  <!-- Mobile drawer overlay -->
-  <transition name="drawer-overlay">
-    <div v-if="drawerOpen" class="drawer-overlay" @click="drawerOpen = false"></div>
-  </transition>
 
-  <!-- Mobile drawer panel -->
-  <transition name="drawer-slide">
-    <aside v-if="drawerOpen" class="drawer-panel">
-      <div class="drawer-header">
-        <button class="drawer-close" @click="drawerOpen = false" aria-label="Tancar">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
-
-      <!-- User info -->
-      <div class="drawer-user">
-        <div class="drawer-avatar">
-          <img :src="logo" alt="" class="drawer-avatar-img" width="72" height="72" decoding="async" />
-        </div>
-        <p class="drawer-username">{{ userName }}</p>
-      </div>
-
-      <div class="drawer-divider"></div>
-
-      <!-- Drawer nav: Inventari (Botiga va al footer / barra inferior) -->
-      <nav class="drawer-nav">
-        <NuxtLink to="/inventari" class="drawer-nav-link" @click="drawerOpen = false">
-          <svg xmlns="http://www.w3.org/2000/svg" class="drawer-nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7H4a1 1 0 00-1 1v11a2 2 0 002 2h14a2 2 0 002-2V8a1 1 0 00-1-1zM8 7V5a4 4 0 018 0v2" />
-          </svg>
-          <span>{{ $t('nav.inventory') }}</span>
-        </NuxtLink>
-      </nav>
-
-      <div class="drawer-divider"></div>
-
-      <!-- Actions -->
-      <div class="drawer-actions">
-        <div class="drawer-action-row">
-          <span class="drawer-action-label">{{ $t('nav.language') || 'Idioma' }}</span>
-          <LanguageSwitcher />
-        </div>
-        <button class="drawer-logout" @click="handleLogout">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-          </svg>
-          <span>{{ $t('nav.logout') }}</span>
-        </button>
-      </div>
-    </aside>
-  </transition>
 
   <!-- Mobile bottom tab bar -->
   <nav class="bottom-tab-bar" aria-label="Mobile navigation">

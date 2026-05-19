@@ -38,17 +38,26 @@
                 >
                   {{ $t('home.back_to_calendar') }}
                 </button>
-                <button
-                  v-else
-                  type="button"
-                  class="w-8 h-8 rounded-full bg-indigo-50 shadow-[3px_3px_8px_rgba(0,0,0,0.1)] border border-white/60 flex items-center justify-center text-indigo-500 hover:bg-indigo-100 hover:scale-105 transition-all duration-200"
-                  title="Calendari"
-                  @click="anarAlCalendari"
-                >
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                </button>
+                <div v-else class="flex items-center gap-2">
+                  <button
+                    type="button"
+                    class="w-8 h-8 rounded-full bg-orange-50 shadow-[3px_3px_8px_rgba(0,0,0,0.1)] border border-white/60 flex items-center justify-center hover:bg-orange-100 hover:scale-105 transition-all duration-200"
+                    title="Inventari"
+                    @click="anarAlInventari"
+                  >
+                    <img :src="imatgeInventari" class="w-4 h-4 object-contain select-none" />
+                  </button>
+                  <button
+                    type="button"
+                    class="w-8 h-8 rounded-full bg-indigo-50 shadow-[3px_3px_8px_rgba(0,0,0,0.1)] border border-white/60 flex items-center justify-center text-indigo-500 hover:bg-indigo-100 hover:scale-105 transition-all duration-200"
+                    title="Calendari"
+                    @click="anarAlCalendari"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </button>
+                </div>
               </div>
             </div>
             <UserHomeHomeStreakSection :ratxa="ratxa" :ratxa-maxima="ratxaMaxima" :xp-total="xpTotal" :monedes="monedes" />
@@ -100,22 +109,40 @@
               {{ $t('home.back_to_calendar') }}
             </button>
             <span v-else class="shrink-0 w-10" aria-hidden="true" />
-            <button
-              type="button"
-              class="shrink-0 w-16 h-16 sm:w-[4.5rem] sm:h-[4.5rem] flex items-center justify-center transition-transform hover:scale-105 active:scale-95 min-h-0"
-              :class="vistaHistorialDia ? 'opacity-40 pointer-events-none' : ''"
-              :title="$t('nav.calendar') || 'Calendari'"
-              :disabled="vistaHistorialDia"
-              @click="anarAlCalendari"
-            >
-              <img
-                :src="imatgeCalendari"
-                alt="Calendari"
-                class="max-w-full max-h-full w-auto h-auto object-contain select-none"
-                decoding="async"
-                draggable="false"
-              />
-            </button>
+            <div class="flex items-center gap-2">
+              <button
+                type="button"
+                class="shrink-0 w-16 h-16 sm:w-[4.5rem] sm:h-[4.5rem] flex items-center justify-center transition-transform hover:scale-105 active:scale-95 min-h-0"
+                :class="vistaHistorialDia ? 'opacity-40 pointer-events-none' : ''"
+                title="Inventari"
+                :disabled="vistaHistorialDia"
+                @click="anarAlInventari"
+              >
+                <img
+                  :src="imatgeInventari"
+                  alt="Inventari"
+                  class="max-w-full max-h-full w-auto h-auto object-contain select-none"
+                  decoding="async"
+                  draggable="false"
+                />
+              </button>
+              <button
+                type="button"
+                class="shrink-0 w-16 h-16 sm:w-[4.5rem] sm:h-[4.5rem] flex items-center justify-center transition-transform hover:scale-105 active:scale-95 min-h-0"
+                :class="vistaHistorialDia ? 'opacity-40 pointer-events-none' : ''"
+                :title="$t('nav.calendar') || 'Calendari'"
+                :disabled="vistaHistorialDia"
+                @click="anarAlCalendari"
+              >
+                <img
+                  :src="imatgeCalendari"
+                  alt="Calendari"
+                  class="max-w-full max-h-full w-auto h-auto object-contain select-none"
+                  decoding="async"
+                  draggable="false"
+                />
+              </button>
+            </div>
           </div>
         </div>
         <div v-if="!vistaHistorialDia" class="hidden lg:block">
@@ -243,6 +270,7 @@ import { useCalendarStore } from "~/stores/calendar.js";
 import { flushPendingFocusEvents } from "~/composables/user/useFocusEventQueue.js";
 import { getMonsterImageFromUser } from "~/utils/monsterImage.js";
 import calendarImg from "~/assets/img/calendar-loopy.png";
+import inventariImg from "~/assets/img/Icones/Icona_Inventari.png";
 import UserHomeHomeStreakSection from "~/components/user/home/HomeStreakSection.vue";
 
 export default {
@@ -285,6 +313,7 @@ export default {
       weatherCarregant: false,
       ruletaProcessant: false,
       imatgeCalendari: calendarImg,
+      imatgeInventari: inventariImg,
       snapshotHistoric: null,
       carregantSnapshotHistoric: false,
       errorSnapshotHistoric: "",
@@ -673,6 +702,10 @@ export default {
     anarAlCalendari: function () {
       if (this.vistaHistorialDia) return;
       navigateTo("/calendar");
+    },
+    anarAlInventari: function () {
+      if (this.vistaHistorialDia) return;
+      navigateTo("/inventari");
     },
     logout: async function() {
       await useAuthStore().logout();

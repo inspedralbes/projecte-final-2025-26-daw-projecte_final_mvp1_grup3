@@ -96,10 +96,10 @@
                 </div>
                 <div class="template-expand-panel">
                   <div class="template-spec-card">
-                    <div class="template-expand-actions" style="justify-content: flex-start; gap: 8px; flex-wrap: wrap;">
-                      <button type="button" class="template-expand-btn" style="background:#5B9CE6; border: 2px solid #4A83C4; color: white;" @click="openChat(friendObj.friend.id, friendObj.friend.nom)">Missatge</button>
-                      <button type="button" class="template-expand-btn template-expand-btn--danger" @click="removeFriend(friendObj.friend.id, friendObj.friend.nom)">Eliminar d'amics</button>
-                      <button type="button" class="template-expand-btn" style="background:#E6E6E6; color:#5b5b5b;" @click="reportUser(friendObj.friend.id)">Reportar</button>
+                    <div class="grid grid-cols-3 gap-2 w-full">
+                      <button type="button" class="template-expand-btn w-full text-center px-1" style="background:#5B9CE6; border: 2px solid #4A83C4; color: white;" @click="openChat(friendObj.friend.id, friendObj.friend.nom)">Missatge</button>
+                      <button type="button" class="template-expand-btn template-expand-btn--danger w-full text-center px-1" @click="removeFriend(friendObj.friend.id, friendObj.friend.nom)">Eliminar</button>
+                      <button type="button" class="template-expand-btn w-full text-center px-1" style="background:#E6E6E6; color:#5b5b5b;" @click="reportUser(friendObj.friend.id)">Reportar</button>
                     </div>
                   </div>
                 </div>
@@ -152,11 +152,11 @@
                 </div>
                 <div class="template-expand-panel">
                   <div class="template-spec-card">
-                    <div class="template-expand-actions" style="justify-content: flex-start; gap: 8px; flex-wrap: wrap;">
-                      <button type="button" class="template-expand-btn template-expand-btn--primary" @click="acceptRequest(req.id)">Acceptar</button>
-                      <button type="button" class="template-expand-btn" style="background:#5B9CE6; border: 2px solid #4A83C4; color: white;" @click="openChat(req.requester.id, req.requester.nom)">Missatge</button>
-                      <button type="button" class="template-expand-btn template-expand-btn--danger" @click="rejectRequest(req.id)">Rebutjar</button>
-                      <button type="button" class="template-expand-btn" style="background:#E6E6E6; color:#5b5b5b;" @click="reportUser(req.requester.id)">Reportar</button>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full">
+                      <button type="button" class="template-expand-btn template-expand-btn--primary w-full text-center px-0.5" @click="acceptRequest(req.id)">Acceptar</button>
+                      <button type="button" class="template-expand-btn w-full text-center px-0.5" style="background:#5B9CE6; border: 2px solid #4A83C4; color: white;" @click="openChat(req.requester.id, req.requester.nom)">Missatge</button>
+                      <button type="button" class="template-expand-btn template-expand-btn--danger w-full text-center px-0.5" @click="rejectRequest(req.id)">Rebutjar</button>
+                      <button type="button" class="template-expand-btn w-full text-center px-0.5" style="background:#E6E6E6; color:#5b5b5b;" @click="reportUser(req.requester.id)">Reportar</button>
                     </div>
                   </div>
                 </div>
@@ -199,24 +199,24 @@
                 </div>
                 <div class="template-expand-panel">
                   <div class="template-spec-card">
-                    <div class="template-expand-actions" style="justify-content: flex-start; gap: 8px; flex-wrap: wrap;">
+                    <div class="grid grid-cols-3 gap-2 w-full">
                       <button
                         type="button"
-                        class="template-expand-btn template-expand-btn--primary friend-req-btn"
+                        class="template-expand-btn template-expand-btn--primary friend-req-btn w-full text-center px-0.5"
                         :class="{ 'friend-req-btn--sent': sentRequests[user.id] }"
                         :disabled="sending || sentRequests[user.id]"
                         @click="sendRequest(user.id)"
                       >
-                        <span v-if="sentRequests[user.id]" class="friend-req-btn__done">
-                          <svg class="friend-req-btn__tick" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <span v-if="sentRequests[user.id]" class="friend-req-btn__done inline-flex items-center justify-center gap-1">
+                          <svg class="friend-req-btn__tick shrink-0" width="10" height="10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
                           </svg>
-                          Sol·licitud enviada
+                          Enviada
                         </span>
-                        <span v-else>{{ $t('friends.send_request') }}</span>
+                        <span v-else>Sol·licitar</span>
                       </button>
-                      <button type="button" class="template-expand-btn" style="background:#5B9CE6; border: 2px solid #4A83C4; color: white;" @click="openChat(user.id, user.nom)">Missatge</button>
-                      <button type="button" class="template-expand-btn" style="background:#E6E6E6; color:#5b5b5b;" @click="reportUser(user.id)">Reportar</button>
+                      <button type="button" class="template-expand-btn w-full text-center px-0.5" style="background:#5B9CE6; border: 2px solid #4A83C4; color: white;" @click="openChat(user.id, user.nom)">Missatge</button>
+                      <button type="button" class="template-expand-btn w-full text-center px-0.5" style="background:#E6E6E6; color:#5b5b5b;" @click="reportUser(user.id)">Reportar</button>
                     </div>
                   </div>
                 </div>
@@ -272,13 +272,15 @@ import { getMonsterImageFromUser } from "~/utils/monsterImage.js";
 import HeaderSocial from "~/components/HeaderSocial.vue";
 import ChatWindow from "~/components/user/social/ChatWindow.vue";
 import ReportUserModal from "~/components/user/social/ReportUserModal.vue";
+import UserSocialConfirmModal from "~/components/user/social/ConfirmModal.vue";
 
 export default {
   name: "FriendsScreen",
   components: {
     HeaderSocial,
     ChatWindow,
-    ReportUserModal
+    ReportUserModal,
+    UserSocialConfirmModal
   },
   data: function () {
     return {

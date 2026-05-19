@@ -79,12 +79,12 @@
         <p class="social-loading__text">{{ $t('home.loading') }}</p>
       </div>
 
-      <div v-else-if="posts.length === 0" class="social-empty">
-        <svg class="social-empty__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"/>
-        </svg>
-        <p class="social-empty__title">{{ $t('social.no_posts') }}</p>
-        <p class="social-empty__subtitle">{{ $t('social.be_first') }}</p>
+      <div v-else-if="posts.length === 0" class="social-empty w-full flex justify-center">
+        <EmptyState
+          title="Fòrum buit"
+          description="Encara no hi ha cap publicació al fòrum. Sigues el primer a compartir els teus èxits!"
+          icon="logo"
+        />
       </div>
 
       <div v-else class="social-feed">
@@ -125,12 +125,14 @@
 import { useSocialStore } from "~/stores/useSocialStore.js";
 import HeaderSocial from "~/components/HeaderSocial.vue";
 import ReportUserModal from "~/components/user/social/ReportUserModal.vue";
+import EmptyState from "~/components/EmptyState.vue";
 
 export default {
   name: "SocialPage",
   components: {
     HeaderSocial,
-    ReportUserModal
+    ReportUserModal,
+    EmptyState
   },
   middleware: ["auth"],
   data: function () {

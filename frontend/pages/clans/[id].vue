@@ -7,15 +7,12 @@
         <div v-if="loading" class="text-center py-8 clan-loading-text">Carregant...</div>
         
         <div v-else-if="insufficientLevel" class="max-w-md mx-auto mt-10">
-          <div class="text-center bg-white p-8 rounded-[32px] border-4 border-gray-100 shadow-xl font-['Outfit',sans-serif]">
+          <div class="text-center bg-white p-8 rounded-[32px] border-4 border-gray-100 shadow-xl">
             <img src="~/assets/img/Icones/Icona_Logo_Perfil.png" class="w-32 h-auto mx-auto mb-6 drop-shadow-md pixelated" alt="Loopy" />
-            <h2 class="text-2xl font-black text-gray-800 mb-4 tracking-tight">Falta nivell!</h2>
-            <p class="text-gray-500 mb-8 font-semibold text-[15px] leading-snug">
+            <h2 class="text-2xl font-black text-gray-800 mb-4 tracking-tight font-['Bricolage_Grotesque',sans-serif]">Falta nivell!</h2>
+            <p class="text-gray-500 mb-2 font-semibold text-[15px] leading-snug font-['Comfortaa',sans-serif]">
               Has de ser <strong class="text-emerald-500 text-lg">Nivell 5</strong> o superior per poder accedir a l'apartat de Clans. Segueix completant hàbits per pujar de nivell!
             </p>
-            <NuxtLink to="/home" class="inline-block px-8 py-3 bg-[#FF6B8A] text-white rounded-[16px] font-extrabold text-base transition-transform active:translate-y-[2px] shadow-[0_4px_0_#D14D6B] border-none cursor-pointer">
-              Seguir jugant
-            </NuxtLink>
           </div>
         </div>
 

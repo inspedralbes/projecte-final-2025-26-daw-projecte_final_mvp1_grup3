@@ -22,6 +22,8 @@ var adminConnectedHandler = require("./handlers/admin/adminConnectedHandler");
  *
  * @param {object} io - Instància Socket.io
  */
+var onlineUsers = new Set();
+
 function init(io) {
   io.on("connection", function (socket) {
     console.log("Client connectat:", socket.id);
@@ -31,7 +33,24 @@ function init(io) {
     if (userId) {
       socket.join("user_" + userId);
       console.log("Usuari " + userId + " unit a la sala user_" + userId);
+      
+      onlineUsers.add(userId);
+      io.emit("user_status", { userId: userId, online: true });
     }
+
+    socket.on("get_online_users", function (callback) {
+      if (typeof callback === "function") {
+        callback(Array.from(onlineUsers));
+      }
+    });
+
+    socket.on("disconnect", function () {
+      if (userId) {
+        // Here we could check if they have other sockets open, but for simplicity:
+        onlineUsers.delete(userId);
+        io.emit("user_status", { userId: userId, online: false });
+      }
+    });
 
 habitHandlers.register(io, socket);
  plantillaHandlers.register(io, socket);

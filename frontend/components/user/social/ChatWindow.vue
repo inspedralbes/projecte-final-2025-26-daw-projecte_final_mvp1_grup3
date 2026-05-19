@@ -8,7 +8,7 @@
           </div>
           <div>
             <p class="chat-header__name">{{ friendName }}</p>
-            <p class="chat-header__status">En línia</p>
+            <p :class="['chat-header__status', isOnline ? '' : 'chat-header__status--offline']">{{ isOnline ? 'En línia' : 'Fora de línia' }}</p>
           </div>
         </div>
         <button type="button" class="chat-header__close" @click="$emit('close')">
@@ -90,6 +90,10 @@ export default {
     currentUserId: function () {
       var auth = useAuthStore();
       return auth && auth.user ? auth.user.id : null;
+    },
+    isOnline: function () {
+      var chatStore = useChatStore();
+      return chatStore.onlineUsers.includes(parseInt(this.friendId));
     },
   },
   mounted: async function () {
@@ -235,9 +239,14 @@ export default {
 
 .chat-header__status {
   margin: 0;
+  transition: color 0.2s ease;
   font-size: 11px;
   color: #79D45D;
   font-weight: 600;
+}
+
+.chat-header__status--offline {
+  color: #e74c3c;
 }
 
 .chat-header__close {

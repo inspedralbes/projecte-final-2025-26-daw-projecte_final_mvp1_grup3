@@ -54,15 +54,21 @@
 export default {
   name: 'HeaderSocial',
   data() {
-    return {
-      pages: [
-        { id: 'forum', label: this.$t('nav.forum') || 'Fòrum', path: '/social' },
-        { id: 'friends', label: this.$t('nav.friends') || 'Amics', path: '/friends' },
-        { id: 'clans', label: this.$t('nav.clans') || 'Clans', path: '/clans' }
-      ]
-    };
+    return {};
   },
   computed: {
+    pages() {
+      const locale = this.$i18n?.locale || 'ca';
+      let forumLabel = 'Fòrum';
+      if (locale === 'es') forumLabel = 'Foro';
+      else if (locale === 'en') forumLabel = 'Forum';
+
+      return [
+        { id: 'forum', label: forumLabel, path: '/social' },
+        { id: 'friends', label: this.$t('nav.friends') || 'Amics', path: '/friends' },
+        { id: 'clans', label: this.$t('nav.clans') || 'Clans', path: '/clans' }
+      ];
+    },
     currentIndex() {
       const path = this.$route.path;
       if (path.startsWith('/clans')) return 2;

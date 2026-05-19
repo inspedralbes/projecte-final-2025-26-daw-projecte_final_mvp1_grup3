@@ -1,9 +1,10 @@
 <template>
-  <div
-    class="post-expandable"
-    :class="showComments ? 'post-expandable--active' : ''"
-  >
-    <button type="button" class="post-card" @click="toggleExpand">
+  <div class="post-card-wrapper">
+    <div
+      class="post-expandable"
+      :class="showComments ? 'post-expandable--active' : ''"
+    >
+      <button type="button" class="post-card" @click="toggleExpand">
       <div class="post-card__avatar">
         <div class="post-card__avatar-ring" :style="avatarBackgroundStyle">
           <div class="post-card__avatar-inner">
@@ -30,13 +31,13 @@
 
     <div v-if="showComments" class="post-expand-inline">
       <div class="post-expand-top">
-        <button class="post-expand-close" type="button" @click="showComments = false">
+        <button class="post-expand-close" type="button" @click.stop="showComments = false">
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M11.2917 6.54167L6.54167 11.2917M6.54167 6.54167L11.2917 11.2917M16.8333 8.91667C16.8333 13.2889 13.2889 16.8333 8.91667 16.8333C4.54441 16.8333 1 13.2889 1 8.91667C1 4.54441 4.54441 1 8.91667 1C13.2889 1 16.8333 4.54441 16.8333 8.91667Z" stroke="#FAF9F9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </button>
         <span class="post-expand-date">{{ formatDate(post.created_at) }}</span>
-        <button v-if="isOwner" class="post-expand-delete" type="button" @click="deletePost">
+        <button v-if="isOwner" class="post-expand-delete" type="button" @click.stop="deletePost">
           <svg width="15" height="15" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M2 4h12M5.333 4V2.667a1.333 1.333 0 011.334-1.334h2.666a1.333 1.333 0 011.334 1.334V4m2 0v9.333a1.333 1.333 0 01-1.334 1.334H4.667a1.333 1.333 0 01-1.334-1.334V4h9.334z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
@@ -45,7 +46,7 @@
       </div>
 
       <div class="post-expand-panel">
-        <div class="post-expand-header flex justify-between items-start">
+        <div class="post-expand-header">
           <div class="post-expand-avatar-row">
             <button type="button" class="post-expand-avatar-btn" @click="openProfile">
               <div class="post-card__avatar-ring post-card__avatar-ring--lg" :style="avatarBackgroundStyle">
@@ -69,9 +70,8 @@
               <p class="post-expand-time">{{ formatDate(post.created_at) }}</p>
             </div>
           </div>
-          
-          <button v-if="!isOwner" type="button" @click="$emit('report', post.user_id)" class="text-[#FF8DA6] hover:text-[#ff4d6d] p-1 transition-colors" title="Reportar usuari">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <button v-if="!isOwner" class="post-expand-report-corner" type="button" @click="$emit('report', post.user_id)" title="Reportar usuari">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
               <line x1="12" y1="9" x2="12" y2="13"></line>
               <line x1="12" y1="17" x2="12.01" y2="17"></line>
@@ -116,6 +116,7 @@
         </div>
       </div>
     </div>
+    </div>
 
     <UserSocialConfirmModal
       :show="showDeleteConfirm"
@@ -133,9 +134,13 @@ import { useSocialStore } from "~/stores/useSocialStore.js";
 import { useAuthStore } from "~/stores/useAuthStore.js";
 import { getMonsterImageFromUser } from "~/utils/monsterImage.js";
 import bosqueImg from "~/assets/img/Bosque.png";
+import UserSocialConfirmModal from "~/components/user/social/ConfirmModal.vue";
 
 export default {
   name: "PostCard",
+  components: {
+    UserSocialConfirmModal
+  },
   props: {
     post: { type: Object, required: true }
   },
@@ -356,20 +361,59 @@ export default {
 .post-expand-delete {
   border: 0;
   background: transparent;
-  color: rgba(250, 249, 249, 0.6);
+  color: #ffffff;
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 12px;
-  font-weight: 400;
+  font-size: 11px;
+  font-weight: 600;
   cursor: pointer;
-  transition: color 0.15s, opacity 0.15s;
-  padding: 0;
+  transition: opacity 0.15s;
+  padding: 4px 8px;
   line-height: 1;
 }
 
 .post-expand-delete:hover {
-  color: #faf9f9;
+  opacity: 0.7;
+}
+
+.post-expand-report {
+  border: 0;
+  background: #E85B7A;
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.15s;
+  padding: 4px 8px;
+  border-radius: 6px;
+  line-height: 1;
+}
+
+.post-expand-report:hover {
+  filter: brightness(0.9);
+}
+
+.post-expand-report-corner {
+  border: 0;
+  background: #FF8DA6;
+  color: #ffffff;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: filter 0.15s;
+  flex-shrink: 0;
+}
+
+.post-expand-report-corner:hover {
+  filter: brightness(0.9);
 }
 
 .post-expand-panel {
@@ -380,6 +424,9 @@ export default {
 
 .post-expand-header {
   margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
 }
 
 .post-expand-avatar-row {

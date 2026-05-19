@@ -203,7 +203,6 @@ export var useSocialStore = defineStore("social", {
     },
 
     deleteComment: async function (commentId) {
-      this.loading = true;
       this.error = null;
 
       try {
@@ -214,12 +213,25 @@ export var useSocialStore = defineStore("social", {
           throw new Error("Error en eliminar comentari: " + resposta.status);
         }
 
+        // Eliminar el comentari de l'estat local dels posts
+        for (var i = 0; i < this.posts.length; i++) {
+          if (this.posts[i].comments) {
+            var before = this.posts[i].comments.length;
+            this.posts[i].comments = this.posts[i].comments.filter(function (c) {
+              return c.id !== commentId;
+            });
+            if (this.posts[i].comments.length < before) {
+              this.posts[i].comments_count = Math.max(0, (Number(this.posts[i].comments_count) || 0) - 1);
+              this.posts[i] = { ...this.posts[i] };
+              break;
+            }
+          }
+        }
+
         return true;
       } catch (e) {
         this.error = e.message;
         return false;
-      } finally {
-        this.loading = false;
       }
     },
 

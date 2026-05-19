@@ -109,6 +109,7 @@ function mapPlantillaFromApi(plantilla, mapHabitFn) {
   var esGuardadaPlantilla = plantilla.hasOwnProperty("es_guardada") ? !!plantilla.es_guardada : (plantilla.hasOwnProperty("guardada") ? !!plantilla.guardada : (plantilla.origen === 'forum' || !!plantilla.importada));
   var esAmicPlantilla = plantilla.hasOwnProperty("es_amic") ? !!plantilla.es_amic : (plantilla.hasOwnProperty("is_friend") ? !!plantilla.is_friend : false);
   var creadorNomPlantilla = plantilla.creador_nom || plantilla.nom_creador || "Usuari";
+  var esDefaultPlantilla = plantilla.hasOwnProperty("es_default") ? !!plantilla.es_default : (plantilla.id <= 8);
 
   return {
     id: plantilla.id,
@@ -119,6 +120,7 @@ function mapPlantillaFromApi(plantilla, mapHabitFn) {
     esGuardada: esGuardadaPlantilla,
     esAmic: esAmicPlantilla,
     creadorNom: creadorNomPlantilla,
+    esDefault: esDefaultPlantilla,
     habits: mappedHabits
   };
 }

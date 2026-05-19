@@ -100,7 +100,7 @@
         <p class="text-lg font-medium text-gray-800">{{ $t('social.import_success') }}</p>
         <button
           @click="close"
-          class="mt-4 px-6 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900"
+          class="mt-4 w-full py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900"
         >
           {{ $t('social.close') }}
         </button>

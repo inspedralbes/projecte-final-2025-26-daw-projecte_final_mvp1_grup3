@@ -3,14 +3,14 @@
     <div class="max-w-7xl mx-auto px-3 sm:px-6 flex flex-col gap-8 lg:gap-6 pb-16 lg:pb-20">
       <!-- 1. Monstre: mateix patró que home (imatge sobre el fons global en mòbil; bento en desktop) -->
       <div class="space-y-4 lg:space-y-0">
-        <div class="lg:hidden relative w-full flex justify-center px-2 pt-0 pb-1 overflow-visible">
+        <div class="lg:hidden relative w-full flex justify-center px-2 pt-10 pb-1 overflow-visible">
           <img
             v-if="imatgeMascota"
             :src="imatgeMascota"
             alt="El teu monstre"
             width="500"
             height="500"
-            class="w-[500px] max-w-full h-auto max-h-[500px] object-contain object-bottom drop-shadow-[0_14px_28px_rgba(0,0,0,0.35)] select-none -translate-y-3 sm:-translate-y-4"
+            class="w-[500px] max-w-full h-auto max-h-[500px] object-contain object-bottom drop-shadow-[0_14px_28px_rgba(0,0,0,0.35)] select-none translate-y-3 sm:translate-y-4"
             decoding="async"
             draggable="false"
           />
@@ -34,15 +34,15 @@
             />
           </div>
 
-          <div class="w-full flex flex-col items-center justify-start relative pt-2 shrink-0">
-            <div class="flex justify-center w-full px-2 pb-2 -mt-1">
+          <div class="w-full flex flex-col items-center justify-start relative pt-12 shrink-0">
+            <div class="flex justify-center w-full px-2 pb-2 mt-4">
               <img
                 v-if="imatgeMascota"
                 :src="imatgeMascota"
                 alt="El teu monstre"
                 width="500"
                 height="500"
-                class="w-[500px] max-w-full h-auto max-h-[500px] object-contain object-bottom drop-shadow-[0_20px_20px_rgba(0,0,0,0.28)] -translate-y-3 lg:-translate-y-5"
+                class="w-[500px] max-w-full h-auto max-h-[500px] object-contain object-bottom drop-shadow-[0_20px_20px_rgba(0,0,0,0.28)] translate-y-3 lg:translate-y-5"
                 decoding="async"
                 draggable="false"
               />
@@ -73,7 +73,7 @@
         </div>
 
         <template v-else-if="user">
-          <!-- 1) Nom, correu, contrasenya + Desar (mateixes etiquetes que formulari hàbit) -->
+          <!-- 1) Nom, correu, contrasenya, idioma + Desar + Logout (mateixes etiquetes que formulari hàbit) -->
           <div
             class="bento-card habit-form bg-white/95 backdrop-blur-md rounded-[10px] p-6 sm:p-8 shadow-xl border border-white/50"
           >
@@ -109,16 +109,49 @@
                   class="habit-form-field-surface w-full bg-gray-50/50 border-gray-100 focus:outline-none focus:ring-4 focus:ring-green-500/10 focus:border-green-500 focus:bg-white transition-all"
                 />
               </div>
+              <div>
+                <label class="habit-form-label" for="perfil-idioma">{{ $t('nav.language') || 'Idioma' }}</label>
+                <div class="relative">
+                  <select
+                    id="perfil-idioma"
+                    v-model="currentLocale"
+                    @change="onLocaleChange"
+                    class="habit-form-field-surface w-full bg-gray-50/50 border border-gray-100 focus:outline-none focus:ring-4 focus:ring-green-500/10 focus:border-green-500 focus:bg-white transition-all appearance-none cursor-pointer pr-10"
+                  >
+                    <option v-for="l in $i18n.locales" :key="l.code" :value="l.code">
+                      {{ l.name }}
+                    </option>
+                  </select>
+                  <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-500">
+                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
 
               <button
                 type="button"
-                class="perfil-btn-guardar w-full min-w-0 rounded-[10px] border-2 border-[#6FBC58] bg-[#79D45D] py-2.5 text-center text-base font-normal text-white transition hover:brightness-[0.97] disabled:opacity-50 disabled:pointer-events-none"
+                class="perfil-btn-guardar w-full min-w-0 rounded-[10px] border-2 border-[#6FBC58] bg-[#79D45D] py-2.5 text-center text-base font-bold text-white transition hover:brightness-[0.97] disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
                 :disabled="guardantCompte"
                 @click="guardarCompte"
               >
                 {{ guardantCompte ? $t('perfil.save_loading') : $t('habits.save') }}
               </button>
             </div>
+          </div>
+
+          <!-- Card separada per a Tancar sessió -->
+          <div
+            class="bento-card bg-white/95 backdrop-blur-md rounded-[10px] p-6 shadow-xl border border-white/50"
+          >
+            <button
+              type="button"
+              class="perfil-btn-logout w-full min-w-0 rounded-[10px] border-2 border-[#D14D6B] bg-[#FF6B8A] py-2.5 text-center text-base font-bold text-white transition hover:brightness-[0.97] cursor-pointer"
+              @click="handleLogout"
+            >
+              {{ $t('nav.logout') || 'Tancar sessió' }}
+            </button>
           </div>
 
           <div class="moment-divider moment-divider--perfil" role="presentation">
@@ -214,10 +247,12 @@
             </div>
           </div>
 
-          <div v-else class="perfil-logro-empty flex flex-col items-center justify-center py-12 text-gray-300">
-            <div class="text-[40px] mb-2 opacity-20">🏆</div>
-            <p class="text-xs font-black uppercase tracking-widest">{{ $t('perfil.no_achievements') }}</p>
-          </div>
+          <EmptyState
+            v-else
+            title="Sense medalles"
+            description="Encara no has obtingut cap assoliment. Segueix completant hàbits per desbloquejar reptes!"
+            icon="logros"
+          />
         </div>
       </div>
 
@@ -256,9 +291,12 @@
               </div>
             </div>
           </template>
-          <div v-else class="perfil-history-empty py-10 text-center text-gray-300">
-            <p class="text-xs font-black uppercase tracking-widest">{{ $t('perfil.no_history') }}</p>
-          </div>
+          <EmptyState
+            v-else
+            title="Sense historial"
+            description="Encara no hi ha registres per a avui. Comença a completar els teus hàbits per veure'ls aquí!"
+            icon="experiencia"
+          />
         </div>
       </div>
     </div>
@@ -275,7 +313,24 @@ import UserHomeHomeStreakSection from "~/components/user/home/HomeStreakSection.
 import { getMonsterImageFromUser } from "~/utils/monsterImage.js";
 import { getDefaultColorForCategoryId } from "~/utils/habitCategoryColor.js";
 import { normalizeHex } from "~/utils/colorSpace.js";
+import { useAuthStore } from "~/stores/useAuthStore";
 import { authFetch, getBaseUrl } from "~/composables/useApi.js";
+
+const authStore = useAuthStore();
+const { locale, setLocale } = useI18n();
+const currentLocale = ref(locale.value);
+watch(locale, (newLoc) => {
+  currentLocale.value = newLoc;
+});
+const onLocaleChange = () => {
+  setLocale(currentLocale.value);
+};
+const handleLogout = async () => {
+  if (confirm("Vols tancar la sessió?")) {
+    await authStore.logout();
+    await navigateTo("/auth/login");
+  }
+};
 
 var user = ref(null);
 var loading = ref(true);

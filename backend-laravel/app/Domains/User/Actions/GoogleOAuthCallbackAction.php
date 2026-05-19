@@ -89,7 +89,7 @@ class GoogleOAuthCallbackAction
             $token = JWTAuth::fromUser($usuari);
             $this->welcomeEmailService->enviarSiPrimeraConnexio($usuari);
 
-            $frontendUrl = env('GOOGLE_FRONTEND_REDIRECT', 'http://localhost:3000/auth/google/redirect');
+            $frontendUrl = env('GOOGLE_FRONTEND_REDIRECT', 'https://looppy.cat/auth/google/redirect');
             $onboardingFlag = '0';
             if ($requiresOnboarding) {
                 $onboardingFlag = '1';

@@ -72,6 +72,8 @@ class UserProfileController extends Controller
             'logros' => $logrosAll,
             'logros_showcase' => $logrosShowcase,
             'monstre_tipus' => $user->monstre_tipus,
+            'skin_key' => $user->skin_key,
+            'fons_key' => $user->fons_key,
         ];
 
         return response()->json($response);

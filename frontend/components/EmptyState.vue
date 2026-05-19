@@ -1,8 +1,8 @@
 <template>
-  <div class="empty-state-card max-w-md mx-auto my-6 text-center bg-white p-8 rounded-[32px] border-4 border-gray-100 shadow-xl font-['Outfit',sans-serif] transition-transform duration-300 hover:scale-[1.02]">
+  <div class="empty-state-card max-w-md mx-auto my-6 text-center bg-white p-8 rounded-[32px] border-4 border-gray-100 shadow-xl transition-transform duration-300 hover:scale-[1.02]">
     <img :src="iconUrl" class="w-24 h-auto mx-auto mb-4 drop-shadow-md pixelated" :alt="title" />
-    <h3 class="text-xl font-black text-gray-800 mb-2 tracking-tight">{{ title }}</h3>
-    <p class="text-gray-500 font-semibold text-[14px] leading-snug mb-4">
+    <h3 class="text-xl font-black text-gray-800 mb-2 tracking-tight font-['Bricolage_Grotesque',sans-serif]">{{ title }}</h3>
+    <p class="text-gray-500 font-semibold text-[14px] leading-snug mb-4 font-['Comfortaa',sans-serif]">
       {{ description }}
     </p>
     <slot name="action"></slot>

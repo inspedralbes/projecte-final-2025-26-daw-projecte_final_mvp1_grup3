@@ -37,7 +37,7 @@
 
 <script>
 import { getMonsterImageFromUser } from "~/utils/monsterImage.js";
-import bosqueImg from "~/assets/img/Bosque.png";
+import bosqueImg from "~/assets/img/Fons/Fons_Bosc.png";
 
 export default {
   name: "FriendCard",

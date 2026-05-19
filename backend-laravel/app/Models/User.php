@@ -34,6 +34,11 @@ class User extends Model implements JWTSubject
         'contrasenya_hash',
     ];
 
+    protected $appends = [
+        'skin_key',
+        'fons_key',
+    ];
+
     protected $fillable = [
         'nom',
         'email',
@@ -123,5 +128,62 @@ class User extends Model implements JWTSubject
     public function ratxa(): HasMany
     {
         return $this->hasMany(Ratxa::class, 'usuari_id');
+    }
+
+    /**
+     * Items comprats per l'usuari.
+     */
+    public function usuariItems(): HasMany
+    {
+        return $this->hasMany(UsuariItem::class, 'usuari_id');
+    }
+
+    /**
+     * Retorna les skin_key i fons_key equipades de l'usuari.
+     */
+    protected function getEquippedKeys(): array
+    {
+        if (!isset($this->_equippedKeysCache)) {
+            $skinKey = null;
+            $fonsKey = null;
+
+            $equipped = UsuariItem::where('usuari_id', $this->id)
+                ->where('equipat', true)
+                ->whereHas('item', function ($q) {
+                    $q->where('tipus', 'skin');
+                })
+                ->with('item')
+                ->get();
+
+            foreach ($equipped as $ui) {
+                if ($ui->item === null) {
+                    continue;
+                }
+                $metadata = $ui->item->metadata;
+                if (!is_array($metadata) || !isset($metadata['skin_key'])) {
+                    continue;
+                }
+                $slot = $metadata['slot'] ?? null;
+                if ($slot === 'fons') {
+                    $fonsKey = $metadata['skin_key'];
+                } else {
+                    $skinKey = $metadata['skin_key'];
+                }
+            }
+
+            $this->_equippedKeysCache = ['skin_key' => $skinKey, 'fons_key' => $fonsKey];
+        }
+
+        return $this->_equippedKeysCache;
+    }
+
+    public function getSkinKeyAttribute(): ?string
+    {
+        return $this->getEquippedKeys()['skin_key'];
+    }
+
+    public function getFonsKeyAttribute(): ?string
+    {
+        return $this->getEquippedKeys()['fons_key'];
     }
 }

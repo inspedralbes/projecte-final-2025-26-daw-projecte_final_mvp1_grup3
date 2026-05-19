@@ -112,11 +112,15 @@
                     </div>
                   </div>
                 </div>
-                <button class="focus-btn" type="button" @click="$emit('start-focus-habit', habitExpanditActual)">Mode Focus</button>
+                <div v-if="contextExternImatge" class="habit-expand-extern">
+                  <img :src="contextExternImatge" alt="" class="habit-expand-extern__img" @error="$event.target.style.display='none'" />
+                  <span v-if="contextExternTitol" class="habit-expand-extern__titol">{{ contextExternTitol }}</span>
+                </div>
+                <button v-if="!habitCompletatAvui(habitExpanditActual.id)" class="focus-btn" type="button" @click="$emit('start-focus-habit', habitExpanditActual)">Mode Focus</button>
                 <div class="habit-expand-controls">
-                  <button type="button" class="habit-expand-action" @click="$emit('decrementar-habit', habitExpanditActual)">−</button>
+                  <button type="button" class="habit-expand-action" :disabled="habitCompletatAvui(habitExpanditActual.id)" @click="$emit('decrementar-habit', habitExpanditActual)">−</button>
                   <span class="habit-expand-count">{{ obtenirProgres(habitExpanditActual.id) }}</span>
-                  <button type="button" class="habit-expand-action" @click="onIncrementarHabit(habitExpanditActual)">+</button>
+                  <button type="button" class="habit-expand-action" :disabled="habitCompletatAvui(habitExpanditActual.id)" @click="onIncrementarHabit(habitExpanditActual)">+</button>
                 </div>
               </div>
             </div>
@@ -190,11 +194,15 @@
                     </div>
                   </div>
                 </div>
-                <button class="focus-btn" type="button" @click="$emit('start-focus-habit', habitExpanditActual)">Mode Focus</button>
+                <div v-if="contextExternImatge" class="habit-expand-extern">
+                  <img :src="contextExternImatge" alt="" class="habit-expand-extern__img" @error="$event.target.style.display='none'" />
+                  <span v-if="contextExternTitol" class="habit-expand-extern__titol">{{ contextExternTitol }}</span>
+                </div>
+                <button v-if="!habitCompletatAvui(habitExpanditActual.id)" class="focus-btn" type="button" @click="$emit('start-focus-habit', habitExpanditActual)">Mode Focus</button>
                 <div class="habit-expand-controls">
-                  <button type="button" class="habit-expand-action" @click="$emit('decrementar-habit', habitExpanditActual)">−</button>
+                  <button type="button" class="habit-expand-action" :disabled="habitCompletatAvui(habitExpanditActual.id)" @click="$emit('decrementar-habit', habitExpanditActual)">−</button>
                   <span class="habit-expand-count">{{ obtenirProgres(habitExpanditActual.id) }}</span>
-                  <button type="button" class="habit-expand-action" @click="onIncrementarHabit(habitExpanditActual)">+</button>
+                  <button type="button" class="habit-expand-action" :disabled="habitCompletatAvui(habitExpanditActual.id)" @click="onIncrementarHabit(habitExpanditActual)">+</button>
                 </div>
               </div>
             </div>
@@ -264,11 +272,15 @@
                     </div>
                   </div>
                 </div>
-                <button class="focus-btn" type="button" @click="$emit('start-focus-habit', habitExpanditActual)">Mode Focus</button>
+                <div v-if="contextExternImatge" class="habit-expand-extern">
+                  <img :src="contextExternImatge" alt="" class="habit-expand-extern__img" @error="$event.target.style.display='none'" />
+                  <span v-if="contextExternTitol" class="habit-expand-extern__titol">{{ contextExternTitol }}</span>
+                </div>
+                <button v-if="!habitCompletatAvui(habitExpanditActual.id)" class="focus-btn" type="button" @click="$emit('start-focus-habit', habitExpanditActual)">Mode Focus</button>
                 <div class="habit-expand-controls">
-                  <button type="button" class="habit-expand-action" @click="$emit('decrementar-habit', habitExpanditActual)">−</button>
+                  <button type="button" class="habit-expand-action" :disabled="habitCompletatAvui(habitExpanditActual.id)" @click="$emit('decrementar-habit', habitExpanditActual)">−</button>
                   <span class="habit-expand-count">{{ obtenirProgres(habitExpanditActual.id) }}</span>
-                  <button type="button" class="habit-expand-action" @click="onIncrementarHabit(habitExpanditActual)">+</button>
+                  <button type="button" class="habit-expand-action" :disabled="habitCompletatAvui(habitExpanditActual.id)" @click="onIncrementarHabit(habitExpanditActual)">+</button>
                 </div>
               </div>
             </div>
@@ -338,11 +350,15 @@
                     </div>
                   </div>
                 </div>
-                <button class="focus-btn" type="button" @click="$emit('start-focus-habit', habitExpanditActual)">Mode Focus</button>
+                <div v-if="contextExternImatge" class="habit-expand-extern">
+                  <img :src="contextExternImatge" alt="" class="habit-expand-extern__img" @error="$event.target.style.display='none'" />
+                  <span v-if="contextExternTitol" class="habit-expand-extern__titol">{{ contextExternTitol }}</span>
+                </div>
+                <button v-if="!habitCompletatAvui(habitExpanditActual.id)" class="focus-btn" type="button" @click="$emit('start-focus-habit', habitExpanditActual)">Mode Focus</button>
                 <div class="habit-expand-controls">
-                  <button type="button" class="habit-expand-action" @click="$emit('decrementar-habit', habitExpanditActual)">−</button>
+                  <button type="button" class="habit-expand-action" :disabled="habitCompletatAvui(habitExpanditActual.id)" @click="$emit('decrementar-habit', habitExpanditActual)">−</button>
                   <span class="habit-expand-count">{{ obtenirProgres(habitExpanditActual.id) }}</span>
-                  <button type="button" class="habit-expand-action" @click="onIncrementarHabit(habitExpanditActual)">+</button>
+                  <button type="button" class="habit-expand-action" :disabled="habitCompletatAvui(habitExpanditActual.id)" @click="onIncrementarHabit(habitExpanditActual)">+</button>
                 </div>
               </div>
             </div>
@@ -502,6 +518,18 @@ export default {
       if (dif === "dificil") return 10;
       if (dif === "mitja" || dif === "media") return 5;
       return 2;
+    },
+    contextExternImatge: function () {
+      if (!this.habitExpanditActual || !this.habitExpanditActual.metadata) return null;
+      var m = this.habitExpanditActual.metadata;
+      if (typeof m === 'string') { try { m = JSON.parse(m); } catch (e) { return null; } }
+      return m.url_imatge && String(m.url_imatge).trim() ? String(m.url_imatge).trim() : null;
+    },
+    contextExternTitol: function () {
+      if (!this.habitExpanditActual || !this.habitExpanditActual.metadata) return null;
+      var m = this.habitExpanditActual.metadata;
+      if (typeof m === 'string') { try { m = JSON.parse(m); } catch (e) { return null; } }
+      return m.titol && String(m.titol).trim() ? String(m.titol).trim() : null;
     }
   },
   methods: {
@@ -737,6 +765,13 @@ export default {
   color: #2B2D42;
   font-size: 32px;
   line-height: 1;
+  transition: opacity 0.2s;
+}
+
+.habit-expand-action:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 .habit-expand-count {
@@ -999,5 +1034,37 @@ export default {
 .habit-done-leave-to {
   opacity: 0;
   transform: scale(0.92);
+}
+
+.habit-expand-extern {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 8px 10px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.25);
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
+}
+
+.habit-expand-extern__img {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.habit-expand-extern__titol {
+  font-family: "Bricolage Grotesque", system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 </style>

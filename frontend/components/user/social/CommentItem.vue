@@ -90,7 +90,10 @@
 import { useAuthStore } from "~/stores/useAuthStore.js";
 import { useSocialStore } from "~/stores/useSocialStore.js";
 import { getMonsterImageFromUser } from "~/utils/monsterImage.js";
-import bosqueImg from "~/assets/img/Bosque.png";
+import bosqueImg from "~/assets/img/Fons/Fons_Bosc.png";
+import fonsAplicacioImg from "~/assets/img/Fons/Fons_Aplicacio.png";
+import fonsPlatjaImg from "~/assets/img/Fons/Fons_Platja.png";
+import fonsCasaImg from "~/assets/img/Fons/Fons_Casa.png";
 
 export default {
   name: "CommentItem",
@@ -107,14 +110,20 @@ export default {
   },
   computed: {
     avatarBackgroundStyle: function () {
+      var fonsKey = this.comment.user ? this.comment.user.fons_key : null;
+      var bg = bosqueImg;
+      if (fonsKey === "fons_platja") bg = fonsPlatjaImg;
+      else if (fonsKey === "fons_casa") bg = fonsCasaImg;
+      else if (fonsKey === "fons_aplicacio") bg = fonsAplicacioImg;
       return {
-        backgroundImage: "url(" + bosqueImg + ")",
+        backgroundImage: "url(" + bg + ")",
         backgroundSize: "cover",
         backgroundPosition: "center",
       };
     },
     monsterImage: function () {
-      return getMonsterImageFromUser(this.comment.user);
+      var skinKey = this.comment.user ? this.comment.user.skin_key : null;
+      return getMonsterImageFromUser(this.comment.user, skinKey);
     },
     monsterStyle: function () {
       return {

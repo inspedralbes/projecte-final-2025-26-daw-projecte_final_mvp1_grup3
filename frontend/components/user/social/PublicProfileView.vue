@@ -72,7 +72,7 @@
 <script>
 import { authFetch } from "~/utils/authFetch.js";
 import { getMonsterImageFromUser } from "~/utils/monsterImage.js";
-import bosqueImg from "~/assets/img/Bosque.png";
+import bosqueImg from "~/assets/img/Fons/Fons_Bosc.png";
 
 export default {
   name: "PublicProfileView",
@@ -335,6 +335,7 @@ export default {
   align-items: center;
   justify-content: center;
   padding: 20px;
+  margin-top: 200px;
 }
 
 .profile-monster__frame {

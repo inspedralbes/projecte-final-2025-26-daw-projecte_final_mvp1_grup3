@@ -1,8 +1,16 @@
 <template>
   <div class="shop-page min-h-screen overflow-x-hidden pb-24 lg:pb-8 flex flex-col">
+    <div class="shop-icons-row">
+      <span class="shop-icons-row__spacer"></span>
+      <button type="button" ref="inventariIconRef" class="shop-icon-btn" @click="navigateTo('/inventari')" title="Inventari">
+        <img :src="inventariIcon" alt="Inventari" class="shop-icon-btn__img" />
+      </button>
+    </div>
+
     <div class="shop-spacer flex-1" aria-hidden="true"></div>
 
     <div class="shop-items-wrap w-full px-4 sm:px-6">
+
       <section v-if="!loading && items.length > 0" class="shop-grid">
         <article
           v-for="item in items"
@@ -10,16 +18,17 @@
           class="shop-card"
           :class="{
             'shop-card--owned': itemJaPossessionat(item),
-            'shop-card--clickable': potComprar(item),
+            'shop-card--clickable': !itemJaPossessionat(item),
             'shop-card--insufficient': !itemJaPossessionat(item) && monedes < item.preu,
           }"
-          :role="potComprar(item) ? 'button' : undefined"
-          :tabindex="potComprar(item) ? 0 : undefined"
+          :role="!itemJaPossessionat(item) ? 'button' : undefined"
+          :tabindex="!itemJaPossessionat(item) ? 0 : undefined"
           @click="onCardClick(item)"
           @keydown.enter.prevent="onCardClick(item)"
           @keydown.space.prevent="onCardClick(item)"
         >
-          <div class="shop-card-price" aria-label="Preu">
+          <span v-if="itemJaPossessionat(item)" class="shop-card-tick" aria-label="Comprat">✓</span>
+          <div v-if="!itemJaPossessionat(item)" class="shop-card-price" aria-label="Preu">
             <span class="shop-card-price-value">{{ item.preu }}</span>
             <img :src="coinIcon" alt="" class="shop-card-coin" width="22" height="22" />
           </div>
@@ -30,6 +39,7 @@
                 :src="item.imatge"
                 :alt="nomProducte(item)"
                 class="shop-card-img"
+                :ref="el => { if (el) itemImgRefs[item.id] = el; }"
                 decoding="async"
                 draggable="false"
                 @error="onImageError"
@@ -45,19 +55,66 @@
         </article>
       </section>
     </div>
+
+    <Teleport to="body">
+      <Transition name="shop-sheet-backdrop">
+        <div v-if="sheetItem" class="shop-sheet-overlay" @click.self="tancarSheet"></div>
+      </Transition>
+      <Transition name="shop-sheet-panel">
+        <div v-if="sheetItem" class="shop-sheet">
+          <div class="shop-sheet__handle"><div class="shop-sheet__bar"></div></div>
+          <div class="shop-sheet__body">
+            <div class="shop-sheet__img-wrap">
+              <img v-if="sheetItem.imatge" :src="sheetItem.imatge" class="shop-sheet__img" />
+              <span v-else class="shop-sheet__emoji">🎁</span>
+            </div>
+            <h3 class="shop-sheet__name">{{ nomProducte(sheetItem) }}</h3>
+
+            <div v-if="sheetItem.tipus !== 'skin'" class="shop-sheet__qty-row">
+              <button type="button" class="shop-sheet__qty-btn" :disabled="sheetQty <= 1" @click="sheetQty--">−</button>
+              <span class="shop-sheet__qty-val">{{ sheetQty }}</span>
+              <button type="button" class="shop-sheet__qty-btn" @click="sheetQty++">+</button>
+            </div>
+
+            <div class="shop-sheet__total-row">
+              <span class="shop-sheet__total-label">Total:</span>
+              <span class="shop-sheet__total-value">{{ sheetTotal }}</span>
+              <img :src="coinIcon" alt="" class="shop-sheet__total-coin" />
+            </div>
+
+            <div class="shop-sheet__actions">
+              <button type="button" class="shop-sheet__btn shop-sheet__btn--cancel" @click="tancarSheet">Enrere</button>
+              <button
+                type="button"
+                class="shop-sheet__btn shop-sheet__btn--buy"
+                :disabled="monedes < sheetTotal || comprant !== null"
+                @click="executarCompra"
+              >
+                {{ comprant ? '...' : 'Comprar' }}
+              </button>
+            </div>
+            <p v-if="monedes < sheetTotal" class="shop-sheet__insufficient">No tens prou monedes</p>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <div v-if="animatingImg" class="shop-fly-img" :style="flyStyle">
+      <img :src="animatingImg" class="shop-fly-img__inner" />
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted, nextTick } from 'vue';
 import coinIcon from '~/assets/img/Icones/Icona_Moneda.png';
+import inventariIcon from '~/assets/img/Icones/Icona_Inventari.png';
 import { useGameStore } from '~/stores/gameStore.js';
 import { useShopStore } from '~/stores/useShopStore.js';
 import { nomProducteBotiga } from '~/utils/shopItemI18n.js';
 
 const gameStore = useGameStore();
 const shopStore = useShopStore();
-const { $swal } = useNuxtApp();
 const { t, te } = useI18n();
 
 function nomProducte(item) {
@@ -65,30 +122,35 @@ function nomProducte(item) {
 }
 
 const comprant = ref(null);
+const sheetItem = ref(null);
+const sheetQty = ref(1);
+const inventariIconRef = ref(null);
+const itemImgRefs = reactive({});
+const animatingImg = ref(null);
+const flyStyle = ref({});
 
 const items = computed(function () { return shopStore.items; });
 const loading = computed(function () { return shopStore.loading; });
 const monedes = computed(function () { return gameStore.monedes; });
 
+const sheetTotal = computed(function () {
+  if (!sheetItem.value) return 0;
+  return sheetItem.value.preu * sheetQty.value;
+});
+
 function itemJaPossessionat(item) {
   return item.tipus === 'skin' && shopStore.posseeixItem(item.id);
 }
 
-function potComprar(item) {
-  if (comprant.value !== null) {
-    return false;
-  }
-  if (itemJaPossessionat(item)) {
-    return false;
-  }
-  return monedes.value >= item.preu;
+function onCardClick(item) {
+  if (itemJaPossessionat(item)) return;
+  sheetItem.value = item;
+  sheetQty.value = 1;
 }
 
-function onCardClick(item) {
-  if (!potComprar(item)) {
-    return;
-  }
-  confirmarCompra(item);
+function tancarSheet() {
+  sheetItem.value = null;
+  sheetQty.value = 1;
 }
 
 function onImageError(event) {
@@ -97,49 +159,73 @@ function onImageError(event) {
   }
 }
 
-async function confirmarCompra(item) {
-  if (!item || comprant.value !== null) {
-    return;
-  }
-  if (gameStore.monedes < item.preu) {
-    return;
-  }
-  const result = await $swal.fire({
-    title: t('shop.confirm_title'),
-    text: t('shop.confirm_text', { price: item.preu }),
-    icon: 'question',
-    showCancelButton: true,
-    confirmButtonText: t('shop.confirm_yes'),
-    cancelButtonText: t('shop.confirm_no'),
-    confirmButtonColor: '#7c3aed',
-    cancelButtonColor: '#9ca3af'
-  });
-  if (!result || !result.isConfirmed) {
-    return;
-  }
+async function executarCompra() {
+  if (!sheetItem.value || comprant.value !== null) return;
+  if (gameStore.monedes < sheetTotal.value) return;
+
+  var item = sheetItem.value;
+  var qty = sheetQty.value;
   comprant.value = item.id;
+
   try {
-    const dades = await shopStore.comprarItem(item.id);
-    if (dades && typeof dades.monedes === 'number') {
-      gameStore.monedes = dades.monedes;
+    for (var i = 0; i < qty; i++) {
+      var dades = await shopStore.comprarItem(item.id);
+      if (dades && typeof dades.monedes === 'number') {
+        gameStore.monedes = dades.monedes;
+      }
     }
-    await $swal.fire({
-      icon: 'success',
-      title: t('shop.purchase_success_title'),
-      text: nomProducte(item),
-      timer: 1500,
-      showConfirmButton: false
-    });
+    tancarSheet();
+    await nextTick();
+    startFlyAnimation(item);
   } catch (e) {
-    await $swal.fire({
-      icon: 'error',
-      title: 'Error',
-      text: e && e.message ? e.message : 'Error',
-      confirmButtonColor: '#7c3aed'
-    });
+    alert(e && e.message ? e.message : 'Error');
   } finally {
     comprant.value = null;
   }
+}
+
+function startFlyAnimation(item) {
+  if (!item.imatge) return;
+  var imgEl = itemImgRefs[item.id];
+  var iconEl = inventariIconRef.value;
+  if (!imgEl || !iconEl) return;
+
+  var imgRect = imgEl.getBoundingClientRect();
+  var iconRect = iconEl.getBoundingClientRect();
+
+  animatingImg.value = item.imatge;
+  flyStyle.value = {
+    position: 'fixed',
+    top: imgRect.top + 'px',
+    left: imgRect.left + 'px',
+    width: imgRect.width + 'px',
+    height: imgRect.height + 'px',
+    zIndex: '99999',
+    transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
+    opacity: '1',
+    pointerEvents: 'none',
+  };
+
+  requestAnimationFrame(function () {
+    requestAnimationFrame(function () {
+      flyStyle.value = {
+        position: 'fixed',
+        top: iconRect.top + iconRect.height / 2 - 10 + 'px',
+        left: iconRect.left + iconRect.width / 2 - 10 + 'px',
+        width: '20px',
+        height: '20px',
+        zIndex: '99999',
+        transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
+        opacity: '0',
+        pointerEvents: 'none',
+      };
+    });
+  });
+
+  setTimeout(function () {
+    animatingImg.value = null;
+    flyStyle.value = {};
+  }, 650);
 }
 
 onMounted(async function () {
@@ -225,6 +311,15 @@ onMounted(async function () {
 .shop-card--clickable:focus-visible {
   outline: 2px solid #6fbc58;
   outline-offset: 2px;
+}
+
+.shop-card--owned {
+  background: #79d45d;
+  border: 2px solid #6bc24d;
+}
+
+.shop-card--owned .shop-card-title {
+  color: #faf9f9;
 }
 
 .shop-card--insufficient {
@@ -322,6 +417,259 @@ onMounted(async function () {
   font-size: 0.6875rem;
   font-weight: 700;
   line-height: 1.2;
-  color: #15803d;
+  color: rgba(250, 249, 249, 0.9);
+}
+
+.shop-card-tick {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  z-index: 3;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #faf9f9;
+  color: #79d45d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.shop-icons-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 100%;
+  padding: 4px 12px 0;
+}
+
+.shop-icons-row__spacer {
+  flex: 1;
+}
+
+.shop-icon-btn {
+  width: 4rem;
+  height: 4rem;
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s;
+}
+.shop-icon-btn:hover {
+  transform: scale(1.05);
+}
+.shop-icon-btn:active {
+  transform: scale(0.95);
+}
+.shop-icon-btn__img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+.shop-sheet-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  background: rgba(0,0,0,0.4);
+}
+
+.shop-sheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  background: #FFF8E1;
+  border-radius: 24px 24px 0 0;
+  box-shadow: 0 -4px 30px rgba(0,0,0,0.15);
+  overflow: hidden;
+  animation: shop-sheet-up 0.3s ease;
+}
+
+.shop-sheet__handle {
+  display: flex;
+  justify-content: center;
+  padding: 14px 0 8px;
+}
+.shop-sheet__bar {
+  width: 48px;
+  height: 5px;
+  background: #E6B800;
+  border-radius: 4px;
+}
+
+.shop-sheet__body {
+  padding: 0 24px 36px;
+  text-align: center;
+}
+
+.shop-sheet__img-wrap {
+  width: 140px;
+  height: 140px;
+  margin: 0 auto 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.shop-sheet__img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+.shop-sheet__emoji {
+  font-size: 2.5rem;
+}
+
+.shop-sheet__name {
+  margin: 0 0 14px;
+  font-family: "Bricolage Grotesque", system-ui, sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.shop-sheet__qty-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+.shop-sheet__qty-btn {
+  width: 36px;
+  height: 36px;
+  border: 2px solid #E6B800;
+  border-radius: 50%;
+  background: #fff;
+  font-size: 20px;
+  font-weight: 700;
+  color: #E6B800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+.shop-sheet__qty-btn:hover:not(:disabled) {
+  background: #FFF8E1;
+}
+.shop-sheet__qty-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.shop-sheet__qty-val {
+  font-family: "Bricolage Grotesque", system-ui, sans-serif;
+  font-size: 24px;
+  font-weight: 800;
+  color: #1a1a1a;
+  min-width: 30px;
+}
+
+.shop-sheet__total-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+.shop-sheet__total-label {
+  font-family: "Comfortaa", system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #6b7280;
+}
+.shop-sheet__total-value {
+  font-family: "Bricolage Grotesque", system-ui, sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  color: #1a1a1a;
+}
+.shop-sheet__total-coin {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+.shop-sheet__actions {
+  display: flex;
+  gap: 10px;
+}
+.shop-sheet__btn {
+  flex: 1;
+  border: none;
+  border-radius: 12px;
+  padding: 13px 10px;
+  font-family: "Bricolage Grotesque", system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: filter 0.15s;
+}
+.shop-sheet__btn--buy {
+  background: #E6B800;
+  color: #fff;
+}
+.shop-sheet__btn--buy:hover:not(:disabled) {
+  filter: brightness(0.93);
+}
+.shop-sheet__btn--buy:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.shop-sheet__btn--cancel {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+.shop-sheet__btn--cancel:hover {
+  background: #e5e7eb;
+}
+
+.shop-sheet__insufficient {
+  margin: 10px 0 0;
+  font-family: "Comfortaa", system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: #dc2626;
+}
+
+.shop-fly-img {
+  pointer-events: none;
+}
+.shop-fly-img__inner {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.shop-sheet-backdrop-enter-active,
+.shop-sheet-backdrop-leave-active {
+  transition: opacity 0.25s;
+}
+.shop-sheet-backdrop-enter-from,
+.shop-sheet-backdrop-leave-to {
+  opacity: 0;
+}
+
+.shop-sheet-panel-enter-active {
+  animation: shop-sheet-up 0.3s ease;
+}
+.shop-sheet-panel-leave-active {
+  animation: shop-sheet-up 0.2s ease reverse;
+}
+
+@keyframes shop-sheet-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
 }
 </style>

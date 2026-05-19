@@ -237,7 +237,7 @@ class MissionService
 
         return RegistreActivitat::whereHas('habit', function ($q) use ($userId) {
             $q->where('usuari_id', $userId);
-        })->whereBetween('data', [$inici, $fi])->count();
+        })->whereBetween('data', [$inici, $fi])->where('acabado', true)->count();
     }
 
     /**
@@ -249,7 +249,7 @@ class MissionService
 
         return RegistreActivitat::whereHas('habit', function ($q) use ($userId) {
             $q->where('usuari_id', $userId);
-        })->whereDate('data', $avui)->where('data', '<', $horaLimit)->count();
+        })->whereDate('data', $avui)->where('data', '<', $horaLimit)->where('acabado', true)->count();
     }
 
     /**
@@ -264,7 +264,7 @@ class MissionService
         return RegistreActivitat::whereHas('habit', function ($q) use ($userId, $dificultatNorm) {
             $q->where('usuari_id', $userId)
                 ->whereRaw('LOWER(COALESCE(dificultat, \'\')) = ?', [$dificultatNorm]);
-        })->whereBetween('data', [$inici, $fi])->exists();
+        })->whereBetween('data', [$inici, $fi])->where('acabado', true)->exists();
     }
 
     /**
@@ -281,7 +281,7 @@ class MissionService
 
         return RegistreActivitat::whereHas('habit', function ($q) use ($userId, $categoriaId) {
             $q->where('usuari_id', $userId)->where('categoria_id', $categoriaId);
-        })->whereBetween('data', [$inici, $fi])->exists();
+        })->whereBetween('data', [$inici, $fi])->where('acabado', true)->exists();
     }
 
     /**
@@ -296,6 +296,6 @@ class MissionService
         return RegistreActivitat::whereHas('habit', function ($q) use ($userId, $dificultatsNorm) {
             $q->where('usuari_id', $userId)
                 ->whereRaw('LOWER(COALESCE(dificultat, \'\')) IN (' . implode(',', array_fill(0, count($dificultatsNorm), '?')) . ')', $dificultatsNorm);
-        })->whereBetween('data', [$inici, $fi])->exists();
+        })->whereBetween('data', [$inici, $fi])->where('acabado', true)->exists();
     }
 }

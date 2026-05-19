@@ -33,7 +33,10 @@
 
 <script>
 import { getMonsterImageFromUser } from "~/utils/monsterImage.js";
-import bosqueImg from "~/assets/img/Bosque.png";
+import bosqueImg from "~/assets/img/Fons/Fons_Bosc.png";
+import fonsAplicacioImg from "~/assets/img/Fons/Fons_Aplicacio.png";
+import fonsPlatjaImg from "~/assets/img/Fons/Fons_Platja.png";
+import fonsCasaImg from "~/assets/img/Fons/Fons_Casa.png";
 import { useClanStore } from "~/stores/useClanStore.js";
 import { useAuthStore } from "~/stores/useAuthStore.js";
 import { useNuxtApp } from "#app";
@@ -67,6 +70,16 @@ export default {
         backgroundImage: "url(" + bosqueImg + ")",
         backgroundSize: "cover",
         backgroundPosition: "center"
+      };
+    },
+    getAvatarBgForMember: function() {
+      return function(member) {
+        var fonsKey = member ? member.fons_key : null;
+        var bg = bosqueImg;
+        if (fonsKey === "fons_platja") bg = fonsPlatjaImg;
+        else if (fonsKey === "fons_casa") bg = fonsCasaImg;
+        else if (fonsKey === "fons_aplicacio") bg = fonsAplicacioImg;
+        return { backgroundImage: "url(" + bg + ")", backgroundSize: "cover", backgroundPosition: "center" };
       };
     }
   },
@@ -142,11 +155,11 @@ export default {
     },
     getMonsterImage: function(member) {
       if (!member) return null;
-      // Normalment el backend retorna monstre_tipus i nivell
+      var skinKey = member.skin_key || null;
       return getMonsterImageFromUser({
         monstre_tipus: member.monstre_tipus,
         nivell: member.nivell
-      });
+      }, skinKey);
     },
     getMonsterStyle: function(member) {
       var n = Number(member.nivell) || 1;

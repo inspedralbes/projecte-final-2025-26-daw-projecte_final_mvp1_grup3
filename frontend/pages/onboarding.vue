@@ -217,10 +217,10 @@
 import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import loopyMascotUrl from '~/assets/img/Onboarding/Img/2-Loopy-Content.png';
 import loopySaludantUrl from '~/assets/img/Onboarding/Img/1-Loopy-Saludant.png';
-import huevoVerdeUrl from '~/assets/img/monsters/huevos/Huevo_V.png';
-import huevoRosaUrl from '~/assets/img/monsters/huevos/Huevo_R.png';
-import huevoLilaUrl from '~/assets/img/monsters/huevos/Huevo_L.png';
-import huevoAmarilloUrl from '~/assets/img/monsters/huevos/Huevo_A.png';
+import huevoVerdeUrl from '~/assets/img/Monstres/huevos/Huevo_1.png';
+import huevoRosaUrl from '~/assets/img/Monstres/huevos/Huevo_2.png';
+import huevoLilaUrl from '~/assets/img/Monstres/huevos/Huevo_3.png';
+import huevoAmarilloUrl from '~/assets/img/Monstres/huevos/Huevo_4.png';
 import { authFetch } from '~/composables/useApi.js';
 import { useHabitStore } from '~/stores/useHabitStore.js';
 import { useAuthStore } from '~/stores/useAuthStore.js';

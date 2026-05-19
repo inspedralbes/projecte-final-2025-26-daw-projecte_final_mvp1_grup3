@@ -79,12 +79,8 @@
         <p class="social-loading__text">{{ $t('home.loading') }}</p>
       </div>
 
-      <div v-else-if="posts.length === 0" class="social-empty w-full flex justify-center">
-        <EmptyState
-          title="Fòrum buit"
-          description="Encara no hi ha cap publicació al fòrum. Sigues el primer a compartir els teus èxits!"
-          icon="logo"
-        />
+      <div v-else-if="posts.length === 0" class="social-empty w-full text-center py-10">
+        <p class="social-empty__text">Encara no hi ha cap publicació al fòrum. Sigues el primer a compartir els teus èxits!</p>
       </div>
 
       <div v-else class="social-feed">
@@ -125,14 +121,12 @@
 import { useSocialStore } from "~/stores/useSocialStore.js";
 import HeaderSocial from "~/components/HeaderSocial.vue";
 import ReportUserModal from "~/components/user/social/ReportUserModal.vue";
-import EmptyState from "~/components/EmptyState.vue";
 
 export default {
   name: "SocialPage",
   components: {
     HeaderSocial,
-    ReportUserModal,
-    EmptyState
+    ReportUserModal
   },
   middleware: ["auth"],
   data: function () {
@@ -474,27 +468,17 @@ export default {
 /* --- Empty --- */
 .social-empty {
   text-align: center;
-  padding: 48px 0;
+  padding: 48px 20px;
 }
 
-.social-empty__icon {
-  width: 56px;
-  height: 56px;
-  margin: 0 auto 12px;
-  color: #d9d9d9;
-}
-
-.social-empty__title {
+.social-empty__text {
   margin: 0;
-  color: #707070;
+  color: #ffffff;
+  font-family: "Comfortaa", system-ui, sans-serif;
   font-size: 14px;
   font-weight: 600;
-}
-
-.social-empty__subtitle {
-  margin: 4px 0 0;
-  color: #b0b0b0;
-  font-size: 12px;
+  line-height: 1.5;
+  opacity: 0.85;
 }
 
 /* --- Feed --- */

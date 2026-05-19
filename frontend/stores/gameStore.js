@@ -33,6 +33,7 @@ export var useGameStore = defineStore("game", {
       missioObjectiu: 1,
       monstre_tipus: null,
       streakIncrementedAvui: false,
+      historicOverrides: null,
     };
   },
 

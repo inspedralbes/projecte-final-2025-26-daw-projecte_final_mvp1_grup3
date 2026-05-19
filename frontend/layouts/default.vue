@@ -5,11 +5,15 @@
   <div
     v-else
     class="global-app-container"
-    :class="{
-      'focus-route-layout': isFocusRoute,
-      'shop-page-bg': isShopRoute,
-      'calendar-page-bg': isCalendarRoute,
-    }"
+    :class="[
+      {
+        'focus-route-layout': isFocusRoute,
+        'shop-page-bg': isShopRoute,
+        'calendar-page-bg': isCalendarRoute,
+        'inventari-page-bg': isInventariRoute,
+      },
+      fonsClass,
+    ]"
   >
     <div class="global-content-wrapper">
       <HeaderPublicProfile v-if="isPublicProfileRoute" />
@@ -35,19 +39,41 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useRoute } from "vue-router";
+import { useShopStore } from "~/stores/useShopStore.js";
+import { useProfileFons } from "~/composables/useProfileFons.js";
 
 const route = useRoute();
 const isFocusRoute = computed(() => route.path.startsWith("/focus/"));
 const isShopRoute = computed(() => route.path === "/shop" || route.path.startsWith("/shop/"));
 const isCalendarRoute = computed(() => route.path.startsWith("/calendar"));
+const isInventariRoute = computed(() => route.path === "/inventari");
 const isPublicProfileRoute = computed(() => route.path.startsWith("/user/"));
 const isSocialRoute = computed(() => route.path === "/social" || route.path.startsWith("/friends") || route.path.startsWith("/clans"));
+const { fonsKey: profileFonsKey } = useProfileFons();
+
+const fonsClass = computed(() => {
+  if (isShopRoute.value || isCalendarRoute.value || isInventariRoute.value) return "";
+  if (isPublicProfileRoute.value) {
+    var pk = profileFonsKey.value;
+    if (pk === "fons_platja") return "fons-platja-bg";
+    if (pk === "fons_casa") return "fons-casa-bg";
+    return "";
+  }
+  try {
+    const shopStore = useShopStore();
+    const fonsKey = shopStore.fonsEquipat;
+    if (fonsKey === "fons_platja") return "fons-platja-bg";
+    if (fonsKey === "fons_casa") return "fons-casa-bg";
+  } catch (_) {}
+  return "";
+});
 </script>
 
 <style scoped>
 .focus-route-only {
   width: 100%;
   min-height: 100vh;
+  background-color: #82af30;
 }
 
 /* Ensure the container takes full height */

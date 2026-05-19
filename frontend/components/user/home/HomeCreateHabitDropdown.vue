@@ -125,23 +125,26 @@
           </div>
           <div class="habit-sheet-body">
             <div class="habit-sheet-body-inner space-y-3">
-            <div v-if="proveidorExternActiu" class="space-y-3">
-              <div class="flex gap-2">
-                <input
-                  v-model="cercaExterna.query"
-                  type="text"
-                  :placeholder="placeholderCercaExterna"
-                  class="w-full bg-gray-50/50 border-2 border-gray-100 rounded-2xl px-4 py-3 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500"
-                  @keydown.enter.prevent="cercarRecursosExteriors"
-                />
-                <button
-                  type="button"
-                  class="px-4 py-3 rounded-2xl bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 disabled:opacity-50"
-                  :disabled="cercaExterna.carregant"
-                  @click="cercarRecursosExteriors"
-                >
-                  {{ cercaExterna.carregant ? "..." : "Cercar" }}
-                </button>
+            <div v-if="proveidorExternActiu" class="space-y-4">
+              <div>
+                <label class="habit-form-label">Cerca externa</label>
+                <div class="flex gap-2">
+                  <input
+                    v-model="cercaExterna.query"
+                    type="text"
+                    :placeholder="placeholderCercaExterna"
+                    class="habit-form-field-surface w-full bg-gray-50/50 border-gray-100 focus:outline-none focus:ring-4 focus:ring-green-500/10 focus:border-green-500 focus:bg-white transition-all"
+                    @keydown.enter.prevent="cercarRecursosExteriors"
+                  />
+                  <button
+                    type="button"
+                    class="shrink-0 rounded-2xl border-2 border-[#6FBC58] bg-[#79D45D] px-5 py-3 text-sm font-bold text-white transition hover:brightness-[0.97] disabled:opacity-50"
+                    :disabled="cercaExterna.carregant"
+                    @click="cercarRecursosExteriors"
+                  >
+                    {{ cercaExterna.carregant ? "..." : "Cercar" }}
+                  </button>
+                </div>
               </div>
 
               <div v-if="cercaExterna.error" class="flex items-center gap-2 p-3 rounded-2xl bg-red-50 border border-red-100">
@@ -153,7 +156,7 @@
                   class="flex-shrink-0 text-xs px-3 py-1.5 bg-white text-red-600 border border-red-200 rounded-xl hover:bg-red-50 transition font-bold disabled:opacity-50"
                   @click="cercarRecursosExteriors"
                 >
-                  🔄 Reintentar
+                  Reintentar
                 </button>
               </div>
 
@@ -162,8 +165,8 @@
                   v-for="item in cercaExterna.resultats"
                   :key="item.api_id + item.titol"
                   type="button"
-                  class="w-full flex items-center gap-3 p-3 border-2 rounded-2xl text-left hover:border-blue-300 transition"
-                  :class="itemSeleccionatEs(item) ? 'border-blue-500 bg-blue-50' : 'border-gray-100 bg-white'"
+                  class="w-full flex items-center gap-3 p-3 border-2 rounded-2xl text-left transition"
+                  :class="itemSeleccionatEs(item) ? 'border-[#6FBC58] bg-green-50' : 'border-gray-100 bg-white hover:border-[#79D45D]/40'"
                   @click="onResultatClick(item)"
                 >
                   <img v-if="item.url_imatge" :src="item.url_imatge" alt="" class="w-10 h-10 rounded-lg object-cover" />
@@ -171,14 +174,14 @@
                     <p class="text-sm font-semibold text-gray-800 truncate">{{ item.titol }}</p>
                     <p class="text-xs text-gray-500">{{ item.tipus_api }}</p>
                   </div>
-                  <span v-if="item.tipus_api === 'wger'" class="text-xs text-blue-500 font-bold flex-shrink-0">Veure detall →</span>
+                  <span v-if="item.tipus_api === 'wger'" class="text-xs text-[#6FBC58] font-bold flex-shrink-0">Veure detall →</span>
                 </button>
               </div>
 
               <div v-if="detallExercici.carregant" class="text-center py-4 text-sm text-gray-400">Carregant detall de l'exercici...</div>
               <p v-if="detallExercici.error" class="text-sm text-red-600">{{ detallExercici.error }}</p>
 
-              <div v-if="detallExercici.data" class="rounded-2xl border-2 border-blue-200 bg-blue-50 p-4 space-y-3">
+              <div v-if="detallExercici.data" class="rounded-2xl border-2 border-[#6FBC58]/30 bg-green-50 p-4 space-y-3">
                 <div class="flex items-start gap-3">
                   <img
                     v-if="detallExercici.data.url_imatge"
@@ -194,14 +197,14 @@
                   <button
                     type="button"
                     @click="confirmarSeleccioExercici"
-                    class="flex-1 py-2 rounded-xl bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 transition"
+                    class="flex-1 py-2.5 rounded-xl border-2 border-[#6FBC58] bg-[#79D45D] text-white text-sm font-bold transition hover:brightness-[0.97]"
                   >
                     Seleccionar exercici
                   </button>
                   <button
                     type="button"
                     @click="tancarDetallExercici"
-                    class="py-2 px-4 rounded-xl bg-white border-2 border-gray-200 text-gray-600 text-sm font-bold hover:bg-gray-50 transition"
+                    class="py-2.5 px-4 rounded-xl bg-white border-2 border-gray-200 text-gray-600 text-sm font-bold hover:bg-gray-50 transition"
                   >
                     Tancar
                   </button>
@@ -213,32 +216,72 @@
               Aquesta categoria no té cercador extern; pots usar l'entrada manual.
             </div>
 
-            <div class="mt-4">
-              <div class="flex items-center justify-between mb-2">
-                <h4 class="text-sm font-bold text-gray-700 uppercase tracking-wide">Entrada manual</h4>
-                <button type="button" class="text-xs text-blue-600 font-semibold" @click="activarModeManual">
+            <div class="mt-4 space-y-4">
+              <div class="flex items-center justify-between">
+                <label class="habit-form-label !mb-0">Entrada manual</label>
+                <button type="button" class="text-xs text-[#6FBC58] font-semibold" @click="activarModeManual">
                   Usar dades manuals
                 </button>
               </div>
-              <div class="grid grid-cols-1 gap-3">
+              <div>
+                <label class="block mb-1.5 text-sm font-semibold text-[#2b2d42]">Títol</label>
                 <input
                   v-model="manualExtern.titol"
                   type="text"
-                  placeholder="Títol manual"
-                  class="w-full bg-gray-50/50 border-2 border-gray-100 rounded-2xl px-4 py-3 focus:outline-none focus:ring-4 focus:ring-green-500/10 focus:border-green-500"
+                  placeholder="Títol del recurs"
+                  class="habit-form-field-surface w-full bg-gray-50/50 border-gray-100 focus:outline-none focus:ring-4 focus:ring-green-500/10 focus:border-green-500 focus:bg-white transition-all"
                 />
+              </div>
+              <div>
+                <label class="block mb-1.5 text-sm font-semibold text-[#2b2d42]">URL imatge</label>
                 <input
                   v-model="manualExtern.url_imatge"
                   type="text"
-                  placeholder="URL imatge manual"
-                  class="w-full bg-gray-50/50 border-2 border-gray-100 rounded-2xl px-4 py-3 focus:outline-none focus:ring-4 focus:ring-green-500/10 focus:border-green-500"
+                  placeholder="https://exemple.com/imatge.jpg"
+                  class="habit-form-field-surface w-full bg-gray-50/50 border-gray-100 focus:outline-none focus:ring-4 focus:ring-green-500/10 focus:border-green-500 focus:bg-white transition-all"
                 />
+                <div v-if="manualExtern.url_imatge && manualExtern.url_imatge.trim()" class="mt-2 flex justify-center">
+                  <img
+                    :src="manualExtern.url_imatge"
+                    alt="Previsualització"
+                    class="max-h-32 max-w-full rounded-xl object-contain border-2 border-gray-100"
+                    @error="$event.target.style.display='none'"
+                    @load="$event.target.style.display=''"
+                  />
+                </div>
               </div>
             </div>
             </div>
           </div>
+          <div class="grid grid-cols-2 gap-3 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] border-t border-gray-100 shrink-0">
+            <button
+              type="button"
+              class="flex w-full min-w-0 items-center justify-center border-0 bg-transparent py-2.5 text-center text-base font-normal text-[#5E5E5E] shadow-none outline-none ring-0 transition hover:opacity-80 focus-visible:underline"
+              @click="tancarApiSheet"
+            >
+              Enrere
+            </button>
+            <button
+              type="button"
+              class="w-full min-w-0 rounded-xl border-2 border-[#6FBC58] bg-[#79D45D] py-2.5 text-center text-base font-normal text-white transition hover:brightness-[0.97]"
+              @click="tancarApiSheet"
+            >
+              Guardar
+            </button>
+          </div>
         </div>
       </Transition>
+    </Teleport>
+
+    <Teleport to="body">
+      <ConfirmModal
+        :show="showDeleteConfirm"
+        title="Eliminar hàbit?"
+        message="Estàs segur que vols eliminar aquest hàbit? Aquesta acció no es pot desfer."
+        confirm-text="Eliminar"
+        @confirm="confirmDeleteHabit"
+        @cancel="showDeleteConfirm = false"
+      />
     </Teleport>
   </section>
 </template>
@@ -246,6 +289,7 @@
 <script>
 import HabitFormDetails from "~/components/user/habits/HabitFormDetails.vue";
 import HabitFormSelectChevron from "~/components/user/habits/HabitFormSelectChevron.vue";
+import ConfirmModal from "~/components/user/social/ConfirmModal.vue";
 import { authFetch } from "~/composables/useApi.js";
 import { getEndpointByProvider, getProviderByCategoryId } from "~/utils/habitExternal.js";
 import { getDefaultColorForCategoryId, nearestCategoryIdFromHex } from "~/utils/habitCategoryColor.js";
@@ -255,15 +299,16 @@ export default {
   name: "HomeCreateHabitDropdown",
   components: {
     HabitFormDetails,
-    HabitFormSelectChevron
+    HabitFormSelectChevron,
+    ConfirmModal
   },
   emits: ["habit-creat"],
   data: function () {
     return {
       formulariObert: false,
-      /** Mode edició: mateix full que crear, amb camps omplerts i socket UPDATE */
       editantHabitId: null,
       estaCarregant: false,
+      showDeleteConfirm: false,
       socket: null,
       categories: [
         { id: 1, key: "physical", icona: "🏃" },
@@ -781,34 +826,18 @@ export default {
       });
     },
     eliminarHabit: function () {
-      var self = this;
-      if (!self.editantHabitId) return;
-
-      self.$swal.fire({
-        title: 'Eliminar hàbit?',
-        text: "Estàs segur que vols eliminar aquest hàbit? Aquesta acció no es pot desfer.",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Sí, eliminar',
-        cancelButtonText: 'Cancel·lar',
-        customClass: {
-          popup: 'loopy-swal-popup',
-          title: 'loopy-swal-title',
-          confirmButton: 'loopy-swal-confirm',
-          cancelButton: 'loopy-swal-cancel'
-        },
-        buttonsStyling: false
-      }).then(function (result) {
-        if (result.isConfirmed) {
-          if (self.socket && self.socket.connected) {
-            self.estaCarregant = true;
-            self.socket.emit("habit_action", {
-              action: "DELETE",
-              habit_id: self.editantHabitId
-            });
-          }
-        }
-      });
+      if (!this.editantHabitId) return;
+      this.showDeleteConfirm = true;
+    },
+    confirmDeleteHabit: function () {
+      this.showDeleteConfirm = false;
+      if (this.socket && this.socket.connected) {
+        this.estaCarregant = true;
+        this.socket.emit("habit_action", {
+          action: "DELETE",
+          habit_id: this.editantHabitId
+        });
+      }
     },
     onHabitActionConfirmedSocket: function (payload) {
       if (!payload) {

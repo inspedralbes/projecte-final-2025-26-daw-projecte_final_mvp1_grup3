@@ -60,8 +60,8 @@
         
         <!-- TAB: Amics -->
         <div v-if="activeTab === 'amigos'" class="template-section">
-          <div v-if="friendsLoading" class="text-center py-6 text-gray-400">{{ $t('home.loading') }}</div>
-          <div v-else-if="filteredFriends.length === 0" class="text-center py-6 text-gray-400">
+          <div v-if="friendsLoading" class="text-center py-6 text-white">{{ $t('home.loading') }}</div>
+          <div v-else-if="filteredFriends.length === 0" class="text-center py-6 text-white">
             <p>{{ $t('friends.no_amigos') }}</p>
             <button type="button" class="friends-empty__link" @click="activeTab = 'buscador'">{{ $t('friends.buscar_amigos') }}</button>
           </div>
@@ -74,11 +74,8 @@
             >
               <div class="template-card w-full text-left relative">
                 <button type="button" class="absolute inset-0 w-full h-full" style="z-index: 1;" @click="toggleUserExpandida(friendObj.friend.id)" aria-label="Desplegar"></button>
-                <div class="template-card__mark relative cursor-pointer" style="z-index: 2;" aria-hidden="true" @click.stop="viewProfile(friendObj.friend.id)">
-                  <svg class="template-card__blob" width="57" height="54" viewBox="0 0 57 54" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M1.33093 20.8883C4.84845 8.52703 16.1404 0 28.9924 0H47.2749C52.2455 0 56.2749 4.02944 56.2749 9V25.1665C56.2749 28.2757 55.6987 31.358 54.5756 34.2573L54.3455 34.8512C50.0838 45.8525 39.4989 53.1035 27.701 53.1035H24.1663C14.0216 53.1035 4.95681 46.7675 1.4712 37.2404C-0.281291 32.4504 -0.473285 27.2287 0.922704 22.3229L1.33093 20.8883Z" fill="#79D45D" />
-                  </svg>
-                  <img :src="getMonsterImage(friendObj.friend)" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-[52%] w-8 h-8 object-contain" />
+                <div class="friend-avatar-ring cursor-pointer" style="z-index: 2;" :style="getAvatarBgStyle(friendObj.friend)" @click.stop="viewProfile(friendObj.friend.id)">
+                  <img v-if="getMonsterImage(friendObj.friend)" :src="getMonsterImage(friendObj.friend)" class="friend-avatar-ring__img" />
                 </div>
                 <div class="template-card__content relative" style="z-index: 2; pointer-events: none;">
                   <p class="template-card__title pointer-events-auto inline-block">{{ friendObj.friend.nom }}</p>
@@ -98,8 +95,8 @@
                   <div class="template-spec-card">
                     <div class="grid grid-cols-3 gap-2 w-full">
                       <button type="button" class="template-expand-btn w-full text-center px-1" style="background:#5B9CE6; border: 2px solid #4A83C4; color: white;" @click="openChat(friendObj.friend.id, friendObj.friend.nom)">Missatge</button>
-                      <button type="button" class="template-expand-btn template-expand-btn--danger w-full text-center px-1" @click="removeFriend(friendObj.friend.id, friendObj.friend.nom)">Eliminar</button>
-                      <button type="button" class="template-expand-btn w-full text-center px-1" style="background:#E6E6E6; color:#5b5b5b;" @click="reportUser(friendObj.friend.id)">Reportar</button>
+                      <button type="button" class="template-expand-btn w-full text-center px-1" style="background:#D14D6B; border: 2px solid #B03A55; color: white;" @click="removeFriend(friendObj.friend.id, friendObj.friend.nom)">Eliminar</button>
+                      <button type="button" class="template-expand-btn w-full text-center px-1" style="background:#FF8DA6; border: 2px solid #E6778F; color: white;" @click="reportUser(friendObj.friend.id)">Reportar</button>
                     </div>
                   </div>
                 </div>
@@ -117,8 +114,8 @@
 
         <!-- TAB: Pendents -->
         <div v-if="activeTab === 'pendientes'" class="template-section">
-          <div v-if="pendingLoading" class="text-center py-6 text-gray-400">{{ $t('home.loading') }}</div>
-          <div v-else-if="filteredPending.length === 0" class="text-center py-6 text-gray-400">
+          <div v-if="pendingLoading" class="text-center py-6 text-white">{{ $t('home.loading') }}</div>
+          <div v-else-if="filteredPending.length === 0" class="text-center py-6 text-white">
             {{ $t('friends.no_pendientes') }}
           </div>
           <div v-else class="templates-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
@@ -130,11 +127,8 @@
             >
               <div class="template-card w-full text-left relative">
                 <button type="button" class="absolute inset-0 w-full h-full" style="z-index: 1;" @click="toggleUserExpandida(req.requester.id)" aria-label="Desplegar"></button>
-                <div class="template-card__mark relative cursor-pointer" style="z-index: 2;" aria-hidden="true" @click.stop="viewProfile(req.requester.id)">
-                  <svg class="template-card__blob" width="57" height="54" viewBox="0 0 57 54" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M1.33093 20.8883C4.84845 8.52703 16.1404 0 28.9924 0H47.2749C52.2455 0 56.2749 4.02944 56.2749 9V25.1665C56.2749 28.2757 55.6987 31.358 54.5756 34.2573L54.3455 34.8512C50.0838 45.8525 39.4989 53.1035 27.701 53.1035H24.1663C14.0216 53.1035 4.95681 46.7675 1.4712 37.2404C-0.281291 32.4504 -0.473285 27.2287 0.922704 22.3229L1.33093 20.8883Z" fill="#79D45D" />
-                  </svg>
-                  <img :src="getMonsterImage(req.requester)" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-[52%] w-8 h-8 object-contain" />
+                <div class="friend-avatar-ring cursor-pointer" style="z-index: 2;" :style="getAvatarBgStyle(req.requester)" @click.stop="viewProfile(req.requester.id)">
+                  <img v-if="getMonsterImage(req.requester)" :src="getMonsterImage(req.requester)" class="friend-avatar-ring__img" />
                 </div>
                 <div class="template-card__content relative" style="z-index: 2; pointer-events: none;">
                   <p class="template-card__title pointer-events-auto inline-block">{{ req.requester.nom }}</p>
@@ -155,8 +149,8 @@
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full">
                       <button type="button" class="template-expand-btn template-expand-btn--primary w-full text-center px-0.5" @click="acceptRequest(req.id)">Acceptar</button>
                       <button type="button" class="template-expand-btn w-full text-center px-0.5" style="background:#5B9CE6; border: 2px solid #4A83C4; color: white;" @click="openChat(req.requester.id, req.requester.nom)">Missatge</button>
-                      <button type="button" class="template-expand-btn template-expand-btn--danger w-full text-center px-0.5" @click="rejectRequest(req.id)">Rebutjar</button>
-                      <button type="button" class="template-expand-btn w-full text-center px-0.5" style="background:#E6E6E6; color:#5b5b5b;" @click="reportUser(req.requester.id)">Reportar</button>
+                      <button type="button" class="template-expand-btn w-full text-center px-0.5" style="background:#D14D6B; border: 2px solid #B03A55; color: white;" @click="rejectRequest(req.id)">Rebutjar</button>
+                      <button type="button" class="template-expand-btn w-full text-center px-0.5" style="background:#FF8DA6; border: 2px solid #E6778F; color: white;" @click="reportUser(req.requester.id)">Reportar</button>
                     </div>
                   </div>
                 </div>
@@ -167,7 +161,7 @@
 
         <!-- TAB: Buscador -->
         <div v-if="activeTab === 'buscador'" class="template-section">
-          <div v-if="searching" class="text-center py-6 text-gray-400">{{ $t('home.loading') }}</div>
+          <div v-if="searching" class="text-center py-6 text-white">{{ $t('home.loading') }}</div>
           <div v-else-if="paginatedUsers.length > 0" class="templates-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
             <div
               v-for="user in paginatedUsers"
@@ -177,11 +171,8 @@
             >
               <div class="template-card w-full text-left relative">
                 <button type="button" class="absolute inset-0 w-full h-full" style="z-index: 1;" @click="toggleUserExpandida(user.id)" aria-label="Desplegar"></button>
-                <div class="template-card__mark relative cursor-pointer" style="z-index: 2;" aria-hidden="true" @click.stop="viewProfile(user.id)">
-                  <svg class="template-card__blob" width="57" height="54" viewBox="0 0 57 54" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M1.33093 20.8883C4.84845 8.52703 16.1404 0 28.9924 0H47.2749C52.2455 0 56.2749 4.02944 56.2749 9V25.1665C56.2749 28.2757 55.6987 31.358 54.5756 34.2573L54.3455 34.8512C50.0838 45.8525 39.4989 53.1035 27.701 53.1035H24.1663C14.0216 53.1035 4.95681 46.7675 1.4712 37.2404C-0.281291 32.4504 -0.473285 27.2287 0.922704 22.3229L1.33093 20.8883Z" fill="#79D45D" />
-                  </svg>
-                  <img :src="getMonsterImage(user)" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-[52%] w-8 h-8 object-contain" />
+                <div class="friend-avatar-ring cursor-pointer" style="z-index: 2;" :style="getAvatarBgStyle(user)" @click.stop="viewProfile(user.id)">
+                  <img v-if="getMonsterImage(user)" :src="getMonsterImage(user)" class="friend-avatar-ring__img" />
                 </div>
                 <div class="template-card__content relative" style="z-index: 2; pointer-events: none;">
                   <p class="template-card__title pointer-events-auto inline-block">{{ user.nom }}</p>
@@ -216,23 +207,23 @@
                         <span v-else>Sol·licitar</span>
                       </button>
                       <button type="button" class="template-expand-btn w-full text-center px-0.5" style="background:#5B9CE6; border: 2px solid #4A83C4; color: white;" @click="openChat(user.id, user.nom)">Missatge</button>
-                      <button type="button" class="template-expand-btn w-full text-center px-0.5" style="background:#E6E6E6; color:#5b5b5b;" @click="reportUser(user.id)">Reportar</button>
+                      <button type="button" class="template-expand-btn w-full text-center px-0.5" style="background:#FF8DA6; border: 2px solid #E6778F; color: white;" @click="reportUser(user.id)">Reportar</button>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
             
-            <div v-if="searchLastPage > 1" class="friends-paginator lg:col-span-3 md:col-span-2 col-span-1">
-              <button type="button" class="friends-paginator__btn" :disabled="searchPage <= 1" @click="changeSearchPage(searchPage - 1)">‹</button>
-              <template v-for="p in searchPages" :key="p">
-                <button type="button" :class="['friends-paginator__btn', p === searchPage ? 'friends-paginator__btn--active' : '']" @click="changeSearchPage(p)">{{ p }}</button>
-              </template>
-              <button type="button" class="friends-paginator__btn" :disabled="searchPage >= searchLastPage" @click="changeSearchPage(searchPage + 1)">›</button>
-            </div>
           </div>
-          <div v-else class="text-center py-6 text-gray-400">
-            {{ searchQuery ? $t('friends.no_results') : $t('friends.search_hint') }}
+          <div v-if="searchLastPageComputed > 1" class="friends-paginator mt-4">
+            <button type="button" class="friends-paginator__btn" :disabled="searchPage <= 1" @click="changeSearchPage(searchPage - 1)">‹</button>
+            <template v-for="p in searchPagesComputed" :key="p">
+              <button type="button" :class="['friends-paginator__btn', p === searchPage ? 'friends-paginator__btn--active' : '']" @click="changeSearchPage(p)">{{ p }}</button>
+            </template>
+            <button type="button" class="friends-paginator__btn" :disabled="searchPage >= searchLastPageComputed" @click="changeSearchPage(searchPage + 1)">›</button>
+          </div>
+          <div v-if="!searching && paginatedUsers.length === 0" class="text-center py-6 text-white">
+            {{ searchQuery ? $t('friends.no_results') : $t('friends.no_users') }}
           </div>
         </div>
 
@@ -242,6 +233,8 @@
         v-if="showChat"
         :friend-id="chatFriendId"
         :friend-name="chatFriendName"
+        :friend-monstre-tipus="chatFriendMonstreTipus"
+        :friend-nivell="chatFriendNivell"
         @close="showChat = false"
       />
 
@@ -269,6 +262,10 @@ import { useFriendshipStore } from "~/stores/useFriendshipStore.js";
 import { useAuthStore } from "~/stores/useAuthStore.js";
 import { authFetch } from "~/composables/useApi.js";
 import { getMonsterImageFromUser } from "~/utils/monsterImage.js";
+import bosqueImg from "~/assets/img/Fons/Fons_Bosc.png";
+import fonsAplicacioImg from "~/assets/img/Fons/Fons_Aplicacio.png";
+import fonsPlatjaImg from "~/assets/img/Fons/Fons_Platja.png";
+import fonsCasaImg from "~/assets/img/Fons/Fons_Casa.png";
 import HeaderSocial from "~/components/HeaderSocial.vue";
 import ChatWindow from "~/components/user/social/ChatWindow.vue";
 import ReportUserModal from "~/components/user/social/ReportUserModal.vue";
@@ -284,6 +281,7 @@ export default {
   },
   data: function () {
     return {
+      bosqueImg: bosqueImg,
       friendshipStore: useFriendshipStore(),
       activeTab: "amigos",
       searchQuery: "",
@@ -293,6 +291,8 @@ export default {
       showChat: false,
       chatFriendId: null,
       chatFriendName: "",
+      chatFriendMonstreTipus: null,
+      chatFriendNivell: null,
       searching: false,
       sending: false,
       sentRequests: {},
@@ -351,9 +351,13 @@ export default {
       });
     },
     paginatedUsers: function () {
-      var start = (this.searchPage - 1) * 8;
-      var end = start + 8;
+      var perPage = 10;
+      var start = (this.searchPage - 1) * perPage;
+      var end = start + perPage;
       return this.filteredUsers.slice(start, end);
+    },
+    searchLastPageComputed: function () {
+      return Math.ceil(this.filteredUsers.length / 10) || 1;
     },
     friendsLoading: function () {
       return this.friendshipStore?.loading || false;
@@ -381,6 +385,18 @@ export default {
       }
       return pages;
     },
+    searchPagesComputed: function () {
+      var pages = [];
+      for (var i = 1; i <= this.searchLastPageComputed; i++) {
+        pages.push(i);
+      }
+      return pages;
+    },
+  },
+  watch: {
+    searchQuery: function () {
+      this.searchPage = 1;
+    }
   },
   mounted: async function () {
     if (this.friendshipStore) {
@@ -391,7 +407,16 @@ export default {
   },
   methods: {
     getMonsterImage: function (user) {
-      return getMonsterImageFromUser(user);
+      var skinKey = user ? user.skin_key : null;
+      return getMonsterImageFromUser(user, skinKey);
+    },
+    getAvatarBgStyle: function (user) {
+      var fonsKey = user ? user.fons_key : null;
+      var bg = bosqueImg;
+      if (fonsKey === "fons_platja") bg = fonsPlatjaImg;
+      else if (fonsKey === "fons_casa") bg = fonsCasaImg;
+      else if (fonsKey === "fons_aplicacio") bg = fonsAplicacioImg;
+      return { backgroundImage: "url(" + bg + ")" };
     },
     toggleSearch: function () {
       this.searchVisible = !this.searchVisible;
@@ -478,6 +503,14 @@ export default {
     openChat: function (friendId, friendNom) {
       this.chatFriendId = friendId;
       this.chatFriendName = friendNom || "";
+      var friendData = null;
+      var friendObj = this.friends.find(function(f) { return f.friend && Number(f.friend.id) === Number(friendId); });
+      if (friendObj && friendObj.friend) friendData = friendObj.friend;
+      if (!friendData) {
+        friendData = this.allUsers.find(function(u) { return Number(u.id) === Number(friendId); });
+      }
+      this.chatFriendMonstreTipus = friendData ? friendData.monstre_tipus : null;
+      this.chatFriendNivell = friendData ? friendData.nivell : null;
       this.showChat = true;
     },
     viewProfile: function (userId) {
@@ -495,7 +528,7 @@ export default {
       this.friendshipStore.fetchFriendsList(page);
     },
     changeSearchPage: function (page) {
-      if (page < 1 || page > this.searchLastPage) return;
+      if (page < 1 || page > this.searchLastPageComputed) return;
       this.searchPage = page;
     },
   },
@@ -651,6 +684,27 @@ export default {
   display: block;
   width: 57px;
   height: 54px;
+}
+
+.friend-avatar-ring {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  border: 2px solid rgba(121, 212, 93, 0.4);
+}
+
+.friend-avatar-ring__img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.15));
 }
 
 .template-card__icona {

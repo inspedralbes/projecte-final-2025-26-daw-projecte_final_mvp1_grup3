@@ -199,11 +199,11 @@
     /* Lado Derecho (Bento Grid / Features) */
     .login-right-col {
         @apply hidden lg:flex w-[60%] relative p-12 xl:p-20 flex-col justify-center items-center overflow-hidden bg-cover bg-center;
-        background-image: url('../img/fondo_login.png');
+        background-image: url('../img/Fons/Fons_Login.png');
     }
 
     .login-page-auth .login-right-col {
-        background-image: url('../img/1-Img-Fons-Calendari.png');
+        background-image: url('../img/Fons/Fons_Calendari.png');
     }
 
     .login-page-auth .login-left-col {
@@ -222,7 +222,7 @@
             inset: 0;
             z-index: 0;
             pointer-events: none;
-            background-image: url('../img/1-Img-Fons-Calendari.png');
+            background-image: url('../img/Fons/Fons_Calendari.png');
             background-size: cover;
             background-position: center;
             transform-origin: center top;
@@ -271,7 +271,7 @@
             height: calc(100vh - 8.5rem);
             z-index: 0;
             pointer-events: none;
-            background-image: url('../img/1-Img-Fons-Calendari.png');
+            background-image: url('../img/Fons/Fons_Calendari.png');
             background-size: cover;
             background-position: center top;
             border-radius: 0 0 2rem 2rem;
@@ -408,14 +408,14 @@
 
     /* ==== GLOBAL APP LAYOUT ==== */
     /*
-      Dalt: FonsAplicacio1 (sense cover: 100vw auto = sense zoom en allargar la pàgina).
+      Dalt: Fons_Aplicacio (sense cover: 100vw auto = sense zoom en allargar la pàgina).
       Baix: color continu #7EB356 (mateix to que el verd del prat de la imatge).
     */
     .global-app-container {
         @apply min-h-screen relative;
         font-family: 'Fredoka', sans-serif;
         background-color: #7eb356;
-        background-image: url('../img/FonsAplicacio1.png');
+        background-image: url('../img/Fons/Fons_Aplicacio.png');
         background-position: top center;
         background-size: 100vw auto;
         background-repeat: no-repeat;
@@ -449,7 +449,7 @@
 
     /*
       Botiga: mateix patró que el fons global.
-      Dalt: Fondo_Tienda (sense cover: 100vw auto = manté la proporció,
+      Dalt: Fons_Botiga (sense cover: 100vw auto = manté la proporció,
             cobreix l'amplada i s'ancora a la part superior).
       Baix: color continu que coincideix amb la gespa de la part baixa
             de la imatge, perquè en fer scroll la foto pugi i no es vegi
@@ -457,7 +457,7 @@
     */
     .global-app-container.shop-page-bg {
         background-color: #82af30;
-        background-image: url('../img/Fondo_Tienda.png');
+        background-image: url('../img/Fons/Fons_Botiga.png');
         background-position: top center;
         background-size: 100vw auto;
         background-repeat: no-repeat;
@@ -472,7 +472,7 @@
     /* Calendari: il·lustració vertical (mòbil), mateix patró anchura que la botiga */
     .global-app-container.calendar-page-bg {
         background-color: #82af30;
-        background-image: url('../img/1-Img-Fons-Calendari.png');
+        background-image: url('../img/Fons/Fons_Calendari.png');
         background-position: top center;
         background-size: 120vw auto;
         background-repeat: no-repeat;
@@ -480,6 +480,39 @@
     }
 
     .global-app-container.calendar-page-bg::before {
+        display: none;
+    }
+
+    /* Inventari: mateix fons verd que l'app general, sense blur */
+    .global-app-container.inventari-page-bg::before {
+        display: none;
+    }
+
+    /* Fons Platja: imatge + color sorra */
+    .global-app-container.fons-platja-bg {
+        background-color: #f8d7a1;
+        background-image: url('../img/Fons/Fons_Platja.png');
+        background-position: center top -250px;
+        background-size: 100vw auto;
+        background-repeat: no-repeat;
+        background-attachment: scroll;
+    }
+
+    .global-app-container.fons-platja-bg::before {
+        display: none;
+    }
+
+    /* Fons Casa: imatge + color fosc acollidor */
+    .global-app-container.fons-casa-bg {
+        background-color: #413630;
+        background-image: url('../img/Fons/Fons_Casa.png');
+        background-position: center top -250px;
+        background-size: 100vw auto;
+        background-repeat: no-repeat;
+        background-attachment: scroll;
+    }
+
+    .global-app-container.fons-casa-bg::before {
         display: none;
     }
 

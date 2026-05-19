@@ -53,6 +53,19 @@
 </template>
 
 <script>
+import { MONSTER_MAP, getEtapa } from '~/utils/monsterImage.js';
+
+var COLOR_TO_NUM = { V: '1', R: '2', L: '3', A: '4' };
+var ETAPA_TO_NUM = { B: '1', N: '2', A: '3', M: '4' };
+
+function resolveSprite(tipus, etapa) {
+  if (!tipus || tipus.length < 2) return null;
+  var colorCode = tipus.charAt(1).toUpperCase();
+  var colorNum = COLOR_TO_NUM[colorCode] || '1';
+  var etapaNum = ETAPA_TO_NUM[etapa] || '1';
+  return MONSTER_MAP[colorNum + '.' + etapaNum] || null;
+}
+
 export default {
   name: 'EvolutionModal',
   props: {
@@ -80,16 +93,14 @@ export default {
   emits: ['close'],
   computed: {
     colorCode: function () {
-      if (!this.monstreTipus) return 'V';
-      return this.monstreTipus.charAt(0);
+      if (!this.monstreTipus || this.monstreTipus.length < 2) return 'V';
+      return this.monstreTipus.charAt(1);
     },
     spriteAnterior: function () {
-      if (!this.monstreTipus) return null;
-      return '/img/monsters/' + this.colorCode + this.etapaAnterior + '.png';
+      return resolveSprite(this.monstreTipus, this.etapaAnterior);
     },
     spriteActual: function () {
-      if (!this.monstreTipus) return null;
-      return '/img/monsters/' + this.colorCode + this.etapaActual + '.png';
+      return resolveSprite(this.monstreTipus, this.etapaActual);
     },
     title: function () {
       return this.$t('monster.evolution_title') || 'Evolució!';

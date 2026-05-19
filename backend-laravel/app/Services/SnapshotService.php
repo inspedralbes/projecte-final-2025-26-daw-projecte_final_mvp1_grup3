@@ -6,7 +6,9 @@ namespace App\Services;
 
 use App\Models\DailySnapshot;
 use App\Models\Habit;
+use App\Models\Ratxa;
 use App\Models\User;
+use App\Models\UsuariItem;
 use App\Support\GamificationConstants;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -79,11 +81,46 @@ class SnapshotService
      */
     private function buildMascotaJson(User $user): array
     {
+        $skinKey = null;
+        $fonsKey = null;
+
+        $skinsEquipades = UsuariItem::where('usuari_id', $user->id)
+            ->where('equipat', true)
+            ->whereHas('item', function ($q) {
+                $q->where('tipus', 'skin');
+            })
+            ->with('item')
+            ->get();
+
+        foreach ($skinsEquipades as $equipada) {
+            if ($equipada->item === null) {
+                continue;
+            }
+            $metadata = $equipada->item->metadata;
+            if (!is_array($metadata) || !isset($metadata['skin_key'])) {
+                continue;
+            }
+            $slot = $metadata['slot'] ?? null;
+            if ($slot === 'fons') {
+                $fonsKey = $metadata['skin_key'];
+            } else {
+                $skinKey = $metadata['skin_key'];
+            }
+        }
+
+        $ratxa = Ratxa::where('usuari_id', $user->id)->first();
+        $ratxaActual = $ratxa !== null ? (int) $ratxa->ratxa_actual : 0;
+
         return [
             'nivell' => $user->nivell,
             'xp_total' => $user->xp_total,
             'xp_actual_nivel' => $user->xp_actual_nivel,
             'xp_objetivo_nivel' => $user->xp_objetivo_nivel,
+            'monstre_tipus' => $user->monstre_tipus,
+            'skin_key' => $skinKey,
+            'fons_key' => $fonsKey,
+            'ratxa' => $ratxaActual,
+            'monedes' => (int) $user->monedes,
         ];
     }
 

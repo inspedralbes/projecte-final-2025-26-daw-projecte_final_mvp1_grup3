@@ -1,27 +1,38 @@
 <template>
   <!-- Top header (ocult a /calendar i /social) -->
-  <header v-if="!isCalendarRoute && !isSocialRoute" class="w-full p-3">
+  <header v-if="!isCalendarRoute && !isSocialRoute && !isInventariRoute" class="w-full p-3">
     <!-- Mòbil: hamburguesa | stats al centre | clima a la dreta -->
     <nav class="w-full lg:hidden">
       <div class="flex w-full items-center gap-1 px-1 min-h-[2.75rem]">
-        <div class="flex shrink-0 w-10 justify-start">
-          <!-- Hamburger menu eliminated -->
+        <div class="flex shrink-0 justify-start" :class="isHistoricView ? 'w-14' : 'w-10'">
+          <button
+            v-if="isHistoricView"
+            type="button"
+            class="header-back-btn"
+            aria-label="Tornar al calendari"
+            @click="tornarAlCalendari"
+          >
+            <svg width="48" height="48" viewBox="0 0 73 73" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M42.5834 54.75L24.3334 36.5L42.5834 18.25L46.8417 22.5083L32.85 36.5L46.8417 50.4917L42.5834 54.75Z" fill="#374151"/>
+            </svg>
+          </button>
         </div>
-        <div class="mobile-stats-bar mobile-stats-bar--center flex flex-1 justify-center min-w-0">
-          <div class="stat-item">
-            <span class="stat-icon">🔥</span>
-            <span class="stat-value">{{ gameStore.ratxa }}</span>
+        <div class="mobile-stats-bar flex flex-1 min-w-0" :class="isHistoricView ? 'justify-end' : 'justify-center'">
+          <div :class="isHistoricView ? 'stat-item stat-item--lg' : 'stat-item'">
+            <img :src="ratxaIcon" alt="" class="stat-icon-img" :width="isHistoricView ? 30 : 22" :height="isHistoricView ? 30 : 22" />
+            <span :class="isHistoricView ? 'stat-value stat-value--lg' : 'stat-value'">{{ displayRatxa }}</span>
           </div>
-          <div class="stat-item">
-            <img :src="xpIcon" alt="" class="stat-icon-img" width="22" height="22" />
-            <span class="stat-value">{{ gameStore.xpTotal }}</span>
+          <div :class="isHistoricView ? 'stat-item stat-item--lg' : 'stat-item'">
+            <img :src="xpIcon" alt="" class="stat-icon-img" :width="isHistoricView ? 30 : 22" :height="isHistoricView ? 30 : 22" />
+            <span :class="isHistoricView ? 'stat-value stat-value--lg' : 'stat-value'">{{ displayXp }}</span>
           </div>
-          <div class="stat-item">
-            <img :src="coinIcon" alt="" class="stat-icon-img" width="22" height="22" />
-            <span class="stat-value">{{ gameStore.monedes }}</span>
+          <div :class="isHistoricView ? 'stat-item stat-item--lg' : 'stat-item'">
+            <img :src="coinIcon" alt="" class="stat-icon-img" :width="isHistoricView ? 30 : 22" :height="isHistoricView ? 30 : 22" />
+            <span :class="isHistoricView ? 'stat-value stat-value--lg' : 'stat-value'">{{ displayMonedes }}</span>
           </div>
         </div>
         <div
+          v-if="!isHistoricView"
           class="header-weather-pill shrink-0 flex flex-row items-center gap-1 min-w-[9rem] max-w-[12.5rem] rounded-xl bg-white pl-2 pr-1 py-1 shadow-sm border border-gray-200"
         >
           <div class="flex flex-row flex-1 min-w-0 items-center gap-1.5">
@@ -178,6 +189,7 @@ import { useRoute } from 'vue-router'
 import logo from '~/assets/img/Icones/Icona_Logo_Perfil.png'
 import coinIcon from '~/assets/img/Icones/Icona_Moneda.png'
 import xpIcon from '~/assets/img/Icones/Icona_Experiencia.png'
+import ratxaIcon from '~/assets/img/Icones/Icona_Ratxa.png'
 import LanguageSwitcher from './LanguageSwitcher.vue'
 import { useAuthStore } from '~/stores/useAuthStore'
 import { useGameStore } from '~/stores/gameStore.js'
@@ -198,6 +210,7 @@ const HEADER_WEATHER_EMOJI = {
 const route = useRoute()
 const isCalendarRoute = computed(() => String(route.path || '').startsWith('/calendar'))
 const isSocialRoute = computed(() => route.path === '/social' || String(route.path || '').startsWith('/friends') || String(route.path || '').startsWith('/clans'))
+const isInventariRoute = computed(() => route.path === '/inventari')
 
 const authStore = useAuthStore()
 const gameStore = useGameStore()
@@ -233,6 +246,23 @@ const headerWeatherCity = computed(() => {
   const c = headerWeather.value?.city
   if (!c || String(c).trim() === '') return '—'
   return String(c).trim()
+})
+
+const isHistoricView = computed(() => gameStore.historicOverrides != null)
+
+const displayRatxa = computed(() => {
+  if (isHistoricView.value) return gameStore.historicOverrides.ratxa
+  return gameStore.ratxa
+})
+
+const displayXp = computed(() => {
+  if (isHistoricView.value) return gameStore.historicOverrides.xpTotal
+  return gameStore.xpTotal
+})
+
+const displayMonedes = computed(() => {
+  if (isHistoricView.value) return gameStore.historicOverrides.monedes
+  return gameStore.monedes
 })
 
 const userName = computed(() => {
@@ -302,6 +332,11 @@ watch(
   },
   { immediate: true }
 )
+
+function tornarAlCalendari() {
+  gameStore.historicOverrides = null
+  navigateTo('/calendar')
+}
 
 function openWeatherCityModal() {
   if (typeof window !== 'undefined') {
@@ -409,6 +444,37 @@ nav a {
   font-size: 1rem;
   font-weight: 700;
   color: #374151;
+}
+.stat-item--lg {
+  gap: 0.5rem;
+}
+.stat-item--lg .stat-icon-img {
+  width: 1.875rem;
+  height: 1.875rem;
+}
+.stat-value--lg {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #374151;
+}
+.header-back-btn {
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s ease;
+}
+.header-back-btn:hover {
+  transform: scale(1.1);
+}
+.header-back-btn:active {
+  transform: scale(0.95);
 }
 
 /* Desktop actions: hidden on mobile */

@@ -304,7 +304,7 @@
 </template>
 
 <script setup>
-import mascotaImg from "~/assets/img/Mascota.png";
+import mascotaImg from "~/assets/img/Monstres/Mascota_Defecte.png";
 import coinLoopy from "~/assets/img/Icones/Icona_Moneda.png";
 import xpIcon from "~/assets/img/Icones/Icona_Experiencia.png";
 import ratxaIcon from "~/assets/img/Icones/Icona_Ratxa.png";

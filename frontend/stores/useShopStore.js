@@ -19,11 +19,22 @@ export var useShopStore = defineStore("shop", {
 
   getters: {
     /**
-     * Skins propietat del usuari (qualsevol estat: equipats o no).
+     * Skins propietat del usuari (qualsevol estat: equipats o no), excloent fons.
      */
     skins: function (state) {
       return state.inventari.filter(function (it) {
-        return it && it.item && it.item.tipus === "skin";
+        return it && it.item && it.item.tipus === "skin" &&
+          !(it.item.metadata && it.item.metadata.slot === "fons");
+      });
+    },
+
+    /**
+     * Fons comprats per l'usuari.
+     */
+    fonsItems: function (state) {
+      return state.inventari.filter(function (it) {
+        return it && it.item && it.item.tipus === "skin" &&
+          it.item.metadata && it.item.metadata.slot === "fons";
       });
     },
 
@@ -47,7 +58,26 @@ export var useShopStore = defineStore("shop", {
         ui = state.inventari[i];
         if (
           ui && ui.equipat === true && ui.item && ui.item.tipus === "skin" &&
-          ui.item.metadata && ui.item.metadata.skin_key
+          ui.item.metadata && ui.item.metadata.skin_key &&
+          ui.item.metadata.slot !== "fons"
+        ) {
+          return ui.item.metadata.skin_key;
+        }
+      }
+      return null;
+    },
+
+    /**
+     * Clau del fons equipat (fons_platja, fons_casa, o null per defecte).
+     */
+    fonsEquipat: function (state) {
+      var i;
+      var ui;
+      for (i = 0; i < state.inventari.length; i++) {
+        ui = state.inventari[i];
+        if (
+          ui && ui.equipat === true && ui.item && ui.item.tipus === "skin" &&
+          ui.item.metadata && ui.item.metadata.slot === "fons" && ui.item.metadata.skin_key
         ) {
           return ui.item.metadata.skin_key;
         }

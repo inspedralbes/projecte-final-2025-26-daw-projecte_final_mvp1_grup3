@@ -45,6 +45,7 @@
 <script>
 import { authFetch } from '~/composables/useApi.js';
 import { getBaseUrl } from '~/composables/useApi.js';
+import { getEggImage, getMonsterImage } from '~/utils/monsterImage.js';
 
 export default {
   name: 'MonsterEggSelector',
@@ -57,26 +58,26 @@ export default {
         {
           type: 'VV',
           label: 'Verd',
-          image: '/img/monsters/huevos/Huevo_V.png',
-          previewSprite: '/img/monsters/MVB.png',
+          image: getEggImage('V'),
+          previewSprite: getMonsterImage('VV', 1),
         },
         {
           type: 'VR',
           label: 'Rosa',
-          image: '/img/monsters/huevos/Huevo_R.png',
-          previewSprite: '/img/monsters/MRB.png',
+          image: getEggImage('R'),
+          previewSprite: getMonsterImage('VR', 1),
         },
         {
           type: 'VL',
           label: 'Lila',
-          image: '/img/monsters/huevos/Huevo_L.png',
-          previewSprite: '/img/monsters/MLB.png',
+          image: getEggImage('L'),
+          previewSprite: getMonsterImage('VL', 1),
         },
         {
           type: 'VA',
           label: 'Amarillo',
-          image: '/img/monsters/huevos/Huevo_A.png',
-          previewSprite: '/img/monsters/MAB.png',
+          image: getEggImage('A'),
+          previewSprite: getMonsterImage('VA', 1),
         },
       ],
     };

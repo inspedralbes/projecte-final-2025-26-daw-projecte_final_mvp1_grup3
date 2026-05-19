@@ -93,7 +93,7 @@
             <span class="moment-divider__line" aria-hidden="true"></span>
           </div>
 
-          <div v-if="plantillesDefault.length === 0" class="text-center py-6 text-gray-400 text-sm">
+          <div v-if="plantillesDefault.length === 0" class="text-center py-6 text-white text-sm">
             No hi ha plantilles predefinides disponibles.
           </div>
           <div v-else class="templates-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
@@ -193,7 +193,7 @@
             <span class="moment-divider__line" aria-hidden="true"></span>
           </div>
 
-          <div v-if="plantillesPubliques.length === 0" class="text-center py-6 text-gray-400 text-sm">
+          <div v-if="plantillesPubliques.length === 0" class="text-center py-6 text-white text-sm">
             No hi ha plantilles públiques disponibles.
           </div>
           <div v-else class="templates-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
@@ -314,7 +314,7 @@
             <span class="moment-divider__line" aria-hidden="true"></span>
           </div>
 
-          <div v-if="plantillesPersonals.length === 0" class="text-center py-6 text-gray-400 text-sm">
+          <div v-if="plantillesPersonals.length === 0" class="text-center py-6 text-white text-sm">
             No tens plantilles personals creades.
           </div>
           <div v-else class="templates-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
@@ -419,7 +419,7 @@
             <span class="moment-divider__line" aria-hidden="true"></span>
           </div>
 
-          <div v-if="plantillesAmics.length === 0" class="text-center py-6 text-gray-400 text-sm">
+          <div v-if="plantillesAmics.length === 0" class="text-center py-6 text-white text-sm">
             No hi ha plantilles d'amics disponibles.
           </div>
           <div v-else class="templates-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
@@ -499,7 +499,7 @@
             <span class="moment-divider__line" aria-hidden="true"></span>
           </div>
 
-          <div v-if="plantillesGuardades.length === 0" class="text-center py-6 text-gray-400 text-sm">
+          <div v-if="plantillesGuardades.length === 0" class="text-center py-6 text-white text-sm">
             No tens plantilles guardades o importades del fòrum.
           </div>
           <div v-else class="templates-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
@@ -790,45 +790,16 @@
       </div>
 
       <!-- Modal per eliminar plantilla -->
-      <div
-        v-if="modalEliminarVisible"
-        class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center z-[110]"
-        @click.self="tancarModalEliminar"
-      >
-        <div
-          class="relative bg-white rounded-2xl shadow-xl p-8 m-4 max-w-md w-full"
-        >
-          <button
-            @click="tancarModalEliminar"
-            class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl font-bold"
-          >
-            &times;
-          </button>
-
-          <h2 class="habit-form-label text-gray-800 text-2xl mb-4">
-            Eliminar plantilla?
-          </h2>
-
-          <p class="text-gray-600 mb-8">
-            Estàs segur que vols eliminar la plantilla <strong>{{ plantillaAEliminar ? plantillaAEliminar.titol : '' }}</strong>? Aquesta acció no es pot desfer.
-          </p>
-
-          <div class="flex flex-col gap-3">
-            <button
-              @click="confirmarEliminar"
-              class="w-full py-4 bg-red-500 hover:bg-red-600 text-white font-extrabold rounded-2xl shadow-[0_4px_0_#D14D6B] active:translate-y-[2px] active:shadow-[0_2px_0_#D14D6B] transition-all text-lg"
-            >
-              SÍ, ELIMINA-LA
-            </button>
-            <button
-              @click="tancarModalEliminar"
-              class="w-full py-4 bg-gray-100 hover:bg-gray-200 text-gray-500 font-extrabold rounded-2xl transition-all text-lg"
-            >
-              ARA NO
-            </button>
-          </div>
-        </div>
-      </div>
+      <Teleport to="body">
+        <ConfirmModal
+          :show="modalEliminarVisible"
+          title="Eliminar plantilla?"
+          :message="'Estàs segur que vols eliminar la plantilla ' + (plantillaAEliminar ? plantillaAEliminar.titol : '') + '? Aquesta acció no es pot desfer.'"
+          confirm-text="Eliminar"
+          @confirm="confirmarEliminar"
+          @cancel="tancarModalEliminar"
+        />
+      </Teleport>
     </Teleport>
 
     <Teleport to="body">
@@ -956,14 +927,17 @@
 <script>
 import { usePlantillaStore } from "../stores/usePlantillaStore";
 import { useHabitStore } from "../stores/useHabitStore";
-import { useGameStore } from "../stores/gameStore"; // Import useGameStore
+import { useGameStore } from "../stores/gameStore";
 import { useSocketConfig } from "../composables/useSocketConfig";
-import { watch } from 'vue'; // Import watch from vue
+import { watch } from 'vue';
 import { getDefaultColorForCategoryId, nearestCategoryIdFromHex } from "~/utils/habitCategoryColor.js";
 import { normalizeHex } from "~/utils/colorSpace.js";
+import ConfirmModal from "~/components/user/social/ConfirmModal.vue";
 
 export default {
-  // Configuració inicial dels 'stores' de Pinia per a la gestió de l'estat.
+  components: {
+    ConfirmModal
+  },
   setup: function () {
     var plantillaStore = usePlantillaStore();
     var habitStore = useHabitStore();
@@ -2307,16 +2281,30 @@ export default {
 
 .template-expand-actions {
   display: flex;
-  gap: 8px;
-  justify-content: space-between;
+  gap: 0;
+  width: 100%;
 }
 
 .template-expand-btn {
   border: 0;
-  border-radius: 10px;
-  padding: 8px 12px;
-  font-size: 12px;
+  border-radius: 0;
+  padding: 10px 12px;
+  font-size: 13px;
   font-weight: 700;
+  flex: 1 1 50%;
+  text-align: center;
+}
+
+.template-expand-btn:first-child {
+  border-radius: 10px 0 0 10px;
+}
+
+.template-expand-btn:last-child {
+  border-radius: 0 10px 10px 0;
+}
+
+.template-expand-btn:only-child {
+  border-radius: 10px;
 }
 
 .template-expand-btn--danger {

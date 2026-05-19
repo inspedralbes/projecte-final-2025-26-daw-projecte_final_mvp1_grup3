@@ -3,12 +3,12 @@
     <div class="max-w-5xl mx-auto px-3 sm:px-6 pt-2 sm:pt-3">
       <HeaderSocial />
 
-      <div class="clans-content-area mt-4">
+      <div class="clans-content-area">
         <div v-if="loading" class="text-center py-10">
           <div class="clans-spinner"></div>
           <p class="clans-loading-text">Carregant...</p>
         </div>
-        
+
         <div v-if="insufficientLevel" class="max-w-md mx-auto mt-10">
           <div class="text-center bg-white p-8 rounded-[32px] border-4 border-gray-100 shadow-xl">
             <img src="~/assets/img/Icones/Icona_Logo_Perfil.png" class="w-32 h-auto mx-auto mb-6 drop-shadow-md pixelated" alt="Loopy" />
@@ -20,33 +20,19 @@
         </div>
 
         <template v-else>
-          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
-            <h1 class="clans-page-title">{{ $t('nav.clans') }}</h1>
-            <button
-              v-if="!userClanId"
-              type="button"
-              @click="showCreate = !showCreate"
-              class="clans-btn clans-btn--primary"
-            >
-              {{ showCreate ? 'Tornar als Clans' : 'Crear Nou Clan' }}
-            </button>
-            <button
-              v-else
-              type="button"
-              @click="leaveClan"
-              class="clans-btn clans-btn--danger"
-            >
-              Abandonar Clan
-            </button>
+          <div v-if="userClanId" class="text-center py-12">
+            <p class="clans-redirect-text">Ja estàs en un clan. Redirigint...</p>
           </div>
+          <ClanList v-else @clan-created="onClanCreated" />
 
-          <transition name="fade" mode="out-in">
-            <ClanSettings v-if="showCreate" @cancel="showCreate = false" @saved="onClanCreated" />
-            <ClanList v-else-if="!userClanId" />
-            <div v-else class="text-center py-12">
-              <p class="clans-redirect-text">Ja estàs en un clan. Redirigint...</p>
-            </div>
-          </transition>
+          <button
+            v-if="userClanId"
+            type="button"
+            @click="leaveClan"
+            class="clans-btn clans-btn--danger mt-4 w-full"
+          >
+            Abandonar Clan
+          </button>
         </template>
       </div>
     </div>
@@ -56,7 +42,6 @@
 <script>
 import HeaderSocial from "~/components/HeaderSocial.vue";
 import ClanList from "~/components/clans/ClanList.vue";
-import ClanSettings from "~/components/clans/ClanSettings.vue";
 import { useAuthStore } from "~/stores/useAuthStore.js";
 import { useClanStore } from "~/stores/useClanStore.js";
 import { useNuxtApp } from "#app";
@@ -66,66 +51,72 @@ export default {
   middleware: ["auth"],
   components: {
     HeaderSocial,
-    ClanList,
-    ClanSettings
+    ClanList
   },
   data: function() {
      return {
-        showCreate: false,
         userClanId: null,
         loading: true,
         insufficientLevel: false
      }
   },
   async mounted() {
-     var self = this;
-     var authStore = useAuthStore();
-     if (authStore.user && authStore.user.nivell < 5) {
-        this.insufficientLevel = true;
-        this.loading = false;
-        return;
-     }
-     
-     var setupSocketListeners = function() {
-        var nuxtApp = useNuxtApp();
-        if (nuxtApp.$socket && nuxtApp.$socket.connected) {
-           nuxtApp.$socket.on("clan_request_accepted", function(data) {
-              if (Number(data.usuari_id) === Number(authStore.user.id)) {
-                 alert("La teva sol·licitud d'unió al clan ha estat acceptada!");
-                 var store = useClanStore();
-                 store.getMyClan().then(function() {
-                    if (store.currentClan && store.currentClan.id) {
-                       self.userClanId = store.currentClan.id;
-                       self.$router.push('/clans/' + store.currentClan.id);
-                    } else {
-                       self.$router.push('/clans/' + data.clan_id);
-                    }
-                 });
-              }
-           });
-           nuxtApp.$socket.on("clan_request_rejected", function(data) {
-              if (Number(data.usuari_id) === Number(authStore.user.id)) {
-                 alert("La teva sol·licitud d'unió al clan ha estat rebutjada.");
-              }
-           });
-        } else {
-           setTimeout(setupSocketListeners, 1000);
-        }
-     };
-     setupSocketListeners();
-     
-     var store = useClanStore();
-     var myClan = await store.getMyClan();
-     this.loading = false;
-     if (myClan && myClan.id) {
-        this.userClanId = myClan.id;
-        this.$router.push('/clans/' + myClan.id);
-     }
+     await this.checkClanStatus();
+  },
+  activated() {
+     this.checkClanStatus();
   },
   methods: {
+     checkClanStatus: async function() {
+        var self = this;
+        var authStore = useAuthStore();
+        if (authStore.user && authStore.user.nivell < 5) {
+           this.insufficientLevel = true;
+           this.loading = false;
+           return;
+        }
+
+        this.loading = true;
+        this.userClanId = null;
+
+        var setupSocketListeners = function() {
+           var nuxtApp = useNuxtApp();
+           if (nuxtApp.$socket && nuxtApp.$socket.connected) {
+              nuxtApp.$socket.on("clan_request_accepted", function(data) {
+                 if (Number(data.usuari_id) === Number(authStore.user.id)) {
+                    alert("La teva sol·licitud d'unió al clan ha estat acceptada!");
+                    var store = useClanStore();
+                    store.getMyClan().then(function() {
+                       if (store.currentClan && store.currentClan.id) {
+                          self.userClanId = store.currentClan.id;
+                          self.$router.push('/clans/' + store.currentClan.id);
+                       } else {
+                          self.$router.push('/clans/' + data.clan_id);
+                       }
+                    });
+                 }
+              });
+              nuxtApp.$socket.on("clan_request_rejected", function(data) {
+                 if (Number(data.usuari_id) === Number(authStore.user.id)) {
+                    alert("La teva sol·licitud d'unió al clan ha estat rebutjada.");
+                 }
+              });
+           } else {
+              setTimeout(setupSocketListeners, 1000);
+           }
+        };
+        setupSocketListeners();
+
+        var store = useClanStore();
+        var myClan = await store.getMyClan();
+        this.loading = false;
+        if (myClan && myClan.id) {
+           this.userClanId = myClan.id;
+           this.$router.push('/clans/' + myClan.id);
+        }
+     },
      onClanCreated: function (payload) {
         var store = useClanStore();
-        this.showCreate = false;
         var clan = payload && (payload.clan || payload.data || payload);
         var id = clan && clan.id;
         if (id) {
@@ -145,7 +136,6 @@ export default {
            var result = await store.leaveClan(this.userClanId);
            if (result) {
               this.userClanId = null;
-              window.location.reload();
            }
         }
      }
@@ -156,14 +146,6 @@ export default {
 <style scoped>
 .clans-page {
   font-family: "Comfortaa", system-ui, sans-serif;
-}
-
-.clans-page-title {
-  margin: 0;
-  font-family: "Bricolage Grotesque", system-ui, sans-serif;
-  font-size: 24px;
-  font-weight: 700;
-  color: #faf9f9;
 }
 
 .clans-spinner {
@@ -218,10 +200,4 @@ export default {
   color: #ffffff;
 }
 
-.fade-enter-active, .fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-.fade-enter, .fade-leave-to {
-  opacity: 0;
-}
 </style>

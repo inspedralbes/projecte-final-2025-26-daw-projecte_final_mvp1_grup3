@@ -111,14 +111,23 @@
       "recuperador_racha": {
         "name": "Streak restorer",
         "description": "Restores your current streak to your best streak"
+      },
+      "fons_platja": {
+        "name": "Beach Background",
+        "description": "A tropical background for your app"
+      },
+      "fons_casa": {
+        "name": "Home Background",
+        "description": "A cozy background for your app"
       }
     }
   },
   "inventory": {
-    "title": "My inventory",
+    "title": "Inventory",
     "subtitle": "Equip skins and use your consumables",
     "skins_section": "Skins",
     "consumables_section": "Consumables",
+    "backgrounds_section": "Backgrounds",
     "equip": "Equip",
     "equipped": "Equipped",
     "unequip": "Unequip",
@@ -128,7 +137,8 @@
     "use_success_title": "Streak restored!",
     "use_success_text": "Your streak has been restored to your max.",
     "empty": "You don't have any items yet",
-    "go_to_shop": "Go to the shop"
+    "go_to_shop": "Go to the shop",
+    "loading": "Loading inventory..."
   },
   "header": {
     "weather_change": "Change weather location",

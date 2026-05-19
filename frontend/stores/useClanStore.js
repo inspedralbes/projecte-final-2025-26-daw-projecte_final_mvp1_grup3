@@ -311,6 +311,7 @@ export var useClanStore = defineStore("clan", {
                     method: "POST"
                 });
                 if (!resposta.ok) throw new Error("Error leaving clan");
+                this.currentClan = null;
                 return await resposta.json();
             } catch (e) {
                 this.error = e.message;

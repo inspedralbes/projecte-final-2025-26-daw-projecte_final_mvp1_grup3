@@ -105,6 +105,11 @@ class AdminActionService
                 'categoria' => $data['categoria'] ?? null,
                 'es_publica' => $data['es_publica'] ?? false,
             ]);
+            
+            if (isset($data['habits']) && is_array($data['habits'])) {
+                $plantilla->habits()->sync($data['habits']);
+            }
+
             $despres = $plantilla->toArray();
             $this->adminLogService->registrar($adminId, 'Crear plantilla', 'Plantilla ID ' . $plantilla->id . ': ' . $plantilla->titol, null, $despres, null);
             $this->enviarFeedback($adminId, 'plantilla', 'CREATE', true, $plantilla->toArray());
@@ -119,6 +124,10 @@ class AdminActionService
             $plantilla->categoria = $data['categoria'] ?? $plantilla->categoria;
             $plantilla->es_publica = $data['es_publica'] ?? $plantilla->es_publica;
             $plantilla->save();
+
+            if (isset($data['habits']) && is_array($data['habits'])) {
+                $plantilla->habits()->sync($data['habits']);
+            }
             $despres = $plantilla->toArray();
             $this->adminLogService->registrar($adminId, 'Editar plantilla', 'Plantilla ID ' . $id . ': ' . $plantilla->titol, $abans, $despres, null);
             $this->enviarFeedback($adminId, 'plantilla', 'UPDATE', true, $plantilla->toArray());

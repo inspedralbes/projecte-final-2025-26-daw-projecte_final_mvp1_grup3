@@ -31,7 +31,7 @@ class AdminPlantillaController extends Controller
             $page = 1;
         }
 
-        $paginator = Plantilla::with('creador:id,nom,email')
+        $paginator = Plantilla::with(['creador:id,nom,email', 'habits:id,titol,icona'])
             ->orderBy('id')
             ->paginate($perPage, ['*'], 'page', $page);
 

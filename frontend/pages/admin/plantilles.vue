@@ -23,17 +23,28 @@ var plantilles = computed(function() {
   return [];
 });
 
+var { data: habitsData } = useAuthFetch('/api/admin/habits/1/1000', {
+  key: 'admin_habits_for_templates'
+});
+var totsElsHabits = computed(function() {
+  if (habitsData.value && habitsData.value.success) {
+    return habitsData.value.data.data;
+  }
+  return [];
+});
+
 var popupObert = ref(null); // 'crear', 'editar', 'eliminar'
 var plantillaSeleccionada = ref(null);
 var formulari = ref({
   titol: "",
   categoria: "Activitat fisica",
-  es_publica: true
+  es_publica: true,
+  habits: []
 });
 
 // 2. METHODS (FUNCTION)
 function obreCrear() {
-  formulari.value = { titol: "", categoria: "Activitat fisica", es_publica: true };
+  formulari.value = { titol: "", categoria: "Activitat fisica", es_publica: true, habits: [] };
   popupObert.value = 'crear';
 }
 
@@ -42,7 +53,8 @@ function obreEditar(p) {
   formulari.value = { 
     titol: p.titol, 
     categoria: p.categoria, 
-    es_publica: p.es_publica 
+    es_publica: p.es_publica,
+    habits: p.habits ? p.habits.map(h => h.id) : []
   };
   popupObert.value = 'editar';
 }
@@ -77,7 +89,8 @@ function guardarPlantilla() {
     data: {
       titol: formulari.value.titol,
       categoria: formulari.value.categoria,
-      es_publica: formulari.value.es_publica
+      es_publica: formulari.value.es_publica,
+      habits: formulari.value.habits
     }
   };
   
@@ -186,6 +199,15 @@ function confirmarEliminacio() {
                     <input type="checkbox" v-model="formulari.es_publica" class="sr-only peer">
                     <div class="w-14 h-8 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-[#79D45D]"></div>
                   </label>
+                </div>
+                <div class="space-y-2 col-span-2 mt-2">
+                  <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 font-bricolage">Hàbits Associats a la Plantilla</label>
+                  <div class="max-h-48 overflow-y-auto bg-white/50 border border-gray-200 rounded-[10px] p-3 space-y-2">
+                    <label v-for="habit in totsElsHabits" :key="habit.id" class="flex items-center gap-3 p-2 hover:bg-white/80 rounded-[10px] cursor-pointer transition-colors border border-transparent hover:border-gray-100">
+                      <input type="checkbox" :value="habit.id" v-model="formulari.habits" class="w-4 h-4 text-[#79D45D] rounded border-gray-300 focus:ring-[#79D45D]">
+                      <span class="text-sm font-bold text-gray-700 font-comfortaa">{{ habit.icona }} {{ habit.titol }}</span>
+                    </label>
+                  </div>
                 </div>
               </div>
             </template>

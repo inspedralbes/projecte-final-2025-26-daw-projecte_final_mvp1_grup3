@@ -5,39 +5,36 @@ export const RULETA_VIDEO_URL = '/video/ruleta-diaria.mp4';
 
 function formatPremiRuleta(data) {
   if (!data || typeof data !== 'object') {
-    return 'Premi';
+    return { label: 'Premi', type: null, amount: 0 };
   }
 
   var tipus = data.type || '';
   var quantitat = data.amount;
 
   if (tipus === 'xp' && quantitat !== undefined && quantitat !== null) {
-    return String(quantitat) + ' XP';
+    return { label: String(quantitat) + ' XP', type: 'xp', amount: Number(quantitat) };
   }
 
   if (tipus === 'coins' && quantitat !== undefined && quantitat !== null) {
     var n = Number(quantitat);
-    if (n === 1) {
-      return '1 moneda';
-    }
-    return String(quantitat) + ' monedes';
+    var txt = n === 1 ? '1 moneda' : String(quantitat) + ' monedes';
+    return { label: txt, type: 'coins', amount: n };
   }
 
   var label = data.label || data.premi_text || data.premi_valor;
   if (label) {
-    return String(label);
+    return { label: String(label), type: null, amount: 0 };
   }
 
-  return 'Premi';
+  return { label: 'Premi', type: null, amount: 0 };
 }
 
 /**
- * Flux de tirada diària: vídeo en pantalla completa → SweetAlert amb la recompensa.
+ * Flux de tirada diària: vídeo en pantalla completa → modal custom amb la recompensa.
  */
 export function useRouletteDailySpin() {
   const gameStore = useGameStore();
   const nuxtApp = useNuxtApp();
-  const $swal = nuxtApp.$swal;
   const $socket = nuxtApp.$socket;
   const { t } = useI18n();
 
@@ -45,6 +42,13 @@ export function useRouletteDailySpin() {
   const mostraVideoRuleta = ref(false);
   const videoAcabat = ref(false);
   const resultatPendent = ref(null);
+
+  const modalObert = ref(false);
+  const modalTitol = ref('');
+  const modalText = ref('');
+  const modalTipus = ref('success');
+  const modalPremiType = ref(null);
+  const modalPremiAmount = ref(0);
 
   let socketHandler = null;
 
@@ -56,16 +60,17 @@ export function useRouletteDailySpin() {
     gameStore.finalitzarAnimacioRuleta();
   }
 
-  function mostrarAlertaRuleta(titol, text, icona) {
-    if (!$swal) {
-      return;
-    }
-    $swal.fire({
-      icon: icona || 'success',
-      title: titol,
-      text: text,
-      confirmButtonColor: '#79d45d',
-    });
+  function tancarModal() {
+    modalObert.value = false;
+  }
+
+  function mostrarModal(titol, text, tipus, premiType, premiAmount) {
+    modalTitol.value = titol;
+    modalText.value = text;
+    modalTipus.value = tipus || 'success';
+    modalPremiType.value = premiType || null;
+    modalPremiAmount.value = premiAmount || 0;
+    modalObert.value = true;
   }
 
   function intentarMostrarRecompensa() {
@@ -85,7 +90,7 @@ export function useRouletteDailySpin() {
 
     if (data.error) {
       gameStore.finalitzarAnimacioRuleta();
-      mostrarAlertaRuleta('Error', data.error, 'error');
+      mostrarModal('Error', data.error, 'error', null, 0);
       return;
     }
 
@@ -96,11 +101,13 @@ export function useRouletteDailySpin() {
     gameStore.obtenirEstatJoc();
     gameStore.finalitzarAnimacioRuleta();
 
-    var premiLabel = formatPremiRuleta(data);
-    mostrarAlertaRuleta(
+    var premi = formatPremiRuleta(data);
+    mostrarModal(
       t('home.roulette_won_title') || 'Enhorabona!',
-      t('home.roulette_won_text', { premi: premiLabel }) || ('Has guanyat ' + premiLabel + '! 🎉'),
-      'success'
+      t('home.roulette_won_text', { premi: premi.label }) || ('Has guanyat ' + premi.label + '!'),
+      'success',
+      premi.type,
+      premi.amount
     );
   }
 
@@ -121,12 +128,13 @@ export function useRouletteDailySpin() {
     }
 
     if (!$socket || !$socket.connected) {
-      $swal.fire({
-        icon: 'warning',
-        title: 'Sense connexió',
-        text: 'No s\'ha pogut connectar amb el servidor per girar la ruleta.',
-        confirmButtonColor: '#79d45d',
-      });
+      mostrarModal(
+        'Sense connexió',
+        'No s\'ha pogut connectar amb el servidor per girar la ruleta.',
+        'error',
+        null,
+        0
+      );
       return false;
     }
 
@@ -158,6 +166,13 @@ export function useRouletteDailySpin() {
     videoRuletaUrl: RULETA_VIDEO_URL,
     isSpinning,
     mostraVideoRuleta,
+    modalObert,
+    modalTitol,
+    modalText,
+    modalTipus,
+    modalPremiType,
+    modalPremiAmount,
+    tancarModal,
     iniciarTirada,
     onVideoRuletaAcabat,
     reiniciarFluxTirada,

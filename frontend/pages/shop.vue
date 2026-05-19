@@ -287,6 +287,10 @@ function itemJaPossessionat(item) {
   return item.tipus === 'skin' && shopStore.posseeixItem(item.id);
 }
 
+function potComprar(item) {
+  return !itemJaPossessionat(item);
+}
+
 function onCardClick(item) {
   if (itemJaPossessionat(item)) return;
   sheetItem.value = item;
@@ -401,7 +405,7 @@ onMounted(async function () {
 .shop-sections-container {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 0;
   width: 100%;
 }
 
@@ -427,7 +431,7 @@ onMounted(async function () {
   color: #faf9f9;
   font-family: "Bricolage Grotesque", system-ui, sans-serif;
   font-size: 15px;
-  font-weight: 700;
+  font-weight: 400;
   line-height: 1.2;
   white-space: nowrap;
 }
@@ -494,7 +498,7 @@ onMounted(async function () {
 
 .shop-card--owned {
   background: #79d45d;
-  border: 2px solid #6bc24d;
+  border: 2px solid #faf9f9;
 }
 
 .shop-card--owned .shop-card-title {

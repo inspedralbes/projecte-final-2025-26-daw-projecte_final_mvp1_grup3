@@ -3,7 +3,21 @@
   <header v-if="!isCalendarRoute && !isSocialRoute && !isInventariRoute" class="w-full p-3">
     <!-- Mòbil: hamburguesa | stats al centre | clima a la dreta -->
     <nav class="w-full lg:hidden">
-      <div class="flex w-full items-center gap-1 px-1 min-h-[2.75rem]">
+      <div v-if="isPublicProfileRoute" class="flex w-full items-center gap-1 px-1 min-h-[2.75rem]">
+        <div class="flex shrink-0 justify-start w-14">
+          <button
+            type="button"
+            class="header-back-btn"
+            aria-label="Tornar enrere"
+            @click="tornarDesDelPerfil"
+          >
+            <svg width="48" height="48" viewBox="0 0 73 73" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M42.5834 54.75L24.3334 36.5L42.5834 18.25L46.8417 22.5083L32.85 36.5L46.8417 50.4917L42.5834 54.75Z" fill="#374151"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div v-else class="flex w-full items-center gap-1 px-1 min-h-[2.75rem]">
         <div class="flex shrink-0 justify-start" :class="isHistoricView ? 'w-14' : 'w-10'">
           <button
             v-if="isHistoricView"
@@ -185,7 +199,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import logo from '~/assets/img/Icones/Icona_Logo_Perfil.png'
 import coinIcon from '~/assets/img/Icones/Icona_Moneda.png'
 import xpIcon from '~/assets/img/Icones/Icona_Experiencia.png'
@@ -208,9 +222,11 @@ const HEADER_WEATHER_EMOJI = {
 }
 
 const route = useRoute()
+const router = useRouter()
 const isCalendarRoute = computed(() => String(route.path || '').startsWith('/calendar'))
 const isSocialRoute = computed(() => route.path === '/social' || String(route.path || '').startsWith('/friends') || String(route.path || '').startsWith('/clans'))
 const isInventariRoute = computed(() => route.path === '/inventari')
+const isPublicProfileRoute = computed(() => /^\/user\/\d+/.test(route.path))
 
 const authStore = useAuthStore()
 const gameStore = useGameStore()
@@ -249,6 +265,7 @@ const headerWeatherCity = computed(() => {
 })
 
 const isHistoricView = computed(() => gameStore.historicOverrides != null)
+const showHeaderBackBtn = computed(() => isHistoricView.value || isPublicProfileRoute.value)
 
 const displayRatxa = computed(() => {
   if (isHistoricView.value) return gameStore.historicOverrides.ratxa
@@ -336,6 +353,10 @@ watch(
 function tornarAlCalendari() {
   gameStore.historicOverrides = null
   navigateTo('/calendar')
+}
+
+function tornarDesDelPerfil() {
+  router.back()
 }
 
 function openWeatherCityModal() {

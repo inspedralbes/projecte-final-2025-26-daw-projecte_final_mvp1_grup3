@@ -33,22 +33,34 @@
                 <button
                   v-if="vistaHistorialDia"
                   type="button"
-                  class="inline-flex items-center gap-1 rounded-full bg-white/90 px-3 py-1.5 text-[11px] font-black uppercase tracking-wide text-gray-800 shadow-[3px_3px_8px_rgba(0,0,0,0.1)] border border-white/60 hover:bg-gray-50 transition-all duration-200"
+                  class="w-10 h-10 flex items-center justify-center transition-transform hover:scale-110 active:scale-95"
                   @click="tornarHistorialCalendari"
+                  aria-label="Tornar al calendari"
                 >
-                  {{ $t('home.back_to_calendar') }}
-                </button>
-                <button
-                  v-else
-                  type="button"
-                  class="w-8 h-8 rounded-full bg-indigo-50 shadow-[3px_3px_8px_rgba(0,0,0,0.1)] border border-white/60 flex items-center justify-center text-indigo-500 hover:bg-indigo-100 hover:scale-105 transition-all duration-200"
-                  title="Calendari"
-                  @click="anarAlCalendari"
-                >
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  <svg width="32" height="32" viewBox="0 0 73 73" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M42.5834 54.75L24.3334 36.5L42.5834 18.25L46.8417 22.5083L32.85 36.5L46.8417 50.4917L42.5834 54.75Z" fill="#FAF9F9"/>
                   </svg>
                 </button>
+                <div v-else class="flex items-center gap-2">
+                  <button
+                    type="button"
+                    class="w-8 h-8 rounded-full bg-orange-50 shadow-[3px_3px_8px_rgba(0,0,0,0.1)] border border-white/60 flex items-center justify-center hover:bg-orange-100 hover:scale-105 transition-all duration-200"
+                    title="Inventari"
+                    @click="anarAlInventari"
+                  >
+                    <img :src="imatgeInventari" class="w-4 h-4 object-contain select-none" />
+                  </button>
+                  <button
+                    type="button"
+                    class="w-8 h-8 rounded-full bg-indigo-50 shadow-[3px_3px_8px_rgba(0,0,0,0.1)] border border-white/60 flex items-center justify-center text-indigo-500 hover:bg-indigo-100 hover:scale-105 transition-all duration-200"
+                    title="Calendari"
+                    @click="anarAlCalendari"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </button>
+                </div>
               </div>
             </div>
             <UserHomeHomeStreakSection :ratxa="ratxa" :ratxa-maxima="ratxaMaxima" :xp-total="xpTotal" :monedes="monedes" />
@@ -87,35 +99,41 @@
               :percentatge-nivell="percentatgeNivellMostrat"
             />
           </div>
-          <!-- Calendari (mòbil), alineat a la dreta -->
+          <!-- Calendari i inventari (mòbil) — ocult en vista històrica -->
           <div
-            class="col-span-4 lg:hidden flex flex-row flex-nowrap justify-between items-center gap-2 min-w-0 w-full pt-1 pr-0.5 pl-0.5"
+            v-if="!vistaHistorialDia"
+            class="col-span-4 lg:hidden flex flex-row flex-nowrap justify-end items-center gap-2 min-w-0 w-full pt-1 pr-0.5 pl-0.5"
           >
-            <button
-              v-if="vistaHistorialDia"
-              type="button"
-              class="shrink-0 min-w-0 max-w-[50%] rounded-xl bg-white/90 px-2.5 py-2 text-[11px] font-black uppercase leading-tight text-gray-800 shadow-[3px_3px_8px_rgba(0,0,0,0.1)] border border-white/60 active:scale-95 transition-transform"
-              @click="tornarHistorialCalendari"
-            >
-              {{ $t('home.back_to_calendar') }}
-            </button>
-            <span v-else class="shrink-0 w-10" aria-hidden="true" />
-            <button
-              type="button"
-              class="shrink-0 w-16 h-16 sm:w-[4.5rem] sm:h-[4.5rem] flex items-center justify-center transition-transform hover:scale-105 active:scale-95 min-h-0"
-              :class="vistaHistorialDia ? 'opacity-40 pointer-events-none' : ''"
-              :title="$t('nav.calendar') || 'Calendari'"
-              :disabled="vistaHistorialDia"
-              @click="anarAlCalendari"
-            >
-              <img
-                :src="imatgeCalendari"
-                alt="Calendari"
-                class="max-w-full max-h-full w-auto h-auto object-contain select-none"
-                decoding="async"
-                draggable="false"
-              />
-            </button>
+            <div class="flex items-center gap-2">
+              <button
+                type="button"
+                class="shrink-0 w-16 h-16 sm:w-[4.5rem] sm:h-[4.5rem] flex items-center justify-center transition-transform hover:scale-105 active:scale-95 min-h-0"
+                title="Inventari"
+                @click="anarAlInventari"
+              >
+                <img
+                  :src="imatgeInventari"
+                  alt="Inventari"
+                  class="max-w-full max-h-full w-auto h-auto object-contain select-none"
+                  decoding="async"
+                  draggable="false"
+                />
+              </button>
+              <button
+                type="button"
+                class="shrink-0 w-16 h-16 sm:w-[4.5rem] sm:h-[4.5rem] flex items-center justify-center transition-transform hover:scale-105 active:scale-95 min-h-0"
+                :title="$t('nav.calendar') || 'Calendari'"
+                @click="anarAlCalendari"
+              >
+                <img
+                  :src="imatgeCalendari"
+                  alt="Calendari"
+                  class="max-w-full max-h-full w-auto h-auto object-contain select-none"
+                  decoding="async"
+                  draggable="false"
+                />
+              </button>
+            </div>
           </div>
         </div>
         <div v-if="!vistaHistorialDia" class="hidden lg:block">
@@ -183,6 +201,7 @@
       :progress="progresModal"
       :objectiu="objectiuModal"
       :unitat="unitatModal"
+      :is-completed-today="habitSeleccionat ? habitCompletatAvui(habitSeleccionat.id) : false"
       @close="tancarModalHabit"
       @increment="incrementarHabit"
       @decrement="decrementarHabit"
@@ -210,6 +229,12 @@
       @close="tancarModalRatxaCelebracio"
     />
 
+    <LevelUpCelebrationModal
+      :is-open="esObertModalLevelUp"
+      :nivell="nivellLevelUpModal"
+      @close="tancarModalLevelUp"
+    />
+
     <LogrosModal
       :is-open="esObertModalLogros"
       :logros="logroStore.logros"
@@ -217,6 +242,14 @@
     />
 
     <RouletteDailySpinHost ref="ruletaDailySpin" />
+
+    <MissionCompletedModal
+      :is-open="esObertModalMissio"
+      :missio-titol="missioTitolModal"
+      :recompensa-xp="missioRecompensaXp"
+      :recompensa-monedes="missioRecompensaMonedes"
+      @close="tancarModalMissio"
+    />
 
   </div>
 </template>
@@ -230,7 +263,9 @@ import { useAuthStore } from "~/stores/useAuthStore.js";
 import HabitProgressModal from "~/components/home/HabitProgressModal.vue";
 import StreakBrokenModal from "~/components/home/StreakBrokenModal.vue";
 import StreakCelebrationModal from "~/components/home/StreakCelebrationModal.vue";
+import LevelUpCelebrationModal from "~/components/home/LevelUpCelebrationModal.vue";
 import LogrosModal from "~/components/home/LogrosModal.vue";
+import MissionCompletedModal from "~/components/home/MissionCompletedModal.vue";
 import HabitDetailsModal from "~/components/user/home/HabitDetailsModal.vue";
 import UserHomeHomeMissionCard from "~/components/user/home/HomeMissionCard.vue";
 import UserHomeHomeDailyRouletteCard from "~/components/user/home/HomeDailyRouletteCard.vue";
@@ -244,7 +279,9 @@ import { useCalendar } from "~/composables/useCalendar.js";
 import { useCalendarStore } from "~/stores/calendar.js";
 import { flushPendingFocusEvents } from "~/composables/user/useFocusEventQueue.js";
 import { getMonsterImageFromUser } from "~/utils/monsterImage.js";
-import calendarImg from "~/assets/img/calendar-loopy.png";
+import { useShopStore } from "~/stores/useShopStore.js";
+import calendarImg from "~/assets/img/Icones/Icona_Calendari.png";
+import inventariImg from "~/assets/img/Icones/Icona_Inventari.png";
 import UserHomeHomeStreakSection from "~/components/user/home/HomeStreakSection.vue";
 import RouletteDailySpinHost from "~/components/roulette/RouletteDailySpinHost.vue";
 
@@ -254,7 +291,9 @@ export default {
     HabitDetailsModal,
     StreakBrokenModal,
     StreakCelebrationModal,
+    LevelUpCelebrationModal,
     LogrosModal,
+    MissionCompletedModal,
     UserHomeHomeMissionCard,
     UserHomeHomeDailyRouletteCard,
     UserHomeHomeProfileCard,
@@ -276,6 +315,12 @@ export default {
       esObertModalDetalls: false,
       esObertModalRatxa: false,
       esObertModalRatxaCelebracio: false,
+      esObertModalLevelUp: false,
+      nivellLevelUpModal: 1,
+      esObertModalMissio: false,
+      missioTitolModal: "",
+      missioRecompensaXp: 20,
+      missioRecompensaMonedes: 10,
       rachaInicialCarregada: false,
       ratxaAnteriorModal: 0,
       habitSeleccionat: null,
@@ -289,6 +334,7 @@ export default {
       weatherCarregant: false,
       ruletaProcessant: false,
       imatgeCalendari: calendarImg,
+      imatgeInventari: inventariImg,
       snapshotHistoric: null,
       carregantSnapshotHistoric: false,
       errorSnapshotHistoric: "",
@@ -314,10 +360,20 @@ export default {
       return localStorage.getItem('loopy_monstre_tipus') || null;
     },
     imatgeMascotaDinamica: function () {
+      var skinKey = null;
+      try {
+        var shopSt = useShopStore();
+        skinKey = shopSt.skinEquipat || null;
+      } catch (_) {}
       if (this.snapshotHistoric && this.snapshotHistoric.mascota_json) {
-        return getMonsterImageFromUser(this.snapshotHistoric.mascota_json);
+        var mascotaData = this.snapshotHistoric.mascota_json;
+        if (!mascotaData.monstre_tipus && this.user) {
+          mascotaData = Object.assign({}, mascotaData, { monstre_tipus: this.user.monstre_tipus });
+        }
+        var snapshotSkin = mascotaData.skin_key || null;
+        return getMonsterImageFromUser(mascotaData, snapshotSkin);
       }
-      return getMonsterImageFromUser(this.user);
+      return getMonsterImageFromUser(this.user, skinKey);
     },
     dataHistorialDia: function () {
       var q = this.$route && this.$route.query ? this.$route.query.date : null;
@@ -431,13 +487,25 @@ export default {
     if (typeof window !== "undefined") {
       window.addEventListener("loopy-weather-city-changed", self._onLoopyWeatherCity);
     }
+    self._onDebugKey = function (e) {
+      if (e.key === "9") {
+        self.mostrarAlertaLevelUp({ nivell: (self.gameStore.nivell || 1) + 1 });
+      }
+    };
+    if (typeof window !== "undefined") {
+      window.addEventListener("keydown", self._onDebugKey);
+    }
     self.$nextTick(function () {
       self.sincronitzarHistoricDesDeRuta();
     });
   },
   beforeUnmount: function () {
+    this.gameStore.historicOverrides = null;
     if (typeof window !== "undefined" && this._onLoopyWeatherCity) {
       window.removeEventListener("loopy-weather-city-changed", this._onLoopyWeatherCity);
+    }
+    if (typeof window !== "undefined" && this._onDebugKey) {
+      window.removeEventListener("keydown", this._onDebugKey);
     }
   },
   watch: {
@@ -633,6 +701,7 @@ export default {
       var self = this;
       self.snapshotHistoric = null;
       self.errorSnapshotHistoric = "";
+      self.gameStore.historicOverrides = null;
       var q = self.$route && self.$route.query ? self.$route.query.date : null;
       if (!q || typeof q !== "string") {
         return;
@@ -658,11 +727,25 @@ export default {
           return;
         }
         self.snapshotHistoric = snap;
+        var m = snap.mascota_json || {};
+        var eco = snap.economia_json || {};
+        self.gameStore.historicOverrides = {
+          xpActualNivel: m.xp_actual_nivel != null ? Number(m.xp_actual_nivel) : 0,
+          xpObjetivoNivel: m.xp_objetivo_nivel != null ? Number(m.xp_objetivo_nivel) : 1000,
+          nivell: m.nivell != null ? Number(m.nivell) : 1,
+          xpTotal: m.xp_total != null ? Number(m.xp_total) : 0,
+          ratxa: m.ratxa != null ? Number(m.ratxa) : 0,
+          monedes: m.monedes != null ? Number(m.monedes) : 0,
+          monedesGuanyades: eco.monedes_guanyades_avui != null ? Number(eco.monedes_guanyades_avui) : 0,
+          xpGuanyada: eco.xp_guanyada_avui != null ? Number(eco.xp_guanyada_avui) : 0,
+          data: q,
+        };
       } finally {
         self.carregantSnapshotHistoric = false;
       }
     },
     tornarHistorialCalendari: async function () {
+      this.gameStore.historicOverrides = null;
       var store = useCalendarStore();
       var q = this.dataHistorialDia || (this.$route.query && this.$route.query.date);
       if (q && typeof q === "string") {
@@ -677,6 +760,10 @@ export default {
     anarAlCalendari: function () {
       if (this.vistaHistorialDia) return;
       navigateTo("/calendar");
+    },
+    anarAlInventari: function () {
+      if (this.vistaHistorialDia) return;
+      navigateTo("/inventari");
     },
     logout: async function() {
       await useAuthStore().logout();
@@ -788,6 +875,7 @@ export default {
       if (this.vistaHistorialDia) return;
       if (!this.habitSeleccionat) return;
       var id = this.habitSeleccionat.id;
+      if (this.habitCompletatAvui(id)) return;
       var current = this.obtenirProgres(id);
       var max = this.habitSeleccionat.objectiuVegades || 1;
       if (current >= max) return;
@@ -821,17 +909,7 @@ export default {
       if (!this.habitSeleccionat) return;
       var id = this.habitSeleccionat.id;
       var progressActual = this.progresModal;
-      var objectiu = this.objectiuModal;
-      var completatAvui = this.habitCompletatAvui(id);
-      if (completatAvui && (progressActual - 1) < objectiu) {
-        this.mostrarAlertaRestarHabitCompletat(function () {
-          this.actualitzarProgresLocal(id, progressActual - 1, false);
-          if (this.socket && this.socket.connected) {
-            this.gameStore.enviarProgresHabit(id, -1, this.socket);
-          }
-        }.bind(this));
-        return;
-      }
+      if (this.habitCompletatAvui(id)) return;
       if (progressActual <= 0) return;
       this.actualitzarProgresLocal(id, progressActual - 1, false);
       if (this.socket && this.socket.connected) {
@@ -958,20 +1036,26 @@ export default {
             self.gameStore.actualitzarDesDeXpUpdate(payload.xp_update);
           }
           self.mostrarAlertaHabitCompletat();
-          var missionData = payload.mission_completed;
-          if (missionData && (missionData.success === true || missionData.success === "true")) {
-            self.gameStore.missioCompletada = true;
-            if (missionData.missio_objectiu !== undefined) {
-              self.gameStore.missioProgres = missionData.missio_objectiu;
-              self.gameStore.missioObjectiu = missionData.missio_objectiu;
-            }
-            if (missionData.xp_update && typeof missionData.xp_update === "object") {
-              self.gameStore.actualitzarDesDeXpUpdate(missionData.xp_update);
-            }
-            self.mostrarAlertaMissioCompletada();
+        }
+        if (payload.action === "FOCUS_UPDATE" && payload.completed_today === true) {
+          if (payload.habit && payload.habit.id) {
+            self.actualitzarProgresLocal(payload.habit.id, payload.progress || 0, true);
           }
-          // No cridar obtenirEstatJoc aquí: el payload del socket (xp_update) és la font de veritat.
-          // Una petició API posterior podria sobreescriure la ratxa correcta amb dades antigues.
+          if (payload.xp_update && typeof payload.xp_update === "object") {
+            self.gameStore.actualitzarDesDeXpUpdate(payload.xp_update);
+          }
+        }
+        var missionData = payload.mission_completed;
+        if (missionData && (missionData.success === true || missionData.success === "true")) {
+          self.gameStore.missioCompletada = true;
+          if (missionData.missio_objectiu !== undefined) {
+            self.gameStore.missioProgres = missionData.missio_objectiu;
+            self.gameStore.missioObjectiu = missionData.missio_objectiu;
+          }
+          if (missionData.xp_update && typeof missionData.xp_update === "object") {
+            self.gameStore.actualitzarDesDeXpUpdate(missionData.xp_update);
+          }
+          self.mostrarAlertaMissioCompletada();
         }
       });
 
@@ -991,6 +1075,7 @@ export default {
       });
 
       self.gameStore.registrarListenerMissionCompletada(self.socket, function () {
+        self.mostrarAlertaMissioCompletada();
       });
 
       self.socket.on("disconnect", function () {
@@ -1211,67 +1296,29 @@ export default {
      * Mostra SweetAlert quan es completa un hàbit.
      */
     mostrarAlertaHabitCompletat: function () {
-      this.$swal.fire({
-        title: this.$t('home.habit_completed_title'),
-        text: this.$t('home.habit_completed_text'),
-        icon: "success"
-      });
     },
 
     /**
-     * Mostra SweetAlert quan l'usuari vol restar progrés d'un hàbit completat.
-     * Adverteix que es restaran XP i monedes. Botons Confirmar i Cancel·lar.
-     *
-     * @param {Function} callbackOnConfirm - Cridat quan l'usuari prem Confirmar.
-     */
-    mostrarAlertaRestarHabitCompletat: function (callbackOnConfirm) {
-      var self = this;
-      var xp = this.habitSeleccionat && this.habitSeleccionat.recompensaXP ? this.habitSeleccionat.recompensaXP : 100;
-      var monedes = this.habitSeleccionat && this.habitSeleccionat.recompensaMonedes ? this.habitSeleccionat.recompensaMonedes : 2;
-      var monedesActuals = this.monedes || 0;
-      var monedesDespres = monedesActuals - monedes;
-      var textMonedes = this.$t('home.confirm_undo_subtext', { xp: xp, monedes: monedes });
-      if (monedesDespres < 0) {
-        textMonedes += " " + this.$t('home.confirm_undo_balance', { monedes: monedesDespres });
-      }
-
-      this.$swal.fire({
-        title: self.$t('home.confirm_undo_title'),
-        html: "<p>" + self.$t('home.confirm_undo_text') + "</p><p class=\"mt-2 font-semibold\">" + textMonedes + "</p><p class=\"mt-2 text-sm text-gray-500\">" + self.$t('home.confirm_undo_footer') + "</p>",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: self.$t('home.confirm'),
-        cancelButtonText: self.$t('home.cancel'),
-        buttonsStyling: true
-      }).then(function (result) {
-        if (result && result.isConfirmed && typeof callbackOnConfirm === "function") {
-          var habitId = self.habitSeleccionat && self.habitSeleccionat.id;
-          var nouProgress = self.progresModal - 1;
-          self.actualitzarProgresLocal(habitId, nouProgress, false);
-          callbackOnConfirm();
-        }
-      });
-    },
-    /**
-     * Mostra SweetAlert quan es puja de nivell.
+     * Mostra el modal de celebració quan es puja de nivell.
      */
     mostrarAlertaLevelUp: function (data) {
-      this.$swal.fire({
-        title: this.$t('home.level_up_title'),
-        text: this.$t('home.level_up_text', { nivell: data && data.nivell ? data.nivell : this.nivell, bonus: data && data.bonus_monedes ? data.bonus_monedes : 10 }),
-        icon: "success"
-      });
+      this.nivellLevelUpModal = data && data.nivell ? data.nivell : this.nivell;
+      this.esObertModalLevelUp = true;
     },
 
-    /**
-     * Mostra SweetAlert quan la missió diària s'ha completat.
-     */
+    tancarModalLevelUp: function () {
+      this.esObertModalLevelUp = false;
+    },
+
     mostrarAlertaMissioCompletada: function () {
-      this.$swal.fire({
-        title: this.$t('home.mission_completed_title'),
-        text: this.$t('home.mission_completed_text'),
-        icon: "success"
-      });
+      var missio = this.gameStore.missioDiaria;
+      this.missioTitolModal = missio && missio.titol ? missio.titol : "";
+      this.missioRecompensaXp = missio && missio.recompensa_xp ? missio.recompensa_xp : 20;
+      this.missioRecompensaMonedes = missio && missio.recompensa_monedes ? missio.recompensa_monedes : 10;
+      this.esObertModalMissio = true;
+    },
+    tancarModalMissio: function () {
+      this.esObertModalMissio = false;
     },
     obrirModalLogros: function () {
       if (this.vistaHistorialDia) return;

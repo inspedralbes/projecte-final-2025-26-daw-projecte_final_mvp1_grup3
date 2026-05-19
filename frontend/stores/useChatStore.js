@@ -7,6 +7,7 @@ export var useChatStore = defineStore("chat", {
       messages: {},
       loading: false,
       error: null,
+      onlineUsers: [],
     };
   },
 
@@ -27,6 +28,19 @@ export var useChatStore = defineStore("chat", {
         return [];
       } finally {
         this.loading = false;
+      }
+    },
+    setOnlineUsers: function (users) {
+      this.onlineUsers = users;
+    },
+    updateUserStatus: function (userId, online) {
+      // Ens assegurem que userId sigui int
+      userId = parseInt(userId);
+      var index = this.onlineUsers.indexOf(userId);
+      if (online && index === -1) {
+        this.onlineUsers.push(userId);
+      } else if (!online && index !== -1) {
+        this.onlineUsers.splice(index, 1);
       }
     },
   },

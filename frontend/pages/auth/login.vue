@@ -249,6 +249,9 @@ export default {
     if (typeof window === 'undefined') {
       return;
     }
+    if (window.innerWidth >= 1024) {
+      return;
+    }
     try {
       if (window.sessionStorage.getItem(STORAGE_APP_ENTRY_VIDEO) === '1') {
         return;

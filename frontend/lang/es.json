@@ -95,7 +95,7 @@
     "home": "Home",
     "create": "Crear",
     "catalog": "Catálogo",
-    "forum": "Foro",
+    "forum": "Social",
     "friends": "Amigos",
     "clans": "Clanes",
     "profile": "Perfil",
@@ -132,20 +132,21 @@
         "description": "Restaura tu racha actual al máximo alcanzado"
       },
       "fons_platja": {
-        "name": "Fondo playa",
+        "name": "Fondo Playa",
         "description": "Un fondo soleado de playa para personalizar la app"
       },
-      "fons_sala": {
-        "name": "Fondo salón",
+      "fons_casa": {
+        "name": "Fondo Casa",
         "description": "Un fondo acogedor de salón para personalizar la app"
       }
     }
   },
   "inventory": {
-    "title": "Mi inventario",
+    "title": "Inventario",
     "subtitle": "Equipa skins y usa tus consumibles",
     "skins_section": "Skins",
     "consumables_section": "Consumibles",
+    "backgrounds_section": "Fondos",
     "equip": "Equipar",
     "equipped": "Equipado",
     "unequip": "Desequipar",
@@ -155,7 +156,8 @@
     "use_success_title": "¡Racha restaurada!",
     "use_success_text": "Se ha recuperado tu racha al máximo alcanzado.",
     "empty": "Aún no tienes ningún objeto",
-    "go_to_shop": "Ir a la tienda"
+    "go_to_shop": "Ir a la tienda",
+    "loading": "Cargando el inventario..."
   },
   "header": {
     "weather_change": "Cambiar lugar del clima",
@@ -179,7 +181,9 @@
     "chat": "Chatear",
     "request_sent": "Solicitud enviada",
     "online": "En línea",
-    "no_messages": "No tienes mensajes"
+    "no_messages": "No tienes mensajes",
+    "no_results": "No se han encontrado usuarios",
+    "search_hint": "Escribe para buscar usuarios"
   },
   "chat": {
     "placeholder": "Escribe un mensaje...",
@@ -434,6 +438,10 @@
     "category_label": "Categoría: ",
     "public": "Pública",
     "private": "Privada",
+    "personal": "Personales",
+    "friends": "Amigos",
+    "saved": "Guardadas",
+    "default": "Predeterminadas",
     "edit": "Editar",
     "delete": "Eliminar",
     "edit_title": "Editar Plantilla",

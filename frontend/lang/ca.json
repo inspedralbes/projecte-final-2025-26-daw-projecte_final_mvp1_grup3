@@ -95,7 +95,7 @@
         "home": "Home",
         "create": "Crear",
         "catalog": "Catàleg",
-        "forum": "Fòrum",
+        "forum": "Social",
         "friends": "Amics",
         "clans": "Clans",
         "profile": "Perfil",
@@ -133,20 +133,21 @@
                 "description": "Restaura la teva ratxa actual al màxim assolit"
             },
             "fons_platja": {
-                "name": "Fons platja",
+                "name": "Fons Platja",
                 "description": "Un fons solellat de platja per personalitzar l'app"
             },
-            "fons_sala": {
-                "name": "Fons sala",
+            "fons_casa": {
+                "name": "Fons Casa",
                 "description": "Un fons acollidor de sala per personalitzar l'app"
             }
         }
     },
     "inventory": {
-        "title": "El meu inventari",
+        "title": "Inventari",
         "subtitle": "Equipa skins i utilitza els teus consumibles",
         "skins_section": "Skins",
         "consumables_section": "Consumibles",
+        "backgrounds_section": "Fons",
         "equip": "Equipar",
         "equipped": "Equipat",
         "unequip": "Desequipar",
@@ -156,7 +157,8 @@
         "use_success_title": "Ratxa restaurada!",
         "use_success_text": "S'ha recuperat la teva ratxa al màxim assolit.",
         "empty": "Encara no tens cap objecte",
-        "go_to_shop": "Anar a la botiga"
+        "go_to_shop": "Anar a la botiga",
+        "loading": "Carregant l'inventari..."
     },
     "header": {
         "weather_change": "Canviar lloc del clima",
@@ -437,6 +439,10 @@
         "category_label": "Categoria: ",
         "public": "Pública",
         "private": "Privada",
+        "personal": "Personals",
+        "friends": "Amics",
+        "saved": "Guardades",
+        "default": "Predefinides",
         "edit": "Editar",
         "delete": "Eliminar",
         "edit_title": "Editar Plantilla",

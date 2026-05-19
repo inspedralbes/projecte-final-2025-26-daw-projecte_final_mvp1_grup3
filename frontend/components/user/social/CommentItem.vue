@@ -23,13 +23,25 @@
     </div>
     <div class="comment-item__body">
       <div class="comment-item__bubble">
+        <button v-if="isOwner" type="button" @click="deleteComment" class="comment-item__delete-corner" title="Eliminar comentari">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+        </button>
+        <button v-else type="button" @click="$emit('report', comment.user_id)" class="comment-item__report-corner" title="Reportar usuari">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+        </button>
         <div class="comment-item__header">
           <span
             class="comment-item__author"
             @click="openProfile"
           >{{ comment.user?.nom }}</span>
           <span class="comment-item__time">{{ formatDate(comment.created_at) }}</span>
-          
           <button v-if="isOwner" type="button" @click="showDeleteConfirm = true" class="ml-auto text-gray-400 hover:text-red-500 p-1 transition-colors animate-fade-in" title="Eliminar comentari">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="3 6 5 6 21 6"></polyline>
@@ -86,22 +98,17 @@
         />
       </div>
     </div>
-
-    <UserSocialConfirmModal
-      :show="showDeleteConfirm"
-      :title="'Eliminar comentari'"
-      :message="'Segur que vols eliminar aquest comentari? Aquesta acció no es pot desfer.'"
-      confirm-text="Eliminar"
-      @confirm="confirmDeleteComment"
-      @cancel="showDeleteConfirm = false"
-    />
   </div>
 </template>
 
 <script>
 import { useAuthStore } from "~/stores/useAuthStore.js";
+import { useSocialStore } from "~/stores/useSocialStore.js";
 import { getMonsterImageFromUser } from "~/utils/monsterImage.js";
-import bosqueImg from "~/assets/img/Bosque.png";
+import bosqueImg from "~/assets/img/Fons/Fons_Bosc.png";
+import fonsAplicacioImg from "~/assets/img/Fons/Fons_Aplicacio.png";
+import fonsPlatjaImg from "~/assets/img/Fons/Fons_Platja.png";
+import fonsCasaImg from "~/assets/img/Fons/Fons_Casa.png";
 
 export default {
   name: "CommentItem",
@@ -113,20 +120,25 @@ export default {
   emits: ["replySubmitted", "report", "commentDeleted"],
   data: function () {
     return {
-      showReply: false,
-      showDeleteConfirm: false
+      showReply: false
     };
   },
   computed: {
     avatarBackgroundStyle: function () {
+      var fonsKey = this.comment.user ? this.comment.user.fons_key : null;
+      var bg = bosqueImg;
+      if (fonsKey === "fons_platja") bg = fonsPlatjaImg;
+      else if (fonsKey === "fons_casa") bg = fonsCasaImg;
+      else if (fonsKey === "fons_aplicacio") bg = fonsAplicacioImg;
       return {
-        backgroundImage: "url(" + bosqueImg + ")",
+        backgroundImage: "url(" + bg + ")",
         backgroundSize: "cover",
         backgroundPosition: "center",
       };
     },
     monsterImage: function () {
-      return getMonsterImageFromUser(this.comment.user);
+      var skinKey = this.comment.user ? this.comment.user.skin_key : null;
+      return getMonsterImageFromUser(this.comment.user, skinKey);
     },
     monsterStyle: function () {
       return {
@@ -184,11 +196,10 @@ export default {
       this.showReply = false;
       this.$emit("replySubmitted");
     },
-    confirmDeleteComment: async function () {
+    deleteComment: async function () {
       var socialStore = useSocialStore();
       var ok = await socialStore.deleteComment(this.comment.id);
       if (ok) {
-        this.showDeleteConfirm = false;
         this.$emit("commentDeleted");
       }
     }
@@ -249,10 +260,74 @@ export default {
   min-width: 0;
 }
 
+.comment-item__report {
+  border: 0;
+  background: #E85B7A;
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.15s;
+  padding: 4px 6px;
+  border-radius: 6px;
+  line-height: 1;
+}
+
+.comment-item__report:hover {
+  filter: brightness(0.9);
+}
+
+.comment-item__delete-corner {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  border: 0;
+  background: transparent;
+  color: #b0b0b0;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, background 0.15s;
+}
+
+.comment-item__delete-corner:hover {
+  color: #e74c3c;
+  background: rgba(231, 76, 60, 0.1);
+}
+
+.comment-item__report-corner {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  border: 0;
+  background: #FF8DA6;
+  color: #ffffff;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: filter 0.15s;
+}
+
+.comment-item__report-corner:hover {
+  filter: brightness(0.9);
+}
+
 .comment-item__bubble {
   background: #f3f3f3;
   border-radius: 10px;
   padding: 8px 12px;
+  position: relative;
 }
 
 .comment-item__header {

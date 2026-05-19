@@ -3,16 +3,17 @@
 .focus-mobile-screen {
   --focus-design-width: 402;
   --focus-design-height: 747;
-  width: min(100vw, 402px);
+  width: 100%;
   min-height: 100vh;
-  margin: 0 auto;
+  margin: 0;
   padding: 18px 10px 24px;
   color: #faf9f9;
   font-family: "Comfortaa", "Inter", "SF Pro Display", "Segoe UI", sans-serif;
   background-color: #82af30;
-  background-image: url("~/assets/img/Fondo_ModoFocus.png");
+  background-image: url("~/assets/img/ModeFocus/Fons/Fons_Mode_Focus.png");
   background-size: cover;
   background-position: center;
+  background-repeat: no-repeat;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -233,7 +234,7 @@
 
 .focus-creature-wrap {
   position: relative;
-  width: min(350px, calc(100vw - 20px));
+  width: min(420px, calc(100vw - 20px));
   aspect-ratio: 1 / 1;
   display: flex;
   align-items: center;
@@ -267,14 +268,22 @@
 
 .focus-creature {
   position: absolute;
-  width: 64%;
-  max-width: 236px;
+  width: 75%;
+  max-width: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transform: translateY(8px);
 }
 
-.focus-creature img {
+.focus-creature__img {
   width: 100%;
+  height: auto;
+  object-fit: contain;
   display: block;
+  filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.25));
+  pointer-events: none;
+  user-select: none;
 }
 
 .focus-player {
@@ -456,8 +465,6 @@
 
 @media (min-width: 768px) {
   .focus-mobile-screen {
-    max-width: 402px;
-    border-left: 1px solid rgba(250, 249, 249, 0.25);
-    border-right: 1px solid rgba(250, 249, 249, 0.25);
+    max-width: 100%;
   }
 }

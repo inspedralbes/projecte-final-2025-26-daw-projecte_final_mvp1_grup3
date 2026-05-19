@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { authFetch, getBaseUrl } from '~/composables/useApi.js';
+import { getMonsterImage } from '~/utils/monsterImage.js';
 
 export const useMonsterStore = defineStore('monster', {
   state: () => ({
@@ -16,8 +17,7 @@ export const useMonsterStore = defineStore('monster', {
     hasMonster: (state) => state.tipus !== null,
     spriteUrl: (state) => {
       if (!state.tipus) return null;
-      const colorCode = state.tipus.charAt(0);
-      return '/img/monsters/' + colorCode + state.etapa + '.png';
+      return getMonsterImage(state.tipus, state.nivell);
     },
   },
 

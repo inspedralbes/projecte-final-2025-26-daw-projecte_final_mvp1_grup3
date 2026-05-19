@@ -79,12 +79,8 @@
         <p class="social-loading__text">{{ $t('home.loading') }}</p>
       </div>
 
-      <div v-else-if="posts.length === 0" class="social-empty">
-        <svg class="social-empty__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"/>
-        </svg>
-        <p class="social-empty__title">{{ $t('social.no_posts') }}</p>
-        <p class="social-empty__subtitle">{{ $t('social.be_first') }}</p>
+      <div v-else-if="posts.length === 0" class="social-empty w-full text-center py-10">
+        <p class="social-empty__text">Encara no hi ha cap publicació al fòrum. Sigues el primer a compartir els teus èxits!</p>
       </div>
 
       <div v-else class="social-feed">
@@ -527,27 +523,17 @@ export default {
 /* --- Empty --- */
 .social-empty {
   text-align: center;
-  padding: 48px 0;
+  padding: 48px 20px;
 }
 
-.social-empty__icon {
-  width: 56px;
-  height: 56px;
-  margin: 0 auto 12px;
-  color: #d9d9d9;
-}
-
-.social-empty__title {
+.social-empty__text {
   margin: 0;
-  color: #707070;
+  color: #ffffff;
+  font-family: "Comfortaa", system-ui, sans-serif;
   font-size: 14px;
   font-weight: 600;
-}
-
-.social-empty__subtitle {
-  margin: 4px 0 0;
-  color: #b0b0b0;
-  font-size: 12px;
+  line-height: 1.5;
+  opacity: 0.85;
 }
 
 /* --- Feed --- */

@@ -130,6 +130,22 @@ class HabitService
                 if (isset($resultatProgres['xp_update']) && is_array($resultatProgres['xp_update'])) {
                     $xpUpdate = $resultatProgres['xp_update'];
                 }
+                if ($completedToday === true) {
+                    $resultatMissio = $this->missionService->comprovarMissioCompletada(
+                        $usuariId,
+                        $habitId,
+                        Carbon::now()
+                    );
+                    if ($resultatMissio !== null && $resultatMissio['completada'] === true) {
+                        $missionCompleted = ['success' => true];
+                        if (isset($resultatMissio['missio_objectiu'])) {
+                            $missionCompleted['missio_objectiu'] = (int) $resultatMissio['missio_objectiu'];
+                        }
+                        if (isset($resultatMissio['xp_update']) && is_array($resultatMissio['xp_update'])) {
+                            $xpUpdate = array_merge($xpUpdate ?? [], $resultatMissio['xp_update']);
+                        }
+                    }
+                }
             } else {
                 $success = false;
                 $message = 'No s\'ha pogut actualitzar el progrés.';
@@ -157,6 +173,22 @@ class HabitService
             }
             if ($success !== true) {
                 $message = $resultatFocus['message'] ?? 'No s\'ha pogut processar la sessió de focus.';
+            }
+            if ($success === true && ($resultatFocus['completed_today'] ?? false) === true) {
+                $resultatMissio = $this->missionService->comprovarMissioCompletada(
+                    $usuariId,
+                    $habitId,
+                    isset($dades['data']) ? Carbon::parse($dades['data']) : Carbon::now()
+                );
+                if ($resultatMissio !== null && $resultatMissio['completada'] === true) {
+                    $missionCompleted = ['success' => true];
+                    if (isset($resultatMissio['missio_objectiu'])) {
+                        $missionCompleted['missio_objectiu'] = (int) $resultatMissio['missio_objectiu'];
+                    }
+                    if (isset($resultatMissio['xp_update']) && is_array($resultatMissio['xp_update'])) {
+                        $xpUpdate = array_merge($xpUpdate ?? [], $resultatMissio['xp_update']);
+                    }
+                }
             }
         } elseif ($accio === 'COMPLETE') {
             $resultatComplete = $this->processarConfirmacioHabit([
@@ -216,6 +248,20 @@ class HabitService
                 }
                 if (isset($resultatComplete['completed_today'])) {
                     $completedToday = $resultatComplete['completed_today'];
+                }
+                $resultatMissio = $this->missionService->comprovarMissioCompletada(
+                    $usuariId,
+                    $habitId,
+                    isset($dades['data']) ? Carbon::parse($dades['data']) : Carbon::now()
+                );
+                if ($resultatMissio !== null && $resultatMissio['completada'] === true) {
+                    $missionCompleted = ['success' => true];
+                    if (isset($resultatMissio['missio_objectiu'])) {
+                        $missionCompleted['missio_objectiu'] = (int) $resultatMissio['missio_objectiu'];
+                    }
+                    if (isset($resultatMissio['xp_update']) && is_array($resultatMissio['xp_update'])) {
+                        $xpUpdate = array_merge($xpUpdate ?? [], $resultatMissio['xp_update']);
+                    }
                 }
             } else {
                 $success = false;

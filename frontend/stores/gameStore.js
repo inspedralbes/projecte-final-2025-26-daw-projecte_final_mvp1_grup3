@@ -36,6 +36,7 @@ export var useGameStore = defineStore("game", {
       /** Bloqueja xp_update mentre la ruleta gira (espera l'animació). */
       ruletaAnimant: false,
       xpUpdatePendent: null,
+      historicOverrides: null,
     };
   },
 

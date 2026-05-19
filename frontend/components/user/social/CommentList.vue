@@ -15,8 +15,8 @@
         :key="comment.id"
         :comment="comment"
         :depth="0"
-        @replySubmitted="onReplySubmitted"
-        @commentDeleted="loadComments"
+        @replySubmitted="loadComments(true)"
+        @commentDeleted="loadComments(true)"
         @report="$emit('report', $event)"
       />
     </div>
@@ -88,8 +88,8 @@ export default {
     }
   },
   methods: {
-    loadComments: async function () {
-      if (this.comments.length > 0) return;
+    loadComments: async function (force = false) {
+      if (!force && this.comments.length > 0) return;
 
       this.loading = true;
       var socialStore = useSocialStore();
@@ -102,7 +102,7 @@ export default {
       this.loading = false;
     },
     onReplySubmitted: function () {
-      this.loadComments();
+      this.loadComments(true);
     }
   }
 };

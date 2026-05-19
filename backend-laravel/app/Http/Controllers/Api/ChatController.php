@@ -25,17 +25,17 @@ class ChatController extends Controller
 
         $senderId = $validated['sender_id'];
         
-        $friendship = Friendship::where(function ($query) use ($senderId, $receiverId) {
-            $query->where(function ($q) use ($senderId, $receiverId) {
-                $q->where('requester_id', $senderId)->where('addressee_id', $receiverId);
-            })->orWhere(function ($q) use ($senderId, $receiverId) {
-                $q->where('requester_id', $receiverId)->where('addressee_id', $senderId);
-            });
-        })->where('status', 'accepted')->first();
+        // $friendship = Friendship::where(function ($query) use ($senderId, $receiverId) {
+        //     $query->where(function ($q) use ($senderId, $receiverId) {
+        //         $q->where('requester_id', $senderId)->where('addressee_id', $receiverId);
+        //     })->orWhere(function ($q) use ($senderId, $receiverId) {
+        //         $q->where('requester_id', $receiverId)->where('addressee_id', $senderId);
+        //     });
+        // })->where('status', 'accepted')->first();
 
-        if (!$friendship) {
-            return response()->json(['error' => 'Has de ser amic per enviar missatges'], 403);
-        }
+        // if (!$friendship) {
+        //     return response()->json(['error' => 'Has de ser amic per enviar missatges'], 403);
+        // }
 
         $message = PrivateMessage::create([
             'sender_id' => $senderId,
@@ -71,17 +71,17 @@ class ChatController extends Controller
 
         $senderId = $validated['sender_id'];
 
-        $friendship = Friendship::where(function ($query) use ($senderId, $receiverId) {
-            $query->where(function ($q) use ($senderId, $receiverId) {
-                $q->where('requester_id', $senderId)->where('addressee_id', $receiverId);
-            })->orWhere(function ($q) use ($senderId, $receiverId) {
-                $q->where('requester_id', $receiverId)->where('addressee_id', $senderId);
-            });
-        })->where('status', 'accepted')->first();
+        // $friendship = Friendship::where(function ($query) use ($senderId, $receiverId) {
+        //     $query->where(function ($q) use ($senderId, $receiverId) {
+        //         $q->where('requester_id', $senderId)->where('addressee_id', $receiverId);
+        //     })->orWhere(function ($q) use ($senderId, $receiverId) {
+        //         $q->where('requester_id', $receiverId)->where('addressee_id', $senderId);
+        //     });
+        // })->where('status', 'accepted')->first();
 
-        if (!$friendship) {
-            return response()->json(['error' => 'Has de ser amic per enviar missatges'], 403);
-        }
+        // if (!$friendship) {
+        //     return response()->json(['error' => 'Has de ser amic per enviar missatges'], 403);
+        // }
 
         $message = PrivateMessage::create([
             'sender_id' => $senderId,

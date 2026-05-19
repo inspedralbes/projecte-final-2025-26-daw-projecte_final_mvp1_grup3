@@ -189,7 +189,7 @@
               <div class="perfil-history-card__mark" aria-hidden="true">
                 <svg class="perfil-history-card__blob" width="56" height="40" viewBox="0 0 56 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path
-                    d="M1.64885 13.8624C4.80033 5.5202 12.7867 0 21.7043 0H46.8857C51.8563 0 55.8857 4.0294.5857 9V18.1149C55.8857 20.9967 55.1982 23.8369 53.8802 26.3997L53.3295 27.4705C49.3729 35.1639 41.4476 40 32.7964 40H18.4113C11.3613 40 4.93035 35.9742 1.85018 29.6327C-0.361252 25.0797 -0.600734 19.8171 1.18804 15.0821L1.64885 13.8624Z"
+                    d="M1.64885 13.8624C4.80033 5.5202 12.7867 0 21.7043 0H46.8857C51.8563 0 55.8857 4.02944 55.8857 9V18.1149C55.8857 20.9967 55.1982 23.8369 53.8802 26.3997L53.3295 27.4705C49.3729 35.1639 41.4476 40 32.7964 40H18.4113C11.3613 40 4.93035 35.9742 1.85018 29.6327C-0.361252 25.0797 -0.600734 19.8171 1.18804 15.0821L1.64885 13.8624Z"
                     :fill="colorMarcaHistorial(log)"
                   />
                 </svg>
@@ -211,9 +211,9 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { useRoute } from 'vue-router';
-import mascotaImg from "~/assets/img/Mascota.png";
+import mascotaImg from "~/assets/img/Monstres/Mascota_Defecte.png";
 import coinLoopy from "~/assets/img/Icones/Icona_Moneda.png";
 import xpIcon from "~/assets/img/Icones/Icona_Experiencia.png";
 import ratxaIcon from "~/assets/img/Icones/Icona_Ratxa.png";
@@ -223,8 +223,10 @@ import { getMonsterImageFromUser } from "~/utils/monsterImage.js";
 import { getDefaultColorForCategoryId } from "~/utils/habitCategoryColor.js";
 import { normalizeHex } from "~/utils/colorSpace.js";
 import { authFetch, getBaseUrl } from "~/composables/useApi.js";
+import { useProfileFons } from "~/composables/useProfileFons.js";
 
 var route = useRoute();
+var profileFons = useProfileFons();
 var userId = route.params.id;
 
 var user = ref(null);
@@ -234,7 +236,8 @@ var loadingLogs = ref(true);
 var showcaseLogros = ref([]);
 
 var imatgeMascota = computed(function () {
-  return getMonsterImageFromUser(user.value) || mascotaImg;
+  var skinKey = user.value ? user.value.skin_key : null;
+  return getMonsterImageFromUser(user.value, skinKey) || mascotaImg;
 });
 
 var xpActualNivell = computed(function () {
@@ -325,6 +328,9 @@ onMounted(function() {
     .then(function(r) { return r.json(); })
     .then(function(d) { 
       user.value = d.data || d; 
+      if (user.value.fons_key) {
+        profileFons.set(user.value.fons_key);
+      }
       if (user.value.logros_showcase) {
         showcaseLogros.value = user.value.logros_showcase.map(function(l) { return l.id; });
       }
@@ -342,6 +348,10 @@ onMounted(function() {
       loading.value = false;
       loadingLogs.value = false;
     });
+});
+
+onBeforeUnmount(function() {
+  profileFons.clear();
 });
 </script>
 

@@ -33,6 +33,7 @@ class PlantillaResource extends JsonResource
             'titol' => $this->titol,
             'categoria' => $this->categoria,
                         'es_publica' => $this->es_publica,
+            'es_default' => $this->es_default ?? ($this->id <= 8),
             // B. Incloure els hàbits associats, transformats amb HabitResource
             'habits' => HabitResource::collection($this->whenLoaded('habits')),
         ];

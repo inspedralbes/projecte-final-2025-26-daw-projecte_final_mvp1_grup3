@@ -18,6 +18,8 @@
 </template>
 
 <script>
+import { getMonsterImage, getEtapa } from '~/utils/monsterImage.js';
+
 export default {
   name: 'MonsterDisplay',
   props: {
@@ -57,12 +59,12 @@ export default {
       return this.tipus.charAt(1);
     },
     etapa: function () {
-      return this.getEtapa(this.nivell);
+      return getEtapa(this.nivell);
     },
     spriteUrl: function () {
       if (!this.tipus) return null;
       if (this.imageError) return null;
-      return '/img/monsters/' + this.colorCode + this.etapa + '.png';
+      return getMonsterImage(this.tipus, this.nivell);
     },
     monsterName: function () {
       var colorNames = { V: 'Verde', R: 'Rosa', L: 'Lila', A: 'Amarillo' };
@@ -77,12 +79,6 @@ export default {
     },
   },
   methods: {
-    getEtapa: function (nivell) {
-      if (nivell <= 5) return 'B';
-      if (nivell <= 15) return 'N';
-      if (nivell <= 30) return 'A';
-      return 'M';
-    },
     onImageError: function () {
       this.imageError = true;
     },

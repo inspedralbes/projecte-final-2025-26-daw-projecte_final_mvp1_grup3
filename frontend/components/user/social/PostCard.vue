@@ -1,9 +1,10 @@
 <template>
-  <div
-    class="post-expandable"
-    :class="showComments ? 'post-expandable--active' : ''"
-  >
-    <button type="button" class="post-card" @click="toggleExpand">
+  <div class="post-card-wrapper">
+    <div
+      class="post-expandable"
+      :class="showComments ? 'post-expandable--active' : ''"
+    >
+      <button type="button" class="post-card" @click="toggleExpand">
       <div class="post-card__avatar">
         <div class="post-card__avatar-ring" :style="avatarBackgroundStyle">
           <div class="post-card__avatar-inner">
@@ -30,13 +31,13 @@
 
     <div v-if="showComments" class="post-expand-inline">
       <div class="post-expand-top">
-        <button class="post-expand-close" type="button" @click="showComments = false">
+        <button class="post-expand-close" type="button" @click.stop="showComments = false">
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M11.2917 6.54167L6.54167 11.2917M6.54167 6.54167L11.2917 11.2917M16.8333 8.91667C16.8333 13.2889 13.2889 16.8333 8.91667 16.8333C4.54441 16.8333 1 13.2889 1 8.91667C1 4.54441 4.54441 1 8.91667 1C13.2889 1 16.8333 4.54441 16.8333 8.91667Z" stroke="#FAF9F9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </button>
         <span class="post-expand-date">{{ formatDate(post.created_at) }}</span>
-        <button v-if="isOwner" class="post-expand-delete" type="button" @click="deletePost">
+        <button v-if="isOwner" class="post-expand-delete" type="button" @click.stop="deletePost">
           <svg width="15" height="15" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M2 4h12M5.333 4V2.667a1.333 1.333 0 011.334-1.334h2.666a1.333 1.333 0 011.334 1.334V4m2 0v9.333a1.333 1.333 0 01-1.334 1.334H4.667a1.333 1.333 0 01-1.334-1.334V4h9.334z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
@@ -45,7 +46,7 @@
       </div>
 
       <div class="post-expand-panel">
-        <div class="post-expand-header flex justify-between items-start">
+        <div class="post-expand-header">
           <div class="post-expand-avatar-row">
             <button type="button" class="post-expand-avatar-btn" @click="openProfile">
               <div class="post-card__avatar-ring post-card__avatar-ring--lg" :style="avatarBackgroundStyle">
@@ -69,9 +70,8 @@
               <p class="post-expand-time">{{ formatDate(post.created_at) }}</p>
             </div>
           </div>
-          
-          <button v-if="!isOwner" type="button" @click.stop="$emit('report', { type: 'post', id: post.id })" class="text-[#FF8DA6] hover:text-[#ff4d6d] p-1 transition-colors" title="Reportar post">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <button v-if="!isOwner" class="post-expand-report-corner" type="button" @click.stop="$emit('report', { type: 'post', id: post.id })" title="Reportar post">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
               <line x1="12" y1="9" x2="12" y2="13"></line>
               <line x1="12" y1="17" x2="12.01" y2="17"></line>
@@ -82,16 +82,37 @@
         <p class="post-expand-content">{{ post.content }}</p>
 
         <div v-if="post.attachments && post.attachments.length > 0" class="post-expand-attachments-container">
-          <div v-for="att in post.attachments" :key="att.type + '-' + att.id" class="post-expand-attachment">
-            <div class="post-expand-attachment__info">
-              <span class="post-expand-attachment__badge" :class="att.type === 'habit' ? 'post-expand-attachment__badge--habit' : 'post-expand-attachment__badge--template'">
-                {{ att.type === 'habit' ? $t('social.habit') : $t('social.template') }}
-              </span>
-              <span class="post-expand-attachment__name">{{ att.titol || (att.habit ? att.habit.titol : (att.plantilla ? att.plantilla.titol : '')) }}</span>
+          <div v-for="att in post.attachments" :key="att.type + '-' + att.id" class="att-wrapper">
+            <div class="post-expand-attachment">
+              <div class="post-expand-attachment__info">
+                <span class="post-expand-attachment__badge" :class="att.type === 'habit' ? 'post-expand-attachment__badge--habit' : 'post-expand-attachment__badge--template'">
+                  {{ att.type === 'habit' ? $t('social.habit') : $t('social.template') }}
+                </span>
+                <span class="post-expand-attachment__name">{{ att.titol || (att.habit ? att.habit.titol : (att.plantilla ? att.plantilla.titol : '')) }}</span>
+              </div>
+              <div class="post-expand-attachment__actions">
+                <button v-if="att.type === 'habit' && att.habit" type="button" class="att-details-toggle" :class="expandedAttachments[att.type + '-' + att.id] ? 'att-details-toggle--open' : ''" @click.stop="toggleAttDetails(att)">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3.5 5.25L7 8.75L10.5 5.25" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <button type="button" class="post-expand-import-btn" @click="$emit('import', { post: post, attachment: att })">
+                  {{ $t('social.import') }}
+                </button>
+              </div>
             </div>
-            <button type="button" class="post-expand-import-btn" @click="$emit('import', { post: post, attachment: att })">
-              {{ $t('social.import') }}
-            </button>
+            <Transition name="att-detail">
+              <div v-if="att.type === 'habit' && att.habit && expandedAttachments[att.type + '-' + att.id]" class="att-habit-details">
+                <div class="att-habit-meta">
+                  <span class="att-meta-item"><span class="att-meta-icon">☆</span>{{ getHabitDifficulty(att.habit) }}</span>
+                  <span class="att-meta-item"><span class="att-meta-icon">↻</span>{{ getHabitFrequency(att.habit) }}</span>
+                  <span class="att-meta-item"><span class="att-meta-icon">◎</span>{{ att.habit.objectiu_vegades || 1 }}x</span>
+                  <span v-if="att.habit.moment_dia && att.habit.moment_dia !== 'tot_dia'" class="att-meta-item"><span class="att-meta-icon">🕐</span>{{ getHabitMoment(att.habit) }}</span>
+                </div>
+                <div v-if="getHabitExternImage(att.habit) || getHabitExternTitle(att.habit)" class="att-habit-extern">
+                  <img v-if="getHabitExternImage(att.habit)" :src="getHabitExternImage(att.habit)" alt="" class="att-habit-extern__img" @error="$event.target.style.display='none'" />
+                  <span v-if="getHabitExternTitle(att.habit)" class="att-habit-extern__titol">{{ getHabitExternTitle(att.habit) }}</span>
+                </div>
+              </div>
+            </Transition>
           </div>
         </div>
 
@@ -116,6 +137,7 @@
         </div>
       </div>
     </div>
+    </div>
 
     <UserSocialConfirmModal
       :show="showDeleteConfirm"
@@ -132,10 +154,17 @@
 import { useSocialStore } from "~/stores/useSocialStore.js";
 import { useAuthStore } from "~/stores/useAuthStore.js";
 import { getMonsterImageFromUser } from "~/utils/monsterImage.js";
-import bosqueImg from "~/assets/img/Bosque.png";
+import bosqueImg from "~/assets/img/Fons/Fons_Bosc.png";
+import fonsAplicacioImg from "~/assets/img/Fons/Fons_Aplicacio.png";
+import fonsPlatjaImg from "~/assets/img/Fons/Fons_Platja.png";
+import fonsCasaImg from "~/assets/img/Fons/Fons_Casa.png";
+import UserSocialConfirmModal from "~/components/user/social/ConfirmModal.vue";
 
 export default {
   name: "PostCard",
+  components: {
+    UserSocialConfirmModal
+  },
   props: {
     post: { type: Object, required: true }
   },
@@ -144,7 +173,8 @@ export default {
     return {
       showComments: false,
       showDeleteConfirm: false,
-      commentsCount: this.post.comments_count || 0
+      commentsCount: this.post.comments_count || 0,
+      expandedAttachments: {}
     };
   },
   computed: {
@@ -153,7 +183,8 @@ export default {
       return this.post.user_id === authStore.user?.id;
     },
     monsterImage: function () {
-      return getMonsterImageFromUser(this.post.user);
+      var skinKey = this.post.user ? this.post.user.skin_key : null;
+      return getMonsterImageFromUser(this.post.user, skinKey);
     },
     monsterStyle: function () {
       return {
@@ -162,8 +193,13 @@ export default {
       };
     },
     avatarBackgroundStyle: function () {
+      var fonsKey = this.post.user ? this.post.user.fons_key : null;
+      var bg = bosqueImg;
+      if (fonsKey === "fons_platja") bg = fonsPlatjaImg;
+      else if (fonsKey === "fons_casa") bg = fonsCasaImg;
+      else if (fonsKey === "fons_aplicacio") bg = fonsAplicacioImg;
       return {
-        backgroundImage: "url(" + bosqueImg + ")",
+        backgroundImage: "url(" + bg + ")",
         backgroundSize: "cover",
         backgroundPosition: "center",
       };
@@ -213,6 +249,41 @@ export default {
       if (result) {
         this.$emit("deleted", this.post.id);
       }
+    },
+    toggleAttDetails: function (att) {
+      var key = att.type + '-' + att.id;
+      this.expandedAttachments = Object.assign({}, this.expandedAttachments, { [key]: !this.expandedAttachments[key] });
+    },
+    getHabitDifficulty: function (habit) {
+      var d = String(habit.dificultat || 'facil').toLowerCase();
+      if (d === 'dificil') return 'Difícil';
+      if (d === 'mitja' || d === 'media') return 'Mitjana';
+      return 'Fàcil';
+    },
+    getHabitFrequency: function (habit) {
+      var f = String(habit.frequencia_tipus || 'diaria').toLowerCase();
+      if (f === 'setmanal') return 'Setmanal';
+      if (f === 'mensual') return 'Mensual';
+      return 'Diària';
+    },
+    getHabitMoment: function (habit) {
+      var m = String(habit.moment_dia || '').toLowerCase();
+      if (m === 'mati') return 'Matí';
+      if (m === 'tarda') return 'Tarda';
+      if (m === 'nit') return 'Nit';
+      return '';
+    },
+    getHabitExternImage: function (habit) {
+      var meta = habit.metadata || habit.metadada;
+      if (typeof meta === 'string') { try { meta = JSON.parse(meta); } catch (e) { return null; } }
+      if (!meta) return null;
+      return meta.url_imatge && String(meta.url_imatge).trim() ? String(meta.url_imatge).trim() : null;
+    },
+    getHabitExternTitle: function (habit) {
+      var meta = habit.metadata || habit.metadada;
+      if (typeof meta === 'string') { try { meta = JSON.parse(meta); } catch (e) { return null; } }
+      if (!meta) return null;
+      return meta.titol && String(meta.titol).trim() ? String(meta.titol).trim() : null;
     }
   }
 };
@@ -356,20 +427,59 @@ export default {
 .post-expand-delete {
   border: 0;
   background: transparent;
-  color: rgba(250, 249, 249, 0.6);
+  color: #ffffff;
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 12px;
-  font-weight: 400;
+  font-size: 11px;
+  font-weight: 600;
   cursor: pointer;
-  transition: color 0.15s, opacity 0.15s;
-  padding: 0;
+  transition: opacity 0.15s;
+  padding: 4px 8px;
   line-height: 1;
 }
 
 .post-expand-delete:hover {
-  color: #faf9f9;
+  opacity: 0.7;
+}
+
+.post-expand-report {
+  border: 0;
+  background: #E85B7A;
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.15s;
+  padding: 4px 8px;
+  border-radius: 6px;
+  line-height: 1;
+}
+
+.post-expand-report:hover {
+  filter: brightness(0.9);
+}
+
+.post-expand-report-corner {
+  border: 0;
+  background: #FF8DA6;
+  color: #ffffff;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: filter 0.15s;
+  flex-shrink: 0;
+}
+
+.post-expand-report-corner:hover {
+  filter: brightness(0.9);
 }
 
 .post-expand-panel {
@@ -380,6 +490,9 @@ export default {
 
 .post-expand-header {
   margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
 }
 
 .post-expand-avatar-row {
@@ -491,6 +604,131 @@ export default {
 
 .post-expand-import-btn:hover {
   filter: brightness(0.97);
+}
+
+.post-expand-attachment__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.att-details-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1.5px solid #d1d5db;
+  background: #fff;
+  color: #6b7280;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.att-details-toggle--open {
+  transform: rotate(180deg);
+  border-color: #79D45D;
+  color: #79D45D;
+}
+
+.att-details-toggle:hover {
+  border-color: #79D45D;
+  color: #79D45D;
+}
+
+.att-habit-details {
+  padding: 10px 12px;
+  background: #f0fdf4;
+  border-radius: 0 0 10px 10px;
+  border: 1px solid #bbf7d0;
+  border-top: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.att-habit-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+}
+
+.att-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: "Bricolage Grotesque", system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #2b2d42;
+}
+
+.att-meta-icon {
+  color: #79D45D;
+  font-size: 14px;
+}
+
+.att-habit-extern {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(121, 212, 93, 0.08);
+  border: 1.5px solid rgba(121, 212, 93, 0.25);
+}
+
+.att-habit-extern__img {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.att-habit-extern__titol {
+  font-family: "Bricolage Grotesque", system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #2b2d42;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.att-detail-enter-active {
+  transition: max-height 0.25s ease, opacity 0.2s ease;
+  overflow: hidden;
+}
+
+.att-detail-leave-active {
+  transition: max-height 0.2s ease, opacity 0.15s ease;
+  overflow: hidden;
+}
+
+.att-detail-enter-from {
+  max-height: 0;
+  opacity: 0;
+}
+
+.att-detail-enter-to {
+  max-height: 300px;
+  opacity: 1;
+}
+
+.att-detail-leave-from {
+  max-height: 300px;
+  opacity: 1;
+}
+
+.att-detail-leave-to {
+  max-height: 0;
+  opacity: 0;
 }
 
 /* --- Actions row --- */

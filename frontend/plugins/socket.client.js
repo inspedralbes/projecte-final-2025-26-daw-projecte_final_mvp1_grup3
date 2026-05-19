@@ -156,6 +156,21 @@ export default defineNuxtPlugin(function (nuxtApp) {
 
     socket.on('connect', function () {
         authRefreshRetried = false;
+        socket.emit("get_online_users", function (users) {
+            var chatStore = useChatStore();
+            if (chatStore) {
+                // Parse them to ints just in case
+                var intUsers = (users || []).map(function(u) { return parseInt(u); });
+                chatStore.setOnlineUsers(intUsers);
+            }
+        });
+    });
+
+    socket.on('user_status', function (data) {
+        var chatStore = useChatStore();
+        if (chatStore && data) {
+            chatStore.updateUserStatus(data.userId, data.online);
+        }
     });
 
     socket.on('new_private_message', function (data) {

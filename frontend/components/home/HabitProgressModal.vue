@@ -63,7 +63,9 @@
 
         <div class="mt-5 grid grid-cols-3 gap-3 items-center">
           <button
-            class="h-12 rounded-2xl bg-gray-200 text-gray-700 text-3xl font-bold hover:bg-gray-300"
+            class="h-12 rounded-2xl bg-gray-200 text-gray-700 text-3xl font-bold transition-opacity"
+            :class="isCompletedToday ? 'opacity-35 cursor-not-allowed' : 'hover:bg-gray-300'"
+            :disabled="isCompletedToday"
             @click="restar"
           >
             -
@@ -72,7 +74,9 @@
             {{ progress }}/{{ objectiu }}
           </div>
           <button
-            class="h-12 rounded-2xl bg-gray-200 text-gray-700 text-3xl font-bold hover:bg-gray-300"
+            class="h-12 rounded-2xl bg-gray-200 text-gray-700 text-3xl font-bold transition-opacity"
+            :class="isCompletedToday ? 'opacity-35 cursor-not-allowed' : 'hover:bg-gray-300'"
+            :disabled="isCompletedToday"
             @click="sumar"
           >
             +
@@ -112,7 +116,8 @@ export default {
     habit: { type: Object, required: false, default: null },
     progress: { type: Number, required: true, default: 0 },
     objectiu: { type: Number, required: true, default: 1 },
-    unitat: { type: String, required: true, default: "vegades" }
+    unitat: { type: String, required: true, default: "vegades" },
+    isCompletedToday: { type: Boolean, default: false }
   },
   computed: {
     coinIcon: function () {

@@ -68,7 +68,8 @@ CREATE TABLE USUARIS (
     dies_prohibicio INT DEFAULT NULL,
     ultim_reset_missio DATE,
     monstre_tipus VARCHAR(2) DEFAULT NULL,
-    data_naixement_monstre TIMESTAMP DEFAULT NULL
+    data_naixement_monstre TIMESTAMP DEFAULT NULL,
+    primer_login_correu_enviat_at TIMESTAMP DEFAULT NULL
 );
 
 -- 2. LOGROS Y MEDALLAS

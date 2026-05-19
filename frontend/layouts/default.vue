@@ -54,7 +54,7 @@ const isSocialRoute = computed(() => route.path === "/social" || route.path.star
 const { fonsKey: profileFonsKey } = useProfileFons();
 
 const fonsClass = computed(() => {
-  if (isShopRoute.value || isCalendarRoute.value || isInventariRoute.value) return "";
+  if (isShopRoute.value || isCalendarRoute.value) return "";
   if (isPublicProfileRoute.value) {
     var pk = profileFonsKey.value;
     if (pk === "fons_platja") return "fons-platja-bg";

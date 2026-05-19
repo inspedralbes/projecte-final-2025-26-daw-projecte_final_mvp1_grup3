@@ -1,5 +1,7 @@
 import { ref } from 'vue';
 import { useGameStore } from '~/stores/gameStore.js';
+import { useSocketUiCallbacks } from '~/stores/useSocketUiCallbacks.js';
+import { useSocketBridge } from '~/composables/socket/useSocketBridge.js';
 
 export const RULETA_VIDEO_URL = '/video/ruleta-diaria.mp4';
 
@@ -34,8 +36,8 @@ function formatPremiRuleta(data) {
  */
 export function useRouletteDailySpin() {
   const gameStore = useGameStore();
-  const nuxtApp = useNuxtApp();
-  const $socket = nuxtApp.$socket;
+  const socketBridge = useSocketBridge();
+  const $socket = socketBridge.obtenirSocket();
   const { t } = useI18n();
 
   const isSpinning = ref(false);
@@ -148,16 +150,16 @@ export function useRouletteDailySpin() {
   }
 
   function registrarSocket() {
-    if (!$socket || socketHandler) {
+    if (socketHandler) {
       return;
     }
     socketHandler = gestionarResultatServidor;
-    $socket.on('roulette_result', socketHandler);
+    useSocketUiCallbacks().registrarRouletteResult(socketHandler);
   }
 
   function desregistrarSocket() {
-    if ($socket && socketHandler) {
-      $socket.off('roulette_result', socketHandler);
+    if (socketHandler) {
+      useSocketUiCallbacks().eliminarRouletteResult(socketHandler);
       socketHandler = null;
     }
   }

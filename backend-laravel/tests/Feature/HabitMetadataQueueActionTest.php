@@ -36,7 +36,10 @@ class HabitMetadataQueueActionTest extends TestCase
 
         $feedback->shouldReceive('publicarPayload')->times(3);
 
-        $service = new HabitService($feedback, $logro, $mission);
+        $this->app->instance(RedisFeedbackService::class, $feedback);
+        $this->app->instance(LogroService::class, $logro);
+        $this->app->instance(MissionService::class, $mission);
+        $service = $this->app->make(HabitService::class);
         $user = User::factory()->create();
 
         $service->processarAccioHabit([
@@ -104,7 +107,10 @@ class HabitMetadataQueueActionTest extends TestCase
 
         $feedback->shouldReceive('publicarPayload')->times(3);
 
-        $service = new HabitService($feedback, $logro, $mission);
+        $this->app->instance(RedisFeedbackService::class, $feedback);
+        $this->app->instance(LogroService::class, $logro);
+        $this->app->instance(MissionService::class, $mission);
+        $service = $this->app->make(HabitService::class);
         $user = User::factory()->create();
 
         $service->processarAccioHabit([

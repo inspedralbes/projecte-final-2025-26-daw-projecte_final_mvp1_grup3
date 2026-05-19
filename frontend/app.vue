@@ -1,7 +1,7 @@
 <template>
   <div class="app-transition-host">
     <NuxtLayout>
-      <NuxtPage :transition="pageTransition" />
+      <NuxtPage :key="route.fullPath" :transition="pageTransition" />
     </NuxtLayout>
   </div>
 </template>

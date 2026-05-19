@@ -933,6 +933,8 @@ import { watch } from 'vue';
 import { getDefaultColorForCategoryId, nearestCategoryIdFromHex } from "~/utils/habitCategoryColor.js";
 import { normalizeHex } from "~/utils/colorSpace.js";
 import ConfirmModal from "~/components/user/social/ConfirmModal.vue";
+import { usePlantillesPageSocket } from "~/composables/domains/plantilles/usePlantillesPageSocket.js";
+import { useSocketUiCallbacks } from "~/stores/useSocketUiCallbacks.js";
 
 export default {
   components: {
@@ -1071,11 +1073,11 @@ export default {
   // Hook de cicle de vida: s'executa abans que el component sigui desmuntat.
   beforeUnmount: function () {
     var self = this;
-    // A. Netejar els listeners del socket per evitar duplicitat i fuites de memòria.
-    if (self.socket) {
-      console.log("Netejant listeners de socket a Plantilles...");
-      self.socket.off("plantilla_action_confirmed");
-      self.socket.off("habit_action_confirmed");
+    if (self._netejaPlantillaSocket && typeof self._netejaPlantillaSocket === "function") {
+      self._netejaPlantillaSocket();
+    }
+    if (self._plantillaFeedbackHandler) {
+      useSocketUiCallbacks().eliminarHabitConfirmed(self._plantillaFeedbackHandler);
     }
   },
   // Mètodes del component.
@@ -1362,26 +1364,13 @@ export default {
 
       // console.log('Socket URL:', socketUrl); // Comentari de depuració, es pot eliminar o comentar.
 
-      // Gestió d'esdeveniments del socket.
-      self.socket.on("connect", function () {
-        console.log("Socket de Plantilles connectat:", self.socket.id);
-      });
-
-      self.socket.on("plantilla_action_confirmed", function (payload) {
-        self.handlePlantillaFeedback(payload);
-      });
-
-      self.socket.on("habit_action_confirmed", function (payload) {
-        self.handlePlantillaFeedback(payload);
-      });
-
-      self.socket.on("disconnect", function () {
-        console.log("Socket de Plantilles desconnectat");
-      });
-
-      self.socket.on("error", function (error) {
-        console.error("Error en socket de Plantilles:", error);
-      });
+      if (!self._plantillaFeedbackHandler) {
+        self._plantillaFeedbackHandler = function (payload) {
+          self.handlePlantillaFeedback(payload);
+        };
+        self._netejaPlantillaSocket = usePlantillesPageSocket(self._plantillaFeedbackHandler);
+        useSocketUiCallbacks().registrarHabitConfirmed(self._plantillaFeedbackHandler);
+      }
     },
 
     /**

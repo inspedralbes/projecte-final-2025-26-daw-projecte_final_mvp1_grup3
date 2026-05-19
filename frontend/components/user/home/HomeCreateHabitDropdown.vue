@@ -294,6 +294,7 @@ import { authFetch } from "~/composables/useApi.js";
 import { getEndpointByProvider, getProviderByCategoryId } from "~/utils/habitExternal.js";
 import { getDefaultColorForCategoryId, nearestCategoryIdFromHex } from "~/utils/habitCategoryColor.js";
 import { normalizeHex } from "~/utils/colorSpace.js";
+import { useSocketUiCallbacks } from "~/stores/useSocketUiCallbacks.js";
 
 export default {
   name: "HomeCreateHabitDropdown",
@@ -374,14 +375,12 @@ export default {
   mounted: function () {
     this.carregarCategoriesUsuari();
     this.socket = useNuxtApp().$socket;
-    if (this.socket) {
-      this._onHabitActionConfirmed = this.onHabitActionConfirmedSocket.bind(this);
-      this.socket.on("habit_action_confirmed", this._onHabitActionConfirmed);
-    }
+    this._onHabitActionConfirmed = this.onHabitActionConfirmedSocket.bind(this);
+    useSocketUiCallbacks().registrarHabitConfirmed(this._onHabitActionConfirmed);
   },
   beforeUnmount: function () {
-    if (this.socket && this._onHabitActionConfirmed) {
-      this.socket.off("habit_action_confirmed", this._onHabitActionConfirmed);
+    if (this._onHabitActionConfirmed) {
+      useSocketUiCallbacks().eliminarHabitConfirmed(this._onHabitActionConfirmed);
     }
   },
   methods: {

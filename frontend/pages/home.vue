@@ -277,8 +277,10 @@ import WeatherWidget from "~/components/user/home/WeatherWidget.vue";
 import { authFetch } from "~/composables/useApi.js";
 import { useCalendar } from "~/composables/useCalendar.js";
 import { useCalendarStore } from "~/stores/calendar.js";
-import { flushPendingFocusEvents } from "~/composables/user/useFocusEventQueue.js";
 import { getMonsterImageFromUser } from "~/utils/monsterImage.js";
+import { useHabitsPage } from "~/composables/domains/habits/useHabitsPage.js";
+import { useHabitActions } from "~/composables/domains/habits/useHabitActions.js";
+import { useHomeSocketUi } from "~/composables/domains/game/useHomeSocketUi.js";
 import { useShopStore } from "~/stores/useShopStore.js";
 import calendarImg from "~/assets/img/Icones/Icona_Calendari.png";
 import inventariImg from "~/assets/img/Icones/Icona_Inventari.png";
@@ -456,21 +458,17 @@ export default {
   },
   mounted: function () {
     var self = this;
-    var authStore = useAuthStore();
-    authStore.loadFromStorage();
-    self.gameStore.sincronitzarUsuariId();
-    self.habitStore.carregarHabitsLocal();
+    var habitsPage = useHabitsPage();
     if (!self.habitStore.habits || self.habitStore.habits.length === 0) {
       self.estaCarregantHabits = true;
     }
-    self.habitStore.obtenirHabitsDesDeApi()
-      .finally(function () { self.estaCarregantHabits = false; });
-    self.gameStore.carregarDadesHome()
-      .then(function (dades) {
-        if (dades && dades.logros) self.logroStore.setLogros(dades.logros);
-        self.rachaInicialCarregada = true;
-      });
-    self.inicialitzarSocket();
+    habitsPage.carregarHomeInicial().finally(function () {
+      self.estaCarregantHabits = false;
+      self.rachaInicialCarregada = true;
+    });
+    var homeSocketUi = useHomeSocketUi(self);
+    self.socket = homeSocketUi.connectarSocketHome();
+    self._homeSocketUiNetejar = homeSocketUi.netejar;
 
     self.inicialitzarClima();
 
@@ -500,6 +498,9 @@ export default {
     });
   },
   beforeUnmount: function () {
+    if (this._homeSocketUiNetejar && typeof this._homeSocketUiNetejar === "function") {
+      this._homeSocketUiNetejar();
+    }
     this.gameStore.historicOverrides = null;
     if (typeof window !== "undefined" && this._onLoopyWeatherCity) {
       window.removeEventListener("loopy-weather-city-changed", this._onLoopyWeatherCity);
@@ -862,10 +863,7 @@ export default {
      * Actualitza el progrés local al store (per feedback immediat a la UI).
      */
     actualitzarProgresLocal: function (habitId, progress, completedToday) {
-      if (!habitId) return;
-      var mapa = this.gameStore.habitProgress || {};
-      mapa[habitId] = { progress: progress, completed_today: !!completedToday };
-      this.gameStore.habitProgress = Object.assign({}, mapa);
+      this.gameStore.actualitzarProgresHabit(habitId, progress, completedToday);
     },
 
     /**
@@ -879,10 +877,8 @@ export default {
       var current = this.obtenirProgres(id);
       var max = this.habitSeleccionat.objectiuVegades || 1;
       if (current >= max) return;
-      this.actualitzarProgresLocal(id, current + 1, false);
-      if (this.socket && this.socket.connected) {
-        this.gameStore.enviarProgresHabit(id, 1, this.socket);
-      }
+      var habitActions = useHabitActions();
+      habitActions.incrementarProgres(id, 1, max);
     },
     incrementarHabitInline: function (habit) {
       if (this.vistaHistorialDia) return;
@@ -896,8 +892,8 @@ export default {
       var id = habit.id;
       var objectiu = habit.objectiuVegades || 1;
       this.habitSeleccionat = habit;
-      this.actualitzarProgresLocal(id, objectiu, true);
-      this.gameStore.completarHabit(id, this.socket);
+      var habitActions = useHabitActions();
+      habitActions.confirmarCompletat(id, objectiu);
     },
 
     /**
@@ -911,10 +907,9 @@ export default {
       var progressActual = this.progresModal;
       if (this.habitCompletatAvui(id)) return;
       if (progressActual <= 0) return;
-      this.actualitzarProgresLocal(id, progressActual - 1, false);
-      if (this.socket && this.socket.connected) {
-        this.gameStore.enviarProgresHabit(id, -1, this.socket);
-      }
+      var max = this.habitSeleccionat.objectiuVegades || 1;
+      var habitActions = useHabitActions();
+      habitActions.incrementarProgres(id, -1, max);
     },
     decrementarHabitInline: function (habit) {
       if (this.vistaHistorialDia) return;
@@ -940,27 +935,12 @@ export default {
       if (!this.habitSeleccionat) return;
       var habitId = this.habitSeleccionat.id;
       var objectiu = this.objectiuModal || 1;
-      var usedApi = !this.socket || !this.socket.connected;
+      var habitActions = useHabitActions();
       self.procesantHabits.push(habitId);
       self.errorMissatge = "";
-      var success = false;
       try {
-        var resultat = self.gameStore.completarHabit(habitId, self.socket);
+        await habitActions.confirmarCompletat(habitId, objectiu);
         self.tancarModalHabit();
-        if (resultat && typeof resultat.then === "function") {
-          success = await resultat;
-          if (success && usedApi) {
-            self.actualitzarProgresLocal(habitId, objectiu, true);
-            self.mostrarAlertaHabitCompletat();
-          }
-          if (usedApi) {
-            self.gameStore.obtenirProgresHabits().then(function (mapa) {
-              if (mapa) self.gameStore.habitProgress = mapa;
-            }).catch(function () {});
-          }
-        } else if (resultat === true) {
-          success = true;
-        }
       } catch (err) {
         console.error("Error completant hàbit:", err);
         self.errorMissatge = "Error inesperat en completar l'hàbit.";
@@ -989,97 +969,9 @@ export default {
         text: text
       });
     },
-    /**
-     * Inicialitza la conexió de sockets.
-     */
     inicialitzarSocket: function () {
-      var self = this;
-      var nuxt = useNuxtApp();
-      self.socket = nuxt.$socket;
-      if (!self.socket) return;
-
-      if (!self.socket.connected) {
-        var authStore = useAuthStore();
-        if (authStore.token && authStore.isAuthenticated) {
-          self.socket.auth = { token: authStore.token };
-          self.socket.connect();
-        }
-      }
-
-      if (self.socket.connected) {
-        flushPendingFocusEvents(self.socket);
-      }
-
-      self.socket.on("connect", function () {
-        flushPendingFocusEvents(self.socket);
-      });
-
-      self.socket.on("habit_action_confirmed", function (payload) {
-        if (!payload || payload.success !== true) {
-          if (payload && payload.message) {
-            self.mostrarAvis(payload.message);
-          }
-          return;
-        }
-        if (payload.xp_update && typeof payload.xp_update === "object") {
-          self.gameStore.actualitzarDesDeXpUpdate(payload.xp_update);
-        }
-        if (payload.action === "PROGRESS" && payload.progress !== undefined) {
-          var habitId = payload.habit && payload.habit.id ? payload.habit.id : payload.habit_id;
-          self.actualitzarProgresLocal(habitId, payload.progress, payload.completed_today);
-        }
-        if (payload.action === "COMPLETE") {
-          if (payload.habit && payload.habit.id) {
-            self.actualitzarProgresLocal(payload.habit.id, self.obtenirProgres(payload.habit.id), true);
-          }
-          if (payload.xp_update && typeof payload.xp_update === "object") {
-            self.gameStore.actualitzarDesDeXpUpdate(payload.xp_update);
-          }
-          self.mostrarAlertaHabitCompletat();
-        }
-        if (payload.action === "FOCUS_UPDATE" && payload.completed_today === true) {
-          if (payload.habit && payload.habit.id) {
-            self.actualitzarProgresLocal(payload.habit.id, payload.progress || 0, true);
-          }
-          if (payload.xp_update && typeof payload.xp_update === "object") {
-            self.gameStore.actualitzarDesDeXpUpdate(payload.xp_update);
-          }
-        }
-        var missionData = payload.mission_completed;
-        if (missionData && (missionData.success === true || missionData.success === "true")) {
-          self.gameStore.missioCompletada = true;
-          if (missionData.missio_objectiu !== undefined) {
-            self.gameStore.missioProgres = missionData.missio_objectiu;
-            self.gameStore.missioObjectiu = missionData.missio_objectiu;
-          }
-          if (missionData.xp_update && typeof missionData.xp_update === "object") {
-            self.gameStore.actualitzarDesDeXpUpdate(missionData.xp_update);
-          }
-          self.mostrarAlertaMissioCompletada();
-        }
-      });
-
-      self.socket.on("streak_broken", function (payload) {
-        var anterior = payload && payload.ratxa_anterior ? payload.ratxa_anterior : 0;
-        self.ratxaAnteriorModal = anterior;
-        self.esObertModalRatxa = true;
-        self.gameStore.obtenirEstatJoc();
-      });
-
-      self.socket.on("level_up", function (data) {
-        self.mostrarAlertaLevelUp(data);
-      });
-
-      self.socket.on("roulette_result", function (data) {
-        self.gestionarResultatRuleta(data);
-      });
-
-      self.gameStore.registrarListenerMissionCompletada(self.socket, function () {
-        self.mostrarAlertaMissioCompletada();
-      });
-
-      self.socket.on("disconnect", function () {
-      });
+      var homeSocketUi = useHomeSocketUi(this);
+      this.socket = homeSocketUi.connectarSocketHome();
     },
 
     /**

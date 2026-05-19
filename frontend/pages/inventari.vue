@@ -1,5 +1,5 @@
 <template>
-  <div class="inventari-page">
+  <div class="inventari-page" :class="{ 'inventari-page--fons-platja': fonsPlatjaActiu }">
     <header class="inventari-page__topbar">
       <button
         type="button"
@@ -18,7 +18,7 @@
         >
           <path
             d="M42.5834 54.75L24.3334 36.5L42.5834 18.25L46.8417 22.5083L32.85 36.5L46.8417 50.4917L42.5834 54.75Z"
-            fill="#FAF9F9"
+            fill="currentColor"
           />
         </svg>
       </button>
@@ -199,6 +199,11 @@ function nomProducte(item) {
 }
 
 const processant = ref(null);
+
+/** Mateix to que la botiga (#2b2d42) quan el fons platja està equipat */
+const fonsPlatjaActiu = computed(function () {
+  return shopStore.fonsEquipat === 'fons_platja';
+});
 
 const loading = computed(function () { return shopStore.loading; });
 const skins = computed(function () { return shopStore.skins; });
@@ -594,6 +599,35 @@ onMounted(async function () {
   font-size: 0.625rem;
   font-weight: 500;
   color: rgba(250, 249, 249, 0.6);
+}
+
+/* Fons platja equipat: capçalera i separadors al blau fosc (com la botiga) */
+.inventari-page--fons-platja .inventari-page__icon-btn {
+  color: #2b2d42;
+}
+
+.inventari-page--fons-platja .inventari-page__title,
+.inventari-page--fons-platja .inventari-page__subtitle,
+.inventari-page--fons-platja .inventari-page__loading {
+  color: #2b2d42;
+  text-shadow: none;
+}
+
+.inventari-page--fons-platja .inventari-page__subtitle {
+  color: rgba(43, 45, 66, 0.75);
+}
+
+.inventari-page--fons-platja .inventari-divider__text {
+  color: #2b2d42;
+  text-shadow: none;
+}
+
+.inventari-page--fons-platja .inventari-divider__line {
+  background: #2b2d42;
+}
+
+.inventari-page--fons-platja .inventari-card__hint {
+  color: rgba(43, 45, 66, 0.65);
 }
 
 @media (max-width: 380px) {

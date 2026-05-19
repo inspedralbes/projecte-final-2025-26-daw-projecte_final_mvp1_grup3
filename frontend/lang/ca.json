@@ -121,7 +121,7 @@
         "loading": "Carregant la botiga...",
         "empty": "No hi ha objectes disponibles ara mateix",
         "divider_fons": "fons",
-        "divider_skin": "skins",
+        "divider_skin": "roba",
         "divider_inventari": "inventari",
         "items": {
             "gorra_monster": {
@@ -145,7 +145,7 @@
     "inventory": {
         "title": "Inventari",
         "subtitle": "Equipa skins i utilitza els teus consumibles",
-        "skins_section": "Skins",
+        "skins_section": "Roba",
         "consumables_section": "Consumibles",
         "backgrounds_section": "Fons",
         "equip": "Equipar",

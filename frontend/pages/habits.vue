@@ -266,6 +266,7 @@ import { getEndpointByProvider, getProviderByCategoryId } from "~/utils/habitExt
 import { getDefaultColorForCategoryId, nearestCategoryIdFromHex } from "~/utils/habitCategoryColor.js";
 import { normalizeHex } from "~/utils/colorSpace.js";
 import { useAuthStore } from "~/stores/useAuthStore.js";
+import { useSocketUiCallbacks } from "~/stores/useSocketUiCallbacks.js";
 
 export default {
   components: {
@@ -355,17 +356,15 @@ export default {
     this.carregarCategoriesUsuari();
     this.aplicarEditDesDeQuery();
     this.socket = useNuxtApp().$socket;
-    if (this.socket) {
-      this._onHabitActionConfirmed = function (payload) {
-        self.onHabitActionConfirmedSocket(payload);
-      };
-      this.socket.on("habit_action_confirmed", this._onHabitActionConfirmed);
-    }
+    this._onHabitActionConfirmed = function (payload) {
+      self.onHabitActionConfirmedSocket(payload);
+    };
+    useSocketUiCallbacks().registrarHabitConfirmed(this._onHabitActionConfirmed);
   },
   beforeUnmount: function () {
     this.clearHabitGuardarPending();
-    if (this.socket && this._onHabitActionConfirmed) {
-      this.socket.off("habit_action_confirmed", this._onHabitActionConfirmed);
+    if (this._onHabitActionConfirmed) {
+      useSocketUiCallbacks().eliminarHabitConfirmed(this._onHabitActionConfirmed);
     }
   },
   methods: {

@@ -515,6 +515,33 @@
         display: none;
     }
 
+    /*
+      Fons platja: separadors (línies + text) al blau fosc dels labels.
+      No afecta text dins de caixes com .shop-status.
+    */
+    .global-app-container.fons-platja-bg .moment-divider__text {
+        color: #2b2d42;
+        font-weight: 400;
+    }
+
+    .global-app-container.fons-platja-bg .moment-divider__line {
+        background: #2b2d42;
+    }
+
+    /* Home: «X habits restants!» (text + icona llista) */
+    .global-app-container.fons-platja-bg .daily-progress-card__remaining {
+        color: #2b2d42;
+    }
+
+    .global-app-container.fons-platja-bg .daily-progress-card__list-icon path {
+        stroke: #2b2d42;
+    }
+
+    /* Plantilles: «No hi ha plantilles…» per secció */
+    .global-app-container.fons-platja-bg .templates-page div.text-center.text-white.text-sm {
+        color: #2b2d42;
+    }
+
     /* Fons Casa: imatge + color fosc acollidor */
     .global-app-container.fons-casa-bg {
         background-color: #413630;
@@ -532,6 +559,115 @@
     .global-content-wrapper {
         @apply relative z-10;
     }
+}
+
+/*
+  Fons platja — social i clans (fora de @layer: preval sobre estils scoped de les pàgines).
+*/
+.global-app-container.fons-platja-bg .clan-divider__text,
+.global-app-container.fons-platja-bg .social-page .moment-divider__text,
+.global-app-container.fons-platja-bg .clans-page .moment-divider__text,
+.global-app-container.fons-platja-bg .clan-detail-page .moment-divider__text {
+    color: #2b2d42 !important;
+    font-weight: 400;
+    text-shadow: none;
+}
+
+.global-app-container.fons-platja-bg .clan-divider__line,
+.global-app-container.fons-platja-bg .social-page .moment-divider__line,
+.global-app-container.fons-platja-bg .clans-page .moment-divider__line,
+.global-app-container.fons-platja-bg .clan-detail-page .moment-divider__line,
+.global-app-container.fons-platja-bg .inventari-divider__line {
+    background: #2b2d42 !important;
+}
+
+.global-app-container.fons-platja-bg .inventari-divider__text,
+.global-app-container.fons-platja-bg .inventari-page__title,
+.global-app-container.fons-platja-bg .inventari-page__subtitle,
+.global-app-container.fons-platja-bg .inventari-page__loading,
+.global-app-container.fons-platja-bg .inventari-page__icon-btn {
+    color: #2b2d42 !important;
+    text-shadow: none !important;
+}
+
+.global-app-container.fons-platja-bg .inventari-page__subtitle {
+    color: rgba(43, 45, 66, 0.75) !important;
+}
+
+.global-app-container.fons-platja-bg .inventari-page__chevron path {
+    fill: #2b2d42 !important;
+}
+
+.global-app-container.fons-platja-bg .social-page .social-empty__text,
+.global-app-container.fons-platja-bg .clan-catalog-empty {
+    color: #2b2d42 !important;
+    opacity: 1;
+}
+
+/*
+  Fons platja: només vora als contenidors de superfície (targeta blanca),
+  no als wrappers/expandables (post-card-wrapper, habit-expandable, etc.).
+*/
+.global-app-container.fons-platja-bg .global-content-wrapper main :is(
+    .post-card-wrapper,
+    .post-expandable,
+    .post-expand-inline,
+    .habit-expandable,
+    .template-expandable,
+    .template-expand-inline,
+    .habit-expand-inline,
+    .clan-info-member-card-wrap,
+    .templates-filter-card,
+    .templates-filter-search,
+    .clan-filter-card,
+    .clan-filter-search
+) {
+    border: none !important;
+}
+
+.global-app-container.fons-platja-bg .global-content-wrapper main :is(
+    .bento-card,
+    .daily-progress-card,
+    .reward-square,
+    .empty-state-card,
+    .template-card,
+    .template-spec-card,
+    .social-compose-card,
+    .social-compose-attachment,
+    .clan-catalog-item,
+    .clan-info-member-card,
+    .perfil-stat-pill,
+    .perfil-xp-panel,
+    .perfil-streak-pill,
+    .perfil-logro-card,
+    .perfil-history-card,
+    .mission-card,
+    .post-expand-panel,
+    .post-card,
+    button.post-card,
+    button.habit-card,
+    button.tirada-card,
+    button.template-habit-card,
+    button.friend-card,
+    article.inventari-card
+):not(.habit-card--completed):not(.mission-card--completada):not(.tirada-card--completed):not(.inventari-card--equipped) {
+    border: 1px solid #2b2d42 !important;
+}
+
+/* Fons platja: targetes completades / equipades mantenen vora verda (2px) */
+.global-app-container.fons-platja-bg :is(
+    .habit-card--completed,
+    button.habit-card--completed,
+    .mission-card--completada,
+    button.tirada-card--completed,
+    .inventari-card--equipped,
+    article.inventari-card--equipped
+) {
+    border: 2px solid #79d45d !important;
+}
+
+.global-app-container.fons-platja-bg article.inventari-card--equipped {
+    border-color: #6bc24d !important;
 }
 
 /*

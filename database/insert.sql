@@ -345,6 +345,11 @@ INSERT INTO USUARIS_ITEMS (usuari_id, item_id, equipat) VALUES
 INSERT INTO USUARIS_ITEMS (usuari_id, item_id, equipat) VALUES
 (2, 1, FALSE);
 
+-- Llorenç (id=1, usuari principal de prova): consumible + gorra al inventari
+INSERT INTO USUARIS_ITEMS (usuari_id, item_id, equipat) VALUES
+(1, 2, FALSE),
+(1, 1, FALSE);
+
 -- 8. CLANS (publics i privats)
 INSERT INTO CLANS (id, nom, categoria_id, es_public, max_membres, lider_id) VALUES
 (1, 'Runners BCN', 1, TRUE, 20, 5),

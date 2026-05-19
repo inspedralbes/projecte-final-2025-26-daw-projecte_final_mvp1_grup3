@@ -38,7 +38,10 @@ class HabitFocusQueueActionTest extends TestCase
         $logro->shouldReceive('comprovarLogros')->zeroOrMoreTimes();
         $feedback->shouldReceive('publicarPayload')->once();
 
-        $service = new HabitService($feedback, $logro, $mission);
+        $this->app->instance(RedisFeedbackService::class, $feedback);
+        $this->app->instance(LogroService::class, $logro);
+        $this->app->instance(MissionService::class, $mission);
+        $service = $this->app->make(HabitService::class);
         $user = User::factory()->create();
         $habit = Habit::factory()->create([
             'usuari_id' => $user->id,
@@ -75,7 +78,10 @@ class HabitFocusQueueActionTest extends TestCase
         $logro->shouldReceive('comprovarLogros')->once();
         $feedback->shouldReceive('publicarPayload')->once();
 
-        $service = new HabitService($feedback, $logro, $mission);
+        $this->app->instance(RedisFeedbackService::class, $feedback);
+        $this->app->instance(LogroService::class, $logro);
+        $this->app->instance(MissionService::class, $mission);
+        $service = $this->app->make(HabitService::class);
         $user = User::factory()->create();
         $habit = Habit::factory()->create([
             'usuari_id' => $user->id,

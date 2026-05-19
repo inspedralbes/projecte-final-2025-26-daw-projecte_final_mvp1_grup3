@@ -1,6 +1,20 @@
 import { defineStore } from "pinia";
 import { authFetch } from "~/composables/useApi.js";
 import { useGameStore } from "~/stores/gameStore.js";
+import { useAuthStore } from "~/stores/useAuthStore.js";
+
+/**
+ * Normalitza llistes de l'API (array pla o wrapper { data: [...] } de Laravel Resource).
+ */
+function normalitzarLlistaApi(valor) {
+  if (Array.isArray(valor)) {
+    return valor;
+  }
+  if (valor && typeof valor === "object" && Array.isArray(valor.data)) {
+    return valor.data;
+  }
+  return [];
+}
 
 /**
  * Store de la tenda Loopy.
@@ -108,13 +122,24 @@ export var useShopStore = defineStore("shop", {
       self.loading = true;
       self.error = null;
       try {
+        var authStore = useAuthStore();
+        authStore.loadFromStorage();
         var resposta = await authFetch("/api/shop", {});
         if (!resposta.ok) {
-          throw new Error("Error en carregar la botiga");
+          var errBody = {};
+          try {
+            errBody = await resposta.json();
+          } catch (_) {}
+          throw new Error(
+            errBody.error || errBody.message || "Error en carregar la botiga"
+          );
         }
         var dades = await resposta.json();
-        self.items = Array.isArray(dades.items) ? dades.items : [];
-        self.inventari = Array.isArray(dades.inventari) ? dades.inventari : [];
+        if (dades && dades.data && typeof dades.data === "object" && !Array.isArray(dades.data)) {
+          dades = dades.data;
+        }
+        self.items = normalitzarLlistaApi(dades.items);
+        self.inventari = normalitzarLlistaApi(dades.inventari);
         if (typeof dades.monedes === "number") {
           try {
             var gameStore = useGameStore();
@@ -143,25 +168,36 @@ export var useShopStore = defineStore("shop", {
      */
     comprarItem: async function (itemId) {
       var self = this;
-      self.loading = true;
-      self.error = null;
       try {
         var resposta = await authFetch("/api/shop/comprar/" + itemId, {
           method: "POST",
         });
         var dades = await resposta.json();
         if (!resposta.ok) {
-          throw new Error(dades.error || "Error en la compra");
+          var missatge = dades.error || dades.message || "Error en la compra";
+          throw new Error(missatge);
         }
-        if (dades.usuari_item) {
-          self.inventari = [dades.usuari_item].concat(self.inventari);
+        if (dades && dades.data && typeof dades.data === "object" && !Array.isArray(dades.data)) {
+          dades = dades.data;
+        }
+        var nouItem = dades.usuari_item;
+        if (nouItem && nouItem.data) {
+          nouItem = nouItem.data;
+        }
+        if (nouItem) {
+          self.inventari = [nouItem].concat(self.inventari);
+        }
+        if (typeof dades.monedes === "number") {
+          try {
+            var gameStore = useGameStore();
+            if (gameStore) {
+              gameStore.monedes = dades.monedes;
+            }
+          } catch (_) {}
         }
         return dades;
       } catch (e) {
-        self.error = e.message;
         throw e;
-      } finally {
-        self.loading = false;
       }
     },
 

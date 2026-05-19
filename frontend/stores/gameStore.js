@@ -55,6 +55,32 @@ export var useGameStore = defineStore("game", {
      * Completa un hàbit i gestiona la comunicació via Socket.
      */
     /**
+     * Actualitza progrés local d'un hàbit (optimistic UI / reconciliació).
+     */
+    actualitzarProgresHabit: function (habitId, progress, completedToday) {
+      if (!habitId) {
+        return;
+      }
+      var mapa = this.habitProgress || {};
+      mapa[habitId] = {
+        progress: progress,
+        completed_today: !!completedToday
+      };
+      this.habitProgress = Object.assign({}, mapa);
+    },
+
+    /**
+     * Llegeix el valor de progrés actual d'un hàbit.
+     */
+    obtenirProgresValor: function (habitId) {
+      var mapa = this.habitProgress || {};
+      if (mapa[habitId]) {
+        return mapa[habitId].progress || 0;
+      }
+      return 0;
+    },
+
+    /**
      * Envia un increment/decrement de progrés via socket.
      */
     enviarProgresHabit: function (idHabit, delta, socket) {

@@ -634,7 +634,7 @@ async function confirmMonster() {
         nuxt.$updateSocketAuth();
       }
       marcarOnboardingCompletat();
-      navigateTo('/home');
+      navigateTo('/eggReveal?type=' + selectedMonsterType.value);
     } else {
       errorMessage.value = data.error || 'Error al triar el monstre';
     }
@@ -644,7 +644,7 @@ async function confirmMonster() {
       localStorage.setItem('loopy_monstre_tipus', selectedMonsterType.value);
     }
     marcarOnboardingCompletat();
-    navigateTo('/home');
+    navigateTo('/eggReveal?type=' + selectedMonsterType.value);
   } finally {
     isConfirmingMonster.value = false;
   }

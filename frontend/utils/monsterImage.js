@@ -37,6 +37,11 @@ import egg2 from '~/assets/img/Monstres/huevos/Huevo_2.png';
 import egg3 from '~/assets/img/Monstres/huevos/Huevo_3.png';
 import egg4 from '~/assets/img/Monstres/huevos/Huevo_4.png';
 
+import egg1Open from '~/assets/img/Monstres/huevos/Huevo_1_abierto.png';
+import egg2Open from '~/assets/img/Monstres/huevos/Huevo_2_abierto.png';
+import egg3Open from '~/assets/img/Monstres/huevos/Huevo_3_abierto.png';
+import egg4Open from '~/assets/img/Monstres/huevos/Huevo_4_abierto.png';
+
 var COLOR_MAP = { V: '1', R: '2', L: '3', A: '4' };
 var ETAPA_MAP = { B: '1', N: '2', A: '3', M: '4' };
 var ETAPA_NAME = { B: 'PetitFocus', N: 'MitjaFocus', A: 'GranFocus', M: 'FortFocus' };
@@ -57,6 +62,8 @@ var MONSTER_GORRA_MAP = {
 
 var EGG_MAP = { '1': egg1, '2': egg2, '3': egg3, '4': egg4 };
 var EGG_COLOR_MAP = { V: egg1, R: egg2, L: egg3, A: egg4 };
+var EGG_OPEN_MAP = { '1': egg1Open, '2': egg2Open, '3': egg3Open, '4': egg4Open };
+var EGG_OPEN_COLOR_MAP = { V: egg1Open, R: egg2Open, L: egg3Open, A: egg4Open };
 
 export function getEtapa(nivell) {
   var n = Number(nivell) || 1;
@@ -104,6 +111,14 @@ export function getEggByNumber(num) {
   return EGG_MAP[String(num)] || egg1;
 }
 
+export function getEggOpenImage(colorLetter) {
+  return EGG_OPEN_COLOR_MAP[colorLetter] || egg1Open;
+}
+
+export function getEggOpenByNumber(num) {
+  return EGG_OPEN_MAP[String(num)] || egg1Open;
+}
+
 export function getFocusMonsterKey(tipus, nivell) {
   if (!tipus || tipus.length < 2) return null;
   var colorCode = tipus.charAt(1).toUpperCase();
@@ -123,4 +138,4 @@ export function getFocusMonsterFilename(tipus, nivell) {
   return colorNum + '.' + etapaNum + '-Monstre' + etapaName + '.png';
 }
 
-export { MONSTER_MAP, MONSTER_GORRA_MAP, EGG_MAP, EGG_COLOR_MAP };
+export { MONSTER_MAP, MONSTER_GORRA_MAP, EGG_MAP, EGG_COLOR_MAP, EGG_OPEN_MAP, EGG_OPEN_COLOR_MAP };

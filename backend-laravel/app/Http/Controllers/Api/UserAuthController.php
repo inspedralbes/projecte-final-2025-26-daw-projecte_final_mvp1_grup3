@@ -66,7 +66,7 @@ class UserAuthController extends Controller
 
         $this->welcomeEmailService->enviarSiPrimeraConnexio($usuari);
 
-        return $this->authService->crearRespostaLoginUsuari($usuari, $token);
+        return $this->authService->crearRespostaLoginUsuari($usuari, $token, $usuari->necessitaOnboarding());
     }
 
     /**
@@ -192,7 +192,6 @@ class UserAuthController extends Controller
     {
         try {
             $googleUser = Socialite::driver('google')->stateless()->user();
-            $requiresOnboarding = false;
 
             $usuari = User::where('google_id', $googleUser->getId())->first();
 
@@ -213,9 +212,10 @@ class UserAuthController extends Controller
                         'ratxa_actual' => 0,
                         'ratxa_maxima' => 0,
                     ]);
-                    $requiresOnboarding = true;
                 }
             }
+
+            $requiresOnboarding = $usuari->necessitaOnboarding();
 
             if (!empty($usuari->prohibit)) {
                 return response()->json(['message' => 'El compte esta prohibit'], 403);

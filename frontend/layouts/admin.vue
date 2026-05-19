@@ -73,8 +73,9 @@
  */
 import { onBeforeUnmount, onMounted } from 'vue';
 
+var nuxtApp = useNuxtApp();
+
 async function sortir() {
-  var nuxtApp = useNuxtApp();
   try {
     await useAuthStore().logout();
   } catch (e) {}
@@ -91,6 +92,10 @@ async function sortir() {
 onMounted(function () {
   if (typeof window !== 'undefined') {
     window.__loopyAdminSortir = sortir;
+  }
+  var sock = nuxtApp.$socket;
+  if (sock && typeof sock.emit === 'function') {
+    sock.emit('admin_join', {});
   }
 });
 

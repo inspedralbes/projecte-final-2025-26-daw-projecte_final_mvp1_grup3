@@ -48,7 +48,14 @@ onMounted(async () => {
 
     const nuxtApp = useNuxtApp();
     if (nuxtApp.$updateSocketAuth) nuxtApp.$updateSocketAuth();
-    await navigateTo("/home");
+    if (authStore.requiresOnboarding) {
+      authStore.reiniciarEstatOnboarding();
+      const habitStore = useHabitStore();
+      habitStore.establirHabitsDesDeApi([]);
+      await navigateTo('/onboarding');
+    } else {
+      await navigateTo('/home');
+    }
   } catch (err) {
     error.value = err.message || "Error al processar el login.";
   }

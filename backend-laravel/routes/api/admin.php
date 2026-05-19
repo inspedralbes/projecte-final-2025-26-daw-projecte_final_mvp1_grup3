@@ -29,6 +29,9 @@ Route::prefix('admin')->middleware('ensure.admin')->group(function () {
     Route::get('/usuaris/{tipus}/{page}/{per_page}/{prohibit}/{cerca}', [AdminUsuariController::class, 'index']);
     Route::patch('/usuaris/{id}/prohibir', [AdminUsuariController::class, 'prohibir']);
     Route::get('/plantilles/{page}/{per_page}', [AdminPlantillaController::class, 'index']);
+    Route::post('/habits', [AdminHabitController::class, 'store']);
+    Route::put('/habits/{id}', [AdminHabitController::class, 'update']);
+    Route::delete('/habits/{id}', [AdminHabitController::class, 'destroy']);
     Route::get('/habits/{page}/{per_page}', [AdminHabitController::class, 'index']);
     Route::get('/logros/{page}/{per_page}', [AdminLogroController::class, 'index']);
     Route::get('/missions/{page}/{per_page}', [AdminMissioController::class, 'index']);

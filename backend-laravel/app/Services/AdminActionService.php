@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Models\Administrador;
 use App\Models\Habit;
+use App\Models\Ratxa;
 use App\Models\LogroMedalla;
 use App\Models\MissioDiaria;
 use App\Models\Plantilla;
@@ -106,8 +107,11 @@ class AdminActionService
                 'es_publica' => $data['es_publica'] ?? false,
             ]);
             
-            if (isset($data['habits']) && is_array($data['habits'])) {
-                $plantilla->habits()->sync($data['habits']);
+            \Log::info('[Plantilla CREATE] habits received', ['habits' => $data['habits'] ?? 'NOT SET', 'data_keys' => array_keys($data)]);
+            
+            if (isset($data['habits']) && is_array($data['habits']) && count($data['habits']) > 0) {
+                $habitIds = array_map('intval', $data['habits']);
+                $plantilla->habits()->sync($habitIds);
             }
 
             $despres = $plantilla->toArray();
@@ -125,8 +129,11 @@ class AdminActionService
             $plantilla->es_publica = $data['es_publica'] ?? $plantilla->es_publica;
             $plantilla->save();
 
-            if (isset($data['habits']) && is_array($data['habits'])) {
-                $plantilla->habits()->sync($data['habits']);
+            \Log::info('[Plantilla UPDATE] habits received', ['habits' => $data['habits'] ?? 'NOT SET', 'data_keys' => array_keys($data)]);
+            
+            if (isset($data['habits']) && is_array($data['habits']) && count($data['habits']) > 0) {
+                $habitIds = array_map('intval', $data['habits']);
+                $plantilla->habits()->sync($habitIds);
             }
             $despres = $plantilla->toArray();
             $this->adminLogService->registrar($adminId, 'Editar plantilla', 'Plantilla ID ' . $id . ': ' . $plantilla->titol, $abans, $despres, null);
@@ -151,6 +158,17 @@ class AdminActionService
                 'nom' => $data['nom'] ?? '',
                 'email' => $data['email'] ?? '',
                 'contrasenya_hash' => bcrypt($data['contrasenya'] ?? 'password'),
+                'nivell' => 1,
+                'xp_total' => 0,
+                'xp_actual_nivel' => 0,
+                'xp_objetivo_nivel' => 1000,
+                'monedes' => 0,
+                'missio_completada' => false,
+            ]);
+            Ratxa::create([
+                'usuari_id' => $usuari->id,
+                'ratxa_actual' => 0,
+                'ratxa_maxima' => 0,
             ]);
             $despres = $usuari->toArray();
             unset($despres['contrasenya_hash']);
@@ -255,7 +273,11 @@ class AdminActionService
                 'titol' => $data['titol'] ?? '',
                 'dificultat' => $data['dificultat'] ?? 'media',
                 'frequencia_tipus' => $data['frequencia_tipus'] ?? 'diaria',
-                'dies_setmana' => $data['dies_setmana'] ?? '1,2,3,4,5,6,7',
+                'dies_setmana' => Habit::diesSetmanaCsvAJsonPg(
+                    isset($data['dies_setmana']) && is_string($data['dies_setmana'])
+                        ? $data['dies_setmana']
+                        : '1,2,3,4,5,6,7'
+                ),
                 'objectiu_vegades' => $data['objectiu_vegades'] ?? 1,
                 'moment_dia' => $data['moment_dia'] ?? 'tot_dia',
                 'unitat' => $data['unitat'] ?? 'vegades',
@@ -275,7 +297,9 @@ class AdminActionService
             $habit->titol = $data['titol'] ?? $habit->titol;
             $habit->dificultat = $data['dificultat'] ?? $habit->dificultat;
             $habit->frequencia_tipus = $data['frequencia_tipus'] ?? $habit->frequencia_tipus;
-            $habit->dies_setmana = $data['dies_setmana'] ?? $habit->dies_setmana;
+            if (array_key_exists('dies_setmana', $data) && is_string($data['dies_setmana'])) {
+                $habit->dies_setmana = Habit::diesSetmanaCsvAJsonPg($data['dies_setmana']);
+            }
             $habit->objectiu_vegades = $data['objectiu_vegades'] ?? $habit->objectiu_vegades;
             $habit->moment_dia = $data['moment_dia'] ?? $habit->moment_dia;
             $habit->unitat = $data['unitat'] ?? $habit->unitat;

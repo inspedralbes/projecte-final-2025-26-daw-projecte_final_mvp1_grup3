@@ -387,7 +387,17 @@ export default {
         try {
           await authStore.loginUser(email, contrasenya);
           if (nuxtApp.$updateSocketAuth) nuxtApp.$updateSocketAuth();
-          await navigateTo("/home");
+          if (authStore.requiresOnboarding) {
+            authStore.reiniciarEstatOnboarding();
+            var habitStore = useHabitStore();
+            habitStore.establirHabitsDesDeApi([]);
+            if (typeof window !== 'undefined') {
+              sessionStorage.setItem('loopy_register_onboarding_entrance', '1');
+            }
+            await navigateTo('/onboarding');
+          } else {
+            await navigateTo('/home');
+          }
           return;
         } catch (errUser) {
           try {

@@ -6,10 +6,10 @@
 definePageMeta({ layout: 'admin' });
 
 import { ref } from 'vue';
+import { authFetch } from '~/composables/useApi.js';
 
 // 1. DADES (VAR)
-var { $socket } = useNuxtApp();
-var config = useRuntimeConfig();
+var { $socket, $swal } = useNuxtApp();
 
 // Hàbits via API
 var { data: habitsData, refresh: refreshHabits } = useAuthFetch('/api/admin/habits/1/50', {
@@ -96,46 +96,114 @@ onMounted(function() {
   }
 });
 
-function guardarHabit() {
-  if (!$socket) return;
-  
-  var payload = {
-    action: popupObert.value === 'crear' ? 'CREATE' : 'UPDATE',
-    entity: 'habit',
-    data: {
-      titol: formulari.value.titol,
-      categoria_id: parseInt(formulari.value.categoria_id) || 1,
-      dificultat: formulari.value.dificultat,
-      frequencia_tipus: formulari.value.frequencia_tipus,
-      dies_setmana: formulari.value.dies_setmana,
-      objectiu_vegades: parseInt(formulari.value.objectiu_vegades) || 1,
-      moment_dia: formulari.value.moment_dia,
-      unitat: formulari.value.unitat,
-      icona: formulari.value.icona,
-      color: formulari.value.color
-    }
-  };
-  
-  if (popupObert.value === 'crear') {
-    payload.data.usuari_id = parseInt(formulari.value.usuari_id) || null;
-  } else {
-    payload.data.id = habitSeleccionat.value.id;
+async function guardarHabit() {
+  var popup = popupObert.value;
+  if (popup !== 'crear' && popup !== 'editar') {
+    return;
   }
-  
-  $socket.emit('admin_action', payload);
-  tancaPopup();
+
+  var body = {
+    titol: formulari.value.titol,
+    categoria_id: parseInt(formulari.value.categoria_id, 10) || null,
+    dificultat: formulari.value.dificultat,
+    frequencia_tipus: formulari.value.frequencia_tipus,
+    dies_setmana: formulari.value.dies_setmana,
+    objectiu_vegades: parseInt(formulari.value.objectiu_vegades, 10) || 1,
+    moment_dia: formulari.value.moment_dia,
+    unitat: formulari.value.unitat,
+    icona: formulari.value.icona,
+    color: formulari.value.color
+  };
+
+  if (popup === 'crear') {
+    var uid = parseInt(formulari.value.usuari_id, 10);
+    if (!uid || uid < 1) {
+      if ($swal) {
+        $swal.fire({ icon: 'warning', title: "Indica l'ID d'usuari propietari", confirmButtonColor: '#79D45D' });
+      }
+      return;
+    }
+    body.usuari_id = uid;
+  }
+
+  try {
+    var url;
+    var method;
+    if (popup === 'crear') {
+      url = '/api/admin/habits';
+      method = 'POST';
+    } else {
+      url = '/api/admin/habits/' + habitSeleccionat.value.id;
+      method = 'PUT';
+    }
+
+    var resposta = await authFetch(url, {
+      method: method,
+      body: JSON.stringify(body)
+    });
+
+    var json = await resposta.json().catch(function () { return {}; });
+    if (!resposta.ok) {
+      var msg = json.message || (json.errors && JSON.stringify(json.errors)) || 'Error en desar';
+      throw new Error(typeof msg === 'string' ? msg : 'Error en desar');
+    }
+
+    await refreshHabits();
+    tancaPopup();
+
+    if ($swal) {
+      $swal.fire({
+        icon: 'success',
+        title: popup === 'crear' ? 'Hàbit creat' : 'Hàbit actualitzat',
+        timer: 1200,
+        showConfirmButton: false
+      });
+    }
+  } catch (e) {
+    if ($swal) {
+      $swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: e && e.message ? e.message : 'Error',
+        confirmButtonColor: '#79D45D'
+      });
+    }
+  }
 }
 
-function confirmarEliminacio() {
-  if (!$socket || !habitSeleccionat.value) return;
-  
-  $socket.emit('admin_action', {
-    action: 'DELETE',
-    entity: 'habit',
-    data: { id: habitSeleccionat.value.id }
-  });
-  
-  tancaPopup();
+async function confirmarEliminacio() {
+  if (!habitSeleccionat.value) {
+    return;
+  }
+
+  try {
+    var resposta = await authFetch('/api/admin/habits/' + habitSeleccionat.value.id, {
+      method: 'DELETE'
+    });
+    var json = await resposta.json().catch(function () { return {}; });
+    if (!resposta.ok) {
+      throw new Error(json.message || 'Error en eliminar');
+    }
+    await refreshHabits();
+    tancaPopup();
+    if ($swal) {
+      $swal.fire({
+        icon: 'success',
+        title: 'Hàbit eliminat',
+        timer: 1200,
+        showConfirmButton: false
+      });
+    }
+  } catch (e) {
+    if ($swal) {
+      $swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: e && e.message ? e.message : 'Error',
+        confirmButtonColor: '#79D45D'
+      });
+    }
+  }
 }
 </script>
 

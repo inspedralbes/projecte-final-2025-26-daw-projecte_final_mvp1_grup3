@@ -76,6 +76,14 @@ class User extends Model implements JWTSubject
     }
 
     /**
+     * L'usuari encara no ha completat l'onboarding (no ha triat monstre).
+     */
+    public function necessitaOnboarding(): bool
+    {
+        return $this->monstre_tipus === null || $this->monstre_tipus === '';
+    }
+
+    /**
      * Missió diària assignada a l'usuari.
      */
     public function missioDiaria(): \Illuminate\Database\Eloquent\Relations\BelongsTo

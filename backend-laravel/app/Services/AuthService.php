@@ -90,8 +90,9 @@ class AuthService
         if ($role === 'admin') {
             $dades['admin'] = $dadesPerfil;
         } else {
-            // Assegurem que dadesPerfil té la info del monstre si l'usuari existeix
             $dades['user'] = $dadesPerfil;
+            $monstre = $dadesPerfil['monstre_tipus'] ?? null;
+            $dades['requires_onboarding'] = $monstre === null || $monstre === '';
         }
 
         return $this->crearRespostaAmbCookies($dades, $role);

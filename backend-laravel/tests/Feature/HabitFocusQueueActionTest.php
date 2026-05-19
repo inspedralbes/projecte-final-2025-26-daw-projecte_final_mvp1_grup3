@@ -1,17 +1,27 @@
 <?php
 
+
+/**
+ * Capa Laravel: HabitFocusQueueActionTest.
+ * Comentaris: agents/backend/AgentLaravel.md
+ */
+
 namespace Tests\Feature;
+
+//================================ NAMESPACES / IMPORTS ============
 
 use App\Models\Habit;
 use App\Models\RegistreActivitat;
 use App\Models\User;
-use App\Services\HabitService;
-use App\Services\LogroService;
-use App\Services\MissionService;
-use App\Services\RedisFeedbackService;
+use App\Domains\Habits\Services\HabitService;
+use App\Domains\Gamification\Services\LogroService;
+use App\Domains\Gamification\Services\MissionService;
+use App\Domains\Shared\Services\RedisFeedbackService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery;
 use Tests\TestCase;
+
+//================================ MÈTODES / FUNCIONS ===========
 
 class HabitFocusQueueActionTest extends TestCase
 {
@@ -38,7 +48,10 @@ class HabitFocusQueueActionTest extends TestCase
         $logro->shouldReceive('comprovarLogros')->zeroOrMoreTimes();
         $feedback->shouldReceive('publicarPayload')->once();
 
-        $service = new HabitService($feedback, $logro, $mission);
+        $this->app->instance(RedisFeedbackService::class, $feedback);
+        $this->app->instance(LogroService::class, $logro);
+        $this->app->instance(MissionService::class, $mission);
+        $service = $this->app->make(HabitService::class);
         $user = User::factory()->create();
         $habit = Habit::factory()->create([
             'usuari_id' => $user->id,
@@ -75,7 +88,10 @@ class HabitFocusQueueActionTest extends TestCase
         $logro->shouldReceive('comprovarLogros')->once();
         $feedback->shouldReceive('publicarPayload')->once();
 
-        $service = new HabitService($feedback, $logro, $mission);
+        $this->app->instance(RedisFeedbackService::class, $feedback);
+        $this->app->instance(LogroService::class, $logro);
+        $this->app->instance(MissionService::class, $mission);
+        $service = $this->app->make(HabitService::class);
         $user = User::factory()->create();
         $habit = Habit::factory()->create([
             'usuari_id' => $user->id,
@@ -100,3 +116,4 @@ class HabitFocusQueueActionTest extends TestCase
         $this->assertTrue($completat);
     }
 }
+

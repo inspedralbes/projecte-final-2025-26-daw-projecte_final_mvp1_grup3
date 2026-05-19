@@ -1,10 +1,19 @@
 /**
+ * Modul JavaScript ES5: useHabits.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
+import { useHabitActions } from '~/composables/domains/habits/useHabitActions.js';
+
+/**
  * Composable per carregar hàbits, progress, logs i exposar accions (completar, incrementar).
  * Delega a useHabitStore i gameStore per progrés.
  */
 export function useHabits() {
   var habitStore = useHabitStore();
   var gameStore = useGameStore();
+  var habitActions = useHabitActions();
 
   function carregarHabits() {
     return habitStore.obtenirHabitsDesDeApi();
@@ -52,6 +61,7 @@ export function useHabits() {
     eliminarHabit: habitStore.eliminarHabit.bind(habitStore),
     guardarOActualitzarHabit: habitStore.guardarOActualitzarHabit.bind(habitStore),
     habitStore: habitStore,
-    gameStore: gameStore
+    gameStore: gameStore,
+    habitActions: habitActions
   };
 }

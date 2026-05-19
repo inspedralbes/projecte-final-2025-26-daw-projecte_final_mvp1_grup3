@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: AdminPagination.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div class="flex items-center justify-between py-4" v-if="totalPages > 1">
     <button

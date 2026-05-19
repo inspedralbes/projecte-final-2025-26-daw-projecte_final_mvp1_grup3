@@ -1,4 +1,10 @@
 /**
+ * Modul JavaScript ES5: commands.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
+/**
  * Injects user auth session into localStorage and intercepts common API calls.
  */
 Cypress.Commands.add('login', function (overrides) {
@@ -63,4 +69,22 @@ Cypress.Commands.add('mockApiAdmin', function () {
   cy.intercept('GET', '**/api/admin/dashboard', { fixture: 'admin-dashboard.json' }).as('getAdminDashboard');
   cy.intercept('GET', '**/api/admin/rankings/mensual', { fixture: 'admin-rankings.json' }).as('getAdminRankings');
   cy.intercept('GET', '**/api/admin/usuaris/**', { fixture: 'admin-usuaris.json' }).as('getAdminUsuaris');
+});
+
+/**
+ * Evita la capa de vídeo d'entrada a /auth/login (animació no interactiva) en tots els cy.visit.
+ */
+Cypress.Commands.overwrite('visit', function (originalFn, url, options) {
+  var opts = options || {};
+  var previous = opts.onBeforeLoad;
+  return originalFn(url, Object.assign({}, opts, {
+    onBeforeLoad: function (win) {
+      try {
+        win.sessionStorage.setItem('loopy_app_entry_video_done', '1');
+      } catch (e) {}
+      if (typeof previous === 'function') {
+        previous(win);
+      }
+    }
+  }));
 });

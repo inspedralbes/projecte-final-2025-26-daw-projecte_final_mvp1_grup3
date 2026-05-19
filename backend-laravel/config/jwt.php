@@ -1,5 +1,11 @@
 <?php
 
+
+/**
+ * Capa Laravel: jwt.
+ * Comentaris: agents/backend/AgentLaravel.md
+ */
+
 /*
 |--------------------------------------------------------------------------
 | JWT Authentication Secret

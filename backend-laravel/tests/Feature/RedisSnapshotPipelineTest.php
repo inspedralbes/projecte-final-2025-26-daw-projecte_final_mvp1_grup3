@@ -1,11 +1,21 @@
 <?php
 
+
+/**
+ * Capa Laravel: RedisSnapshotPipelineTest.
+ * Comentaris: agents/backend/AgentLaravel.md
+ */
+
 namespace Tests\Feature;
+
+//================================ NAMESPACES / IMPORTS ============
 
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
 use Tests\TestCase;
+
+//================================ MÈTODES / FUNCIONS ===========
 
 class RedisSnapshotPipelineTest extends TestCase
 {

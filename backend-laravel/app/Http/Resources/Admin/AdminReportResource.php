@@ -23,12 +23,19 @@ class AdminReportResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $reportedUserNom = null;
+        if ($this->tipus === 'user') {
+            $reportedUser = \App\Models\User::find($this->post_id);
+            $reportedUserNom = $reportedUser ? $reportedUser->nom : 'Desconegut';
+        }
+
         return [
             'id' => $this->id,
             'usuari' => $this->usuari ? $this->usuari->nom : 'Sistema',
             'tipus' => $this->tipus ?? '',
             'contingut' => $this->contingut ?? null,
             'post_id' => $this->post_id ?? null,
+            'reported_user_nom' => $reportedUserNom,
             'data' => $this->created_at ? $this->created_at->diffForHumans() : null,
         ];
     }

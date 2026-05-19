@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: HomeRouletteSection.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div
     class="flex items-center justify-center cursor-pointer transition-transform hover:scale-105 active:scale-95"
@@ -25,7 +29,7 @@
 </template>
 
 <script>
-import rouletteIcon from '~/assets/img/roulette-loopy.png'
+import rouletteIcon from '~/assets/img/Icones/Icona_Ruleta.png'
 
 export default {
   name: 'HomeRouletteSection',

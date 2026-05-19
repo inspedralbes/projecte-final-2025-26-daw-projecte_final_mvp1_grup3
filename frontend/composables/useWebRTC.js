@@ -1,122 +1,160 @@
+/**
+ * Modul JavaScript ES5: useWebRTC.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
+import { useWebRTCSocket, registrarWebRTCHandlers } from '~/composables/domains/webrtc/useWebRTCSocket.js';
+import { useAuthStore } from '~/stores/useAuthStore.js';
+
 var peerConnection = null;
 var dataChannel = null;
 var peerId = null;
 var messageCallback = null;
 var openCallback = null;
+var webrtcSocket = null;
+var handlersRegistrats = false;
+
+function assegurarHandlersSocket() {
+  if (handlersRegistrats) {
+    return;
+  }
+  handlersRegistrats = true;
+  registrarWebRTCHandlers({
+    onOffer: function (payload) {
+      if (!payload || !payload.sdp) {
+        return;
+      }
+      var fromId = payload.from_user_id;
+      if (fromId) {
+        peerId = fromId;
+      }
+      handleOffer(payload.sdp);
+    },
+    onAnswer: function (payload) {
+      if (!payload || !payload.sdp) {
+        return;
+      }
+      handleAnswer(payload.sdp);
+    },
+    onIceCandidate: function (payload) {
+      if (!payload || !payload.candidate) {
+        return;
+      }
+      handleIceCandidate(payload.candidate);
+    }
+  });
+}
+
+function obtenirUsuariId() {
+  var authStore = useAuthStore();
+  if (authStore.user && authStore.user.id) {
+    return authStore.user.id;
+  }
+  return null;
+}
 
 export function useWebRTC() {
   var config = {
     iceServers: [
-      { urls: "stun:stun.l.google.com:19302" },
-      { urls: "stun:stun1.l.google.com:19302" },
-    ],
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' }
+    ]
   };
+
+  if (!webrtcSocket) {
+    webrtcSocket = useWebRTCSocket();
+    assegurarHandlersSocket();
+  }
 
   function connect(targetPeerId, onMessage, onOpen) {
     peerId = targetPeerId;
     messageCallback = onMessage;
     openCallback = onOpen;
 
+    webrtcSocket.unirSala(targetPeerId);
+
     peerConnection = new RTCPeerConnection(config);
 
-    peerConnection.onicecandidate = function(event) {
+    peerConnection.onicecandidate = function (event) {
       if (event.candidate) {
-        var payload = {
-          type: "ice-candidate",
-          target: peerId,
-          candidate: event.candidate,
-        };
-        sendSignal(payload);
+        webrtcSocket.enviarIceCandidate(peerId, event.candidate);
       }
     };
 
-    peerConnection.onconnectionstatechange = function() {
-      console.log("Connection state:", peerConnection.connectionState);
+    peerConnection.onconnectionstatechange = function () {
+      console.log('Connection state:', peerConnection.connectionState);
     };
 
-    peerConnection.ondatachannel = function(event) {
+    peerConnection.ondatachannel = function (event) {
       dataChannel = event.channel;
       setupDataChannel();
     };
 
-    dataChannel = peerConnection.createDataChannel("chat");
+    dataChannel = peerConnection.createDataChannel('chat');
     setupDataChannel();
 
-    peerConnection.createOffer().then(function(offer) {
+    peerConnection.createOffer().then(function (offer) {
       peerConnection.setLocalDescription(offer);
-      sendSignal({
-        type: "offer",
-        target: peerId,
-        sdp: offer,
-      });
+      webrtcSocket.enviarOffer(peerId, offer);
     });
   }
 
   function setupDataChannel() {
-    if (!dataChannel) return;
+    if (!dataChannel) {
+      return;
+    }
 
-    dataChannel.onopen = function() {
-      console.log("Data channel open");
-      if (openCallback) openCallback();
+    dataChannel.onopen = function () {
+      console.log('Data channel open');
+      if (openCallback) {
+        openCallback();
+      }
     };
 
-    dataChannel.onmessage = function(event) {
-      console.log("Received message:", event.data);
-      if (messageCallback) messageCallback(event.data);
+    dataChannel.onmessage = function (event) {
+      console.log('Received message:', event.data);
+      if (messageCallback) {
+        messageCallback(event.data);
+      }
     };
 
-    dataChannel.onerror = function(error) {
-      console.error("Data channel error:", error);
+    dataChannel.onerror = function (error) {
+      console.error('Data channel error:', error);
     };
 
-    dataChannel.onclose = function() {
-      console.log("Data channel closed");
+    dataChannel.onclose = function () {
+      console.log('Data channel closed');
     };
-  }
-
-  function sendSignal(payload) {
-    fetch("/api/webrtc-signal", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    }).catch(function(e) {
-      console.error("Signal error:", e);
-    });
   }
 
   function handleOffer(offer) {
     peerConnection = new RTCPeerConnection(config);
 
-    peerConnection.onicecandidate = function(event) {
+    peerConnection.onicecandidate = function (event) {
       if (event.candidate) {
-        sendSignal({
-          type: "ice-candidate",
-          target: peerId,
-          candidate: event.candidate,
-        });
+        webrtcSocket.enviarIceCandidate(peerId, event.candidate);
       }
     };
 
-    peerConnection.ondatachannel = function(event) {
+    peerConnection.ondatachannel = function (event) {
       dataChannel = event.channel;
       setupDataChannel();
     };
 
-    peerConnection.setRemoteDescription(offer).then(function() {
+    peerConnection.setRemoteDescription(offer).then(function () {
       return peerConnection.createAnswer();
-    }).then(function(answer) {
+    }).then(function (answer) {
       return peerConnection.setLocalDescription(answer);
-    }).then(function() {
-      sendSignal({
-        type: "answer",
-        target: peerId,
-        sdp: answer,
-      });
+    }).then(function () {
+      webrtcSocket.enviarAnswer(peerId, peerConnection.localDescription);
     });
   }
 
   function handleAnswer(answer) {
-    peerConnection.setRemoteDescription(answer);
+    if (peerConnection) {
+      peerConnection.setRemoteDescription(answer);
+    }
   }
 
   function handleIceCandidate(candidate) {
@@ -126,7 +164,7 @@ export function useWebRTC() {
   }
 
   function sendChatMessage(message) {
-    if (dataChannel && dataChannel.readyState === "open") {
+    if (dataChannel && dataChannel.readyState === 'open') {
       dataChannel.send(message);
       return true;
     }
@@ -145,7 +183,10 @@ export function useWebRTC() {
   }
 
   function isConnected() {
-    return dataChannel && dataChannel.readyState === "open";
+    if (dataChannel && dataChannel.readyState === 'open') {
+      return true;
+    }
+    return false;
   }
 
   return {
@@ -155,6 +196,6 @@ export function useWebRTC() {
     isConnected: isConnected,
     handleOffer: handleOffer,
     handleAnswer: handleAnswer,
-    handleIceCandidate: handleIceCandidate,
+    handleIceCandidate: handleIceCandidate
   };
 }

@@ -1,5 +1,13 @@
 <?php
 
+
+/**
+ * Capa Laravel: web.
+ * Comentaris: agents/backend/AgentLaravel.md
+ */
+
+//================================ NAMESPACES / IMPORTS ============
+
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {

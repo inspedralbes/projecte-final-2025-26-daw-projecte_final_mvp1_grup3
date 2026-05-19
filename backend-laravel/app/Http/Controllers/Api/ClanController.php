@@ -1,76 +1,130 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api;
 
+//================================ NAMESPACES / IMPORTS ============
+
+use App\Domains\Clan\Actions\CreateClanAction;
+use App\Domains\Clan\Actions\ImportHabitFromClanMessageAction;
+use App\Domains\Clan\Actions\ImportPlantillaFromClanMessageAction;
+use App\Domains\Clan\Actions\LeaveClanAction;
+use App\Domains\Clan\Actions\SendClanMessageAction;
+use App\Domains\Clan\Actions\ShareHabitInClanAction;
+use App\Domains\Clan\Actions\SharePlantillaInClanAction;
+use App\Domains\Clan\Actions\UpdateClanAction;
+use App\Domains\Clan\Queries\GetClanMembersQuery;
+use App\Domains\Clan\Queries\GetClanMessagesQuery;
+use App\Domains\Clan\Queries\GetClanQuery;
+use App\Domains\Clan\Queries\GetMyClanQuery;
+use App\Domains\Clan\Queries\ListClansQuery;
 use App\Http\Controllers\Controller;
-use App\Models\Clan;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
+//================================ CONTROLLER ====================
+
+/**
+ * ClanController (thin).
+ * Comentaris: agents/backend/AgentLaravel.md
+ */
 class ClanController extends Controller
 {
+    private ListClansQuery $listClansQuery;
+
+    private GetClanQuery $getClanQuery;
+
+    private GetMyClanQuery $getMyClanQuery;
+
+    private GetClanMembersQuery $getClanMembersQuery;
+
+    private GetClanMessagesQuery $getClanMessagesQuery;
+
+    private CreateClanAction $createClanAction;
+
+    private UpdateClanAction $updateClanAction;
+
+    private LeaveClanAction $leaveClanAction;
+
+    private SendClanMessageAction $sendClanMessageAction;
+
+    private ShareHabitInClanAction $shareHabitAction;
+
+    private SharePlantillaInClanAction $sharePlantillaAction;
+
+    private ImportHabitFromClanMessageAction $importHabitAction;
+
+    private ImportPlantillaFromClanMessageAction $importPlantillaAction;
+
+    public function __construct(
+        ListClansQuery $listClansQuery,
+        GetClanQuery $getClanQuery,
+        GetMyClanQuery $getMyClanQuery,
+        GetClanMembersQuery $getClanMembersQuery,
+        GetClanMessagesQuery $getClanMessagesQuery,
+        CreateClanAction $createClanAction,
+        UpdateClanAction $updateClanAction,
+        LeaveClanAction $leaveClanAction,
+        SendClanMessageAction $sendClanMessageAction,
+        ShareHabitInClanAction $shareHabitAction,
+        SharePlantillaInClanAction $sharePlantillaAction,
+        ImportHabitFromClanMessageAction $importHabitAction,
+        ImportPlantillaFromClanMessageAction $importPlantillaAction
+    ) {
+        $this->listClansQuery = $listClansQuery;
+        $this->getClanQuery = $getClanQuery;
+        $this->getMyClanQuery = $getMyClanQuery;
+        $this->getClanMembersQuery = $getClanMembersQuery;
+        $this->getClanMessagesQuery = $getClanMessagesQuery;
+        $this->createClanAction = $createClanAction;
+        $this->updateClanAction = $updateClanAction;
+        $this->leaveClanAction = $leaveClanAction;
+        $this->sendClanMessageAction = $sendClanMessageAction;
+        $this->shareHabitAction = $shareHabitAction;
+        $this->sharePlantillaAction = $sharePlantillaAction;
+        $this->importHabitAction = $importHabitAction;
+        $this->importPlantillaAction = $importPlantillaAction;
+    }
+
+    //================================ MÈTODES / FUNCIONS ===========
+
     public function index(Request $request): JsonResponse
     {
-        $userId = $request->user_id;
-        $user = \App\Models\User::find($userId);
+        $userId = (int) ($request->user_id ?? 0);
+        $resultat = $this->listClansQuery->executar($userId);
 
-        if (!$user || $user->nivell < 5) {
-            return response()->json(['error' => 'Nivell 5 requerit'], 403);
+        if (!$resultat['success']) {
+            return response()->json(['error' => $resultat['error']], $resultat['status'] ?? 400);
         }
 
-        $clans = Clan::withCount('members')
-            ->orderBy('nom')
-            ->paginate(20);
-
-        return response()->json($clans);
+        return response()->json($resultat['clans']);
     }
 
     public function show(int $id, Request $request): JsonResponse
     {
-        $userId = $request->user_id;
-        $user = \App\Models\User::find($userId);
+        $userId = (int) ($request->user_id ?? 0);
+        $resultat = $this->getClanQuery->executar($userId, $id);
 
-        if (!$user || $user->nivell < 5) {
-            return response()->json(['error' => 'Nivell 5 requerit'], 403);
+        if (!$resultat['success']) {
+            return response()->json(['error' => $resultat['error']], $resultat['status'] ?? 400);
         }
 
-        $clan = Clan::with(['members.usuari', 'lider'])->withCount('members')->find($id);
-
-        if (!$clan) {
-            return response()->json(['error' => 'Clan no trobat'], 404);
-        }
-
-        return response()->json($clan);
+        return response()->json($resultat['clan']);
     }
 
     public function myClan(Request $request): JsonResponse
     {
-        $userId = $request->user_id;
-        
-        $member = DB::table('clan_members')
-            ->where('usuari_id', $userId)
-            ->first();
-        
-        if (!$member) {
-            return response()->json(['clan' => null]);
-        }
-        
-        $clan = Clan::with(['members.usuari', 'lider'])->find($member->clan_id);
-        
-        return response()->json(['clan' => $clan]);
+        $userId = (int) ($request->user_id ?? 0);
+        $resultat = $this->getMyClanQuery->executar($userId);
+
+        return response()->json($resultat);
     }
 
     public function create(Request $request): JsonResponse
     {
         try {
-            $userId = $request->user_id;
-            $user = \App\Models\User::find($userId);
-
-            if (!$user || $user->nivell < 5) {
-                return response()->json(['error' => 'Nivell 5 requerit'], 403);
-            }
-
+            $userId = (int) ($request->user_id ?? 0);
             $validated = $request->validate([
                 'nom' => 'required|string|max:100',
                 'categoria_id' => 'nullable|integer|between:1,8',
@@ -78,24 +132,14 @@ class ClanController extends Controller
                 'es_public' => 'boolean',
             ]);
 
-            $clan = Clan::create([
-                'nom' => $validated['nom'],
-                'categoria_id' => $validated['categoria_id'] ?? null,
-                'max_membres' => $validated['max_membres'],
-                'es_public' => $validated['es_public'] ?? true,
-                'lider_id' => $userId,
-            ]);
+            $resultat = $this->createClanAction->executar($userId, $validated);
 
-            DB::table('clan_members')->insert([
-                'clan_id' => $clan->id,
-                'usuari_id' => $userId,
-                'rol' => 'lider',
-                'data_unio' => now(),
-            ]);
+            if (!$resultat['success']) {
+                return response()->json(['error' => $resultat['error']], $resultat['status'] ?? 400);
+            }
 
-            return response()->json($clan, 201);
-        }
-        catch (\Exception $e) {
+            return response()->json($resultat['clan'], 201);
+        } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
@@ -103,28 +147,21 @@ class ClanController extends Controller
     public function update(int $id, Request $request): JsonResponse
     {
         try {
-            $userId = $request->user_id;
-            $clan = Clan::find($id);
-
-            if (!$clan) {
-                return response()->json(['error' => 'Clan no trobat'], 404);
-            }
-
-            if ($clan->lider_id !== $userId) {
-                return response()->json(['error' => 'Només el líder pot modificar'], 403);
-            }
-
+            $userId = (int) ($request->user_id ?? 0);
             $validated = $request->validate([
                 'nom' => 'string|max:100',
                 'max_membres' => 'integer|in:10,15,20',
                 'es_public' => 'boolean',
             ]);
 
-            $clan->update($validated);
+            $resultat = $this->updateClanAction->executar($userId, $id, $validated);
 
-            return response()->json($clan);
-        }
-        catch (\Exception $e) {
+            if (!$resultat['success']) {
+                return response()->json(['error' => $resultat['error']], $resultat['status'] ?? 400);
+            }
+
+            return response()->json($resultat['clan']);
+        } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
@@ -132,129 +169,64 @@ class ClanController extends Controller
     public function leave(int $id, Request $request): JsonResponse
     {
         try {
-            $userId = $request->user_id;
-            $clan = Clan::find($id);
+            $userId = (int) ($request->user_id ?? 0);
+            $resultat = $this->leaveClanAction->executar($userId, $id);
 
-            if (!$clan) {
-                return response()->json(['error' => 'Clan no trobat'], 404);
+            if (!$resultat['success']) {
+                return response()->json(['error' => $resultat['error']], $resultat['status'] ?? 400);
             }
-
-            if ($clan->lider_id === $userId) {
-                $nextMember = DB::table('clan_members')
-                    ->where('clan_id', $id)
-                    ->where('usuari_id', '!=', $userId)
-                    ->orderBy('data_unio', 'asc')
-                    ->first();
-
-                if ($nextMember) {
-                    DB::table('clan_members')
-                        ->where('clan_id', $id)
-                        ->where('usuari_id', $nextMember->usuari_id)
-                        ->update(['rol' => 'lider']);
-                    
-                    $clan->lider_id = $nextMember->usuari_id;
-                    $clan->save();
-                } else {
-                    $clan->delete();
-                    return response()->json(['success' => true]);
-                }
-            }
-
-            DB::table('clan_members')
-                ->where('clan_id', $id)
-                ->where('usuari_id', $userId)
-                ->delete();
 
             return response()->json(['success' => true]);
-        }
-        catch (\Exception $e) {
+        } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
     public function members(int $id, Request $request): JsonResponse
     {
-        $clan = Clan::find($id);
+        $resultat = $this->getClanMembersQuery->executar($id);
 
-        if (!$clan) {
-            return response()->json(['error' => 'Clan no trobat'], 404);
+        if (!$resultat['success']) {
+            return response()->json(['error' => $resultat['error']], $resultat['status'] ?? 400);
         }
 
-        $members = DB::table('clan_members')
-            ->join('usuaris', 'clan_members.usuari_id', '=', 'usuaris.id')
-            ->where('clan_members.clan_id', $id)
-            ->select('clan_members.rol', 'clan_members.data_unio', 'usuaris.id as usuari_id', 'usuaris.nom', 'usuaris.nivell')
-            ->get();
-
-        return response()->json($members);
+        return response()->json($resultat['members']);
     }
 
     public function messages(int $id, Request $request): JsonResponse
     {
-        $userId = $request->user_id;
+        $userId = (int) ($request->user_id ?? 0);
+        $resultat = $this->getClanMessagesQuery->executar($id, $userId);
 
-        $isMember = DB::table('clan_members')
-            ->where('clan_id', $id)
-            ->where('usuari_id', $userId)
-            ->exists();
-
-        if (!$isMember) {
-            return response()->json(['error' => 'No eres membre'], 403);
+        if (!$resultat['success']) {
+            return response()->json(['error' => $resultat['error']], $resultat['status'] ?? 400);
         }
 
-        $messages = DB::table('clan_messages')
-            ->join('usuaris', 'clan_messages.usuari_id', '=', 'usuaris.id')
-            ->where('clan_messages.clan_id', $id)
-            ->select('clan_messages.*', 'usuaris.nom as usuari_nom', 'usuaris.id as usuari_id')
-            ->orderBy('clan_messages.created_at', 'desc')
-            ->paginate(50);
-
-        return response()->json($messages);
+        return response()->json($resultat['messages']);
     }
 
     public function sendMessage(int $id, Request $request): JsonResponse
     {
         try {
-            $userId = $request->user_id;
-            $user = \App\Models\User::find($userId);
-
-            if (!$user || $user->nivell < 5) {
-                return response()->json(['error' => 'Nivell 5 requerit'], 403);
-            }
-
-            $isMember = DB::table('clan_members')
-                ->where('clan_id', $id)
-                ->where('usuari_id', $userId)
-                ->exists();
-
-            if (!$isMember) {
-                return response()->json(['error' => 'No eres membre'], 403);
-            }
-
+            $userId = (int) ($request->user_id ?? 0);
             $validated = $request->validate([
                 'contingut' => 'required|string|max:1000',
                 'habit_id' => 'nullable|integer',
                 'plantilla_id' => 'nullable|integer',
             ]);
 
-            $messageId = DB::table('clan_messages')->insertGetId([
-                'clan_id' => $id,
-                'usuari_id' => $userId,
-                'contingut' => $validated['contingut'],
-                'habit_id' => $validated['habit_id'] ?? null,
-                'plantilla_id' => $validated['plantilla_id'] ?? null,
-                'created_at' => now(),
-            ]);
+            $resultat = $this->sendClanMessageAction->executar($userId, $id, $validated);
 
-            $message = DB::table('clan_messages')
-                ->join('usuaris', 'clan_messages.usuari_id', '=', 'usuaris.id')
-                ->where('clan_messages.id', $messageId)
-                ->select('clan_messages.*', 'usuaris.nom as usuari_nom', 'usuaris.id as usuari_id')
-                ->first();
+            if (!$resultat['success']) {
+                return response()->json(['error' => $resultat['error']], $resultat['status'] ?? 400);
+            }
 
-            return response()->json(['id' => $messageId, 'success' => true, 'message' => $message], 201);
-        }
-        catch (\Exception $e) {
+            return response()->json([
+                'id' => $resultat['id'],
+                'success' => true,
+                'message' => $resultat['message'],
+            ], 201);
+        } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
@@ -262,41 +234,19 @@ class ClanController extends Controller
     public function shareHabit(int $id, Request $request): JsonResponse
     {
         try {
-            $userId = $request->user_id;
-
-            $isMember = DB::table('clan_members')
-                ->where('clan_id', $id)
-                ->where('usuari_id', $userId)
-                ->exists();
-
-            if (!$isMember) {
-                return response()->json(['error' => 'No eres membre'], 403);
-            }
-
+            $userId = (int) ($request->user_id ?? 0);
             $validated = $request->validate([
                 'habit_id' => 'required|integer',
             ]);
 
-            $user = \App\Models\User::find($userId);
-            $habits = $user->habits()->where('id', $validated['habit_id'])->exists();
+            $resultat = $this->shareHabitAction->executar($userId, $id, (int) $validated['habit_id']);
 
-            if (!$habits) {
-                return response()->json(['error' => 'Hàbit no trobat'], 404);
+            if (!$resultat['success']) {
+                return response()->json(['error' => $resultat['error']], $resultat['status'] ?? 400);
             }
 
-            $habit = \App\Models\Habit::find($validated['habit_id']);
-
-            $messageId = DB::table('clan_messages')->insertGetId([
-                'clan_id' => $id,
-                'usuari_id' => $userId,
-                'contingut' => 'Hàbit compartit: ' . $habit->titol,
-                'habit_id' => $validated['habit_id'],
-                'created_at' => now(),
-            ]);
-
-            return response()->json(['id' => $messageId, 'success' => true], 201);
-        }
-        catch (\Exception $e) {
+            return response()->json(['id' => $resultat['id'], 'success' => true], 201);
+        } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
@@ -304,41 +254,19 @@ class ClanController extends Controller
     public function sharePlantilla(int $id, Request $request): JsonResponse
     {
         try {
-            $userId = $request->user_id;
-
-            $isMember = DB::table('clan_members')
-                ->where('clan_id', $id)
-                ->where('usuari_id', $userId)
-                ->exists();
-
-            if (!$isMember) {
-                return response()->json(['error' => 'No eres membre'], 403);
-            }
-
+            $userId = (int) ($request->user_id ?? 0);
             $validated = $request->validate([
                 'plantilla_id' => 'required|integer',
             ]);
 
-            $user = \App\Models\User::find($userId);
-            $hasPlantilla = $user->plantilles()->where('id', $validated['plantilla_id'])->exists();
+            $resultat = $this->sharePlantillaAction->executar($userId, $id, (int) $validated['plantilla_id']);
 
-            if (!$hasPlantilla) {
-                return response()->json(['error' => 'Plantilla no trobada'], 404);
+            if (!$resultat['success']) {
+                return response()->json(['error' => $resultat['error']], $resultat['status'] ?? 400);
             }
 
-            $plantilla = \App\Models\Plantilla::find($validated['plantilla_id']);
-
-            $messageId = DB::table('clan_messages')->insertGetId([
-                'clan_id' => $id,
-                'usuari_id' => $userId,
-                'contingut' => 'Plantilla compartida: ' . $plantilla->nom,
-                'plantilla_id' => $validated['plantilla_id'],
-                'created_at' => now(),
-            ]);
-
-            return response()->json(['id' => $messageId, 'success' => true], 201);
-        }
-        catch (\Exception $e) {
+            return response()->json(['id' => $resultat['id'], 'success' => true], 201);
+        } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
@@ -346,39 +274,15 @@ class ClanController extends Controller
     public function importHabit(int $id, int $messageId, Request $request): JsonResponse
     {
         try {
-            $userId = $request->user_id;
+            $userId = (int) ($request->user_id ?? 0);
+            $resultat = $this->importHabitAction->executar($userId, $id, $messageId);
 
-            $isMember = DB::table('clan_members')
-                ->where('clan_id', $id)
-                ->where('usuari_id', $userId)
-                ->exists();
-
-            if (!$isMember) {
-                return response()->json(['error' => 'No eres membre'], 403);
+            if (!$resultat['success']) {
+                return response()->json(['error' => $resultat['error']], $resultat['status'] ?? 400);
             }
 
-            $message = DB::table('clan_messages')
-                ->where('clan_id', $id)
-                ->where('id', $messageId)
-                ->whereNotNull('habit_id')
-                ->first();
-
-            if (!$message) {
-                return response()->json(['error' => 'Missatge no trobat'], 404);
-            }
-
-            $originalHabit = \App\Models\Habit::find($message->habit_id);
-            if (!$originalHabit) {
-                return response()->json(['error' => 'Hàbit original no trobat'], 404);
-            }
-
-            $newHabit = $originalHabit->replicate();
-            $newHabit->usuari_id = $userId;
-            $newHabit->save();
-
-            return response()->json(['success' => true, 'habit_id' => $newHabit->id]);
-        }
-        catch (\Exception $e) {
+            return response()->json(['success' => true, 'habit_id' => $resultat['habit_id']]);
+        } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
@@ -386,38 +290,15 @@ class ClanController extends Controller
     public function importPlantilla(int $id, int $messageId, Request $request): JsonResponse
     {
         try {
-            $userId = $request->user_id;
+            $userId = (int) ($request->user_id ?? 0);
+            $resultat = $this->importPlantillaAction->executar($userId, $id, $messageId);
 
-            $isMember = DB::table('clan_members')
-                ->where('clan_id', $id)
-                ->where('usuari_id', $userId)
-                ->exists();
-
-            if (!$isMember) {
-                return response()->json(['error' => 'No eres membre'], 403);
+            if (!$resultat['success']) {
+                return response()->json(['error' => $resultat['error']], $resultat['status'] ?? 400);
             }
 
-            $message = DB::table('clan_messages')
-                ->where('clan_id', $id)
-                ->where('id', $messageId)
-                ->whereNotNull('plantilla_id')
-                ->first();
-
-            if (!$message) {
-                return response()->json(['error' => 'Missatge no trobat'], 404);
-            }
-
-            $originalPlantilla = \App\Models\Plantilla::find($message->plantilla_id);
-            if (!$originalPlantilla) {
-                return response()->json(['error' => 'Plantilla original no trobada'], 404);
-            }
-
-            $newPlantilla = $originalPlantilla->replicate();
-            $newPlantilla->save();
-
-            return response()->json(['success' => true, 'plantilla_id' => $newPlantilla->id]);
-        }
-        catch (\Exception $e) {
+            return response()->json(['success' => true, 'plantilla_id' => $resultat['plantilla_id']]);
+        } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }

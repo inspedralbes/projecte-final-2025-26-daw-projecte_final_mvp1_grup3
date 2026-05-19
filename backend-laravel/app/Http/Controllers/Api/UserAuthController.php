@@ -4,178 +4,73 @@ namespace App\Http\Controllers\Api;
 
 //================================ NAMESPACES / IMPORTS ============
 
+use App\Domains\User\Actions\GoogleOAuthCallbackAction;
+use App\Domains\User\Actions\LoginUserAction;
+use App\Domains\User\Actions\RefreshTokenAction;
+use App\Domains\User\Actions\RegisterUserAction;
+use App\Domains\User\Services\JwtCookieResponseService;
 use App\Http\Controllers\Controller;
-use App\Models\Administrador;
-use App\Models\Ratxa;
-use App\Models\User;
-use App\Services\AuthService;
-use App\Services\WelcomeEmailService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Laravel\Socialite\Facades\Socialite;
-use PHPOpenSourceSaver\JWTAuth\Exceptions\JWTException;
-use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
 //================================ PROPIETATS / ATRIBUTS ==========
 
 /**
- * Controlador d'autenticació per usuaris.
+ * Controlador d'autenticació per usuaris (thin).
  *
  * Operacions:
  *   - auth: login, refresh, logout
- *   - CREATE: register (crea usuari + ratxes, retorna token)
+ *   - CREATE: register
  */
 class UserAuthController extends Controller
 {
-    //================================ PROPIETATS / ATRIBUTS ==========
+    private LoginUserAction $loginAction;
 
-    private AuthService $authService;
+    private RegisterUserAction $registerAction;
 
-    private WelcomeEmailService $welcomeEmailService;
+    private RefreshTokenAction $refreshAction;
 
-    public function __construct(AuthService $authService, WelcomeEmailService $welcomeEmailService)
-    {
-        $this->authService = $authService;
-        $this->welcomeEmailService = $welcomeEmailService;
+    private JwtCookieResponseService $jwtResponse;
+
+    private GoogleOAuthCallbackAction $googleCallbackAction;
+
+    public function __construct(
+        LoginUserAction $loginAction,
+        RegisterUserAction $registerAction,
+        RefreshTokenAction $refreshAction,
+        JwtCookieResponseService $jwtResponse,
+        GoogleOAuthCallbackAction $googleCallbackAction
+    ) {
+        $this->loginAction = $loginAction;
+        $this->registerAction = $registerAction;
+        $this->refreshAction = $refreshAction;
+        $this->jwtResponse = $jwtResponse;
+        $this->googleCallbackAction = $googleCallbackAction;
     }
 
     //================================ MÈTODES / FUNCIONS ===========
 
-    /**
-     * auth. Valida credencials, retorna JWT.
-     */
     public function login(Request $request): JsonResponse
     {
-        $request->validate([
-            'email' => 'required|email',
-            'contrasenya' => 'required|string',
-        ]);
-
-        $usuari = User::where('email', 'ILIKE', $request->input('email'))->first();
-
-        if ($usuari === null || !Hash::check($request->input('contrasenya'), $usuari->contrasenya_hash)) {
-            return response()->json(['message' => 'Credencials incorrectes'], 401);
-        }
-
-        if (!empty($usuari->prohibit)) {
-            return response()->json(['message' => 'El compte està prohibit'], 403);
-        }
-
-        $token = JWTAuth::fromUser($usuari);
-
-        $this->welcomeEmailService->enviarSiPrimeraConnexio($usuari);
-
-        return $this->authService->crearRespostaLoginUsuari($usuari, $token);
+        return $this->loginAction->executar($request);
     }
 
-    /**
-     * CREATE. Crea usuari + ratxes, retorna token (login automàtic).
-     */
     public function register(Request $request): JsonResponse
     {
-        $request->validate([
-            'nom' => 'required|string|max:100',
-            'email' => 'required|email|unique:usuaris,email',
-            'contrasenya' => 'required|string|min:6|confirmed',
-        ], [
-            'contrasenya.confirmed' => 'La contrasenya i la confirmació no coincideixen.',
-            'email.unique' => 'Aquest email ja està registrat.',
-        ]);
-
-        $usuari = User::create([
-            'nom' => $request->input('nom'),
-            'email' => $request->input('email'),
-            'contrasenya_hash' => Hash::make($request->input('contrasenya')),
-            'nivell' => 1,
-            'xp_total' => 0,
-            'xp_actual_nivel' => 0,
-            'xp_objetivo_nivel' => 1000,
-            'monedes' => 0,
-            'missio_completada' => false,
-        ]);
-
-        Ratxa::create([
-            'usuari_id' => $usuari->id,
-            'ratxa_actual' => 0,
-            'ratxa_maxima' => 0,
-        ]);
-
-        $token = JWTAuth::fromUser($usuari);
-
-        $this->welcomeEmailService->enviarSiPrimeraConnexio($usuari);
-
-        $resposta = $this->authService->crearRespostaLoginUsuari($usuari, $token, true);
-
-        return $resposta->setStatusCode(201);
+        return $this->registerAction->executar($request);
     }
 
-    /**
-     * auth. Refresca token (user o admin).
-     */
     public function refresh(Request $request): JsonResponse
     {
-        $token = null;
-        $authHeader = $request->header('Authorization');
-        if (is_string($authHeader) && str_starts_with($authHeader, 'Bearer ')) {
-            $token = substr($authHeader, 7);
-        }
-        if ($token === null || $token === '') {
-            $cookieNom = (string) config('jwt.cookie', 'loopy_token');
-            $token = $request->cookie($cookieNom);
-        }
-        if ($token === null || $token === '') {
-            return response()->json(['message' => 'Token invàlid o expirat'], 401);
-        }
-
-        try {
-            $nouToken = JWTAuth::setToken($token)->refresh();
-        } catch (JWTException $e) {
-            return response()->json(['message' => 'Token invàlid o expirat'], 401);
-        }
-
-        $payload = JWTAuth::setToken($nouToken)->getPayload();
-        $role = $payload->get('role');
-        $id = $payload->get('user_id') ?? $payload->get('admin_id') ?? $payload->get('sub');
-        if ($role === null || $id === null) {
-            return response()->json(['message' => 'Token invàlid'], 401);
-        }
-
-        if ($role === 'admin') {
-            $admin = Administrador::find((int) $id);
-            if ($admin === null) {
-                return response()->json(['message' => 'Administrador no trobat'], 401);
-            }
-            return $this->authService->crearRespostaRefresh('admin', [
-                'id' => $admin->id,
-                'nom' => $admin->nom,
-                'email' => $admin->email,
-            ], $nouToken);
-        }
-
-        $usuari = User::find((int) $id);
-        if ($usuari === null) {
-            return response()->json(['message' => 'Usuari no trobat'], 401);
-        }
-
-        return $this->authService->crearRespostaRefresh('user', [
-            'id' => $usuari->id,
-            'nom' => $usuari->nom,
-            'email' => $usuari->email,
-        ], $nouToken);
+        return $this->refreshAction->executar($request);
     }
 
-    /**
-     * Esborra cookies d'autenticació.
-     */
     public function logout(Request $request): JsonResponse
     {
-        return $this->authService->crearRespostaLogout();
+        return $this->jwtResponse->crearRespostaLogout();
     }
 
-    /**
-     * Redirigeix a Google per autenticació.
-     */
     public function redirectToGoogle(): mixed
     {
         return Socialite::driver('google')
@@ -183,57 +78,8 @@ class UserAuthController extends Controller
             ->redirect();
     }
 
-    /**
-     * Gestiona el callback de Google OAuth.
-     */
     public function handleGoogleCallback(): mixed
     {
-        try {
-            $googleUser = Socialite::driver('google')->stateless()->user();
-            $requiresOnboarding = false;
-
-            $usuari = User::where('google_id', $googleUser->getId())->first();
-
-            if (!$usuari) {
-                $usuari = User::where('email', 'ILIKE', $googleUser->getEmail())->first();
-
-                if ($usuari) {
-                    $usuari->update(['google_id' => (string) $googleUser->getId()]);
-                } else {
-                    $usuari = User::create([
-                        'nom'       => $googleUser->getName() ?? $googleUser->getNickname() ?? 'Google User',
-                        'email'     => $googleUser->getEmail(),
-                        'google_id' => (string) $googleUser->getId(),
-                    ]);
-
-                    Ratxa::create([
-                        'usuari_id'    => $usuari->id,
-                        'ratxa_actual' => 0,
-                        'ratxa_maxima' => 0,
-                    ]);
-                    $requiresOnboarding = true;
-                }
-            }
-
-            if (!empty($usuari->prohibit)) {
-                return response()->json(['message' => 'El compte esta prohibit'], 403);
-            }
-
-            $token = JWTAuth::fromUser($usuari);
-
-            $this->welcomeEmailService->enviarSiPrimeraConnexio($usuari);
-
-            $frontendUrl = env('GOOGLE_FRONTEND_REDIRECT', 'https://looppy.cat/auth/google/redirect');
-            $redirectUrl = $frontendUrl . '?token=' . $token . '&onboarding=' . ($requiresOnboarding ? '1' : '0');
-
-            $resposta = redirect($redirectUrl);
-            return $this->authService->attachAuthCookies($resposta, $token, 'user');
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Error Google Login: ' . $e->getMessage());
-            return response()->json([
-                'message' => 'Error en el login amb Google',
-                'error'   => $e->getMessage(),
-            ], 500);
-        }
+        return $this->googleCallbackAction->executar();
     }
 }

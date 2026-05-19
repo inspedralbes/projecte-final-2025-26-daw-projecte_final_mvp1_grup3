@@ -1,3 +1,9 @@
+/**
+ * Modul JavaScript ES5: useSocialStore.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
 import { defineStore } from "pinia";
 import { authFetch } from "~/composables/useApi.js";
 import { useAuthStore } from "~/stores/useAuthStore.js";
@@ -150,8 +156,22 @@ export var useSocialStore = defineStore("social", {
             if (!this.posts[i].comments) {
               this.posts[i].comments = [];
             }
-            this.posts[i].comments.push(result);
-            this.posts[i].comments_count = (Number(this.posts[i].comments_count) || 0) + 1;
+            
+            var existingIndex = -1;
+            for (var k = 0; k < this.posts[i].comments.length; k++) {
+              if (this.posts[i].comments[k].id === result.id) {
+                existingIndex = k;
+                break;
+              }
+            }
+            
+            if (existingIndex === -1) {
+              this.posts[i].comments.push(result);
+              this.posts[i].comments_count = (Number(this.posts[i].comments_count) || 0) + 1;
+            } else {
+              this.posts[i].comments[existingIndex] = result;
+            }
+            
             this.posts[i] = { ...this.posts[i] };
             break;
           }
@@ -189,7 +209,6 @@ export var useSocialStore = defineStore("social", {
     },
 
     deleteComment: async function (commentId) {
-      this.loading = true;
       this.error = null;
 
       try {
@@ -200,12 +219,25 @@ export var useSocialStore = defineStore("social", {
           throw new Error("Error en eliminar comentari: " + resposta.status);
         }
 
+        // Eliminar el comentari de l'estat local dels posts
+        for (var i = 0; i < this.posts.length; i++) {
+          if (this.posts[i].comments) {
+            var before = this.posts[i].comments.length;
+            this.posts[i].comments = this.posts[i].comments.filter(function (c) {
+              return c.id !== commentId;
+            });
+            if (this.posts[i].comments.length < before) {
+              this.posts[i].comments_count = Math.max(0, (Number(this.posts[i].comments_count) || 0) - 1);
+              this.posts[i] = { ...this.posts[i] };
+              break;
+            }
+          }
+        }
+
         return true;
       } catch (e) {
         this.error = e.message;
         return false;
-      } finally {
-        this.loading = false;
       }
     },
 
@@ -280,17 +312,21 @@ export var useSocialStore = defineStore("social", {
       }
     },
 
-    importHabit: async function (postId, diesSetmana) {
+    importHabit: async function (postId, diesSetmana, habitId) {
       this.loading = true;
       this.error = null;
 
       try {
+        var bodyData = {
+          post_id: postId,
+          dies_setmana: diesSetmana,
+        };
+        if (habitId) {
+          bodyData.habit_id = habitId;
+        }
         var resposta = await authFetch("/api/social/import/habit", {
           method: "POST",
-          body: JSON.stringify({
-            post_id: postId,
-            dies_setmana: diesSetmana,
-          }),
+          body: JSON.stringify(bodyData),
         });
         if (!resposta.ok) {
           throw new Error("Error en importar hàbit: " + resposta.status);
@@ -306,17 +342,21 @@ export var useSocialStore = defineStore("social", {
       }
     },
 
-    importPlantilla: async function (postId, habitIds) {
+    importPlantilla: async function (postId, habitIds, plantillaId) {
       this.loading = true;
       this.error = null;
 
       try {
+        var bodyData = {
+          post_id: postId,
+          habit_ids: habitIds,
+        };
+        if (plantillaId) {
+          bodyData.plantilla_id = plantillaId;
+        }
         var resposta = await authFetch("/api/social/import/plantilla", {
           method: "POST",
-          body: JSON.stringify({
-            post_id: postId,
-            habit_ids: habitIds,
-          }),
+          body: JSON.stringify(bodyData),
         });
         if (!resposta.ok) {
           throw new Error("Error en importar plantilla: " + resposta.status);
@@ -388,20 +428,94 @@ export var useSocialStore = defineStore("social", {
             this.posts[i].comments = [];
           }
           
-          var j;
-          for (j = 0; j < this.posts[i].comments.length; j++) {
+          var found = false;
+          for (var j = 0; j < this.posts[i].comments.length; j++) {
             if (this.posts[i].comments[j].id === commentId) {
-              this.posts[i].comments.splice(j, 1);
+              this.posts[i].comments[j] = comment;
+              found = true;
               break;
             }
           }
           
-          comment.liked_by_current_user = false;
-          this.posts[i].comments.push(comment);
-          this.posts[i].comments_count = (Number(this.posts[i].comments_count) || 0) + 1;
+          if (!found) {
+            comment.liked_by_current_user = false;
+            this.posts[i].comments.push(comment);
+            this.posts[i].comments_count = (Number(this.posts[i].comments_count) || 0) + 1;
+          }
+          
           this.posts[i] = { ...this.posts[i] };
           break;
         }
+      }
+    },
+
+    handlePostUpdated: function (post) {
+      if (!post || !post.id) {
+        return;
+      }
+      var i;
+      for (i = 0; i < this.posts.length; i++) {
+        if (this.posts[i].id === post.id) {
+          this.posts[i].content = post.content;
+          if (post.user) {
+            this.posts[i].user = post.user;
+          }
+          this.posts[i] = Object.assign({}, this.posts[i]);
+          break;
+        }
+      }
+    },
+
+    handlePostDeleted: function (data) {
+      var postId = data && (data.post_id || data.id);
+      if (!postId) {
+        return;
+      }
+      this.posts = this.posts.filter(function (p) {
+        return p.id !== postId;
+      });
+    },
+
+    handleCommentUpdated: function (comment) {
+      if (!comment || !comment.id) {
+        return;
+      }
+      var i;
+      var j;
+      for (i = 0; i < this.posts.length; i++) {
+        if (this.posts[i].id !== comment.post_id || !this.posts[i].comments) {
+          continue;
+        }
+        for (j = 0; j < this.posts[i].comments.length; j++) {
+          if (this.posts[i].comments[j].id === comment.id) {
+            this.posts[i].comments[j].content = comment.content;
+            if (comment.user) {
+              this.posts[i].comments[j].user = comment.user;
+            }
+            this.posts[i] = Object.assign({}, this.posts[i]);
+            return;
+          }
+        }
+      }
+    },
+
+    handleCommentDeleted: function (data) {
+      if (!data || !data.comment_id) {
+        return;
+      }
+      var i;
+      var j;
+      var postId = data.post_id;
+      for (i = 0; i < this.posts.length; i++) {
+        if (this.posts[i].id !== postId || !this.posts[i].comments) {
+          continue;
+        }
+        this.posts[i].comments = this.posts[i].comments.filter(function (c) {
+          return c.id !== data.comment_id;
+        });
+        this.posts[i].comments_count = Math.max(0, (Number(this.posts[i].comments_count) || 0) - 1);
+        this.posts[i] = Object.assign({}, this.posts[i]);
+        break;
       }
     },
 

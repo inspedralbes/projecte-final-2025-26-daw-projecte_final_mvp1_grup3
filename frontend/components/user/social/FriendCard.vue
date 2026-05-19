@@ -1,40 +1,47 @@
+<!--
+  Component o pagina Nuxt: FriendCard.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div
-    class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex items-center justify-between hover:shadow-md transition-shadow cursor-pointer"
+    class="friend-card"
     @click="$emit('view-profile', friend.friend.id)"
   >
-    <div class="flex items-center gap-3">
-      <div class="w-12 h-12 rounded-full overflow-hidden shadow-inner" :style="avatarBackgroundStyle">
-        <div class="w-full h-full rounded-full border border-gray-200 bg-white/20 p-1 flex items-center justify-center">
+    <div class="friend-card__left">
+      <div class="friend-card__avatar" :style="avatarBackgroundStyle">
+        <div class="friend-card__avatar-inner">
           <img
-            :src="mascotaImg"
+            v-if="monsterImage"
+            :src="monsterImage"
             alt="Monstre del perfil"
-            class="w-full h-full object-contain"
+            class="friend-card__avatar-img"
+            :style="monsterStyle"
             decoding="async"
             draggable="false"
           />
         </div>
       </div>
-      <div>
-        <p class="font-semibold text-gray-800">{{ friend.friend.nom }}</p>
-        <p class="text-xs text-gray-500">Nivell {{ friend.friend.nivell }} · {{ friend.friend.xp_total }} XP</p>
+      <div class="friend-card__info">
+        <p class="friend-card__name">{{ friend.friend.nom }}</p>
+        <p class="friend-card__meta">Nivell {{ friend.friend.nivell }} · {{ friend.friend.xp_total }} XP</p>
       </div>
     </div>
     <button
-      @click.stop="$emit('open-chat', friend.friend.id, friend.friend.nom)"
-      class="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-all"
+      type="button"
+      class="friend-card__chat-btn"
       :title="$t('friends.chat')"
+      @click.stop="$emit('open-chat', friend.friend.id, friend.friend.nom)"
     >
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.874 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
       </svg>
     </button>
   </div>
 </template>
 
 <script>
-import mascotaImg from "~/assets/img/Mascota.png";
-import bosqueImg from "~/assets/img/Bosque.png";
+import { getMonsterImageFromUser } from "~/utils/monsterImage.js";
+import bosqueImg from "~/assets/img/Fons/Fons_Bosc.png";
 
 export default {
   name: "FriendCard",
@@ -45,12 +52,16 @@ export default {
     },
   },
   emits: ["open-chat", "view-profile"],
-  data: function () {
-    return {
-      mascotaImg: mascotaImg,
-    };
-  },
   computed: {
+    monsterImage: function () {
+      return getMonsterImageFromUser(this.friend.friend);
+    },
+    monsterStyle: function () {
+      return {
+        transform: "scale(1.2) translateY(10%)",
+        filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.15))"
+      };
+    },
     avatarBackgroundStyle: function () {
       return {
         backgroundImage: "url(" + bosqueImg + ")",
@@ -58,9 +69,97 @@ export default {
         backgroundPosition: "center",
       };
     }
-  },
-  setup(props) {
-    return {};
-  },
+  }
 };
 </script>
+
+<style scoped>
+.friend-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #FAF9F9;
+  border-radius: 10px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.friend-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.friend-card__left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.friend-card__avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.friend-card__avatar-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.15);
+  padding: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.friend-card__avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.friend-card__info {
+  min-width: 0;
+}
+
+.friend-card__name {
+  margin: 0;
+  font-family: "Bricolage Grotesque", system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #2b2d42;
+  line-height: 1.2;
+}
+
+.friend-card__meta {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: #707070;
+  line-height: 1.2;
+}
+
+.friend-card__chat-btn {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 10px;
+  background: rgba(121, 212, 93, 0.12);
+  color: #79D45D;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.friend-card__chat-btn:hover {
+  background: rgba(121, 212, 93, 0.25);
+  transform: scale(1.05);
+}
+</style>

@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: redirect.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div class="flex items-center justify-center min-h-screen bg-gray-100">
     <div class="p-8 bg-white rounded-xl shadow-lg text-center">
@@ -48,7 +52,14 @@ onMounted(async () => {
 
     const nuxtApp = useNuxtApp();
     if (nuxtApp.$updateSocketAuth) nuxtApp.$updateSocketAuth();
-    await navigateTo("/home");
+    if (authStore.requiresOnboarding) {
+      authStore.reiniciarEstatOnboarding();
+      const habitStore = useHabitStore();
+      habitStore.establirHabitsDesDeApi([]);
+      await navigateTo('/onboarding');
+    } else {
+      await navigateTo('/home');
+    }
   } catch (err) {
     error.value = err.message || "Error al processar el login.";
   }

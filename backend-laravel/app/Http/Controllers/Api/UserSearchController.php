@@ -1,11 +1,21 @@
 <?php
 
+
+/**
+ * Capa Laravel: UserSearchController.
+ * Comentaris: agents/backend/AgentLaravel.md
+ */
+
 namespace App\Http\Controllers\Api;
+
+//================================ NAMESPACES / IMPORTS ============
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+
+//================================ MÈTODES / FUNCIONS ===========
 
 class UserSearchController extends Controller
 {
@@ -20,13 +30,13 @@ class UserSearchController extends Controller
 
         if (strlen($query) < 2) {
             $users = User::where('id', '!=', $userId)
-                ->select('id', 'nom', 'nivell', 'xp_total')
+                ->select('id', 'nom', 'nivell', 'xp_total', 'monstre_tipus')
                 ->limit(50)
                 ->get();
         } else {
             $users = User::where('nom', 'ILIKE', '%' . $query . '%')
                 ->where('id', '!=', $userId)
-                ->select('id', 'nom', 'nivell', 'xp_total')
+                ->select('id', 'nom', 'nivell', 'xp_total', 'monstre_tipus')
                 ->limit(20)
                 ->get();
         }

@@ -1,3 +1,9 @@
+/**
+ * Modul JavaScript ES5: perfil.cy.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
 describe('Perfil', function () {
   beforeEach(function () {
     cy.login();
@@ -12,8 +18,8 @@ describe('Perfil', function () {
   });
 
   it('muestra los datos del perfil del usuario', function () {
-    cy.contains('Test User').should('be.visible');
-    cy.contains('test@example.com').should('be.visible');
+    cy.get('#perfil-nom').should('have.value', 'Test User');
+    cy.get('#perfil-email').should('have.value', 'test@example.com');
   });
 
   it('muestra el nivel del usuario', function () {
@@ -25,8 +31,8 @@ describe('Perfil', function () {
   });
 
   it('muestra la sección de logros y medallas', function () {
-    cy.contains('.font-bold.text-amber-400', 'Primer Hàbit').should('exist');
-    cy.contains('.font-bold.text-amber-400', 'Ratxa de 3').should('exist');
+    cy.contains('.perfil-logro-card__title', 'Primer Hàbit').should('exist');
+    cy.contains('.perfil-logro-card__title', 'Ratxa de 3').should('exist');
   });
 
   it('muestra el historial diario', function () {

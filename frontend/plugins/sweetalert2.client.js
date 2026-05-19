@@ -1,13 +1,18 @@
-import Swal from 'sweetalert2';
-
 /**
- * Plugin per injectar SweetAlert2 a tota l'aplicació Nuxt.
- * S'exposa com a $swal per ser accessible en scripts i templates.
+ * Modals Loopy (fulla rosa) + adaptador $swal compatible.
+ * Substituïx alert()/confirm() del navegador i SweetAlert per defecte.
  */
+
+import Swal from "sweetalert2";
+import { useLoopyModal, createLoopySwalAdapter } from "~/composables/useLoopyModal.js";
+
 export default defineNuxtPlugin(function (nuxtApp) {
-  return {
-    provide: {
-      swal: Swal
-    }
-  };
+  var loopyModal = useLoopyModal();
+  var swalAdapter = createLoopySwalAdapter();
+
+  // Nuxt 3 ja exposa provide() com a $loopyModal / $swal (getter).
+  // No assignar globalProperties manualment: provoca "only has a getter".
+  nuxtApp.provide("loopyModal", loopyModal);
+  nuxtApp.provide("swal", swalAdapter);
+  nuxtApp.provide("swalNative", Swal);
 });

@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: WeatherWidget.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div class="bento-card bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-lg border border-white/50">
     <div class="flex items-center justify-between mb-3">

@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: AdminStatCard.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div
     class="bg-white rounded-[3rem] p-10 shadow-2xl border border-gray-100 hover:-translate-y-2 transition-all cursor-pointer group"

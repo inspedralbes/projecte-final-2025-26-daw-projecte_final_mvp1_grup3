@@ -233,6 +233,22 @@ services:
       NUXT_PUBLIC_API_URL: https://looppy.cat
       NUXT_PUBLIC_SOCKET_URL: https://looppy.cat
       NITRO_PORT: 3000
+    volumes:
+      - ../frontend/public:/app/public
+      - ../frontend/assets:/app/assets
+      - ../frontend/components:/app/components
+      - ../frontend/composables:/app/composables
+      - ../frontend/lang:/app/lang
+      - ../frontend/layouts:/app/layouts
+      - ../frontend/middleware:/app/middleware
+      - ../frontend/pages:/app/pages
+      - ../frontend/plugins:/app/plugins
+      - ../frontend/stores:/app/stores
+      - ../frontend/utils:/app/utils
+      - ../frontend/app.vue:/app/app.vue
+      - ../frontend/error.vue:/app/error.vue
+      - ../frontend/nuxt.config.ts:/app/nuxt.config.ts
+      - ../frontend/tailwind.config.js:/app/tailwind.config.js
     depends_on:
       - backend-node
       - backend-laravel

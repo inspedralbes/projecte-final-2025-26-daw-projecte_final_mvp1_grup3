@@ -4,8 +4,8 @@ namespace App\Console\Commands\QueueHandlers;
 
 //================================ NAMESPACES / IMPORTS ============
 
-use App\Services\HabitService;
-use App\Services\RedisFeedbackService;
+use App\Domains\Habits\Services\HabitService;
+use App\Domains\Shared\Services\RedisFeedbackService;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -66,3 +66,4 @@ class HabitQueueHandler
         }
     }
 }
+

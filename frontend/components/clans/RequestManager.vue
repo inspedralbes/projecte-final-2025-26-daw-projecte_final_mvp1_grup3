@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: RequestManager.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div class="bg-white rounded-xl shadow p-6 border">
     <h3 class="text-lg font-bold mb-4">Sol·licituds Pendents ({{ requests.length }})</h3>
@@ -106,7 +110,7 @@ export default {
             this.$emit('request-handled');
             this.loadRequests();
          } else {
-            alert(store.error || "Error al acceptar sol·licitud");
+            await this.$loopyModal.error("Error", store.error || "Error al acceptar sol·licitud");
          }
        } catch(e) {
          console.error(e);
@@ -130,7 +134,7 @@ export default {
             this.$emit('request-handled');
             this.loadRequests();
          } else {
-            alert(store.error || "Error al rebutjar sol·licitud");
+            await this.$loopyModal.error("Error", store.error || "Error al rebutjar sol·licitud");
          }
        } catch(e) {
          console.error(e);

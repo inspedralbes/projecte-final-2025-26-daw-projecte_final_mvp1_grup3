@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\LogroResource;
-use App\Services\LogroService;
+use App\Domains\Gamification\Services\LogroService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -52,3 +52,4 @@ class LogroReadController extends Controller
         return LogroResource::collection($logros)->toResponse($request);
     }
 }
+

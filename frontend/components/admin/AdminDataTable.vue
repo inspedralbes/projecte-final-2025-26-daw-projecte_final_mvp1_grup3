@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: AdminDataTable.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div class="overflow-x-auto">
     <table class="w-full text-left">

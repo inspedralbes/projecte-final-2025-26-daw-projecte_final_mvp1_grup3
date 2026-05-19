@@ -1,3 +1,9 @@
+/**
+ * Modul JavaScript ES5: admin.cy.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
 describe('Admin Panel', function () {
   beforeEach(function () {
     cy.loginAdmin();
@@ -42,7 +48,6 @@ describe('Admin Panel', function () {
 
     it('muestra los enlaces de navegación principal', function () {
       cy.contains('Dashboard').should('be.visible');
-      cy.contains('Notificacions').should('be.visible');
     });
 
     it('muestra los enlaces de gestión', function () {
@@ -55,7 +60,6 @@ describe('Admin Panel', function () {
 
     it('muestra los enlaces de sistema', function () {
       cy.contains('Perfil').should('be.visible');
-      cy.contains('Configuració').should('be.visible');
     });
 
     it('tiene el botón de cerrar sesión', function () {

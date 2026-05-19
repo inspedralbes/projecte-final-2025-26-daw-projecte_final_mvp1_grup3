@@ -1,3 +1,9 @@
+/**
+ * Modul JavaScript ES5: feedbackSubscriber.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
 "use strict";
 
 //==============================================================================
@@ -5,9 +11,7 @@
 //==============================================================================
 
 var redis = require("redis");
-var userFeedbackEmitter = require("./emitters/userFeedbackEmitter");
-var adminFeedbackEmitter = require("./emitters/adminFeedbackEmitter");
-var socialFeedbackEmitter = require("./emitters/socialFeedbackEmitter");
+var feedbackRouter = require("./emitters/feedbackRouter");
 
 //==============================================================================
 //================================ VARIABLES ===================================
@@ -58,13 +62,7 @@ async function init(io) {
     try {
       payload = JSON.parse(message);
 
-      if (payload.social_event !== undefined) {
-        socialFeedbackEmitter.emit(io, payload);
-      } else if (payload.admin_id !== undefined) {
-        adminFeedbackEmitter.emit(io, payload);
-      } else if (payload.user_id !== undefined) {
-        userFeedbackEmitter.emit(io, payload);
-      }
+      feedbackRouter.enrutar(io, payload);
     } catch (e) {
       console.error("Error parsejant feedback de Redis:", e);
     }

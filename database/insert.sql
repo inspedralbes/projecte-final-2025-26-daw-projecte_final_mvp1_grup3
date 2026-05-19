@@ -1,3 +1,8 @@
+-- AGENT_DATABASE: database/insert.sql
+-- SQL (estructura o dades): insert.
+-- Comentaris: agents/database/AgentDatabase.md
+-- GET via API Laravel | CUD via Node -> Redis -> Laravel
+
 -- INSERTS (dades inicials)
 -- 1. ADMINISTRADORS
 -- contrasenya sense hashear: admin123
@@ -6,22 +11,35 @@ VALUES ('admin', 'admin@admin.com', '$2y$10$V8t4bNRKScWo6pn.xz9pAOq5OuwqQzhnZ662
 
 -- 2. USUARIS
 -- contrasenya sense hashear: user123
-INSERT INTO USUARIS (id, nom, email, contrasenya_hash) 
-VALUES (1, 'llorenç carnicer', 'llorcar@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG');
+INSERT INTO USUARIS (id, nom, email, contrasenya_hash, monedes) 
+VALUES (1, 'llorenç carnicer', 'llorcar@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG', 20000);
 
 INSERT INTO USUARIS (id, nom, email, contrasenya_hash, nivell, xp_total, monedes) VALUES 
 (2, 'Marta Sánchez', 'marta@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG', 5, 1200, 50),
 (3, 'Jordi Valls', 'jordi@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG', 3, 450, 20),
-(4, 'Carme Ruscalleda', 'carme@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG', 10, 5000, 1000),
+(4, 'Carme Ruscalleda', 'carme@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG', 32, 48000, 5000),
 (5, 'Pep Guardiola', 'pep@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG', 8, 3200, 400),
 (6, 'Rosalia Vila', 'rosalia@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG', 2, 100, 10),
-(7, 'Pau Gasol', 'pau@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG', 12, 8000, 2000),
+(7, 'Pau Gasol', 'pau@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG', 18, 22000, 3000),
 (8, 'Andreu Buenafuente', 'andreu@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG', 4, 800, 80),
 (9, 'Berto Romero', 'berto@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG', 4, 750, 75),
 (10, 'Ada Colau', 'ada@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG', 6, 1800, 150),
-(11, 'Xavi Hernández', 'xavi@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG', 7, 2500, 250);
+(11, 'Xavi Hernández', 'xavi@user.com', '$2y$10$HfOi4KLE0e15iw/D9AtpZ.WIXtyrt3CLza4tjqml9.YLsKsPccyTG', 22, 30000, 2500);
 
 SELECT setval('usuaris_id_seq', (SELECT MAX(id) FROM USUARIS));
+
+-- 1.1 Assignar monstre_tipus a tots els usuaris
+UPDATE USUARIS SET monstre_tipus = 'MV' WHERE id = 1;
+UPDATE USUARIS SET monstre_tipus = 'MR' WHERE id = 2;
+UPDATE USUARIS SET monstre_tipus = 'ML' WHERE id = 3;
+UPDATE USUARIS SET monstre_tipus = 'MA' WHERE id = 4;
+UPDATE USUARIS SET monstre_tipus = 'MV' WHERE id = 5;
+UPDATE USUARIS SET monstre_tipus = 'MA' WHERE id = 6;
+UPDATE USUARIS SET monstre_tipus = 'MR' WHERE id = 7;
+UPDATE USUARIS SET monstre_tipus = 'ML' WHERE id = 8;
+UPDATE USUARIS SET monstre_tipus = 'MV' WHERE id = 9;
+UPDATE USUARIS SET monstre_tipus = 'MR' WHERE id = 10;
+UPDATE USUARIS SET monstre_tipus = 'MA' WHERE id = 11;
 
 -- 2.1 MISSIOS_DIARIES (15 missions)
 INSERT INTO MISSIOS_DIARIES (id, titol, tipus_comprovacio, parametres) VALUES
@@ -122,39 +140,39 @@ INSERT INTO PLANTILLES (creador_id, titol, categoria, es_publica) VALUES
 -- 4. HABITS (3 por cada plantilla = 24 hábitos)
 -- Se asume que las plantillas tienen IDs del 1 al 8 correlativamente
 -- dies_setmana: BOOLEAN[7] (lunes a domingo)
-INSERT INTO HABITS (usuari_id, titol, dificultat, frequencia_tipus, dies_setmana, objectiu_vegades, unitat, categoria_id, icona, color) VALUES
+INSERT INTO HABITS (usuari_id, titol, dificultat, frequencia_tipus, dies_setmana, objectiu_vegades, unitat, categoria_id, icona, color, moment_dia) VALUES
 -- Actividad física (categoria_id: 1)
-(1, 'Levantamiento de pesas', 'dificil', 'semanal', ARRAY[true,false,true,false,true,false,false], 3, 'vegades', 1, '🏃', '#65A30D'), -- habit_id 1
-(1, 'Caminar 30 min', 'facil', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades', 1, '🏃', '#65A30D'), -- habit_id 2
-(1, 'Estiramientos', 'facil', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades', 1, '🏃', '#65A30D'), -- habit_id 3
+(1, 'Levantamiento de pesas', 'dificil', 'semanal', ARRAY[true,false,true,false,true,false,false], 3, 'vegades', 1, '🏃', '#65A30D', 'mati'), -- habit_id 1
+(1, 'Caminar 30 min', 'facil', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades', 1, '🏃', '#65A30D', 'tarda'), -- habit_id 2
+(1, 'Estiramientos', 'facil', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades', 1, '🏃', '#65A30D', 'tot_dia'), -- habit_id 3
 -- Alimentación (categoria_id: 2)
-(1, 'Beber 2L agua', 'facil', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades', 2, '🥗', '#3B82F6'), -- habit_id 4
-(1, 'Cocinar en casa', 'media', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades', 2, '🥗', '#3B82F6'), -- habit_id 5
-(1, 'Evitar ultraprocesados', 'dificil', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades', 2, '🥗', '#3B82F6'), -- habit_id 6
+(1, 'Beber 2L agua', 'facil', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades', 2, '🥗', '#3B82F6', 'tot_dia'), -- habit_id 4
+(1, 'Cocinar en casa', 'media', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades', 2, '🥗', '#3B82F6', 'tarda'), -- habit_id 5
+(1, 'Evitar ultraprocesados', 'dificil', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades', 2, '🥗', '#3B82F6', 'tot_dia'), -- habit_id 6
 -- Estudio (categoria_id: 3)
-(1, 'Repasar apuntes', 'media', 'diaria', ARRAY[true,true,true,true,true,false,false], 1, 'vegades', 3, '📚', '#A855F7'), -- habit_id 7
-(1, 'Resolver dudas', 'facil', 'semanal', ARRAY[false,false,false,false,true,false,false], 1, 'vegades', 3, '📚', '#A855F7'), -- habit_id 8
-(1, 'Simulacro examen', 'dificil', 'semanal', ARRAY[false,false,false,false,false,true,false], 1, 'vegades', 3, '📚', '#A855F7'), -- habit_id 9
+(1, 'Repasar apuntes', 'media', 'diaria', ARRAY[true,true,true,true,true,false,false], 1, 'vegades', 3, '📚', '#A855F7', 'tarda'), -- habit_id 7
+(1, 'Resolver dudas', 'facil', 'semanal', ARRAY[false,false,false,false,true,false,false], 1, 'vegades', 3, '📚', '#A855F7', 'tot_dia'), -- habit_id 8
+(1, 'Simulacro examen', 'dificil', 'semanal', ARRAY[false,false,false,false,false,true,false], 1, 'vegades', 3, '📚', '#A855F7', 'nit'), -- habit_id 9
 -- Lectura (categoria_id: 4)
-(1, 'Leer 10 páginas', 'facil', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades', 4, '📖', '#F97316'), -- habit_id 10
-(1, 'Anotar reflexiones', 'media', 'semanal', ARRAY[false,false,false,false,false,false,true], 1, 'vegades', 4, '📖', '#F97316'), -- habit_id 11
-(1, 'Terminar capítulo', 'media', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades', 4, '📖', '#F97316'), -- habit_id 12
+(1, 'Leer 10 páginas', 'facil', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades', 4, '📖', '#F97316', 'nit'), -- habit_id 10
+(1, 'Anotar reflexiones', 'media', 'semanal', ARRAY[false,false,false,false,false,false,true], 1, 'vegades', 4, '📖', '#F97316', 'tot_dia'), -- habit_id 11
+(1, 'Terminar capítulo', 'media', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades', 4, '📖', '#F97316', 'tarda'), -- habit_id 12
 -- Bienestar (categoria_id: 5)
-(1, 'Meditación mañana', 'facil', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades', 5, '🧘', '#EC4899'), -- habit_id 13
-(1, 'Yoga 20 min', 'media', 'semanal', ARRAY[false,true,false,true,false,false,false], 2, 'vegades', 5, '🧘', '#EC4899'), -- habit_id 14
-(1, 'Dormir 8 horas', 'dificil', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades', 5, '🧘', '#EC4899'), -- habit_id 15
+(1, 'Meditación mañana', 'facil', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades', 5, '🧘', '#EC4899', 'mati'), -- habit_id 13
+(1, 'Yoga 20 min', 'media', 'semanal', ARRAY[false,true,false,true,false,false,false], 2, 'vegades', 5, '🧘', '#EC4899', 'tarda'), -- habit_id 14
+(1, 'Dormir 8 horas', 'dificil', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades', 5, '🧘', '#EC4899', 'nit'), -- habit_id 15
 -- Mejora hábitos (Fumar) (categoria_id: 6)
-(1, 'No fumar hoy', 'dificil', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades', 6, '✨', '#10B981'), -- habit_id 16
-(1, 'Ahorrar dinero tabaco', 'facil', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades', 6, '✨', '#10B981'), -- habit_id 17
-(1, 'Uso de chicle nicotina', 'media', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades', 6, '✨', '#10B981'), -- habit_id 18
+(1, 'No fumar hoy', 'dificil', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades', 6, '✨', '#10B981', 'tot_dia'), -- habit_id 16
+(1, 'Ahorrar dinero tabaco', 'facil', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades', 6, '✨', '#10B981', 'tot_dia'), -- habit_id 17
+(1, 'Uso de chicle nicotina', 'media', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades', 6, '✨', '#10B981', 'tot_dia'), -- habit_id 18
 -- Hogar (categoria_id: 7)
-(1, 'Fregar platos', 'facil', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades', 7, '🏠', '#3B82F6'), -- habit_id 19
-(1, 'Poner lavadora', 'facil', 'semanal', ARRAY[false,false,false,false,false,true,false], 1, 'vegades', 7, '🏠', '#3B82F6'), -- habit_id 20
-(1, 'Organizar escritorio', 'media', 'semanal', ARRAY[true,false,false,false,false,false,false], 1, 'vegades', 7, '🏠', '#3B82F6'), -- habit_id 21
+(1, 'Fregar platos', 'facil', 'diaria', ARRAY[true,true,true,true,true,true,true], 1, 'vegades', 7, '🏠', '#3B82F6', 'nit'), -- habit_id 19
+(1, 'Poner lavadora', 'facil', 'semanal', ARRAY[false,false,false,false,false,true,false], 1, 'vegades', 7, '🏠', '#3B82F6', 'mati'), -- habit_id 20
+(1, 'Organizar escritorio', 'media', 'semanal', ARRAY[true,false,false,false,false,false,false], 1, 'vegades', 7, '🏠', '#3B82F6', 'tarda'), -- habit_id 21
 -- Hobby (categoria_id: 8)
-(1, 'Pintar miniatura', 'media', 'semanal', ARRAY[false,false,false,false,false,true,true], 2, 'vegades', 8, '🎨', '#A855F7'), -- habit_id 22
-(1, 'Investigar técnicas', 'facil', 'semanal', ARRAY[false,false,true,false,false,false,false], 1, 'vegades', 8, '🎨', '#A855F7'), -- habit_id 23
-(1, 'Limpiar pinceles', 'facil', 'semanal', ARRAY[false,false,false,false,false,false,true], 1, 'vegades', 8, '🎨', '#A855F7'); -- habit_id 24
+(1, 'Pintar miniatura', 'media', 'semanal', ARRAY[false,false,false,false,false,true,true], 2, 'vegades', 8, '🎨', '#A855F7', 'tarda'), -- habit_id 22
+(1, 'Investigar técnicas', 'facil', 'semanal', ARRAY[false,false,true,false,false,false,false], 1, 'vegades', 8, '🎨', '#A855F7', 'tot_dia'), -- habit_id 23
+(1, 'Limpiar pinceles', 'facil', 'semanal', ARRAY[false,false,false,false,false,false,true], 1, 'vegades', 8, '🎨', '#A855F7', 'tot_dia'); -- habit_id 24
 
 -- Insert into PLANTILLA_HABIT to establish many-to-many relationships
 -- Assuming plantilla_id corresponds to the habit_id grouping as in the original structure
@@ -191,8 +209,18 @@ SELECT 1, id, 1 FROM HABITS;
 -- SELECT id, true, 10 FROM HABITS;
 
 -- 6. RATXES (ultima_data NULL per permetre que el primer hàbit completat incrementi la ratxa)
-INSERT INTO RATXES (usuari_id, ratxa_actual, ratxa_maxima, ultima_data)
-VALUES (1, 0, 0, NULL);
+INSERT INTO RATXES (usuari_id, ratxa_actual, ratxa_maxima, ultima_data) VALUES
+(1, 0, 0, NULL),
+(2, 3, 5, CURRENT_DATE - INTERVAL '1 day'),
+(3, 0, 2, NULL),
+(4, 45, 60, CURRENT_DATE - INTERVAL '1 day'),
+(5, 12, 18, CURRENT_DATE - INTERVAL '1 day'),
+(6, 1, 1, CURRENT_DATE),
+(7, 28, 35, CURRENT_DATE - INTERVAL '1 day'),
+(8, 0, 3, NULL),
+(9, 2, 4, CURRENT_DATE - INTERVAL '1 day'),
+(10, 7, 10, CURRENT_DATE - INTERVAL '1 day'),
+(11, 15, 22, CURRENT_DATE - INTERVAL '1 day');
 
 -- 8. PREGUNTES DE REGISTRE (PAS 2)
 -- ----------------------------------------------------------
@@ -293,6 +321,107 @@ INSERT INTO ADMIN_NOTIFICACIONS (administrador_id, tipus, titol, descripcio) VAL
 (1, 'alerta', 'Nou usuari registrat', 'L''usuari Rosalia Vila s''ha unit a la plataforma.');
 
 -- 7. BOTIGA_ITEMS (catàleg inicial de la tenda Loopy)
+-- Imatges: frontend/public/img/items/
 INSERT INTO BOTIGA_ITEMS (nom, descripcio, preu, tipus, imatge, metadata) VALUES
-('Gorra Monster', 'Una gorra exclusiva per a la teva mascota', 200, 'skin', '/img/items/gorra_monster.png', '{"slot":"cap","skin_key":"gorra_monster"}'),
-('Recuperador de Ratxa', 'Restaura la teva ratxa actual al màxim assolit', 50, 'consumible', '/img/items/recuperador_racha.png', '{"effect":"restore_streak"}');
+('Gorra Monster', 'Una gorra exclusiva per a la teva mascota', 200, 'skin', '/img/items/gorra_monster.png', '{"slot":"cap","skin_key":"gorra_monster","i18n_key":"gorra_monster"}'),
+('Recuperador de Ratxa', 'Restaura la teva ratxa actual al màxim assolit', 50, 'consumible', '/img/items/recuperador_racha.png', '{"effect":"restore_streak","i18n_key":"recuperador_racha"}'),
+('Fons Platja', 'Un fons solellat de platja per personalitzar l''app', 150, 'skin', '/img/items/fons_platja.png', '{"slot":"fons","skin_key":"fons_platja","i18n_key":"fons_platja"}'),
+('Fons Casa', 'Un fons acollidor de sala per personalitzar l''app', 150, 'skin', '/img/items/fons_casa.png', '{"slot":"fons","skin_key":"fons_casa","i18n_key":"fons_casa"}');
+
+-- 7.1 USUARIS_ITEMS (compres i equipaments inicials)
+-- Carme (id=4, nivell 32 Fort): gorra equipada
+INSERT INTO USUARIS_ITEMS (usuari_id, item_id, equipat) VALUES
+(4, 1, TRUE);
+-- Pep (id=5): gorra + fons platja equipats
+INSERT INTO USUARIS_ITEMS (usuari_id, item_id, equipat) VALUES
+(5, 1, TRUE),
+(5, 3, TRUE);
+-- Pau (id=7, nivell 18 Gran): gorra + fons casa equipats
+INSERT INTO USUARIS_ITEMS (usuari_id, item_id, equipat) VALUES
+(7, 1, TRUE),
+(7, 4, TRUE);
+-- Ada (id=10): fons platja equipat (sense gorra)
+INSERT INTO USUARIS_ITEMS (usuari_id, item_id, equipat) VALUES
+(10, 3, TRUE);
+-- Xavi (id=11, nivell 22 Gran): fons casa equipat (sense gorra)
+INSERT INTO USUARIS_ITEMS (usuari_id, item_id, equipat) VALUES
+(11, 4, TRUE);
+-- Marta (id=2): te gorra comprada pero NO equipada
+INSERT INTO USUARIS_ITEMS (usuari_id, item_id, equipat) VALUES
+(2, 1, FALSE);
+
+-- Llorenç (id=1, usuari principal de prova): consumible + gorra al inventari
+INSERT INTO USUARIS_ITEMS (usuari_id, item_id, equipat) VALUES
+(1, 2, FALSE),
+(1, 1, FALSE);
+
+-- 8. CLANS (publics i privats)
+INSERT INTO CLANS (id, nom, categoria_id, es_public, max_membres, lider_id) VALUES
+(1, 'Runners BCN', 1, TRUE, 20, 5),
+(2, 'Cuina Saludable', 2, TRUE, 15, 2),
+(3, 'Ratlla de Llibres', 4, TRUE, 10, 4),
+(4, 'Mindful Warriors', 5, TRUE, 15, 7),
+(5, 'Codi Net', 3, TRUE, 20, 1),
+(6, 'Zero Fum', 6, TRUE, 10, 10),
+(7, 'Team Guardiola', 1, FALSE, 10, 5),
+(8, 'Cercle Privat Lectura', 4, FALSE, 10, 4),
+(9, 'Elite Fitness', 1, FALSE, 15, 7),
+(10, 'Estudi Nocturn', 3, FALSE, 10, 8),
+(11, 'Yoga Selecte', 5, FALSE, 10, 2),
+(12, 'Hobbyistes VIP', 8, FALSE, 15, 11);
+
+SELECT setval('clans_id_seq', (SELECT MAX(id) FROM CLANS));
+
+-- 8.1 CLAN_MEMBERS (membres dels clans)
+-- Cada usuari només pot estar en un clan
+INSERT INTO CLAN_MEMBERS (clan_id, usuari_id, rol) VALUES
+(1, 5, 'lider'),
+(1, 2, 'miembro'),
+(1, 7, 'miembro'),
+(1, 11, 'miembro'),
+(1, 3, 'miembro'),
+(2, 4, 'lider'),
+(2, 6, 'miembro'),
+(2, 10, 'miembro'),
+(3, 1, 'lider'),
+(3, 9, 'miembro'),
+(4, 8, 'lider');
+
+-- 9. FRIENDSHIPS (amics de Pep, id=5)
+INSERT INTO FRIENDSHIPS (requester_id, addressee_id, status) VALUES
+(5, 1, 'accepted'),
+(5, 2, 'accepted'),
+(5, 7, 'accepted'),
+(5, 11, 'accepted'),
+(3, 5, 'accepted'),
+(4, 5, 'accepted'),
+(9, 5, 'accepted'),
+(10, 5, 'pending');
+
+-- 10. DAILY_SNAPSHOTS per Pep (id=5) - Últims 25 dies per veure el calendari
+INSERT INTO DAILY_SNAPSHOTS (usuari_id, data, mascota_json, habits_json, economia_json) VALUES
+(5, CURRENT_DATE - INTERVAL '25 days', '{"nivell":3,"xp_total":520,"xp_actual_nivel":20,"xp_objetivo_nivel":300,"monstre_tipus":"MV"}', '[{"id":1,"titol":"Levantamiento de pesas","icona":"🏃","color":"#65A30D","dificultat":"dificil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":2,"titol":"Caminar 30 min","icona":"🏃","color":"#65A30D","dificultat":"facil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":3,"titol":"Estiramientos","icona":"🏃","color":"#65A30D","dificultat":"facil","categoria_id":1,"metadata":null,"acabado":false,"completed_with_focus":false,"predominant_focus_mode":null},{"id":4,"titol":"Beber 2L agua","icona":"🥗","color":"#3B82F6","dificultat":"facil","categoria_id":2,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":5,"titol":"Cocinar en casa","icona":"🥗","color":"#3B82F6","dificultat":"media","categoria_id":2,"metadata":null,"acabado":false,"completed_with_focus":false,"predominant_focus_mode":null}]', '{"xp_guanyada_avui":300,"monedes_guanyades_avui":15}'),
+(5, CURRENT_DATE - INTERVAL '24 days', '{"nivell":3,"xp_total":620,"xp_actual_nivel":120,"xp_objetivo_nivel":300,"monstre_tipus":"MV"}', '[{"id":1,"titol":"Levantamiento de pesas","icona":"🏃","color":"#65A30D","dificultat":"dificil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":true,"predominant_focus_mode":"25_5"},{"id":2,"titol":"Caminar 30 min","icona":"🏃","color":"#65A30D","dificultat":"facil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":3,"titol":"Estiramientos","icona":"🏃","color":"#65A30D","dificultat":"facil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":4,"titol":"Beber 2L agua","icona":"🥗","color":"#3B82F6","dificultat":"facil","categoria_id":2,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":5,"titol":"Cocinar en casa","icona":"🥗","color":"#3B82F6","dificultat":"media","categoria_id":2,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null}]', '{"xp_guanyada_avui":500,"monedes_guanyades_avui":25}'),
+(5, CURRENT_DATE - INTERVAL '23 days', '{"nivell":3,"xp_total":720,"xp_actual_nivel":220,"xp_objetivo_nivel":300,"monstre_tipus":"MV"}', '[{"id":1,"titol":"Levantamiento de pesas","icona":"🏃","color":"#65A30D","dificultat":"dificil","categoria_id":1,"metadata":null,"acabado":false,"completed_with_focus":false,"predominant_focus_mode":null},{"id":2,"titol":"Caminar 30 min","icona":"🏃","color":"#65A30D","dificultat":"facil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":4,"titol":"Beber 2L agua","icona":"🥗","color":"#3B82F6","dificultat":"facil","categoria_id":2,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null}]', '{"xp_guanyada_avui":200,"monedes_guanyades_avui":10}'),
+(5, CURRENT_DATE - INTERVAL '22 days', '{"nivell":4,"xp_total":820,"xp_actual_nivel":20,"xp_objetivo_nivel":400,"monstre_tipus":"MV"}', '[{"id":1,"titol":"Levantamiento de pesas","icona":"🏃","color":"#65A30D","dificultat":"dificil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":true,"predominant_focus_mode":"50_10"},{"id":2,"titol":"Caminar 30 min","icona":"🏃","color":"#65A30D","dificultat":"facil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":3,"titol":"Estiramientos","icona":"🏃","color":"#65A30D","dificultat":"facil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":4,"titol":"Beber 2L agua","icona":"🥗","color":"#3B82F6","dificultat":"facil","categoria_id":2,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":5,"titol":"Cocinar en casa","icona":"🥗","color":"#3B82F6","dificultat":"media","categoria_id":2,"metadata":null,"acabado":true,"completed_with_focus":true,"predominant_focus_mode":"25_5"}]', '{"xp_guanyada_avui":500,"monedes_guanyades_avui":25}'),
+(5, CURRENT_DATE - INTERVAL '21 days', '{"nivell":4,"xp_total":920,"xp_actual_nivel":120,"xp_objetivo_nivel":400,"monstre_tipus":"MV"}', '[{"id":1,"titol":"Levantamiento de pesas","icona":"🏃","color":"#65A30D","dificultat":"dificil","categoria_id":1,"metadata":null,"acabado":false,"completed_with_focus":false,"predominant_focus_mode":null},{"id":2,"titol":"Caminar 30 min","icona":"🏃","color":"#65A30D","dificultat":"facil","categoria_id":1,"metadata":null,"acabado":false,"completed_with_focus":false,"predominant_focus_mode":null},{"id":4,"titol":"Beber 2L agua","icona":"🥗","color":"#3B82F6","dificultat":"facil","categoria_id":2,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null}]', '{"xp_guanyada_avui":100,"monedes_guanyades_avui":5}'),
+(5, CURRENT_DATE - INTERVAL '20 days', '{"nivell":4,"xp_total":1020,"xp_actual_nivel":220,"xp_objetivo_nivel":400,"monstre_tipus":"MV"}', '[{"id":1,"titol":"Levantamiento de pesas","icona":"🏃","color":"#65A30D","dificultat":"dificil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":2,"titol":"Caminar 30 min","icona":"🏃","color":"#65A30D","dificultat":"facil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":3,"titol":"Estiramientos","icona":"🏃","color":"#65A30D","dificultat":"facil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":4,"titol":"Beber 2L agua","icona":"🥗","color":"#3B82F6","dificultat":"facil","categoria_id":2,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":5,"titol":"Cocinar en casa","icona":"🥗","color":"#3B82F6","dificultat":"media","categoria_id":2,"metadata":null,"acabado":false,"completed_with_focus":false,"predominant_focus_mode":null}]', '{"xp_guanyada_avui":400,"monedes_guanyades_avui":20}'),
+(5, CURRENT_DATE - INTERVAL '19 days', '{"nivell":4,"xp_total":1120,"xp_actual_nivel":320,"xp_objetivo_nivel":400,"monstre_tipus":"MV"}', '[{"id":1,"titol":"Levantamiento de pesas","icona":"🏃","color":"#65A30D","dificultat":"dificil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":true,"predominant_focus_mode":"25_5"},{"id":2,"titol":"Caminar 30 min","icona":"🏃","color":"#65A30D","dificultat":"facil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":3,"titol":"Estiramientos","icona":"🏃","color":"#65A30D","dificultat":"facil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":4,"titol":"Beber 2L agua","icona":"🥗","color":"#3B82F6","dificultat":"facil","categoria_id":2,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":5,"titol":"Cocinar en casa","icona":"🥗","color":"#3B82F6","dificultat":"media","categoria_id":2,"metadata":null,"acabado":true,"completed_with_focus":true,"predominant_focus_mode":"50_10"}]', '{"xp_guanyada_avui":500,"monedes_guanyades_avui":25}'),
+(5, CURRENT_DATE - INTERVAL '18 days', '{"nivell":4,"xp_total":1220,"xp_actual_nivel":380,"xp_objetivo_nivel":400,"monstre_tipus":"MV"}', '[{"id":2,"titol":"Caminar 30 min","icona":"🏃","color":"#65A30D","dificultat":"facil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":4,"titol":"Beber 2L agua","icona":"🥗","color":"#3B82F6","dificultat":"facil","categoria_id":2,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null}]', '{"xp_guanyada_avui":200,"monedes_guanyades_avui":10}'),
+(5, CURRENT_DATE - INTERVAL '17 days', '{"nivell":5,"xp_total":1320,"xp_actual_nivel":20,"xp_objetivo_nivel":500,"monstre_tipus":"MV"}', '[{"id":1,"titol":"Levantamiento de pesas","icona":"🏃","color":"#65A30D","dificultat":"dificil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":2,"titol":"Caminar 30 min","icona":"🏃","color":"#65A30D","dificultat":"facil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":3,"titol":"Estiramientos","icona":"🏃","color":"#65A30D","dificultat":"facil","categoria_id":1,"metadata":null,"acabado":false,"completed_with_focus":false,"predominant_focus_mode":null},{"id":4,"titol":"Beber 2L agua","icona":"🥗","color":"#3B82F6","dificultat":"facil","categoria_id":2,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":5,"titol":"Cocinar en casa","icona":"🥗","color":"#3B82F6","dificultat":"media","categoria_id":2,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null}]', '{"xp_guanyada_avui":450,"monedes_guanyades_avui":22}'),
+(5, CURRENT_DATE - INTERVAL '16 days', '{"nivell":5,"xp_total":1420,"xp_actual_nivel":120,"xp_objetivo_nivel":500,"monstre_tipus":"MV"}', '[{"id":1,"titol":"Levantamiento de pesas","icona":"🏃","color":"#65A30D","dificultat":"dificil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":true,"predominant_focus_mode":"50_10"},{"id":2,"titol":"Caminar 30 min","icona":"🏃","color":"#65A30D","dificultat":"facil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":3,"titol":"Estiramientos","icona":"🏃","color":"#65A30D","dificultat":"facil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":4,"titol":"Beber 2L agua","icona":"🥗","color":"#3B82F6","dificultat":"facil","categoria_id":2,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":5,"titol":"Cocinar en casa","icona":"🥗","color":"#3B82F6","dificultat":"media","categoria_id":2,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null}]', '{"xp_guanyada_avui":500,"monedes_guanyades_avui":25}'),
+(5, CURRENT_DATE - INTERVAL '15 days', '{"nivell":5,"xp_total":1520,"xp_actual_nivel":220,"xp_objetivo_nivel":500,"monstre_tipus":"MV"}', '[{"id":1,"titol":"Levantamiento de pesas","icona":"🏃","color":"#65A30D","dificultat":"dificil","categoria_id":1,"metadata":null,"acabado":false,"completed_with_focus":false,"predominant_focus_mode":null},{"id":4,"titol":"Beber 2L agua","icona":"🥗","color":"#3B82F6","dificultat":"facil","categoria_id":2,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null}]', '{"xp_guanyada_avui":100,"monedes_guanyades_avui":5}'),
+(5, CURRENT_DATE - INTERVAL '14 days', '{"nivell":5,"xp_total":1620,"xp_actual_nivel":320,"xp_objetivo_nivel":500,"monstre_tipus":"MV"}', '[{"id":1,"titol":"Levantamiento de pesas","icona":"🏃","color":"#65A30D","dificultat":"dificil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":2,"titol":"Caminar 30 min","icona":"🏃","color":"#65A30D","dificultat":"facil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":3,"titol":"Estiramientos","icona":"🏃","color":"#65A30D","dificultat":"facil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":4,"titol":"Beber 2L agua","icona":"🥗","color":"#3B82F6","dificultat":"facil","categoria_id":2,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":5,"titol":"Cocinar en casa","icona":"🥗","color":"#3B82F6","dificultat":"media","categoria_id":2,"metadata":null,"acabado":true,"completed_with_focus":true,"predominant_focus_mode":"25_5"}]', '{"xp_guanyada_avui":500,"monedes_guanyades_avui":25}'),
+(5, CURRENT_DATE - INTERVAL '13 days', '{"nivell":5,"xp_total":1720,"xp_actual_nivel":420,"xp_objetivo_nivel":500,"monstre_tipus":"MV"}', '[{"id":1,"titol":"Levantamiento de pesas","icona":"🏃","color":"#65A30D","dificultat":"dificil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":true,"predominant_focus_mode":"25_5"},{"id":2,"titol":"Caminar 30 min","icona":"🏃","color":"#65A30D","dificultat":"facil","categoria_id":1,"metadata":null,"acabado":false,"completed_with_focus":false,"predominant_focus_mode":null},{"id":3,"titol":"Estiramientos","icona":"🏃","color":"#65A30D","dificultat":"facil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":5,"titol":"Cocinar en casa","icona":"🥗","color":"#3B82F6","dificultat":"media","categoria_id":2,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null}]', '{"xp_guanyada_avui":350,"monedes_guanyades_avui":18}'),
+(5, CURRENT_DATE - INTERVAL '12 days', '{"nivell":6,"xp_total":1820,"xp_actual_nivel":20,"xp_objetivo_nivel":600,"monstre_tipus":"MV"}', '[{"id":1,"titol":"Levantamiento de pesas","icona":"🏃","color":"#65A30D","dificultat":"dificil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":2,"titol":"Caminar 30 min","icona":"🏃","color":"#65A30D","dificultat":"facil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":3,"titol":"Estiramientos","icona":"🏃","color":"#65A30D","dificultat":"facil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":4,"titol":"Beber 2L agua","icona":"🥗","color":"#3B82F6","dificultat":"facil","categoria_id":2,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":5,"titol":"Cocinar en casa","icona":"🥗","color":"#3B82F6","dificultat":"media","categoria_id":2,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null}]', '{"xp_guanyada_avui":500,"monedes_guanyades_avui":25}'),
+(5, CURRENT_DATE - INTERVAL '11 days', '{"nivell":6,"xp_total":1920,"xp_actual_nivel":120,"xp_objetivo_nivel":600,"monstre_tipus":"MV"}', '[{"id":2,"titol":"Caminar 30 min","icona":"🏃","color":"#65A30D","dificultat":"facil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":4,"titol":"Beber 2L agua","icona":"🥗","color":"#3B82F6","dificultat":"facil","categoria_id":2,"metadata":null,"acabado":false,"completed_with_focus":false,"predominant_focus_mode":null}]', '{"xp_guanyada_avui":100,"monedes_guanyades_avui":5}'),
+(5, CURRENT_DATE - INTERVAL '10 days', '{"nivell":6,"xp_total":2020,"xp_actual_nivel":220,"xp_objetivo_nivel":600,"monstre_tipus":"MV"}', '[{"id":1,"titol":"Levantamiento de pesas","icona":"🏃","color":"#65A30D","dificultat":"dificil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":true,"predominant_focus_mode":"50_10"},{"id":2,"titol":"Caminar 30 min","icona":"🏃","color":"#65A30D","dificultat":"facil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":3,"titol":"Estiramientos","icona":"🏃","color":"#65A30D","dificultat":"facil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":4,"titol":"Beber 2L agua","icona":"🥗","color":"#3B82F6","dificultat":"facil","categoria_id":2,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":5,"titol":"Cocinar en casa","icona":"🥗","color":"#3B82F6","dificultat":"media","categoria_id":2,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null}]', '{"xp_guanyada_avui":500,"monedes_guanyades_avui":25}'),
+(5, CURRENT_DATE - INTERVAL '9 days', '{"nivell":6,"xp_total":2120,"xp_actual_nivel":320,"xp_objetivo_nivel":600,"monstre_tipus":"MV"}', '[{"id":1,"titol":"Levantamiento de pesas","icona":"🏃","color":"#65A30D","dificultat":"dificil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":2,"titol":"Caminar 30 min","icona":"🏃","color":"#65A30D","dificultat":"facil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":3,"titol":"Estiramientos","icona":"🏃","color":"#65A30D","dificultat":"facil","categoria_id":1,"metadata":null,"acabado":false,"completed_with_focus":false,"predominant_focus_mode":null},{"id":4,"titol":"Beber 2L agua","icona":"🥗","color":"#3B82F6","dificultat":"facil","categoria_id":2,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":5,"titol":"Cocinar en casa","icona":"🥗","color":"#3B82F6","dificultat":"media","categoria_id":2,"metadata":null,"acabado":false,"completed_with_focus":false,"predominant_focus_mode":null}]', '{"xp_guanyada_avui":300,"monedes_guanyades_avui":15}'),
+(5, CURRENT_DATE - INTERVAL '8 days', '{"nivell":6,"xp_total":2220,"xp_actual_nivel":420,"xp_objetivo_nivel":600,"monstre_tipus":"MV"}', '[{"id":1,"titol":"Levantamiento de pesas","icona":"🏃","color":"#65A30D","dificultat":"dificil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":true,"predominant_focus_mode":"25_5"},{"id":2,"titol":"Caminar 30 min","icona":"🏃","color":"#65A30D","dificultat":"facil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":3,"titol":"Estiramientos","icona":"🏃","color":"#65A30D","dificultat":"facil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":4,"titol":"Beber 2L agua","icona":"🥗","color":"#3B82F6","dificultat":"facil","categoria_id":2,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":5,"titol":"Cocinar en casa","icona":"🥗","color":"#3B82F6","dificultat":"media","categoria_id":2,"metadata":null,"acabado":true,"completed_with_focus":true,"predominant_focus_mode":"50_10"}]', '{"xp_guanyada_avui":500,"monedes_guanyades_avui":25}'),
+(5, CURRENT_DATE - INTERVAL '7 days', '{"nivell":6,"xp_total":2320,"xp_actual_nivel":520,"xp_objetivo_nivel":600,"monstre_tipus":"MV"}', '[{"id":1,"titol":"Levantamiento de pesas","icona":"🏃","color":"#65A30D","dificultat":"dificil","categoria_id":1,"metadata":null,"acabado":false,"completed_with_focus":false,"predominant_focus_mode":null},{"id":2,"titol":"Caminar 30 min","icona":"🏃","color":"#65A30D","dificultat":"facil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":4,"titol":"Beber 2L agua","icona":"🥗","color":"#3B82F6","dificultat":"facil","categoria_id":2,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":5,"titol":"Cocinar en casa","icona":"🥗","color":"#3B82F6","dificultat":"media","categoria_id":2,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null}]', '{"xp_guanyada_avui":350,"monedes_guanyades_avui":18}'),
+(5, CURRENT_DATE - INTERVAL '6 days', '{"nivell":7,"xp_total":2420,"xp_actual_nivel":20,"xp_objetivo_nivel":700,"monstre_tipus":"MV"}', '[{"id":1,"titol":"Levantamiento de pesas","icona":"🏃","color":"#65A30D","dificultat":"dificil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":2,"titol":"Caminar 30 min","icona":"🏃","color":"#65A30D","dificultat":"facil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":3,"titol":"Estiramientos","icona":"🏃","color":"#65A30D","dificultat":"facil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":4,"titol":"Beber 2L agua","icona":"🥗","color":"#3B82F6","dificultat":"facil","categoria_id":2,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":5,"titol":"Cocinar en casa","icona":"🥗","color":"#3B82F6","dificultat":"media","categoria_id":2,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null}]', '{"xp_guanyada_avui":500,"monedes_guanyades_avui":25}'),
+(5, CURRENT_DATE - INTERVAL '5 days', '{"nivell":7,"xp_total":2520,"xp_actual_nivel":120,"xp_objetivo_nivel":700,"monstre_tipus":"MV","skin_key":"gorra_monster"}', '[{"id":1,"titol":"Levantamiento de pesas","icona":"🏃","color":"#65A30D","dificultat":"dificil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":true,"predominant_focus_mode":"25_5"},{"id":2,"titol":"Caminar 30 min","icona":"🏃","color":"#65A30D","dificultat":"facil","categoria_id":1,"metadata":null,"acabado":false,"completed_with_focus":false,"predominant_focus_mode":null},{"id":3,"titol":"Estiramientos","icona":"🏃","color":"#65A30D","dificultat":"facil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":4,"titol":"Beber 2L agua","icona":"🥗","color":"#3B82F6","dificultat":"facil","categoria_id":2,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":5,"titol":"Cocinar en casa","icona":"🥗","color":"#3B82F6","dificultat":"media","categoria_id":2,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null}]', '{"xp_guanyada_avui":450,"monedes_guanyades_avui":22}'),
+(5, CURRENT_DATE - INTERVAL '4 days', '{"nivell":7,"xp_total":2620,"xp_actual_nivel":220,"xp_objetivo_nivel":700,"monstre_tipus":"MV","skin_key":"gorra_monster"}', '[{"id":1,"titol":"Levantamiento de pesas","icona":"🏃","color":"#65A30D","dificultat":"dificil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":2,"titol":"Caminar 30 min","icona":"🏃","color":"#65A30D","dificultat":"facil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":3,"titol":"Estiramientos","icona":"🏃","color":"#65A30D","dificultat":"facil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":4,"titol":"Beber 2L agua","icona":"🥗","color":"#3B82F6","dificultat":"facil","categoria_id":2,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":5,"titol":"Cocinar en casa","icona":"🥗","color":"#3B82F6","dificultat":"media","categoria_id":2,"metadata":null,"acabado":false,"completed_with_focus":false,"predominant_focus_mode":null}]', '{"xp_guanyada_avui":400,"monedes_guanyades_avui":20}'),
+(5, CURRENT_DATE - INTERVAL '3 days', '{"nivell":7,"xp_total":2720,"xp_actual_nivel":320,"xp_objetivo_nivel":700,"monstre_tipus":"MV","skin_key":"gorra_monster"}', '[{"id":1,"titol":"Levantamiento de pesas","icona":"🏃","color":"#65A30D","dificultat":"dificil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":true,"predominant_focus_mode":"50_10"},{"id":2,"titol":"Caminar 30 min","icona":"🏃","color":"#65A30D","dificultat":"facil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":3,"titol":"Estiramientos","icona":"🏃","color":"#65A30D","dificultat":"facil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":4,"titol":"Beber 2L agua","icona":"🥗","color":"#3B82F6","dificultat":"facil","categoria_id":2,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":5,"titol":"Cocinar en casa","icona":"🥗","color":"#3B82F6","dificultat":"media","categoria_id":2,"metadata":null,"acabado":true,"completed_with_focus":true,"predominant_focus_mode":"25_5"}]', '{"xp_guanyada_avui":500,"monedes_guanyades_avui":25}'),
+(5, CURRENT_DATE - INTERVAL '2 days', '{"nivell":7,"xp_total":2820,"xp_actual_nivel":420,"xp_objetivo_nivel":700,"monstre_tipus":"MV"}', '[{"id":1,"titol":"Levantamiento de pesas","icona":"🏃","color":"#65A30D","dificultat":"dificil","categoria_id":1,"metadata":null,"acabado":false,"completed_with_focus":false,"predominant_focus_mode":null},{"id":2,"titol":"Caminar 30 min","icona":"🏃","color":"#65A30D","dificultat":"facil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":4,"titol":"Beber 2L agua","icona":"🥗","color":"#3B82F6","dificultat":"facil","categoria_id":2,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null}]', '{"xp_guanyada_avui":200,"monedes_guanyades_avui":10}'),
+(5, CURRENT_DATE - INTERVAL '1 day', '{"nivell":7,"xp_total":2920,"xp_actual_nivel":520,"xp_objetivo_nivel":700,"monstre_tipus":"MV","skin_key":"gorra_monster"}', '[{"id":1,"titol":"Levantamiento de pesas","icona":"🏃","color":"#65A30D","dificultat":"dificil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":2,"titol":"Caminar 30 min","icona":"🏃","color":"#65A30D","dificultat":"facil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":3,"titol":"Estiramientos","icona":"🏃","color":"#65A30D","dificultat":"facil","categoria_id":1,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":4,"titol":"Beber 2L agua","icona":"🥗","color":"#3B82F6","dificultat":"facil","categoria_id":2,"metadata":null,"acabado":true,"completed_with_focus":false,"predominant_focus_mode":null},{"id":5,"titol":"Cocinar en casa","icona":"🥗","color":"#3B82F6","dificultat":"media","categoria_id":2,"metadata":null,"acabado":true,"completed_with_focus":true,"predominant_focus_mode":"25_5"}]', '{"xp_guanyada_avui":500,"monedes_guanyades_avui":25}');

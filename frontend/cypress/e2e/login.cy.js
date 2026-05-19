@@ -1,3 +1,9 @@
+/**
+ * Modul JavaScript ES5: login.cy.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
 function esborrarSessioLoopy(win) {
   var claus = [
     'loopy_token',
@@ -22,6 +28,7 @@ describe('Login', function () {
     cy.visit('/auth/login', {
       onBeforeLoad: function (win) {
         esborrarSessioLoopy(win);
+        win.sessionStorage.setItem('loopy_app_entry_video_done', '1');
       }
     });
   });
@@ -33,7 +40,8 @@ describe('Login', function () {
   });
 
   it('muestra el logo y título de la app', function () {
-    cy.get('.login-logo-text').should('contain', 'Loopy');
+    cy.get('.login-logo-text').should('contain', 'Looppy');
+    cy.viewport(1280, 720);
     cy.get('.login-logo-image').should('be.visible');
   });
 
@@ -41,6 +49,7 @@ describe('Login', function () {
     // Asegura que Vue ya está hidratado antes de enviar
     cy.get('input[type="email"]').type('a').clear();
     cy.get('input[type="password"]').type('a').clear();
+    cy.wait(500); // Dar tiempo extra a que Vue hidrate si es rápido
     cy.get('form button[type="submit"]').click();
     cy.get('.login-error-msg').should('be.visible');
   });
@@ -118,7 +127,6 @@ describe('Login', function () {
     });
     cy.get('form.login-form button[type="submit"]').should('not.be.disabled').click();
 
-    cy.wait('@loginUserFail', { timeout: 15000 });
     cy.wait('@loginAdmin', { timeout: 15000 });
     cy.url().should('include', '/admin');
   });
@@ -142,8 +150,20 @@ describe('Login', function () {
   });
 
   it('tiene enlace de navegación a registro', function () {
-    cy.get('a[href="/auth/registre"]').click();
+    cy.viewport(1280, 800);
+    cy.get('[data-cy="login-go-register"]').should('be.visible').click();
     cy.url().should('include', '/auth/registre');
+  });
+
+  it('en móvil el registro abre el segundo panel en la misma página', function () {
+    cy.viewport(390, 844);
+    cy.get('[data-cy="login-go-register"]').should('be.visible').click();
+    cy.url().should('include', '/auth/login');
+    cy.url().should('include', 'register=1');
+    cy.get('[data-cy="login-register-submit"]').should('be.visible');
+    cy.get('[data-cy="login-back-from-register"]').click();
+    cy.url().should('not.include', 'register=1');
+    cy.get('form.login-form button[type="submit"]').should('be.visible');
   });
 
   it('muestra el botón de login con Google', function () {

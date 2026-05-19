@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: HomeLogrosCard.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div class="bg-white rounded-2xl shadow-lg p-6">
     <h3 class="text-xs font-bold text-gray-800 uppercase tracking-wide mb-4">

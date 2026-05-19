@@ -1,21 +1,27 @@
+<!--
+  Component o pagina Nuxt: CommentList.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
-  <div class="mt-4">
-    <h4 class="text-sm font-semibold text-gray-700 mb-2">
+  <div class="comment-list">
+    <h4 class="comment-list__title">
       {{ $t('social.comments') }} ({{ comments.length }})
     </h4>
-    <div v-if="loading" class="text-center py-4 text-gray-500 text-sm">
+    <div v-if="loading" class="comment-list__status">
       {{ $t('home.loading') }}
     </div>
-    <div v-else-if="comments.length === 0" class="text-center py-4 text-gray-500 text-sm">
+    <div v-else-if="comments.length === 0" class="comment-list__status">
       {{ $t('social.no_comments') }}
     </div>
-    <div v-else>
+    <div v-else class="comment-list__scroll">
       <UserSocialCommentItem
-        v-for="comment in comments"
+        v-for="comment in treeComments"
         :key="comment.id"
         :comment="comment"
         :depth="0"
-        @replySubmitted="onReplySubmitted"
+        @replySubmitted="loadComments(true)"
+        @commentDeleted="loadComments(true)"
+        @report="$emit('report', $event)"
       />
     </div>
   </div>
@@ -30,11 +36,49 @@ export default {
     postId: { type: Number, required: true },
     initialComments: { type: Array, default: function () { return []; } }
   },
+  emits: ["report"],
   data: function () {
     return {
       comments: this.initialComments,
       loading: false
     };
+  },
+  computed: {
+    treeComments: function () {
+      var map = {};
+      var roots = [];
+
+      this.comments.forEach(function (comment) {
+        var c = Object.assign({}, comment);
+        c.children = [];
+        c._replyToUserName = null;
+        c._rootParentId = null;
+        map[c.id] = c;
+      });
+
+      this.comments.forEach(function (comment) {
+        var c = map[comment.id];
+        if (!c.parent_id || !map[c.parent_id]) {
+          roots.push(c);
+          return;
+        }
+        var parent = map[c.parent_id];
+        var grandparent = parent.parent_id ? map[parent.parent_id] : null;
+        if (grandparent) {
+          c._replyToUserName = parent.user ? parent.user.nom : null;
+          var root = grandparent;
+          while (root.parent_id && map[root.parent_id]) {
+            root = map[root.parent_id];
+          }
+          c._rootParentId = root.id;
+          root.children.push(c);
+        } else {
+          parent.children.push(c);
+        }
+      });
+
+      return roots;
+    }
   },
   mounted: function () {
     this.loadComments();
@@ -48,8 +92,8 @@ export default {
     }
   },
   methods: {
-    loadComments: async function () {
-      if (this.comments.length > 0) return;
+    loadComments: async function (force = false) {
+      if (!force && this.comments.length > 0) return;
 
       this.loading = true;
       var socialStore = useSocialStore();
@@ -62,8 +106,34 @@ export default {
       this.loading = false;
     },
     onReplySubmitted: function () {
-      this.loadComments();
+      this.loadComments(true);
     }
   }
 };
 </script>
+
+<style scoped>
+.comment-list {
+  margin-top: 8px;
+}
+
+.comment-list__title {
+  margin: 0 0 8px;
+  font-family: "Bricolage Grotesque", system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #2b2d42;
+}
+
+.comment-list__status {
+  text-align: center;
+  padding: 16px 0;
+  color: #b0b0b0;
+  font-size: 13px;
+}
+
+.comment-list__scroll {
+  max-height: none;
+  overflow-y: visible;
+}
+</style>

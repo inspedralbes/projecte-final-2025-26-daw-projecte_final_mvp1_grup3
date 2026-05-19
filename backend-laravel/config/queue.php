@@ -1,5 +1,11 @@
 <?php
 
+
+/**
+ * Capa Laravel: queue.
+ * Comentaris: agents/backend/AgentLaravel.md
+ */
+
 return [
     'default' => env('QUEUE_CONNECTION', 'redis'),
     'connections' => [

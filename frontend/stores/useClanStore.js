@@ -1,3 +1,9 @@
+/**
+ * Modul JavaScript ES5: useClanStore.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
 import { defineStore } from "pinia";
 import { authFetch } from "../utils/authFetch";
 
@@ -10,7 +16,10 @@ export var useClanStore = defineStore("clan", {
             clanMembers: [],
             pendingRequests: [],
             loading: false,
-            error: null
+            error: null,
+            clansPage: 1,
+            clansLastPage: 1,
+            clansTotal: 0
         };
     },
 
@@ -19,10 +28,13 @@ export var useClanStore = defineStore("clan", {
     },
 
     actions: {
-        fetchClans: async function (search) {
+        fetchClans: async function (search, page) {
             this.loading = true;
             this.error = null;
-            var query = search ? "?search=" + encodeURIComponent(search) : "";
+            var params = [];
+            if (search) params.push("search=" + encodeURIComponent(search));
+            if (page) params.push("page=" + page);
+            var query = params.length ? "?" + params.join("&") : "";
             try {
                 var resposta = await authFetch("/api/clans" + query, {
                     method: "GET"
@@ -30,6 +42,9 @@ export var useClanStore = defineStore("clan", {
                 if (!resposta.ok) throw new Error("Error fetching clans");
                 var data = await resposta.json();
                 this.clans = data.data || data;
+                this.clansPage = data.current_page || 1;
+                this.clansLastPage = data.last_page || 1;
+                this.clansTotal = data.total || 0;
                 return this.clans;
             } catch (e) {
                 this.error = e.message;
@@ -302,6 +317,7 @@ export var useClanStore = defineStore("clan", {
                     method: "POST"
                 });
                 if (!resposta.ok) throw new Error("Error leaving clan");
+                this.currentClan = null;
                 return await resposta.json();
             } catch (e) {
                 this.error = e.message;

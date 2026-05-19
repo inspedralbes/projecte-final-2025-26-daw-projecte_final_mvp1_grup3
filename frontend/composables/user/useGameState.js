@@ -1,4 +1,10 @@
 /**
+ * Modul JavaScript ES5: useGameState.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
+/**
  * Composable per gestionar l'estat del joc (game_state, nivell, XP, ratxa, monedes, missió).
  * Delega al gameStore.
  */

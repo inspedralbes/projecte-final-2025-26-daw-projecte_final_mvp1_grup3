@@ -1,5 +1,13 @@
 <?php
 
+
+/**
+ * Capa Laravel: auth.
+ * Comentaris: agents/backend/AgentLaravel.md
+ */
+
+//================================ NAMESPACES / IMPORTS ============
+
 use App\Http\Controllers\Api\Admin\AdminAuthController;
 use App\Http\Controllers\Api\OnboardingQuestionReadController;
 use App\Http\Controllers\Api\UserAuthController;

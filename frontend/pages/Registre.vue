@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: Registre.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div></div>
 </template>

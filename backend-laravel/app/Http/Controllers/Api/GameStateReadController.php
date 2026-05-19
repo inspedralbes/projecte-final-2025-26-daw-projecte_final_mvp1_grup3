@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\GameStateResource;
-use App\Services\GamificationService;
+use App\Domains\Gamification\Services\GamificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -71,3 +71,4 @@ class GameStateReadController extends Controller
         }
     }
 }
+

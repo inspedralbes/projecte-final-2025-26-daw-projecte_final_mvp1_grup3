@@ -25,7 +25,8 @@ export default defineNuxtConfig({
     detectBrowserLanguage: {
       useCookie: true,
       cookieKey: 'i18n_redirected',
-      alwaysRedirect: true,
+      redirectOn: 'root',
+      alwaysRedirect: false,
       fallbackLocale: 'ca',
     },
   },
@@ -61,3 +62,5 @@ export default defineNuxtConfig({
     },
   },
 })
+// Forzar reinicio de Nuxt para registrar nuevas rutes
+

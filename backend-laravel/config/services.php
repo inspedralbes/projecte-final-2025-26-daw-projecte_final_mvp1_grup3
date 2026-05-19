@@ -1,5 +1,11 @@
 <?php
 
+
+/**
+ * Capa Laravel: services.
+ * Comentaris: agents/backend/AgentLaravel.md
+ */
+
 return [
     'welcome_email_enabled' => filter_var(
         env('WELCOME_EMAIL_ENABLED', true),

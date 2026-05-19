@@ -4,7 +4,7 @@ namespace App\Console\Commands\QueueHandlers;
 
 //================================ NAMESPACES / IMPORTS ============
 
-use App\Services\PlantillaService;
+use App\Domains\Plantilla\Services\PlantillaService;
 
 //================================ PROPIETATS / ATRIBUTS ==========
 
@@ -36,3 +36,4 @@ class PlantillaQueueHandler
         $this->plantillaService->processarAccioPlantilla($dades);
     }
 }
+

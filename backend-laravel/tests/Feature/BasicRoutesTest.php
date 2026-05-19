@@ -1,8 +1,18 @@
 <?php
 
+
+/**
+ * Capa Laravel: BasicRoutesTest.
+ * Comentaris: agents/backend/AgentLaravel.md
+ */
+
 namespace Tests\Feature;
 
+//================================ NAMESPACES / IMPORTS ============
+
 use Tests\TestCase;
+
+//================================ MÈTODES / FUNCIONS ===========
 
 class BasicRoutesTest extends TestCase
 {

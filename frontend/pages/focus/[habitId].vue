@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: [habitId].
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <section class="focus-mobile-screen">
     <header class="focus-topbar" :class="{ 'is-search-open': isSearchOpen }">
@@ -107,7 +111,15 @@
           />
         </svg>
 
-        <div class="focus-creature" aria-hidden="true"></div>
+        <div class="focus-creature" aria-hidden="true">
+          <img
+            :src="focusMonsterSrc"
+            alt="Monstre focus"
+            class="focus-creature__img"
+            decoding="async"
+            draggable="false"
+          />
+        </div>
       </div>
 
       <section class="focus-player">
@@ -178,6 +190,7 @@
 
     <div v-if="currentTrackEmbedUrl" class="focus-audio-embed" aria-hidden="true">
       <iframe
+        ref="youtubeIframeEl"
         :src="currentTrackEmbedUrl"
         title="Focus audio player"
         width="0"
@@ -198,6 +211,31 @@ import { useAuthStore } from "~/stores/useAuthStore.js";
 import { authFetch } from "~/composables/useApi.js";
 import { useFocusSession } from "~/composables/user/useFocusSession.js";
 import { enqueuePendingFocusEvent } from "~/composables/user/useFocusEventQueue.js";
+import { getFocusMonsterKey } from "~/utils/monsterImage.js";
+
+import focusM11 from "~/assets/img/ModeFocus/Monstres/1.1-MonstrePetitFocus.png";
+import focusM12 from "~/assets/img/ModeFocus/Monstres/1.2-MonstreMitjaFocus.png";
+import focusM13 from "~/assets/img/ModeFocus/Monstres/1.3-MonstreGranFocus.png";
+import focusM14 from "~/assets/img/ModeFocus/Monstres/1.4-MonstreFortFocus.png";
+import focusM21 from "~/assets/img/ModeFocus/Monstres/2.1-MonstrePetitFocus.png";
+import focusM22 from "~/assets/img/ModeFocus/Monstres/2.2-MonstreMitjaFocus.png";
+import focusM23 from "~/assets/img/ModeFocus/Monstres/2.3-MonstreGranFocus.png";
+import focusM24 from "~/assets/img/ModeFocus/Monstres/2.4-MonstreFortFocus.png";
+import focusM31 from "~/assets/img/ModeFocus/Monstres/3.1-MonstrePetitFocus.png";
+import focusM32 from "~/assets/img/ModeFocus/Monstres/3.2-MonstreMitjaFocus.png";
+import focusM33 from "~/assets/img/ModeFocus/Monstres/3.3-MonstreGranFocus.png";
+import focusM34 from "~/assets/img/ModeFocus/Monstres/3.4-MonstreFortFocus.png";
+import focusM41 from "~/assets/img/ModeFocus/Monstres/4.1-MonstrePetitFocus.png";
+import focusM42 from "~/assets/img/ModeFocus/Monstres/4.2-MonstreMitjaFocus.png";
+import focusM43 from "~/assets/img/ModeFocus/Monstres/4.3-MonstreGranFocus.png";
+import focusM44 from "~/assets/img/ModeFocus/Monstres/4.4-MonstreFortFocus.png";
+
+var FOCUS_MONSTER_MAP = {
+  "1.1": focusM11, "1.2": focusM12, "1.3": focusM13, "1.4": focusM14,
+  "2.1": focusM21, "2.2": focusM22, "2.3": focusM23, "2.4": focusM24,
+  "3.1": focusM31, "3.2": focusM32, "3.3": focusM33, "3.4": focusM34,
+  "4.1": focusM41, "4.2": focusM42, "4.3": focusM43, "4.4": focusM44
+};
 
 var route = useRoute();
 var gameStore = useGameStore();
@@ -220,6 +258,7 @@ var searchResults = ref([]);
 var searchLoading = ref(false);
 var searchError = ref("");
 var searchInputEl = ref(null);
+var youtubeIframeEl = ref(null);
 var searchDebounceTimer = null;
 var searchAbortController = null;
 var trackProgressTimer = null;
@@ -318,7 +357,14 @@ var currentTrackEmbedUrl = computed(function () {
   if (!currentTrackVideoId.value || isTrackPaused.value) {
     return "";
   }
-  return "https://www.youtube.com/embed/" + currentTrackVideoId.value + "?autoplay=1&controls=0&rel=0&modestbranding=1";
+  return "https://www.youtube.com/embed/" + currentTrackVideoId.value + "?autoplay=1&controls=0&rel=0&modestbranding=1&enablejsapi=1";
+});
+
+var focusMonsterSrc = computed(function () {
+  var user = authStore.user;
+  if (!user || !user.monstre_tipus) return focusM11;
+  var key = getFocusMonsterKey(user.monstre_tipus, user.nivell);
+  return FOCUS_MONSTER_MAP[key] || focusM11;
 });
 
 var currentModeLabel = computed(function () {
@@ -609,7 +655,18 @@ function updateProgressFromSlider(rawValue) {
     trackElapsedSeconds.value = 0;
     return;
   }
-  trackElapsedSeconds.value = Math.floor((nextProgress / 100) * total);
+  var targetSeconds = Math.floor((nextProgress / 100) * total);
+  trackElapsedSeconds.value = targetSeconds;
+
+  if (youtubeIframeEl.value && youtubeIframeEl.value.contentWindow) {
+    try {
+      youtubeIframeEl.value.contentWindow.postMessage(JSON.stringify({
+        event: "command",
+        func: "seekTo",
+        args: [targetSeconds, true]
+      }), "*");
+    } catch (e) {}
+  }
 }
 
 async function runVideoSearch(query) {

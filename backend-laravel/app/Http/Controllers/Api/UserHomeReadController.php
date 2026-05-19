@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserHomeResource;
-use App\Services\HomeDataService;
+use App\Domains\User\Services\HomeDataService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -38,3 +38,4 @@ class UserHomeReadController extends Controller
         return (new UserHomeResource($dades))->toResponse($request)->header('Cache-Control', 'no-cache');
     }
 }
+

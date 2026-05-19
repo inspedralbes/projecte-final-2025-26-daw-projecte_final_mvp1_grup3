@@ -1,4 +1,10 @@
 /**
+ * Modul JavaScript ES5: auth-user.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
+/**
  * Middleware per rutas d'usuari: exigeix role=user i token.
  * Si no s'aplica a cap pàgina, la protecció ve de require-auth.global.js.
  */

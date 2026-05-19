@@ -1,10 +1,17 @@
+/**
+ * Modul JavaScript ES5: register.cy.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
 describe('Registro', function () {
   beforeEach(function () {
+    cy.viewport(1280, 800);
     cy.visit('/auth/registre');
   });
 
   it('muestra el formulario de registro con todos los campos', function () {
-    cy.get('.login-logo-text').should('contain', 'Loopy');
+    cy.get('.register-brand, .login-logo-text').filter(':visible').should('contain', 'Looppy');
     cy.get('input[type="text"]').should('be.visible');
     cy.get('input[type="email"]').should('be.visible');
     cy.get('input[type="password"]').should('have.length', 2);
@@ -87,7 +94,7 @@ describe('Registro', function () {
   });
 
   it('tiene enlace de navegación a login', function () {
-    cy.get('a[href="/auth/login"]').click();
+    cy.get('[data-cy="registre-back-login"]').click();
     cy.url().should('include', '/auth/login');
   });
 

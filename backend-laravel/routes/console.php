@@ -1,5 +1,13 @@
 <?php
 
+
+/**
+ * Capa Laravel: console.
+ * Comentaris: agents/backend/AgentLaravel.md
+ */
+
+//================================ NAMESPACES / IMPORTS ============
+
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;

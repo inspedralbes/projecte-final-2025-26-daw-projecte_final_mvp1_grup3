@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: 403.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div>
     <ErrorContent

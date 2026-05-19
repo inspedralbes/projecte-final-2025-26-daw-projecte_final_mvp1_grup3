@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "taiga": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "${workspaceFolder}/tools/pytaiga-mcp",
+        "run",
+        "src/server.py"
+      ],
+      "envFile": "${workspaceFolder}/.cursor/taiga-mcp.env"
+    }
+  }
+}

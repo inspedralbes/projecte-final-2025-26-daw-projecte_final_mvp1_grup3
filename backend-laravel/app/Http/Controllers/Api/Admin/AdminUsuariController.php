@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Admin\AdminUsuariResource;
+use App\Domains\Admin\Services\UserProhibitionService;
 use App\Models\Administrador;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -91,7 +92,9 @@ class AdminUsuariController extends Controller
     {
         $request->validate([
             'prohibit' => 'required|boolean',
-            'motiu' => 'required_if:prohibit,true|nullable|string',
+            'motiu' => 'nullable|string',
+            'motiu_prohibicio' => 'nullable|string',
+            'durada_prohibicio' => 'nullable|string|in:1_dia,3_dies,7_dies,30_dies,permanent',
         ]);
 
         $usuari = User::find($id);
@@ -104,13 +107,17 @@ class AdminUsuariController extends Controller
             'motiu_prohibicio' => $usuari->motiu_prohibicio,
         ];
 
-        $usuari->prohibit = $request->boolean('prohibit');
         if ($request->boolean('prohibit')) {
-            $usuari->data_prohibicio = now();
-            $usuari->motiu_prohibicio = $request->input('motiu');
+            UserProhibitionService::omplirProhibicio(
+                $usuari,
+                $request->input('motiu_prohibicio') ?? $request->input('motiu'),
+                $request->input('durada_prohibicio')
+            );
         } else {
+            $usuari->prohibit = false;
             $usuari->data_prohibicio = null;
             $usuari->motiu_prohibicio = null;
+            $usuari->dies_prohibicio = null;
         }
         $usuari->save();
 
@@ -123,7 +130,7 @@ class AdminUsuariController extends Controller
         if ($usuari->prohibit) {
             $accioLog = 'Prohibir usuari';
         }
-        $adminLogService = app(\App\Services\AdminLogService::class);
+        $adminLogService = app(\App\Domains\Admin\Services\AdminLogService::class);
         $adminLogService->registrar(
             1,
             $accioLog,

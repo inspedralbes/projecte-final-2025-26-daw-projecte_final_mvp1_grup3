@@ -1,9 +1,19 @@
 <?php
 
+
+/**
+ * Capa Laravel: LoginTest.
+ * Comentaris: agents/backend/AgentLaravel.md
+ */
+
 namespace Tests\Feature\Auth;
+
+//================================ NAMESPACES / IMPORTS ============
 
 use App\Models\User;
 use Tests\TestCase;
+
+//================================ MÈTODES / FUNCIONS ===========
 
 class LoginTest extends TestCase
 {

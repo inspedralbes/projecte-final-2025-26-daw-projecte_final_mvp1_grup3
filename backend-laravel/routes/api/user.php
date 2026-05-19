@@ -1,11 +1,20 @@
 <?php
 
+
+/**
+ * Capa Laravel: user.
+ * Comentaris: agents/backend/AgentLaravel.md
+ */
+
+//================================ NAMESPACES / IMPORTS ============
+
 use App\Http\Controllers\Api\ChatController;
 use App\Http\Controllers\Api\FriendshipController;
 use App\Http\Controllers\Api\GameStateReadController;
 use App\Http\Controllers\Api\HabitReadController;
 use App\Http\Controllers\Api\ExternalResourceController;
 use App\Http\Controllers\Api\LogroReadController;
+use App\Http\Controllers\Api\MonsterChoiceController;
 use App\Http\Controllers\Api\OnboardingHabitAssignController;
 use App\Http\Controllers\Api\PlantillaReadController;
 use App\Http\Controllers\Api\ShopController;
@@ -20,7 +29,6 @@ use App\Http\Controllers\Api\UserProfileReadController;
 use App\Http\Controllers\Api\ClanController;
 use App\Http\Controllers\Api\ClanRequestController;
 use App\Http\Controllers\Api\UserSearchController;
-use App\Http\Controllers\WebRTCSignalController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -75,10 +83,14 @@ Route::middleware('ensure.user')->group(function () {
     Route::get('/user/home', [UserHomeReadController::class, 'index']);
     Route::get('/logros', [LogroReadController::class, 'index']);
     Route::get('/user/profile', [UserProfileReadController::class, 'profile']);
+    Route::post('/user/monster-choice', [MonsterChoiceController::class, 'store']);
+    Route::get('/user/monster', [MonsterChoiceController::class, 'show']);
 
     Route::get('/users/{id}/profile', [UserProfileController::class, 'getPublicProfile']);
+    Route::get('/users/{id}/logs', [UserProfileController::class, 'getPublicLogs']);
     Route::get('/users/self/profile', [UserProfileController::class, 'getSelfProfile']);
     Route::put('/users/self/showcase', [UserProfileController::class, 'updateShowcase']);
+    Route::put('/users/self/account', [UserProfileController::class, 'updateAccount']);
     Route::get('/users', [UserSearchController::class, 'search']);
 
     Route::post('/friends/request', [FriendshipController::class, 'sendRequest']);

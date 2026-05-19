@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: HomeMonsterPanel.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div
     class="bento-card bg-white/95 backdrop-blur-md rounded-3xl p-8 shadow-2xl border border-white/50 flex flex-col items-center relative min-h-[500px]"
@@ -79,14 +83,12 @@
 
 <script>
 import UserHomeHomeStreakSection from "~/components/user/home/HomeStreakSection.vue";
-import bosqueImg from "~/assets/img/Bosque.png";
-import mascotaImg from "~/assets/img/Mascota.png";
+import bosqueImg from "~/assets/img/Fons/Fons_Bosc.png";
+import mascotaImg from "~/assets/img/Monstres/Mascota_Defecte.png";
+import { useGameStore } from "~/stores/gameStore.js";
 import { useShopStore } from "~/stores/useShopStore.js";
-
-// La imatge alternativa amb la "Gorra Monster" es serveix des de /public
-// per no trencar el build mentre l'asset encara no estigui pujat. Si no
-// existeix, el handler @error reverteix a la mascota base.
-var MASCOTA_GORRA_URL = "/img/Mascota_Gorra.png";
+import { getMonsterGorraImage } from "~/utils/monsterImage.js";
+import { useAuthStore } from "~/stores/useAuthStore.js";
 
 export default {
   name: "UserHomeHomeMonsterPanel",
@@ -216,9 +218,23 @@ export default {
       } catch (_) {
         return this.imatgeMascota;
       }
-      var skinKey = shopStore && shopStore.skinEquipat ? shopStore.skinEquipat : null;
-      if (skinKey === "gorra_monster" && this.mascotaGorraDisponible) {
-        return MASCOTA_GORRA_URL;
+      var skinKey = null;
+      try {
+        var gameStore = useGameStore();
+        if (gameStore && gameStore.skinKey) {
+          skinKey = gameStore.skinKey;
+        }
+      } catch (_) {}
+      if (!skinKey && shopStore && shopStore.skinEquipat) {
+        skinKey = shopStore.skinEquipat;
+      }
+      if (skinKey === "gorra_monster") {
+        try {
+          var authStore = useAuthStore();
+          if (authStore && authStore.user && authStore.user.monstre_tipus) {
+            return getMonsterGorraImage(authStore.user.monstre_tipus, authStore.user.nivell);
+          }
+        } catch (_) {}
       }
       return this.imatgeMascota;
     },

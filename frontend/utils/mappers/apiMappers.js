@@ -1,4 +1,10 @@
 /**
+ * Modul JavaScript ES5: apiMappers.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
+/**
  * Mappers centralitzats per transformar respostes de l'API al format del frontend.
  * Única font de veritat per al mapeig de models.
  */
@@ -41,6 +47,7 @@ function mapHabitFromApi(hàbit) {
     frequencia: freqMapejada,
     frequenciaTipus: hàbit.frequencia_tipus || "",
     recordatori: hàbit.recordatori || "",
+    momentDia: hàbit.moment_dia || "tot_dia",
     icona: hàbit.icona || "📝",
     color: hàbit.color || "#10B981",
     dificultat: hàbit.dificultat || null,
@@ -78,6 +85,8 @@ function mapHabitFromApiForHome(h) {
     unitat: h.unitat || "",
     categoriaId: h.categoria_id || null,
     frequenciaTipus: h.frequencia_tipus || "",
+    momentDia: h.moment_dia || "tot_dia",
+    recordatori: h.recordatori || "",
     metadata: (h.metadata && typeof h.metadata === "object")
       ? h.metadata
       : ((h.metadada && typeof h.metadada === "object") ? h.metadada : null)
@@ -103,12 +112,21 @@ function mapPlantillaFromApi(plantilla, mapHabitFn) {
     }
   }
 
+  var esGuardadaPlantilla = plantilla.hasOwnProperty("es_guardada") ? !!plantilla.es_guardada : (plantilla.hasOwnProperty("guardada") ? !!plantilla.guardada : (plantilla.origen === 'forum' || !!plantilla.importada));
+  var esAmicPlantilla = plantilla.hasOwnProperty("es_amic") ? !!plantilla.es_amic : (plantilla.hasOwnProperty("is_friend") ? !!plantilla.is_friend : false);
+  var creadorNomPlantilla = plantilla.creador_nom || plantilla.nom_creador || "Usuari";
+  var esDefaultPlantilla = plantilla.hasOwnProperty("es_default") ? !!plantilla.es_default : (plantilla.id <= 8);
+
   return {
     id: plantilla.id,
     titol: titolPlantilla,
     categoria: categoriaPlantilla,
     esPublica: esPublicaPlantilla,
     creadorId: creadorIdPlantilla,
+    esGuardada: esGuardadaPlantilla,
+    esAmic: esAmicPlantilla,
+    creadorNom: creadorNomPlantilla,
+    esDefault: esDefaultPlantilla,
     habits: mappedHabits
   };
 }
@@ -141,6 +159,10 @@ function mapGameStateFromApi(gs) {
   if (gs.missio_completada !== undefined) result.missio_completada = gs.missio_completada;
   if (gs.missio_progres !== undefined) result.missio_progres = gs.missio_progres;
   if (gs.missio_objectiu !== undefined) result.missio_objectiu = gs.missio_objectiu;
+  if (gs.monstre_tipus !== undefined) result.monstre_tipus = gs.monstre_tipus;
+  if (gs.streak_incremented !== undefined) result.streak_incremented = !!gs.streak_incremented;
+  if (gs.skin_key !== undefined) result.skin_key = gs.skin_key;
+  if (gs.fons_key !== undefined) result.fons_key = gs.fons_key;
   return result;
 }
 

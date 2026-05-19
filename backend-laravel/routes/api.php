@@ -1,5 +1,11 @@
 <?php
 
+
+/**
+ * Capa Laravel: api.
+ * Comentaris: agents/backend/AgentLaravel.md
+ */
+
 /*
 |--------------------------------------------------------------------------
 | API Routes

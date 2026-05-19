@@ -1,4 +1,11 @@
+/**
+ * Modul JavaScript ES5: useAuthStore.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
 import { defineStore } from 'pinia';
+import { esborrarCosmeticsStorage } from '~/utils/cosmeticsStorage.js';
 
 var API_BASE_FALLBACK = 'http://localhost:8000';
 
@@ -25,7 +32,9 @@ export var useAuthStore = defineStore('auth', {
       admin: null,
       role: null, // 'user' | 'admin'
       isAuthenticated: false,
-      requiresOnboarding: false
+      requiresOnboarding: false,
+      loginBanShow: false,
+      loginBanInfo: null
     };
   },
 
@@ -81,6 +90,44 @@ export var useAuthStore = defineStore('auth', {
     /**
      * Login d'usuari. POST /api/auth/login
      */
+    /**
+     * Comprova si l'error de login és per compte prohibit.
+     */
+    esErrorBanLogin: function (err) {
+      if (!err) {
+        return false;
+      }
+      if (err.code === 'account_banned') {
+        return true;
+      }
+      if (err.status === 403) {
+        if (err.ban) {
+          return true;
+        }
+        var msg = (err.message || '').toLowerCase();
+        if (msg.indexOf('prohibit') >= 0 || msg.indexOf('banned') >= 0) {
+          return true;
+        }
+      }
+      return false;
+    },
+
+    /**
+     * Mostra el desplegable de ban al login.
+     */
+    mostrarLoginBan: function (ban) {
+      this.loginBanInfo = ban || null;
+      this.loginBanShow = true;
+    },
+
+    /**
+     * Tanca el desplegable de ban al login.
+     */
+    tancarLoginBan: function () {
+      this.loginBanShow = false;
+      this.loginBanInfo = null;
+    },
+
     loginUser: async function (email, contrasenya) {
       var base = getApiBase();
       var url = base + '/api/auth/login';
@@ -93,10 +140,23 @@ export var useAuthStore = defineStore('auth', {
         credentials: 'include',
         body: JSON.stringify({ email: email, contrasenya: contrasenya })
       });
-      var dades = await resposta.json();
-      if (!resposta.ok) {
-        throw new Error(dades.message || 'Credencials incorrectes');
+      var dades = {};
+      try {
+        dades = await resposta.json();
+      } catch (e) {
+        dades = {};
       }
+      if (!resposta.ok) {
+        var err = new Error(dades.message || 'Credencials incorrectes');
+        err.status = resposta.status;
+        err.code = dades.code || null;
+        err.ban = dades.ban || null;
+        if (this.esErrorBanLogin(err)) {
+          this.mostrarLoginBan(err.ban);
+        }
+        throw err;
+      }
+      this.tancarLoginBan();
       this.aplicarSessio(dades);
       return dades;
     },
@@ -181,8 +241,15 @@ export var useAuthStore = defineStore('auth', {
         localStorage.removeItem('loopy_onboarding_done');
         localStorage.removeItem('loopy_onboarding_user_id');
         localStorage.removeItem('loopy_requires_onboarding_user_id');
+        esborrarCosmeticsStorage();
         document.cookie = 'loopy_role=; Path=/; Max-Age=0; SameSite=Lax';
       }
+      try {
+        var gameStore = useGameStore();
+        gameStore.skinKey = null;
+        gameStore.fonsKey = null;
+        gameStore.cosmeticsReady = false;
+      } catch (_) {}
     },
 
     /**
@@ -324,14 +391,15 @@ export var useAuthStore = defineStore('auth', {
           credentials: 'include'
         });
         if (!resposta.ok) {
-          await this.logout();
+          if (resposta.status === 401 || resposta.status === 403) {
+            await this.logout();
+          }
           return false;
         }
         var dades = await resposta.json();
         this.aplicarSessio(dades);
         return true;
       } catch (e) {
-        await this.logout();
         return false;
       }
     }

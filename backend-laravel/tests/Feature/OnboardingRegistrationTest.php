@@ -1,6 +1,14 @@
 <?php
 
+
+/**
+ * Capa Laravel: OnboardingRegistrationTest.
+ * Comentaris: agents/backend/AgentLaravel.md
+ */
+
 namespace Tests\Feature;
+
+//================================ NAMESPACES / IMPORTS ============
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -8,6 +16,8 @@ use Laravel\Socialite\Contracts\User as SocialiteUserContract;
 use Laravel\Socialite\Facades\Socialite;
 use Mockery;
 use Tests\TestCase;
+
+//================================ MÈTODES / FUNCIONS ===========
 
 class OnboardingRegistrationTest extends TestCase
 {

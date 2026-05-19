@@ -1,3 +1,8 @@
+-- AGENT_DATABASE: database/init.sql
+-- SQL (estructura o dades): init.
+-- Comentaris: agents/database/AgentDatabase.md
+-- GET via API Laravel | CUD via Node -> Redis -> Laravel
+
 -- ==========================================================
 -- ESTRUCTURA FINAL DE LA BASE DE DATOS (ESENCIAL)
 -- S'executa només en crear el volum Postgres (docker-entrypoint-initdb.d).
@@ -12,6 +17,7 @@ DROP TABLE IF EXISTS ADMIN_NOTIFICACIONS CASCADE;
 DROP TABLE IF EXISTS ADMIN_LOGS CASCADE;
 DROP TABLE IF EXISTS ADMIN_CONFIGURACIO CASCADE;
 DROP TABLE IF EXISTS REPORTS CASCADE;
+DROP TABLE IF EXISTS REPORTS_USUARI CASCADE;
 DROP TABLE IF EXISTS SOCIAL_LIKES CASCADE;
 DROP TABLE IF EXISTS SOCIAL_COMMENTS CASCADE;
 DROP TABLE IF EXISTS SOCIAL_POSTS CASCADE;
@@ -64,7 +70,11 @@ CREATE TABLE USUARIS (
     prohibit BOOLEAN DEFAULT FALSE,
     data_prohibicio TIMESTAMP,
     motiu_prohibicio TEXT,
-    ultim_reset_missio DATE
+    dies_prohibicio INT DEFAULT NULL,
+    ultim_reset_missio DATE,
+    monstre_tipus VARCHAR(2) DEFAULT NULL,
+    data_naixement_monstre TIMESTAMP DEFAULT NULL,
+    primer_login_correu_enviat_at TIMESTAMP DEFAULT NULL
 );
 
 -- 2. LOGROS Y MEDALLAS
@@ -133,6 +143,7 @@ CREATE TABLE HABITS (
     unitat VARCHAR(50),
     icona VARCHAR(50),
     color VARCHAR(20),
+    moment_dia VARCHAR(20) NOT NULL DEFAULT 'tot_dia',
     metadata JSONB
 );
 
@@ -227,6 +238,16 @@ CREATE TABLE REPORTS (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE REPORTS_USUARI (
+    id SERIAL PRIMARY KEY,
+    usuari_id INT REFERENCES USUARIS(id) ON DELETE CASCADE,
+    reportat_id INT REFERENCES USUARIS(id) ON DELETE CASCADE,
+    motiu VARCHAR(255) NOT NULL,
+    detalls TEXT,
+    estat VARCHAR(20) DEFAULT 'pendent',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- 6. SOCIAL FORUM
 -- ----------------------------------------------------------
 
@@ -236,6 +257,7 @@ CREATE TABLE SOCIAL_POSTS (
     content TEXT NOT NULL,
     habit_id INT REFERENCES HABITS(id) ON DELETE SET NULL,
     plantilla_id INT REFERENCES PLANTILLES(id) ON DELETE SET NULL,
+    attachments JSONB DEFAULT '[]'::jsonb,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP

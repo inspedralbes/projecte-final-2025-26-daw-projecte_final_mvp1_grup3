@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: AdminPopups.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <Transition
     enter-active-class="transition ease-out duration-300"
@@ -13,15 +17,9 @@
       @click.self="$emit('close')"
     >
       <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-auto shadow-2xl p-8">
-        <div class="flex justify-between items-center mb-6">
-          <h3 class="text-xl font-black text-gray-900">{{ title }}</h3>
-          <button
-            type="button"
-            @click="$emit('close')"
-            class="w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-600"
-          >
-            <span class="text-2xl">×</span>
-          </button>
+        <div class="flex flex-col items-center mb-6">
+          <div class="w-10 h-1 bg-gray-300 rounded-full mb-3"></div>
+          <h3 class="text-xl font-bold text-[#949494] text-center w-full">{{ title }}</h3>
         </div>
         <slot></slot>
       </div>

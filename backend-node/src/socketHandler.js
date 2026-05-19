@@ -1,45 +1,56 @@
-"use strict";
+'use strict';
+
+
+/**
+ * Modul JavaScript ES5: socketHandler.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
 
 //==============================================================================
 //================================ IMPORTS =====================================
 //==============================================================================
 
-var habitHandlers = require("./handlers/user/habitHandlers");
-var plantillaHandlers = require("./handlers/user/plantillaHandlers");
-var rouletteHandlers = require("./handlers/user/rouletteHandlers");
-var userRegisterHandler = require("./handlers/user/userRegisterHandler");
-var socialHandlers = require("./handlers/user/socialHandlers");
-var adminHandlers = require("./handlers/admin/adminHandlers");
-var adminConnectedHandler = require("./handlers/admin/adminConnectedHandler");
+var presenceSocketHandlers = require('./domains/User/handlers/presenceSocketHandlers');
+var habitSocketHandlers = require('./domains/Habits/handlers/habitSocketHandlers');
+var plantillaSocketHandlers = require('./domains/Plantilles/handlers/plantillaSocketHandlers');
+var rouletteSocketHandlers = require('./domains/Roulette/handlers/rouletteSocketHandlers');
+var userRegisterSocketHandlers = require('./domains/User/handlers/userRegisterSocketHandlers');
+var socialPostSocketHandlers = require('./domains/Social/handlers/socialPostSocketHandlers');
+var chatSocketHandlers = require('./domains/Social/handlers/chatSocketHandlers');
+var friendshipSocketHandlers = require('./domains/Social/handlers/friendshipSocketHandlers');
+var clanSocketHandlers = require('./domains/Social/handlers/clanSocketHandlers');
+var adminSocketHandlers = require('./domains/Admin/handlers/adminSocketHandlers');
+var adminConnectedSocketHandlers = require('./domains/Admin/handlers/adminConnectedSocketHandlers');
+var webrtcSignalSocketHandlers = require('./domains/WebRTC/handlers/webrtcSignalSocketHandlers');
 
 //==============================================================================
 //================================ FUNCIONS ====================================
 //==============================================================================
 
 /**
- * Inicialitza la gestió d'esdeveniments de sockets.
- * Orquestra el registre de tots els handlers per usuari i admin.
+ * Orquestador pur: registra handlers per domini.
  *
- * @param {object} io - Instància Socket.io
+ * @param {object} io
  */
 function init(io) {
-  io.on("connection", function (socket) {
-    console.log("Client connectat:", socket.id);
+  io.on('connection', function (socket) {
+    console.log('Client connectat:', socket.id);
 
-    // Unir usuari a la sala user_X per rebre feedback (update_xp, mission_completed, etc.)
-    var userId = socket.decoded_token && socket.decoded_token.user_id;
-    if (userId) {
-      socket.join("user_" + userId);
-      console.log("Usuari " + userId + " unit a la sala user_" + userId);
-    }
+    presenceSocketHandlers.configurarPresencia(io, socket);
 
-habitHandlers.register(io, socket);
- plantillaHandlers.register(io, socket);
- rouletteHandlers.register(io, socket);
- userRegisterHandler.register(io, socket);
- socialHandlers.register(io, socket);
- adminHandlers.register(io, socket);
- adminConnectedHandler.register(io, socket);
+    habitSocketHandlers.register(io, socket);
+    plantillaSocketHandlers.register(io, socket);
+    rouletteSocketHandlers.register(io, socket);
+    userRegisterSocketHandlers.register(io, socket);
+    socialPostSocketHandlers.register(io, socket);
+    chatSocketHandlers.register(io, socket);
+    friendshipSocketHandlers.register(io, socket);
+    clanSocketHandlers.register(io, socket);
+    adminSocketHandlers.register(io, socket);
+    adminConnectedSocketHandlers.register(io, socket);
+    webrtcSignalSocketHandlers.register(io, socket);
   });
 }
 

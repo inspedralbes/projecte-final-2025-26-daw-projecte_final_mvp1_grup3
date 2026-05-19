@@ -1,16 +1,22 @@
+<!--
+  Component o pagina Nuxt: MemberList.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div class="bg-white rounded-xl shadow p-6 border">
     <h3 class="text-lg font-bold mb-4">Membres ({{ members.length }})</h3>
     <div v-if="loading" class="text-center py-4 text-gray-500">Carregant...</div>
     <ul v-else class="space-y-3">
       <li v-for="member in members" :key="member.usuari_id" class="flex justify-between items-center bg-gray-50 p-3 rounded-lg border">
-        <div class="flex items-center gap-3 cursor-pointer flex-1" @click="$emit('view-profile', member.usuari_id)">
-          <div class="w-10 h-10 rounded-full overflow-hidden shadow-inner" :style="avatarBackgroundStyle">
+        <div class="flex items-center gap-3 flex-1">
+          <div class="w-10 h-10 rounded-full overflow-hidden shadow-inner cursor-pointer" :style="avatarBackgroundStyle" @click="$emit('view-profile', member.usuari_id)">
             <div class="w-full h-full rounded-full border border-gray-200 bg-white/20 p-1 flex items-center justify-center">
               <img
-                :src="mascotaImg"
+                v-if="getMonsterImage(member)"
+                :src="getMonsterImage(member)"
                 alt="Monstre del perfil"
                 class="w-full h-full object-contain"
+                :style="getMonsterStyle(member)"
                 decoding="async"
                 draggable="false"
               />
@@ -30,8 +36,11 @@
 </template>
 
 <script>
-import mascotaImg from "~/assets/img/Mascota.png";
-import bosqueImg from "~/assets/img/Bosque.png";
+import { getMonsterImageFromUser } from "~/utils/monsterImage.js";
+import bosqueImg from "~/assets/img/Fons/Fons_Bosc.png";
+import fonsAplicacioImg from "~/assets/img/Fons/Fons_Aplicacio.png";
+import fonsPlatjaImg from "~/assets/img/Fons/Fons_Platja.png";
+import fonsCasaImg from "~/assets/img/Fons/Fons_Casa.png";
 import { useClanStore } from "~/stores/useClanStore.js";
 import { useAuthStore } from "~/stores/useAuthStore.js";
 import { useNuxtApp } from "#app";
@@ -52,8 +61,7 @@ export default {
   data: function() {
     return {
       loading: false,
-      currentUserId: null,
-      mascotaImg: mascotaImg
+      currentUserId: null
     }
   },
   computed: {
@@ -66,6 +74,16 @@ export default {
         backgroundImage: "url(" + bosqueImg + ")",
         backgroundSize: "cover",
         backgroundPosition: "center"
+      };
+    },
+    getAvatarBgForMember: function() {
+      return function(member) {
+        var fonsKey = member ? member.fons_key : null;
+        var bg = bosqueImg;
+        if (fonsKey === "fons_platja") bg = fonsPlatjaImg;
+        else if (fonsKey === "fons_casa") bg = fonsCasaImg;
+        else if (fonsKey === "fons_aplicacio") bg = fonsAplicacioImg;
+        return { backgroundImage: "url(" + bg + ")", backgroundSize: "cover", backgroundPosition: "center" };
       };
     }
   },
@@ -113,7 +131,11 @@ export default {
       }
     },
     removeMember: async function(userId) {
-      if (!confirm("Vols expulsar aquest membre?")) return;
+      var ok = await this.$loopyModal.confirm({
+        title: "Expulsar membre",
+        message: "Vols expulsar aquest membre?"
+      });
+      if (!ok) return;
       
       try {
         var store = useClanStore();
@@ -133,11 +155,32 @@ export default {
            this.$emit('member-removed');
            this.loadMembers();
         } else {
-           alert(store.error || "Error al expulsar membre");
+           await this.$loopyModal.error("Error", store.error || "Error al expulsar membre");
         }
       } catch(e) {
         console.error(e);
       }
+    },
+    getMonsterImage: function(member) {
+      if (!member) return null;
+      var skinKey = member.skin_key || null;
+      return getMonsterImageFromUser({
+        monstre_tipus: member.monstre_tipus,
+        nivell: member.nivell
+      }, skinKey);
+    },
+    getMonsterStyle: function(member) {
+      var n = Number(member.nivell) || 1;
+      var scale = 1;
+      if (n < 5) scale = 1.1;
+      else if (n < 15) scale = 1.2;
+      else if (n < 30) scale = 1.35;
+      else scale = 1.5;
+      
+      return {
+        transform: "scale(" + scale + ") translateY(5%)",
+        filter: "drop-shadow(0 4px 6px rgba(0,0,0,0.2))"
+      };
     }
   }
 }

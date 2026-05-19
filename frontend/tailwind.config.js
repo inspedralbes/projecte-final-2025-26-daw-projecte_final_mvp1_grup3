@@ -1,3 +1,9 @@
+/**
+ * Modul JavaScript ES5: tailwind.config.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [

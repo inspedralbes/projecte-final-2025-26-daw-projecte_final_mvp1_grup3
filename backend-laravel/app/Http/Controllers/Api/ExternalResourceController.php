@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api;
 //================================ NAMESPACES / IMPORTS ============
 
 use App\Http\Controllers\Controller;
-use App\Services\ExternalApiProxyService;
+use App\Domains\AI\Services\ExternalApiProxyService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 

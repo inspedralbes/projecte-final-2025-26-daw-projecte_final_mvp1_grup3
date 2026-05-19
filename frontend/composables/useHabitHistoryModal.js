@@ -1,4 +1,10 @@
 /**
+ * Modul JavaScript ES5: useHabitHistoryModal.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
+/**
  * Composable per obrir el modal de detalls d'un hàbit històric.
  * Utilitza SweetAlert2 ($swal) per mostrar la info del snapshot.
  */

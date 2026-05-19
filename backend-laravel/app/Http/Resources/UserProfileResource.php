@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 //================================ NAMESPACES / IMPORTS ============
 
+use App\Domains\User\Support\MonsterPresentation;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -41,6 +42,10 @@ class UserProfileResource extends JsonResource
             }
         }
 
+        $monstreTipus = $this->resource->monstre_tipus;
+        $monstreSprite = MonsterPresentation::calculateSpriteName($monstreTipus, (int) $this->resource->nivell);
+        $monstreEtapa = $monstreTipus ? MonsterPresentation::calculateStage((int) $this->resource->nivell) : null;
+
         return [
             'id' => $this->resource->id,
             'nom' => $this->resource->nom,
@@ -53,6 +58,9 @@ class UserProfileResource extends JsonResource
             'ratxa_actual' => (int) ($this->resource->ratxa_actual ?? 0),
             'ratxa_maxima' => (int) ($this->resource->ratxa_maxima ?? 0),
             'logros' => $logros,
+            'monstre_tipus' => $monstreTipus,
+            'monstre_etapa' => $monstreEtapa,
+            'monstre_sprite' => $monstreSprite,
         ];
     }
 }

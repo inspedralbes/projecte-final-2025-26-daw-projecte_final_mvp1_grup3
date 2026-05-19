@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: HabitProgressModal.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
     <div
@@ -63,7 +67,9 @@
 
         <div class="mt-5 grid grid-cols-3 gap-3 items-center">
           <button
-            class="h-12 rounded-2xl bg-gray-200 text-gray-700 text-3xl font-bold hover:bg-gray-300"
+            class="h-12 rounded-2xl bg-gray-200 text-gray-700 text-3xl font-bold transition-opacity"
+            :class="isCompletedToday ? 'opacity-35 cursor-not-allowed' : 'hover:bg-gray-300'"
+            :disabled="isCompletedToday"
             @click="restar"
           >
             -
@@ -72,7 +78,9 @@
             {{ progress }}/{{ objectiu }}
           </div>
           <button
-            class="h-12 rounded-2xl bg-gray-200 text-gray-700 text-3xl font-bold hover:bg-gray-300"
+            class="h-12 rounded-2xl bg-gray-200 text-gray-700 text-3xl font-bold transition-opacity"
+            :class="isCompletedToday ? 'opacity-35 cursor-not-allowed' : 'hover:bg-gray-300'"
+            :disabled="isCompletedToday"
             @click="sumar"
           >
             +
@@ -84,8 +92,8 @@
           <button
             data-testid="habit-progress-confirm"
             class="w-full py-3 rounded-xl font-bold text-white transition-all"
-            :class="potCompletar ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-300 cursor-not-allowed'"
-            :disabled="!potCompletar"
+            :class="isCompletedToday ? 'bg-gray-300 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'"
+            :disabled="isCompletedToday"
             @click="completar"
           >
             {{ $t('habits.complete_habit') }}
@@ -103,8 +111,8 @@
 </template>
 
 <script>
-import coinIcon from "~/assets/img/coin-loopy.png";
-import xpIcon from "~/assets/img/xp-loopy.png";
+import coinIcon from "~/assets/img/Icones/Icona_Moneda.png";
+import xpIcon from "~/assets/img/Icones/Icona_Experiencia.png";
 
 export default {
   props: {
@@ -112,7 +120,8 @@ export default {
     habit: { type: Object, required: false, default: null },
     progress: { type: Number, required: true, default: 0 },
     objectiu: { type: Number, required: true, default: 1 },
-    unitat: { type: String, required: true, default: "vegades" }
+    unitat: { type: String, required: true, default: "vegades" },
+    isCompletedToday: { type: Boolean, default: false }
   },
   computed: {
     coinIcon: function () {
@@ -185,10 +194,6 @@ export default {
       this.$emit("decrement");
     },
     completar: function () {
-      if (!this.potCompletar) {
-        this.$emit("invalid-complete");
-        return;
-      }
       this.$emit("confirm");
     }
   }

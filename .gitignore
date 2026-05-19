@@ -7,6 +7,10 @@
 .env.local
 .env.*.local
 !.env.example
+.cursor/taiga-mcp.env
+
+# --- Taiga MCP (servidor Python clonado localmente) ---
+tools/pytaiga-mcp/
 
 # --- Node (Nuxt + Backend Node) ---
 node_modules/

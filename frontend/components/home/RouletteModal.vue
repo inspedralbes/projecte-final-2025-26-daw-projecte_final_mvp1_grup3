@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: RouletteModal.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
     <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="tancar"></div>
@@ -5,14 +9,9 @@
     <div class="bg-white rounded-3xl w-full max-w-md p-8 shadow-2xl relative overflow-hidden">
       <div class="absolute top-0 right-0 w-32 h-32 bg-orange-50 rounded-full -translate-y-16 translate-x-16 pointer-events-none"></div>
       
-      <button
-        @click="tancar"
-        class="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-600 z-10"
-        title="Tancar"
-      >
-        <span class="text-2xl">×</span>
-      </button>
-
+      <div class="w-full flex justify-center mb-3 relative z-10">
+        <div class="w-10 h-1 bg-gray-300 rounded-full"></div>
+      </div>
       <div class="flex flex-col items-center text-center gap-6 relative z-10">
         <div class="bg-orange-100 w-16 h-16 rounded-2xl flex items-center justify-center text-3xl shadow-sm">
           🎡

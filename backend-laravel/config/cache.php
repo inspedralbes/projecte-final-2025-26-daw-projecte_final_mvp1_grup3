@@ -1,5 +1,11 @@
 <?php
 
+
+/**
+ * Capa Laravel: cache.
+ * Comentaris: agents/backend/AgentLaravel.md
+ */
+
 return [
     'default' => env('CACHE_DRIVER', 'redis'),
     'stores' => [

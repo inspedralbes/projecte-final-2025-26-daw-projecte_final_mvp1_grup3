@@ -1,5 +1,11 @@
 <?php
 
+
+/**
+ * Capa Laravel: auth.
+ * Comentaris: agents/backend/AgentLaravel.md
+ */
+
 return [
     'defaults' => [
         'guard' => env('AUTH_GUARD', 'api'),

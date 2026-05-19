@@ -1,5 +1,11 @@
 <?php
 
+
+/**
+ * Capa Laravel: redis.
+ * Comentaris: agents/backend/AgentLaravel.md
+ */
+
 return [
     'client' => env('REDIS_CLIENT', 'predis'),
     'default' => [

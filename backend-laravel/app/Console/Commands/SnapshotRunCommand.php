@@ -4,7 +4,7 @@ namespace App\Console\Commands;
 
 //================================ NAMESPACES / IMPORTS ============
 
-use App\Services\SnapshotService;
+use App\Domains\Calendar\Services\SnapshotService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
@@ -52,3 +52,4 @@ class SnapshotRunCommand extends Command
         return self::SUCCESS;
     }
 }
+

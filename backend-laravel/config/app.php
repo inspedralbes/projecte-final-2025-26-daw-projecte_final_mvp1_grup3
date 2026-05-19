@@ -1,5 +1,13 @@
 <?php
 
+
+/**
+ * Capa Laravel: app.
+ * Comentaris: agents/backend/AgentLaravel.md
+ */
+
+//================================ NAMESPACES / IMPORTS ============
+
 use Illuminate\Support\Facades\Facade;
 
 return [

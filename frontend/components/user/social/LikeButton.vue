@@ -1,22 +1,26 @@
+<!--
+  Component o pagina Nuxt: LikeButton.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <button
     @click="toggleLike"
     :class="[
-      'flex items-center gap-1 px-3 py-1 rounded-full transition-colors',
-      liked ? 'bg-red-100 text-red-600' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+      'like-btn',
+      liked ? 'like-btn--active' : ''
     ]"
     :disabled="loading"
   >
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      :class="['w-5 h-5', liked ? 'fill-current' : 'fill-none']"
+      :class="['like-btn__icon', liked ? 'like-btn__icon--filled' : '']"
       viewBox="0 0 24 24"
       stroke="currentColor"
       stroke-width="2"
     >
       <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
     </svg>
-    <span>{{ count }}</span>
+    <span class="like-btn__count">{{ count }}</span>
   </button>
 </template>
 
@@ -27,7 +31,7 @@ export default {
   name: "LikeButton",
   props: {
     contentId: { type: Number, required: true },
-    contentType: { type: String, default: "post" }, // 'post' o 'comment'
+    contentType: { type: String, default: "post" },
     initialLiked: { type: Boolean, default: false },
     initialCount: { type: Number, default: 0 }
   },
@@ -64,3 +68,48 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.like-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border: 0;
+  border-radius: 10px;
+  background: #f3f3f3;
+  color: #707070;
+  font-family: "Comfortaa", system-ui, sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.like-btn:hover {
+  background: #e9e9e9;
+}
+
+.like-btn--active {
+  background: #fde8ec;
+  color: #ff6b8a;
+}
+
+.like-btn--active:hover {
+  background: #fbd0d9;
+}
+
+.like-btn__icon {
+  width: 18px;
+  height: 18px;
+  fill: none;
+}
+
+.like-btn__icon--filled {
+  fill: currentColor;
+}
+
+.like-btn__count {
+  font-weight: 600;
+  line-height: 1;
+}
+</style>

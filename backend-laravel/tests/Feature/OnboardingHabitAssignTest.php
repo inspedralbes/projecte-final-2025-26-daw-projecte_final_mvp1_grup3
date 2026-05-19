@@ -1,12 +1,22 @@
 <?php
 
+
+/**
+ * Capa Laravel: OnboardingHabitAssignTest.
+ * Comentaris: agents/backend/AgentLaravel.md
+ */
+
 namespace Tests\Feature;
+
+//================================ NAMESPACES / IMPORTS ============
 
 use App\Models\Habit;
 use App\Models\User;
 use App\Models\UsuariHabit;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+
+//================================ MÈTODES / FUNCIONS ===========
 
 class OnboardingHabitAssignTest extends TestCase
 {

@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: AdminRankingsList.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div class="space-y-4">
     <div v-for="(r, i) in rankings" :key="i" class="flex items-center justify-between p-4 rounded-2xl bg-white shadow-sm border border-gray-50">

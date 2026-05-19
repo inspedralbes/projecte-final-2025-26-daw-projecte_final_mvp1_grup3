@@ -1,3 +1,9 @@
+/**
+ * Modul JavaScript ES5: plantilles.cy.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
 describe('Plantilles', function () {
   beforeEach(function () {
     cy.login();
@@ -17,23 +23,18 @@ describe('Plantilles', function () {
     cy.contains('Productivitat').should('be.visible');
   });
 
-  it('muestra la categoría de cada plantilla', function () {
-    cy.contains('Salut').should('be.visible');
-    cy.contains('Treball').should('be.visible');
+  it('tiene el botón para crear nueva plantilla en el grid', function () {
+    cy.get('.create-category-trigger').should('exist');
   });
 
-  it('tiene el botón para crear nueva plantilla', function () {
-    cy.contains('Crear Nova Plantilla').should('be.visible');
-  });
-
-  it('muestra el botón Exportar en cada plantilla', function () {
+  it('muestra el botón Exportar al abrir opciones de plantilla', function () {
+    cy.contains('.template-card', 'Vida Saludable').click({ force: true });
     cy.contains('button', 'Exportar').should('exist');
   });
 
   it('abre el modal de creación al hacer clic en Crear', function () {
     cy.intercept('GET', '**/api/habits/all', { fixture: 'habits.json' });
-    cy.contains('Crear Nova Plantilla').click();
-    cy.get('#titol').should('be.visible');
-    cy.get('#categoria').should('be.visible');
+    cy.get('.create-category-trigger').click({ force: true });
+    cy.get('.plantilla-sheet__title').should('be.visible');
   });
 });

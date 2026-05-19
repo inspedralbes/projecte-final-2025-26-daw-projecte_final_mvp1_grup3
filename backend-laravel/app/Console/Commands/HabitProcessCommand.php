@@ -1,11 +1,21 @@
 <?php
 
+
+/**
+ * Capa Laravel: HabitProcessCommand.
+ * Comentaris: agents/backend/AgentLaravel.md
+ */
+
 namespace App\Console\Commands;
+
+//================================ NAMESPACES / IMPORTS ============
 
 use App\Models\Habit;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Log;
+
+//================================ MÈTODES / FUNCIONS ===========
 
 class HabitProcessCommand extends Command
 {

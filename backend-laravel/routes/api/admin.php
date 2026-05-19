@@ -1,5 +1,13 @@
 <?php
 
+
+/**
+ * Capa Laravel: admin.
+ * Comentaris: agents/backend/AgentLaravel.md
+ */
+
+//================================ NAMESPACES / IMPORTS ============
+
 use App\Http\Controllers\Api\Admin\AdminConfiguracioController;
 use App\Http\Controllers\Api\Admin\AdminDashboardController;
 use App\Http\Controllers\Api\Admin\AdminHabitController;
@@ -11,6 +19,7 @@ use App\Http\Controllers\Api\Admin\AdminPerfilController;
 use App\Http\Controllers\Api\Admin\AdminPlantillaController;
 use App\Http\Controllers\Api\Admin\AdminRankingController;
 use App\Http\Controllers\Api\Admin\AdminReportController;
+use App\Http\Controllers\Api\Admin\AdminSocialModerationController;
 use App\Http\Controllers\Api\Admin\AdminUsuariController;
 use Illuminate\Support\Facades\Route;
 
@@ -29,10 +38,21 @@ Route::prefix('admin')->middleware('ensure.admin')->group(function () {
     Route::get('/usuaris/{tipus}/{page}/{per_page}/{prohibit}/{cerca}', [AdminUsuariController::class, 'index']);
     Route::patch('/usuaris/{id}/prohibir', [AdminUsuariController::class, 'prohibir']);
     Route::get('/plantilles/{page}/{per_page}', [AdminPlantillaController::class, 'index']);
+    Route::post('/habits', [AdminHabitController::class, 'store']);
+    Route::put('/habits/{id}', [AdminHabitController::class, 'update']);
+    Route::delete('/habits/{id}', [AdminHabitController::class, 'destroy']);
     Route::get('/habits/{page}/{per_page}', [AdminHabitController::class, 'index']);
     Route::get('/logros/{page}/{per_page}', [AdminLogroController::class, 'index']);
     Route::get('/missions/{page}/{per_page}', [AdminMissioController::class, 'index']);
-    Route::get('/reports/{page}/{per_page}', [AdminReportController::class, 'index']);
+    Route::get('/reports/usuaris/{page}/{per_page}', [AdminReportController::class, 'indexUsuaris']);
+    Route::get('/reports/contingut/{page}/{per_page}', [AdminReportController::class, 'indexContingut']);
+    Route::delete('/reports/{id}', [AdminReportController::class, 'destroy']);
+    Route::get('/social/posts/{id}', [AdminSocialModerationController::class, 'showPost']);
+    Route::put('/social/posts/{id}', [AdminSocialModerationController::class, 'updatePost']);
+    Route::delete('/social/posts/{id}', [AdminSocialModerationController::class, 'destroyPost']);
+    Route::get('/social/comments/{id}', [AdminSocialModerationController::class, 'showComment']);
+    Route::put('/social/comments/{id}', [AdminSocialModerationController::class, 'updateComment']);
+    Route::delete('/social/comments/{id}', [AdminSocialModerationController::class, 'destroyComment']);
     Route::get('/perfil', [AdminPerfilController::class, 'show']);
     Route::put('/perfil', [AdminPerfilController::class, 'update']);
     Route::patch('/perfil/password', [AdminPerfilController::class, 'canviarPassword']);

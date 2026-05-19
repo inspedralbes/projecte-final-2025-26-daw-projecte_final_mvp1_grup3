@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: CalendarCategoryFilter.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div class="calendar-category-filter">
     <label for="category-filter" class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">

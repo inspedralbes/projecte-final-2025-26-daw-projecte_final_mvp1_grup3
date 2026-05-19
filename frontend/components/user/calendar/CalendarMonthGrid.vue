@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: CalendarMonthGrid.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div class="calendar-month-grid">
     <div class="calendar-month-grid__weekdays" role="row">
@@ -25,6 +29,9 @@
         :has-snapshot="dia.hasSnapshot"
         :category-colors="dia.categoryColors"
         :date-str="dia.dateStr"
+        :te-gorra="dia.teGorra"
+        :te-fons="dia.teFons"
+        :fons-key="dia.fonsKey"
         @click="onSelectDay"
       />
 
@@ -40,6 +47,7 @@
 
 <script>
 import { useCalendar } from "~/composables/useCalendar.js";
+import { cosmeticsFromDaySummary } from "~/utils/snapshotCosmetics.js";
 import CalendarDayCell from "./CalendarDayCell.vue";
 
 export default {
@@ -74,11 +82,15 @@ export default {
 
       for (i = 1; i <= totalDies; i++) {
         var info = daysMap[i] || {};
+        var cosmetics = cosmeticsFromDaySummary(info);
         resultat.push({
           day: i,
           hasSnapshot: !!info.has_snapshot,
           categoryColors: info.category_colors || [],
-          dateStr: cal.formatDate(this.year, this.month, i)
+          dateStr: cal.formatDate(this.year, this.month, i),
+          teGorra: cosmetics.te_gorra,
+          teFons: cosmetics.te_fons,
+          fonsKey: cosmetics.fons_key,
         });
       }
       return resultat;

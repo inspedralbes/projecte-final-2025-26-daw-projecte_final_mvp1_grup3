@@ -1,5 +1,13 @@
 <?php
 
+
+/**
+ * Capa Laravel: index.
+ * Comentaris: agents/backend/AgentLaravel.md
+ */
+
+//================================ NAMESPACES / IMPORTS ============
+
 use Illuminate\Http\Request;
 
 define('LARAVEL_START', microtime(true));

@@ -1,40 +1,42 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api;
 
+//================================ NAMESPACES / IMPORTS ============
+
+use App\Domains\Social\Actions\CreateSocialReportAction;
 use App\Http\Controllers\Controller;
-use App\Models\Report;
-use App\Models\SocialPost;
-use App\Models\SocialComment;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+//================================ CONTROLLER ====================
+
+/**
+ * SocialReportController (thin).
+ */
 class SocialReportController extends Controller
 {
+    private CreateSocialReportAction $createReportAction;
+
+    public function __construct(CreateSocialReportAction $createReportAction)
+    {
+        $this->createReportAction = $createReportAction;
+    }
+
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'content_type' => 'required|in:post,comment',
+            'content_type' => 'required|in:post,comment,user',
             'content_id' => 'required|integer',
-            'reason' => 'required|string|max:1000',
+            'reason' => 'nullable|string|max:1000',
+            'motiu' => 'nullable|string|max:255',
+            'detalls' => 'nullable|string|max:1000',
         ]);
 
-        $contentType = $validated['content_type'];
-        $contentId = $validated['content_id'];
-
-        if ($contentType === 'post') {
-            SocialPost::findOrFail($contentId);
-        } else {
-            SocialComment::findOrFail($contentId);
-        }
-
-        $report = Report::create([
-            'usuari_id' => $request->user_id,
-            'tipus' => 'social_' . $contentType,
-            'contingut' => $validated['reason'],
-            'post_id' => $contentId,
-            'estat' => 'pendent',
-        ]);
+        $userId = (int) $request->user_id;
+        $report = $this->createReportAction->executar($userId, $validated);
 
         return response()->json(['success' => true, 'report' => $report], 201);
     }

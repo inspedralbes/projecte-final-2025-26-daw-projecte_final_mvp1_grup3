@@ -37,6 +37,7 @@ class AdminPlantillaResource extends JsonResource
                 'nom' => $creador->nom ?? '',
                 'email' => $creador->email ?? '',
             ] : null,
+            'habits' => $this->whenLoaded('habits'),
         ];
     }
 }

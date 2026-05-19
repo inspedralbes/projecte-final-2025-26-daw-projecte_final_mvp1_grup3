@@ -1,6 +1,14 @@
 <?php
 
+
+/**
+ * Capa Laravel: HabitFactory.
+ * Comentaris: agents/backend/AgentLaravel.md
+ */
+
 namespace Database\Factories;
+
+//================================ NAMESPACES / IMPORTS ============
 
 use App\Models\Habit;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -8,6 +16,8 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /**
  * @extends Factory<Habit>
  */
+//================================ MÈTODES / FUNCIONS ===========
+
 class HabitFactory extends Factory
 {
     protected $model = Habit::class;
@@ -27,6 +37,7 @@ class HabitFactory extends Factory
             'unitat' => 'vegades',
             'icona' => 'check',
             'color' => '#22C55E',
+            'moment_dia' => 'tot_dia',
         ];
     }
 }

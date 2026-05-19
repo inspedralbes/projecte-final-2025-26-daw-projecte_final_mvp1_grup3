@@ -31,12 +31,13 @@ class RouletteService
     {
         return [
             ['key' => 'xp_50', 'type' => 'xp', 'amount' => 50, 'label' => '50 XP'],
+            ['key' => 'xp_100', 'type' => 'xp', 'amount' => 100, 'label' => '100 XP'],
             ['key' => 'xp_150', 'type' => 'xp', 'amount' => 150, 'label' => '150 XP'],
+            ['key' => 'xp_200', 'type' => 'xp', 'amount' => 200, 'label' => '200 XP'],
             ['key' => 'xp_500', 'type' => 'xp', 'amount' => 500, 'label' => '500 XP'],
             ['key' => 'coins_1', 'type' => 'coins', 'amount' => 1, 'label' => '1 moneda'],
             ['key' => 'coins_5', 'type' => 'coins', 'amount' => 5, 'label' => '5 monedes'],
             ['key' => 'coins_10', 'type' => 'coins', 'amount' => 10, 'label' => '10 monedes'],
-            ['key' => 'shop_item', 'type' => 'shop_item', 'amount' => null, 'label' => 'Objecte de botiga'],
         ];
     }
 
@@ -116,8 +117,21 @@ class RouletteService
                 ]);
                 return;
             }
-            $index = array_rand($premis);
-            $premi = $premis[$index];
+            $premi = $this->triarPremiAleatori($premis);
+            if ($premi === null) {
+                $this->feedbackService->publicarPayload([
+                    'type' => 'ROULETTE',
+                    'action' => 'SPIN',
+                    'user_id' => $usuariId,
+                    'success' => false,
+                    'roulette_result' => [
+                        'error' => 'Cap premi disponible',
+                        'can_spin_roulette' => true,
+                    ],
+                ]);
+
+                return;
+            }
         }
 
         // E. Preparar increments de recompensa
@@ -183,6 +197,29 @@ class RouletteService
     }
 
     /**
+     * Només XP i monedes són premis vàlids per a la ruleta diària.
+     *
+     * @param  array<int, array<string, mixed>>  $premis
+     * @return array<string, mixed>|null
+     */
+    private function triarPremiAleatori(array $premis): ?array
+    {
+        $elegibles = array_values(array_filter($premis, function (array $premi): bool {
+            $tipus = $premi['type'] ?? '';
+
+            return $tipus === 'xp' || $tipus === 'coins';
+        }));
+
+        if ($elegibles === []) {
+            return null;
+        }
+
+        $index = array_rand($elegibles);
+
+        return $elegibles[$index];
+    }
+
+    /**
      * Valida el premi rebut i retorna el premi definit.
      *
      * @param  array<string, mixed>  $dades
@@ -202,6 +239,10 @@ class RouletteService
 
         $premis = $this->obtenirPremis();
         foreach ($premis as $premi) {
+            $tipus = $premi['type'] ?? '';
+            if ($tipus !== 'xp' && $tipus !== 'coins') {
+                continue;
+            }
             if ($premi['key'] === $premiPayload['key']) {
                 if (! isset($premiPayload['type']) || $premiPayload['type'] !== $premi['type']) {
                     return null;

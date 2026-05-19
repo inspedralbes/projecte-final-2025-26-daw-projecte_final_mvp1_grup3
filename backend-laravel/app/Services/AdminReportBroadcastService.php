@@ -29,7 +29,24 @@ class AdminReportBroadcastService
 
     public function notificarReportEliminat(int $id, string $table): void
     {
-        $this->publicar('DELETE', ['id' => $id, 'table' => $table]);
+        $categoria = $table === 'reports_usuari' ? 'usuaris' : 'contingut';
+        $this->publicar('DELETE', ['id' => $id, 'table' => $table, 'categoria' => $categoria]);
+    }
+
+    /**
+     * Notifica als admins quan es modera contingut (post/comentari editat o eliminat).
+     *
+     * @param  array<string, mixed>  $data
+     */
+    public function notificarContingutModerat(string $action, array $data): void
+    {
+        $this->feedbackService->publicarPayload([
+            'broadcast_admin' => true,
+            'entity' => 'content_moderation',
+            'action' => $action,
+            'success' => true,
+            'data' => array_merge(['categoria' => 'contingut'], $data),
+        ]);
     }
 
     /**
@@ -56,6 +73,7 @@ class AdminReportBroadcastService
         return [
             'id' => $r->id,
             'table' => 'reports',
+            'categoria' => 'contingut',
             'usuari' => $r->usuari ? $r->usuari->nom : 'Sistema',
             'tipus' => $r->tipus ?? '',
             'contingut' => $r->contingut ?? null,
@@ -76,6 +94,7 @@ class AdminReportBroadcastService
         return [
             'id' => $ur->id,
             'table' => 'reports_usuari',
+            'categoria' => 'usuaris',
             'usuari' => $ur->usuari ? $ur->usuari->nom : 'Sistema',
             'tipus' => 'user',
             'contingut' => '[' . $ur->motiu . '] ' . ($ur->detalls ?: 'Sense detalls'),

@@ -7,9 +7,11 @@ definePageMeta({ layout: 'admin' });
 
 import { ref } from 'vue';
 import { authFetch } from '~/composables/useApi.js';
+import { useAdminSwal } from '~/composables/useAdminSwal.js';
 
 // 1. DADES (VAR)
-var { $socket, $swal } = useNuxtApp();
+var { $socket } = useNuxtApp();
+var { adminSuccess, adminError, adminConfirm } = useAdminSwal();
 var config = useRuntimeConfig();
 
 // Usuaris via API
@@ -117,13 +119,9 @@ async function confirmarProhibicio() {
     }
     await refreshUsuaris();
     tancaPopup();
-    if ($swal) {
-      $swal.fire({ icon: 'success', title: 'Usuari prohibit', timer: 1200, showConfirmButton: false });
-    }
+    await adminSuccess('Usuari prohibit');
   } catch (e) {
-    if ($swal) {
-      $swal.fire({ icon: 'error', title: 'Error', text: e && e.message ? e.message : 'Error' });
-    }
+    await adminError('Error', e && e.message ? e.message : 'Error en prohibir');
   }
 }
 
@@ -131,7 +129,12 @@ async function desprohibirUsuari(user) {
   if (!user || !user.id) {
     return;
   }
-  if (!confirm('Vols tornar a permetre l\'accés a aquest usuari?')) {
+  var confirmat = await adminConfirm({
+    title: "Vols tornar a permetre l'accés a aquest usuari?",
+    confirmText: 'Sí, desprohibir',
+    icon: 'question'
+  });
+  if (!confirmat.isConfirmed) {
     return;
   }
   try {
@@ -143,13 +146,9 @@ async function desprohibirUsuari(user) {
       throw new Error('Error en desprohibir');
     }
     await refreshUsuaris();
-    if ($swal) {
-      $swal.fire({ icon: 'success', title: 'Usuari desprohibit', timer: 1200, showConfirmButton: false });
-    }
+    await adminSuccess('Usuari desprohibit');
   } catch (e) {
-    if ($swal) {
-      $swal.fire({ icon: 'error', title: 'Error', text: e && e.message ? e.message : 'Error' });
-    }
+    await adminError('Error', e && e.message ? e.message : 'Error en desprohibir');
   }
 }
 </script>

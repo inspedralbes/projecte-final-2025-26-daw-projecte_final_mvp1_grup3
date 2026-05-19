@@ -13,7 +13,7 @@
       
       <div class="px-6 pb-6 pt-2 overflow-y-auto custom-scrollbar flex-1">
         <h2 class="text-2xl font-['Bricolage_Grotesque'] font-bold text-white mb-4 text-center">
-          Reportar Usuari
+          {{ titolModal }}
         </h2>
         
         <form @submit.prevent="submitReport" class="flex flex-col gap-2">
@@ -77,7 +77,14 @@ export default {
       type: Boolean,
       required: true
     },
-    userId: {
+    reportType: {
+      type: String,
+      default: "user",
+      validator: function (v) {
+        return ["user", "post", "comment"].indexOf(v) !== -1;
+      }
+    },
+    contentId: {
       type: [Number, String],
       default: null
     }
@@ -97,6 +104,15 @@ export default {
     };
   },
   computed: {
+    titolModal: function () {
+      if (this.reportType === "post") {
+        return "Reportar post";
+      }
+      if (this.reportType === "comment") {
+        return "Reportar comentari";
+      }
+      return "Reportar usuari";
+    },
     wordCount() {
       if (!this.detalls.trim()) return 0;
       return this.detalls.trim().split(/\s+/).length;
@@ -124,7 +140,8 @@ export default {
     submitReport() {
       if (!this.isValid) return;
       this.$emit("submit", {
-        userId: this.userId,
+        reportType: this.reportType,
+        contentId: this.contentId,
         motiu: this.selectedMotiu,
         detalls: this.detalls
       });

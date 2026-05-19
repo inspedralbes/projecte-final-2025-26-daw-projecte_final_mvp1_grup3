@@ -47,6 +47,26 @@ export default defineNuxtPlugin(function (nuxtApp) {
         socialStore.handleLikeUpdate(data);
     });
 
+    socket.on('post_updated', function (post) {
+        var socialStore = useSocialStore();
+        socialStore.handlePostUpdated(post);
+    });
+
+    socket.on('post_deleted', function (data) {
+        var socialStore = useSocialStore();
+        socialStore.handlePostDeleted(data);
+    });
+
+    socket.on('comment_updated', function (comment) {
+        var socialStore = useSocialStore();
+        socialStore.handleCommentUpdated(comment);
+    });
+
+    socket.on('comment_deleted', function (data) {
+        var socialStore = useSocialStore();
+        socialStore.handleCommentDeleted(data);
+    });
+
     socket.on('new_friend_request', function (data) {
         console.log('[Socket] Nova sol·licitud d\'amistat:', data);
         var friendshipStore = useFriendshipStore();

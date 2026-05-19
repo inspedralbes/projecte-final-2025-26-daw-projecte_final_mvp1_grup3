@@ -107,7 +107,8 @@ onBeforeUnmount(function () {
 
 var menuPrincipal = [
   { nom: 'Dashboard', ruta: '/admin' },
-  { nom: 'Fòrum / Reports', ruta: '/admin/forum' }
+  { nom: 'Reports usuaris', ruta: '/admin/forum/usuaris' },
+  { nom: 'Reports contingut', ruta: '/admin/forum/contingut' }
 ];
 
 var menuGestio = [

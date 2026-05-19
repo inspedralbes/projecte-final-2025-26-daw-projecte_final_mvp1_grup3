@@ -431,6 +431,76 @@ export var useSocialStore = defineStore("social", {
       }
     },
 
+    handlePostUpdated: function (post) {
+      if (!post || !post.id) {
+        return;
+      }
+      var i;
+      for (i = 0; i < this.posts.length; i++) {
+        if (this.posts[i].id === post.id) {
+          this.posts[i].content = post.content;
+          if (post.user) {
+            this.posts[i].user = post.user;
+          }
+          this.posts[i] = Object.assign({}, this.posts[i]);
+          break;
+        }
+      }
+    },
+
+    handlePostDeleted: function (data) {
+      var postId = data && (data.post_id || data.id);
+      if (!postId) {
+        return;
+      }
+      this.posts = this.posts.filter(function (p) {
+        return p.id !== postId;
+      });
+    },
+
+    handleCommentUpdated: function (comment) {
+      if (!comment || !comment.id) {
+        return;
+      }
+      var i;
+      var j;
+      for (i = 0; i < this.posts.length; i++) {
+        if (this.posts[i].id !== comment.post_id || !this.posts[i].comments) {
+          continue;
+        }
+        for (j = 0; j < this.posts[i].comments.length; j++) {
+          if (this.posts[i].comments[j].id === comment.id) {
+            this.posts[i].comments[j].content = comment.content;
+            if (comment.user) {
+              this.posts[i].comments[j].user = comment.user;
+            }
+            this.posts[i] = Object.assign({}, this.posts[i]);
+            return;
+          }
+        }
+      }
+    },
+
+    handleCommentDeleted: function (data) {
+      if (!data || !data.comment_id) {
+        return;
+      }
+      var i;
+      var j;
+      var postId = data.post_id;
+      for (i = 0; i < this.posts.length; i++) {
+        if (this.posts[i].id !== postId || !this.posts[i].comments) {
+          continue;
+        }
+        this.posts[i].comments = this.posts[i].comments.filter(function (c) {
+          return c.id !== data.comment_id;
+        });
+        this.posts[i].comments_count = Math.max(0, (Number(this.posts[i].comments_count) || 0) - 1);
+        this.posts[i] = Object.assign({}, this.posts[i]);
+        break;
+      }
+    },
+
     handleLikeUpdate: function (data) {
       var i, j;
       var normalizedCount = Number(data.likes_count);

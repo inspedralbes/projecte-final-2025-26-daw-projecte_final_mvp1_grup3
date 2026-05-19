@@ -38,7 +38,7 @@
               <line x1="14" y1="11" x2="14" y2="17"></line>
             </svg>
           </button>
-          <button v-else type="button" @click="$emit('report', comment.user_id)" class="ml-auto text-[#FF8DA6] hover:text-[#ff4d6d] p-1 transition-colors" title="Reportar usuari">
+          <button v-else type="button" @click.stop="$emit('report', { type: 'comment', id: comment.id })" class="ml-auto text-[#FF8DA6] hover:text-[#ff4d6d] p-1 transition-colors" title="Reportar comentari">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
               <line x1="12" y1="9" x2="12" y2="13"></line>

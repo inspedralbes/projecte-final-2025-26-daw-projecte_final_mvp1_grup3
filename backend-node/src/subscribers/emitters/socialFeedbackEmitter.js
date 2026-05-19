@@ -27,6 +27,21 @@ function emit(io, payload) {
             liked: payload.liked
         });
         console.log("[SocialRealTime] Update de like (" + payload.likeable_type + ") emès globalment");
+    } else if (event === "post_updated") {
+        io.emit("post_updated", payload.post);
+        console.log("[SocialRealTime] Post actualitzat emès globalment");
+    } else if (event === "post_deleted") {
+        io.emit("post_deleted", { post_id: payload.post_id });
+        console.log("[SocialRealTime] Post eliminat emès globalment");
+    } else if (event === "comment_updated") {
+        io.emit("comment_updated", payload.comment);
+        console.log("[SocialRealTime] Comentari actualitzat emès globalment");
+    } else if (event === "comment_deleted") {
+        io.emit("comment_deleted", {
+            comment_id: payload.comment_id,
+            post_id: payload.post_id
+        });
+        console.log("[SocialRealTime] Comentari eliminat emès globalment");
     }
 }
 

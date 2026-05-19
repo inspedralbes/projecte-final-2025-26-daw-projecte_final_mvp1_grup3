@@ -247,7 +247,8 @@
 
       <ReportUserModal
         :show="showReportModal"
-        :user-id="reportUserId"
+        report-type="user"
+        :content-id="reportUserId"
         @close="showReportModal = false"
         @submit="handleReportSubmit"
       />
@@ -484,7 +485,7 @@ export default {
           },
           body: JSON.stringify({
             content_type: "user",
-            content_id: reportData.userId,
+            content_id: reportData.contentId,
             motiu: motiuText,
             detalls: reportData.detalls || ""
           })

@@ -7,9 +7,11 @@ definePageMeta({ layout: 'admin' });
 
 import { ref } from 'vue';
 import { authFetch } from '~/composables/useApi.js';
+import { useAdminSwal } from '~/composables/useAdminSwal.js';
 
 // 1. DADES (VAR)
-var { $socket, $swal } = useNuxtApp();
+var { $socket } = useNuxtApp();
+var { adminSuccess, adminError, adminWarning } = useAdminSwal();
 
 // Hàbits via API
 var { data: habitsData, refresh: refreshHabits } = useAuthFetch('/api/admin/habits/1/50', {
@@ -118,9 +120,7 @@ async function guardarHabit() {
   if (popup === 'crear') {
     var uid = parseInt(formulari.value.usuari_id, 10);
     if (!uid || uid < 1) {
-      if ($swal) {
-        $swal.fire({ icon: 'warning', title: "Indica l'ID d'usuari propietari", confirmButtonColor: '#79D45D' });
-      }
+      await adminWarning("Indica l'ID d'usuari propietari");
       return;
     }
     body.usuari_id = uid;
@@ -150,24 +150,9 @@ async function guardarHabit() {
 
     await refreshHabits();
     tancaPopup();
-
-    if ($swal) {
-      $swal.fire({
-        icon: 'success',
-        title: popup === 'crear' ? 'Hàbit creat' : 'Hàbit actualitzat',
-        timer: 1200,
-        showConfirmButton: false
-      });
-    }
+    await adminSuccess(popup === 'crear' ? 'Hàbit creat' : 'Hàbit actualitzat');
   } catch (e) {
-    if ($swal) {
-      $swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: e && e.message ? e.message : 'Error',
-        confirmButtonColor: '#79D45D'
-      });
-    }
+    await adminError('Error', e && e.message ? e.message : 'Error en desar');
   }
 }
 
@@ -186,23 +171,9 @@ async function confirmarEliminacio() {
     }
     await refreshHabits();
     tancaPopup();
-    if ($swal) {
-      $swal.fire({
-        icon: 'success',
-        title: 'Hàbit eliminat',
-        timer: 1200,
-        showConfirmButton: false
-      });
-    }
+    await adminSuccess('Hàbit eliminat');
   } catch (e) {
-    if ($swal) {
-      $swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: e && e.message ? e.message : 'Error',
-        confirmButtonColor: '#79D45D'
-      });
-    }
+    await adminError('Error', e && e.message ? e.message : 'Error en eliminar');
   }
 }
 </script>

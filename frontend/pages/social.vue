@@ -107,7 +107,8 @@
 
       <ReportUserModal
         :show="showReportModal"
-        :userId="selectedReportUserId"
+        :report-type="reportTarget.type"
+        :content-id="reportTarget.id"
         @close="showReportModal = false"
         @submit="handleReportSubmit"
       />
@@ -140,15 +141,19 @@ export default {
       posting: false,
       postError: null,
       loading: false,
-      posts: [],
       showImportWizard: false,
       selectedPost: null,
       selectedAttachmentToImport: null,
       showAttachmentSelector: false,
       selectedAttachments: [],
       showReportModal: false,
-      selectedReportUserId: null
+      reportTarget: { type: "post", id: null }
     };
+  },
+  computed: {
+    posts: function () {
+      return useSocialStore().posts;
+    }
   },
   mounted: function () {
     this.loadPosts();
@@ -159,7 +164,6 @@ export default {
       try {
         var socialStore = useSocialStore();
         await socialStore.fetchFeed();
-        this.posts = socialStore.posts;
       } catch (e) {
         console.error("Error loading posts:", e);
       } finally {
@@ -226,12 +230,19 @@ export default {
       this.selectedAttachmentToImport = null;
     },
     onPostDeleted: function (postId) {
-      this.posts = this.posts.filter(function (p) {
+      var socialStore = useSocialStore();
+      socialStore.posts = socialStore.posts.filter(function (p) {
         return p.id !== postId;
       });
     },
-    openReportModal: function (userId) {
-      this.selectedReportUserId = userId;
+    openReportModal: function (payload) {
+      if (payload && typeof payload === "object" && payload.type && payload.id) {
+        this.reportTarget = { type: payload.type, id: payload.id };
+      } else if (typeof payload === "number" || typeof payload === "string") {
+        this.reportTarget = { type: "user", id: payload };
+      } else {
+        return;
+      }
       this.showReportModal = true;
     },
     handleReportSubmit: async function (reportData) {
@@ -244,6 +255,20 @@ export default {
       };
       const motiuText = motiusMap[reportData.motiu] || reportData.motiu;
       const reasonText = "[" + motiuText + "]" + (reportData.detalls ? " - " + reportData.detalls : "");
+      const contentType = reportData.reportType || "user";
+      const contentId = reportData.contentId;
+
+      var body = {
+        content_type: contentType,
+        content_id: contentId
+      };
+
+      if (contentType === "user") {
+        body.motiu = motiuText;
+        body.detalls = reportData.detalls || "";
+      } else {
+        body.reason = reasonText;
+      }
 
       try {
         const resposta = await authFetch("/api/social/report", {
@@ -251,12 +276,7 @@ export default {
           headers: {
             "Content-Type": "application/json"
           },
-          body: JSON.stringify({
-            content_type: "user",
-            content_id: reportData.userId,
-            motiu: motiuText,
-            detalls: reportData.detalls || ""
-          })
+          body: JSON.stringify(body)
         });
 
         if (resposta.ok) {

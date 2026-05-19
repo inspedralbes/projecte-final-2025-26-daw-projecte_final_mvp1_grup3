@@ -248,6 +248,7 @@ class AdminActionService
                 'frequencia_tipus' => $data['frequencia_tipus'] ?? 'diaria',
                 'dies_setmana' => $data['dies_setmana'] ?? '1,2,3,4,5,6,7',
                 'objectiu_vegades' => $data['objectiu_vegades'] ?? 1,
+                'moment_dia' => $data['moment_dia'] ?? 'tot_dia',
             ]);
             $despres = $habit->toArray();
             $this->adminLogService->registrar($adminId, 'Crear habit', 'Habit ID ' . $habit->id . ': ' . $habit->titol, null, $despres, null);
@@ -264,6 +265,7 @@ class AdminActionService
             $habit->frequencia_tipus = $data['frequencia_tipus'] ?? $habit->frequencia_tipus;
             $habit->dies_setmana = $data['dies_setmana'] ?? $habit->dies_setmana;
             $habit->objectiu_vegades = $data['objectiu_vegades'] ?? $habit->objectiu_vegades;
+            $habit->moment_dia = $data['moment_dia'] ?? $habit->moment_dia;
             $habit->save();
             $despres = $habit->toArray();
             $this->adminLogService->registrar($adminId, 'Editar habit', 'Habit ID ' . $id . ': ' . $habit->titol, $abans, $despres, null);

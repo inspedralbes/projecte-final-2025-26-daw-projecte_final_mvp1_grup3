@@ -32,7 +32,8 @@ var formulari = ref({
   dificultat: "media",
   frequencia_tipus: "diaria",
   dies_setmana: "1,2,3,4,5,6,7",
-  objectiu_vegades: 1
+  objectiu_vegades: 1,
+  moment_dia: "tot_dia"
 });
 
 // 2. METHODS (FUNCTION)
@@ -44,7 +45,8 @@ function obreCrear() {
     dificultat: "media",
     frequencia_tipus: "diaria",
     dies_setmana: "1,2,3,4,5,6,7",
-    objectiu_vegades: 1
+    objectiu_vegades: 1,
+    moment_dia: "tot_dia"
   };
   popupObert.value = 'crear';
 }
@@ -58,7 +60,8 @@ function obreEditar(h) {
     dificultat: h.dificultat || 'media',
     frequencia_tipus: h.frequencia_tipus || 'diaria',
     dies_setmana: h.dies_setmana || '1,2,3,4,5,6,7',
-    objectiu_vegades: h.objectiu_vegades || 1
+    objectiu_vegades: h.objectiu_vegades || 1,
+    moment_dia: h.moment_dia || "tot_dia"
   };
   popupObert.value = 'editar';
 }
@@ -96,7 +99,8 @@ function guardarHabit() {
       dificultat: formulari.value.dificultat,
       frequencia_tipus: formulari.value.frequencia_tipus,
       dies_setmana: formulari.value.dies_setmana,
-      objectiu_vegades: parseInt(formulari.value.objectiu_vegades) || 1
+      objectiu_vegades: parseInt(formulari.value.objectiu_vegades) || 1,
+      moment_dia: formulari.value.moment_dia
     }
   };
   
@@ -239,9 +243,20 @@ function confirmarEliminacio() {
                 </div>
               </div>
 
-              <div class="space-y-2">
-                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 font-bricolage">Dies (separats per coma: 1,2,3...)</label>
-                <input v-model="formulari.dies_setmana" type="text" class="w-full bg-white/50 border border-gray-200 rounded-[10px] px-5 py-3 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-[#79D45D]/10 focus:border-[#79D45D]/50 transition-all placeholder:text-gray-300" placeholder="1,2,3,4,5,6,7" />
+              <div class="grid grid-cols-2 gap-6">
+                <div class="space-y-2">
+                  <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 font-bricolage">Dies (separats per coma: 1,2,3...)</label>
+                  <input v-model="formulari.dies_setmana" type="text" class="w-full bg-white/50 border border-gray-200 rounded-[10px] px-5 py-3 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-[#79D45D]/10 focus:border-[#79D45D]/50 transition-all placeholder:text-gray-300" placeholder="1,2,3,4,5,6,7" />
+                </div>
+                <div class="space-y-2">
+                  <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 font-bricolage">Momento del día</label>
+                  <select v-model="formulari.moment_dia" class="w-full bg-white/50 border border-gray-200 rounded-[10px] px-5 py-3 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-[#79D45D]/10 focus:border-[#79D45D]/50 transition-all appearance-none">
+                    <option value="tot_dia">Todo el día</option>
+                    <option value="mati">Mañana</option>
+                    <option value="tarda">Tarde</option>
+                    <option value="nit">Noche</option>
+                  </select>
+                </div>
               </div>
             </template>
 

@@ -87,6 +87,9 @@ function guardarUsuari() {
     payload.data.contrasenya = formulari.value.password;
   } else {
     payload.data.id = usuariSeleccionat.value.id;
+    if (formulari.value.password) {
+      payload.data.contrasenya = formulari.value.password;
+    }
   }
   
   $socket.emit('admin_action', payload);
@@ -227,8 +230,10 @@ function desprohibirUsuari(user) {
                 <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 font-bricolage">Correu Electrònic</label>
                 <input v-model="formulari.email" type="email" class="w-full bg-white/50 border border-gray-200 rounded-[10px] px-5 py-3 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-[#79D45D]/10 focus:border-[#79D45D]/50 transition-all placeholder:text-gray-300" placeholder="exemple@loopy.com" />
               </div>
-              <div v-if="popupObert === 'crear'" class="space-y-2">
-                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 font-bricolage">Contrasenya Temporal</label>
+              <div class="space-y-2">
+                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 font-bricolage">
+                  {{ popupObert === 'crear' ? 'Contrasenya Temporal' : 'Nova Contrasenya (opcional)' }}
+                </label>
                 <input v-model="formulari.password" type="password" class="w-full bg-white/50 border border-gray-200 rounded-[10px] px-5 py-3 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-[#79D45D]/10 focus:border-[#79D45D]/50 transition-all placeholder:text-gray-300" placeholder="********" />
               </div>
             </template>

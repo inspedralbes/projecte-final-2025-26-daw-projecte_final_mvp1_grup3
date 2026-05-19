@@ -17,6 +17,7 @@ services:
       - postgres_data_dev:/var/lib/postgresql/data
       - ../database/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
       - ../database/insert.sql:/docker-entrypoint-initdb.d/02-insert.sql:ro
+      - ../database/patch_monstre_columns.sql:/docker-entrypoint-initdb.d/03-patch_monstre_columns.sql:ro
 
   redis:
     image: redis:7.2.4-alpine

@@ -23,6 +23,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ../database/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
       - ../database/insert.sql:/docker-entrypoint-initdb.d/02-insert.sql:ro
+      - ../database/patch_monstre_columns.sql:/docker-entrypoint-initdb.d/03-patch_monstre_columns.sql:ro
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-loopy} -d ${POSTGRES_DB:-loopy_db}" ]
       interval: 10s

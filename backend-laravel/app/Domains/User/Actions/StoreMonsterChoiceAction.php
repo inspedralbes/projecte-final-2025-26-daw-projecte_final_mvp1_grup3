@@ -80,7 +80,7 @@ class StoreMonsterChoiceAction
             'status' => 201,
             'body' => [
                 'success' => true,
-                'monstre' => $this->presentation->monsterDataFromUser($usuari->fresh()),
+                'monstre' => $this->presentation->monsterDataFromUser($usuari),
             ],
         ];
     }

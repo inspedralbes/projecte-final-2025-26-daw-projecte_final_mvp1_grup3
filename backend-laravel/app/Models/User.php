@@ -28,6 +28,7 @@ class User extends Model implements JWTSubject
 
     protected $casts = [
         'primer_login_correu_enviat_at' => 'datetime',
+        'data_naixement_monstre' => 'datetime',
     ];
 
     protected $hidden = [

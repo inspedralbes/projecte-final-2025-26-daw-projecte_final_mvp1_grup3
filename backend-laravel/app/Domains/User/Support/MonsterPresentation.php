@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domains\User\Support;
 
 use App\Models\User;
+use Carbon\Carbon;
 
 /**
  * Càlcul d'etapa i sprite del monstre segons nivell i tipus.
@@ -34,8 +35,24 @@ class MonsterPresentation
             'etapa' => $etapa,
             'nivell' => $nivell,
             'sprite' => $this->spriteName($tipus, $etapa),
-            'data_naixement' => $usuari->data_naixement_monstre?->toIso8601String(),
+            'data_naixement' => $this->formatDataNaixement($usuari),
         ];
+    }
+
+    private function formatDataNaixement(User $usuari): ?string
+    {
+        $data = $usuari->data_naixement_monstre;
+        if ($data === null) {
+            return null;
+        }
+        if ($data instanceof \DateTimeInterface) {
+            return $data->format(\DateTimeInterface::ATOM);
+        }
+        if (is_string($data) && $data !== '') {
+            return Carbon::parse($data)->toIso8601String();
+        }
+
+        return null;
     }
 
     public function esTipusValid(?string $tipus): bool

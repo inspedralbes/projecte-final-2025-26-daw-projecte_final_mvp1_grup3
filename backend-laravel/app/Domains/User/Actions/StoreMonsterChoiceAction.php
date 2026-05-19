@@ -7,7 +7,9 @@ namespace App\Domains\User\Actions;
 use App\Domains\User\Support\MonsterPresentation;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Assigna el tipus de monstre a un usuari (onboarding monstre).
@@ -26,7 +28,7 @@ class StoreMonsterChoiceAction
      */
     public function executar(Request $request): array
     {
-        $userId = (int) ($request->user_id ?? 0);
+        $userId = (int) ($request->input('user_id') ?? $request->user_id ?? 0);
         if ($userId <= 0) {
             return ['status' => 401, 'body' => ['error' => 'No autentificat']];
         }
@@ -56,15 +58,29 @@ class StoreMonsterChoiceAction
             ];
         }
 
-        $usuari->monstre_tipus = $tipus;
-        $usuari->data_naixement_monstre = Carbon::now();
-        $usuari->save();
+        try {
+            $usuari->monstre_tipus = $tipus;
+            $usuari->data_naixement_monstre = Carbon::now();
+            $usuari->save();
+        } catch (QueryException $e) {
+            Log::error('StoreMonsterChoiceAction: error guardant monstre', [
+                'user_id' => $userId,
+                'message' => $e->getMessage(),
+            ]);
+
+            return [
+                'status' => 500,
+                'body' => [
+                    'error' => 'No s\'ha pogut guardar el monstre. Comprova que la taula usuaris té les columnes monstre_tipus i data_naixement_monstre.',
+                ],
+            ];
+        }
 
         return [
             'status' => 201,
             'body' => [
                 'success' => true,
-                'monstre' => $this->presentation->monsterDataFromUser($usuari),
+                'monstre' => $this->presentation->monsterDataFromUser($usuari->fresh()),
             ],
         ];
     }

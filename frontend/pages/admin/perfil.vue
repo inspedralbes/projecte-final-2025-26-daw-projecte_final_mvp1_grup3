@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: perfil.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <script setup>
 /**
  * Perfil de l'Administrador.

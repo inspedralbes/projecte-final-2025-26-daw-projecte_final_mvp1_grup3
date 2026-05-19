@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\PlantillaResource;
 use App\Models\Plantilla;
-use App\Services\PlantillaService;
+use App\Domains\Plantilla\Services\PlantillaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -81,3 +81,4 @@ class PlantillaReadController extends Controller
         return (new PlantillaResource($plantilla))->toResponse($request);
     }
 }
+

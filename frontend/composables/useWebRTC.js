@@ -1,3 +1,9 @@
+/**
+ * Modul JavaScript ES5: useWebRTC.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
 import { useWebRTCSocket, registrarWebRTCHandlers } from '~/composables/domains/webrtc/useWebRTCSocket.js';
 import { useAuthStore } from '~/stores/useAuthStore.js';
 

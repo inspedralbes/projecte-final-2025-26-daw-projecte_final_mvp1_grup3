@@ -9,7 +9,7 @@ use App\Models\Administrador;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use App\Services\AuthService;
+use App\Domains\User\Services\JwtCookieResponseService;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
 //================================ PROPIETATS / ATRIBUTS ==========
@@ -21,11 +21,10 @@ class AdminAuthController extends Controller
 {
     //================================ PROPIETATS / ATRIBUTS ==========
 
-    private AuthService $authService;
+    private JwtCookieResponseService $authService;
 
-    public function __construct(AuthService $authService)
+    public function __construct(JwtCookieResponseService $authService)
     {
-        // A. Assignar servei d'autenticació
         $this->authService = $authService;
     }
 

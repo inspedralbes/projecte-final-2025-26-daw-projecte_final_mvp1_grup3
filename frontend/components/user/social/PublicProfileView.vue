@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: PublicProfileView.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div class="profile-overlay" @click.self="$emit('close')">
     <div class="profile-modal">
@@ -39,7 +43,7 @@
             </div>
             <div class="profile-stat profile-stat--medals">
               <p class="profile-stat__value">🏅</p>
-              <p class="profile-stat__label">Medallas</p>
+              <p class="profile-stat__label">{{ $t('social.medals') }}</p>
               <div v-if="profile.logros_showcase && profile.logros_showcase.length > 0" class="profile-stat__logros">
                 <p
                   v-for="logro in profile.logros_showcase.slice(0,4)"
@@ -48,9 +52,9 @@
                 >
                   {{ logro.nom }}
                 </p>
-                <p v-if="profile.logros_showcase.length > 4" class="profile-stat__logro-more">+{{ profile.logros_showcase.length - 4 }} más</p>
+                <p v-if="profile.logros_showcase.length > 4" class="profile-stat__logro-more">{{ $t('social.more_count', { n: profile.logros_showcase.length - 4 }) }}</p>
               </div>
-              <p v-else class="profile-stat__logro-empty">Sin logros</p>
+              <p v-else class="profile-stat__logro-empty">{{ $t('social.no_achievements_profile') }}</p>
             </div>
           </div>
 

@@ -1,3 +1,9 @@
+/**
+ * Modul JavaScript ES5: socket.client.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
 import { io } from 'socket.io-client';
 import { useAuthStore } from '~/stores/useAuthStore.js';
 import { inicialitzarFeedbackGlobal } from '~/composables/socket/useSocketRegistry.js';

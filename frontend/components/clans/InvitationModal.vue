@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: InvitationModal.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div v-if="show" class="invite-overlay" @click.self="$emit('close')">
     <div class="invite-sheet">
@@ -150,9 +154,12 @@ export default {
 
       this.sending = false;
       if (errors === 0) {
-        alert("Invitacions enviades amb èxit!");
+        await self.$loopyModal.success("Invitacions", "Invitacions enviades amb èxit!");
       } else {
-        alert("S'han enviat " + (self.selected.length - errors) + " invitacions. " + errors + " han fallat.");
+        await self.$loopyModal.warning(
+          "Invitacions",
+          "S'han enviat " + (self.selected.length - errors) + " invitacions. " + errors + " han fallat."
+        );
       }
       this.$emit("close");
     }

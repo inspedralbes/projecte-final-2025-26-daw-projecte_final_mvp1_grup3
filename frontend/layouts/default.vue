@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: default.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div v-if="isFocusRoute" class="focus-route-only">
     <slot />
@@ -41,32 +45,45 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useRoute } from "vue-router";
+import { storeToRefs } from "pinia";
+import { useGameStore } from "~/stores/gameStore.js";
 import { useShopStore } from "~/stores/useShopStore.js";
 import { useProfileFons } from "~/composables/useProfileFons.js";
 
 const route = useRoute();
+const gameStore = useGameStore();
+const shopStore = useShopStore();
+const { fonsKey: fonsKeyBackend, cosmeticsReady } = storeToRefs(gameStore);
 const isFocusRoute = computed(() => route.path.startsWith("/focus/"));
 const isShopRoute = computed(() => route.path === "/shop" || route.path.startsWith("/shop/"));
 const isCalendarRoute = computed(() => route.path.startsWith("/calendar"));
 const isInventariRoute = computed(() => route.path === "/inventari");
 const isPublicProfileRoute = computed(() => route.path.startsWith("/user/"));
 const isSocialRoute = computed(() => route.path === "/social" || route.path.startsWith("/friends") || route.path.startsWith("/clans"));
+const isHistoricHomeRoute = computed(() => {
+  return route.path === "/home" && typeof route.query.date === "string" && route.query.date.length >= 8;
+});
 const { fonsKey: profileFonsKey } = useProfileFons();
 
 const fonsClass = computed(() => {
-  if (isShopRoute.value || isCalendarRoute.value) return "";
+  if (isShopRoute.value || isCalendarRoute.value || isFocusRoute.value) return "";
+  if (isHistoricHomeRoute.value && gameStore.historicCosmetics && gameStore.historicCosmetics.fons_key) {
+    if (gameStore.historicCosmetics.fons_key === "fons_platja") return "fons-platja-bg";
+    if (gameStore.historicCosmetics.fons_key === "fons_casa") return "fons-casa-bg";
+    return "";
+  }
   if (isPublicProfileRoute.value) {
     var pk = profileFonsKey.value;
     if (pk === "fons_platja") return "fons-platja-bg";
     if (pk === "fons_casa") return "fons-casa-bg";
     return "";
   }
-  try {
-    const shopStore = useShopStore();
-    const fonsKey = shopStore.fonsEquipat;
-    if (fonsKey === "fons_platja") return "fons-platja-bg";
-    if (fonsKey === "fons_casa") return "fons-casa-bg";
-  } catch (_) {}
+  const fonsKey = shopStore.fonsEquipat || fonsKeyBackend.value;
+  if (fonsKey === "fons_platja") return "fons-platja-bg";
+  if (fonsKey === "fons_casa") return "fons-casa-bg";
+  if (cosmeticsReady.value !== true) {
+    return "global-app-container--cosmetics-pending";
+  }
   return "";
 });
 </script>

@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: AttachmentSelector.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <Teleport to="body">
     <!-- Backdrop -->

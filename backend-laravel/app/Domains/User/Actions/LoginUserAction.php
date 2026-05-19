@@ -8,8 +8,8 @@ namespace App\Domains\User\Actions;
 
 use App\Domains\User\Services\JwtCookieResponseService;
 use App\Models\User;
-use App\Services\UserProhibitionService;
-use App\Services\WelcomeEmailService;
+use App\Domains\Admin\Services\UserProhibitionService;
+use App\Domains\User\Services\WelcomeEmailService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -84,3 +84,4 @@ class LoginUserAction
         ], 403);
     }
 }
+

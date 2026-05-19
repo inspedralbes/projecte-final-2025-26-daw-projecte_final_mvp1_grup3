@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Admin\AdminUsuariResource;
-use App\Services\UserProhibitionService;
+use App\Domains\Admin\Services\UserProhibitionService;
 use App\Models\Administrador;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -130,7 +130,7 @@ class AdminUsuariController extends Controller
         if ($usuari->prohibit) {
             $accioLog = 'Prohibir usuari';
         }
-        $adminLogService = app(\App\Services\AdminLogService::class);
+        $adminLogService = app(\App\Domains\Admin\Services\AdminLogService::class);
         $adminLogService->registrar(
             1,
             $accioLog,

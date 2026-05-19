@@ -1,4 +1,10 @@
 /**
+ * Modul JavaScript ES5: shopItemI18n.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
+/**
  * Clau i18n per a productes de la botiga (BOTIGA_ITEMS).
  * Es deriva de metadata.skin_key, metadata.effect o metadata.i18n_key.
  */

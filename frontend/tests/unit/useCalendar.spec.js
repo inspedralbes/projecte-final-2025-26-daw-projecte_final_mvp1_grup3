@@ -1,3 +1,9 @@
+/**
+ * Modul JavaScript ES5: useCalendar.spec.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { useCalendar } from "../../composables/useCalendar";
 

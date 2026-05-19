@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: StreakCelebrationModal.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <Teleport to="body">
     <div v-if="isOpen" class="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-[#ff4b4b] transition-all duration-500" @click="tancar">
@@ -9,10 +13,10 @@
       <!-- Títol superior -->
       <div class="z-10 mb-16 -mt-16 transform transition-transform duration-700" :class="isPopping ? 'scale-110' : 'scale-90 opacity-0'">
         <h2 class="text-3xl sm:text-4xl font-black text-white tracking-wider uppercase drop-shadow-[0_4px_12px_rgba(0,0,0,0.2)]">
-          ¡RATXA AUGMENTADA!
+          {{ $t('home.streak_celebration_title') }}
         </h2>
         <p class="text-white/90 font-medium text-sm sm:text-base mt-2 max-w-xs mx-auto">
-          ¡Has completat el teu primer hàbit d'avui i la flama continua viva!
+          {{ $t('home.streak_celebration_text') }}
         </p>
       </div>
 
@@ -25,7 +29,7 @@
         <div class="relative flex items-center justify-center transition-all duration-700 cubic-pop" :class="isPopping ? 'flame-epic-scale' : 'scale-75 opacity-80'">
           <img
             :src="ratxaIcon"
-            alt="Foc de ratxa"
+            :alt="$t('home.streak_flame_alt')"
             class="w-56 h-56 sm:w-64 sm:h-64 object-contain drop-shadow-[0_10px_30px_rgba(0,0,0,0.4)] animate-flame-wobble"
             decoding="async"
             draggable="false"

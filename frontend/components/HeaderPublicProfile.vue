@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: HeaderPublicProfile.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <header class="w-full p-3">
     <!-- Mòbil -->

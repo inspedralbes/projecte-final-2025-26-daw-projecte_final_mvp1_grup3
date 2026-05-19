@@ -1,11 +1,21 @@
 <?php
 
+
+/**
+ * Capa Laravel: SnapshotRunCommandTest.
+ * Comentaris: agents/backend/AgentLaravel.md
+ */
+
 namespace Tests\Feature;
+
+//================================ NAMESPACES / IMPORTS ============
 
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
+
+//================================ MÈTODES / FUNCIONS ===========
 
 class SnapshotRunCommandTest extends TestCase
 {

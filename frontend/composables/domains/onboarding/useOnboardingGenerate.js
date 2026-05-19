@@ -1,4 +1,10 @@
 /**
+ * Modul JavaScript ES5: useOnboardingGenerate.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
+/**
  * POST /api/onboarding/generate al servidor Node (Gemini).
  */
 export async function generarHabitsOnboarding(perfil) {

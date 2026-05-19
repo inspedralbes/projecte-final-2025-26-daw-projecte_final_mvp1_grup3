@@ -10,7 +10,7 @@ use App\Domains\Shop\Support\ShopBalanceGuard;
 use App\Models\BotigaItem;
 use App\Models\User;
 use App\Models\UsuariItem;
-use App\Services\RedisFeedbackService;
+use App\Domains\Shared\Services\RedisFeedbackService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -97,3 +97,4 @@ class PurchaseItemAction
         return $resultat;
     }
 }
+

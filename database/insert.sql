@@ -1,3 +1,8 @@
+-- AGENT_DATABASE: database/insert.sql
+-- SQL (estructura o dades): insert.
+-- Comentaris: agents/database/AgentDatabase.md
+-- GET via API Laravel | CUD via Node -> Redis -> Laravel
+
 -- INSERTS (dades inicials)
 -- 1. ADMINISTRADORS
 -- contrasenya sense hashear: admin123

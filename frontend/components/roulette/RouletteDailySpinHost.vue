@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: RouletteDailySpinHost.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <RouletteSpinVideoOverlay
     :visible="mostraVideoRuleta"

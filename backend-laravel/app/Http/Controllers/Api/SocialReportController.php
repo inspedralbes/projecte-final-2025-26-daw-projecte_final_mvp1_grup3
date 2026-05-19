@@ -1,21 +1,29 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api;
 
+//================================ NAMESPACES / IMPORTS ============
+
+use App\Domains\Social\Actions\CreateSocialReportAction;
 use App\Http\Controllers\Controller;
-use App\Models\Report;
-use App\Models\UserReport;
-use App\Models\SocialPost;
-use App\Models\SocialComment;
-use App\Services\AdminReportBroadcastService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+//================================ CONTROLLER ====================
+
+/**
+ * SocialReportController (thin).
+ */
 class SocialReportController extends Controller
 {
-    public function __construct(
-        private AdminReportBroadcastService $reportBroadcast
-    ) {}
+    private CreateSocialReportAction $createReportAction;
+
+    public function __construct(CreateSocialReportAction $createReportAction)
+    {
+        $this->createReportAction = $createReportAction;
+    }
 
     public function store(Request $request): JsonResponse
     {
@@ -27,36 +35,8 @@ class SocialReportController extends Controller
             'detalls' => 'nullable|string|max:1000',
         ]);
 
-        $contentType = $validated['content_type'];
-        $contentId = $validated['content_id'];
-
-        if ($contentType === 'user') {
-            \App\Models\User::findOrFail($contentId);
-
-            $report = UserReport::create([
-                'usuari_id' => $request->user_id,
-                'reportat_id' => $contentId,
-                'motiu' => $validated['motiu'] ?? $validated['reason'] ?? 'Altres',
-                'detalls' => $validated['detalls'] ?? '',
-                'estat' => 'pendent',
-            ]);
-            $this->reportBroadcast->notificarUserReportCreat($report);
-        } else {
-            if ($contentType === 'post') {
-                SocialPost::findOrFail($contentId);
-            } else {
-                SocialComment::findOrFail($contentId);
-            }
-
-            $report = Report::create([
-                'usuari_id' => $request->user_id,
-                'tipus' => 'social_' . $contentType,
-                'contingut' => $validated['reason'] ?? '',
-                'post_id' => $contentId,
-                'estat' => 'pendent',
-            ]);
-            $this->reportBroadcast->notificarReportCreat($report);
-        }
+        $userId = (int) $request->user_id;
+        $report = $this->createReportAction->executar($userId, $validated);
 
         return response()->json(['success' => true, 'report' => $report], 201);
     }

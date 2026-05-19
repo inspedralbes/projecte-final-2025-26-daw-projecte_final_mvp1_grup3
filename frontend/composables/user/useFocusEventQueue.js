@@ -1,3 +1,9 @@
+/**
+ * Modul JavaScript ES5: useFocusEventQueue.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
 var FOCUS_PENDING_KEY = "loopy_focus_pending_events";
 
 function readPendingEvents() {

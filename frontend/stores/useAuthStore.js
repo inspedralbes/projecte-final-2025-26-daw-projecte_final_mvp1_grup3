@@ -1,4 +1,11 @@
+/**
+ * Modul JavaScript ES5: useAuthStore.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
 import { defineStore } from 'pinia';
+import { esborrarCosmeticsStorage } from '~/utils/cosmeticsStorage.js';
 
 var API_BASE_FALLBACK = 'http://localhost:8000';
 
@@ -234,8 +241,15 @@ export var useAuthStore = defineStore('auth', {
         localStorage.removeItem('loopy_onboarding_done');
         localStorage.removeItem('loopy_onboarding_user_id');
         localStorage.removeItem('loopy_requires_onboarding_user_id');
+        esborrarCosmeticsStorage();
         document.cookie = 'loopy_role=; Path=/; Max-Age=0; SameSite=Lax';
       }
+      try {
+        var gameStore = useGameStore();
+        gameStore.skinKey = null;
+        gameStore.fonsKey = null;
+        gameStore.cosmeticsReady = false;
+      } catch (_) {}
     },
 
     /**

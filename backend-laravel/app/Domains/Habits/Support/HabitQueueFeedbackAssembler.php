@@ -7,7 +7,7 @@ namespace App\Domains\Habits\Support;
 //================================ NAMESPACES / IMPORTS ============
 
 use App\Models\Habit;
-use App\Services\RedisFeedbackService;
+use App\Domains\Shared\Services\RedisFeedbackService;
 
 //================================ PROPIETATS / ATRIBUTS ==========
 
@@ -71,3 +71,4 @@ class HabitQueueFeedbackAssembler
         $this->feedbackService->publicarPayload($payload);
     }
 }
+

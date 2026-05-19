@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: [habitId].
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <section class="focus-mobile-screen">
     <header class="focus-topbar" :class="{ 'is-search-open': isSearchOpen }">

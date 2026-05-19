@@ -1,3 +1,9 @@
+/**
+ * Modul JavaScript ES5: useSocketRegistry.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
 import { registrarHabitFeedback } from './feedback/useHabitFeedback.js';
 import { registrarGameFeedback } from './feedback/useGameFeedback.js';
 import { registrarSocialFeedback } from './feedback/useSocialFeedback.js';

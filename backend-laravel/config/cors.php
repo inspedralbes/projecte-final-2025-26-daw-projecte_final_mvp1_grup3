@@ -1,5 +1,11 @@
 <?php
 
+
+/**
+ * Capa Laravel: cors.
+ * Comentaris: agents/backend/AgentLaravel.md
+ */
+
 $frontend = env('FRONTEND_URL', 'http://localhost:3000');
 
 return [

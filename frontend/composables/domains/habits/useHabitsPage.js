@@ -1,3 +1,9 @@
+/**
+ * Modul JavaScript ES5: useHabitsPage.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
 import { useHabitStore } from '~/stores/useHabitStore.js';
 import { useGameStore } from '~/stores/gameStore.js';
 import { useLogroStore } from '~/stores/useLogroStore.js';

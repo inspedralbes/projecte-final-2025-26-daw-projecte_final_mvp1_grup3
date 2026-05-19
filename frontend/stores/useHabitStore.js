@@ -1,3 +1,9 @@
+/**
+ * Modul JavaScript ES5: useHabitStore.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
 import { defineStore } from "pinia";
 import { authFetch } from "~/composables/useApi.js";
 import { mapHabitFromApi } from "~/utils/mappers/apiMappers.js";

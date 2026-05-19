@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: LikeButton.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <button
     @click="toggleLike"

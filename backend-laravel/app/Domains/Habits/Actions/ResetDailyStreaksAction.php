@@ -7,7 +7,7 @@ namespace App\Domains\Habits\Actions;
 //================================ NAMESPACES / IMPORTS ============
 
 use App\Models\Ratxa;
-use App\Services\RedisFeedbackService;
+use App\Domains\Shared\Services\RedisFeedbackService;
 use Carbon\Carbon;
 
 //================================ PROPIETATS / ATRIBUTS ==========
@@ -70,3 +70,4 @@ class ResetDailyStreaksAction
         return $resetejades;
     }
 }
+

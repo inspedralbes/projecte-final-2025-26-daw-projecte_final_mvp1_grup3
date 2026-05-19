@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: ReportUserModal.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div v-if="show" class="fixed inset-0 z-50 flex flex-col justify-end pointer-events-auto">
     <!-- Fons fosc semitransparent per tancar en fer clic a fora -->

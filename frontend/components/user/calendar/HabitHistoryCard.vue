@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: HabitHistoryCard.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div class="rounded-2xl bg-white/80 shadow-[4px_4px_12px_rgba(0,0,0,0.1)] border border-white/60 p-4 transition-all duration-200 hover:shadow-lg">
     <div class="flex items-center justify-between">

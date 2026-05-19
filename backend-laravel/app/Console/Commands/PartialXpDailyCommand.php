@@ -2,15 +2,25 @@
 
 declare(strict_types=1);
 
+
+/**
+ * Capa Laravel: PartialXpDailyCommand.
+ * Comentaris: agents/backend/AgentLaravel.md
+ */
+
 namespace App\Console\Commands;
 
-use App\Services\HabitService;
+//================================ NAMESPACES / IMPORTS ============
+
+use App\Domains\Habits\Services\HabitService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 
 /**
  * Command per aplicar XP proporcional diari als hàbits incomplets.
  */
+//================================ MÈTODES / FUNCIONS ===========
+
 class PartialXpDailyCommand extends Command
 {
     /**
@@ -53,3 +63,4 @@ class PartialXpDailyCommand extends Command
         return self::SUCCESS;
     }
 }
+

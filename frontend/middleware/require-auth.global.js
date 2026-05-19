@@ -1,4 +1,10 @@
 /**
+ * Modul JavaScript ES5: require-auth.global.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
+/**
  * Middleware global: usuari no autenticat no pot accedir a cap ruta
  * excepte /Login, /registre, /error/* i / (que redirigeix a Login).
  * Comprova rol per restringir accés a /admin (només admin) i a rutes usuari (només user).

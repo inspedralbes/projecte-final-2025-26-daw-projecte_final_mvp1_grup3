@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: CommentForm.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div class="comment-form">
     <div v-if="replyToName" class="comment-form__reply-tag">

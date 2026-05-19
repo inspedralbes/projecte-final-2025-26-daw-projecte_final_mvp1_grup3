@@ -4,7 +4,7 @@ namespace App\Http\Resources;
 
 //================================ NAMESPACES / IMPORTS ============
 
-use App\Http\Controllers\Api\MonsterChoiceController;
+use App\Domains\User\Support\MonsterPresentation;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -43,8 +43,8 @@ class UserProfileResource extends JsonResource
         }
 
         $monstreTipus = $this->resource->monstre_tipus;
-        $monstreSprite = MonsterChoiceController::calculateSpriteName($monstreTipus, (int) $this->resource->nivell);
-        $monstreEtapa = $monstreTipus ? MonsterChoiceController::calculateStage((int) $this->resource->nivell) : null;
+        $monstreSprite = MonsterPresentation::calculateSpriteName($monstreTipus, (int) $this->resource->nivell);
+        $monstreEtapa = $monstreTipus ? MonsterPresentation::calculateStage((int) $this->resource->nivell) : null;
 
         return [
             'id' => $this->resource->id,

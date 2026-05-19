@@ -1,9 +1,13 @@
+<!--
+  Component o pagina Nuxt: shop.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div class="shop-page min-h-screen overflow-x-hidden pb-24 lg:pb-8 flex flex-col">
     <div class="shop-icons-row">
       <span class="shop-icons-row__spacer"></span>
-      <button type="button" ref="inventariIconRef" class="shop-icon-btn" @click="navigateTo('/inventari')" title="Inventari">
-        <img :src="inventariIcon" alt="Inventari" class="shop-icon-btn__img" />
+      <button type="button" ref="inventariIconRef" class="shop-icon-btn" @click="navigateTo('/inventari')" :title="$t('nav.inventory')">
+        <img :src="inventariIcon" :alt="$t('nav.inventory')" class="shop-icon-btn__img" />
       </button>
     </div>
 
@@ -219,23 +223,23 @@
             </div>
 
             <div class="shop-sheet__total-row">
-              <span class="shop-sheet__total-label">Total:</span>
+              <span class="shop-sheet__total-label">{{ $t('shop.sheet_total') }}</span>
               <span class="shop-sheet__total-value">{{ sheetTotal }}</span>
               <img :src="coinIcon" alt="" class="shop-sheet__total-coin" />
             </div>
 
             <div class="shop-sheet__actions">
-              <button type="button" class="shop-sheet__btn shop-sheet__btn--cancel" @click="tancarSheet">Enrere</button>
+              <button type="button" class="shop-sheet__btn shop-sheet__btn--cancel" @click="tancarSheet">{{ $t('shop.sheet_back') }}</button>
               <button
                 type="button"
                 class="shop-sheet__btn shop-sheet__btn--buy"
                 :disabled="monedes < sheetTotal || comprant !== null"
                 @click="executarCompra"
               >
-                {{ comprant ? '...' : 'Comprar' }}
+                {{ comprant ? '...' : $t('shop.buy') }}
               </button>
             </div>
-            <p v-if="monedes < sheetTotal" class="shop-sheet__insufficient">No tens prou monedes</p>
+            <p v-if="monedes < sheetTotal" class="shop-sheet__insufficient">{{ $t('shop.insufficient_funds') }}</p>
           </div>
         </div>
       </Transition>
@@ -254,6 +258,7 @@ import inventariIcon from '~/assets/img/Icones/Icona_Inventari.png';
 import { useGameStore } from '~/stores/gameStore.js';
 import { useShopStore } from '~/stores/useShopStore.js';
 import { nomProducteBotiga } from '~/utils/shopItemI18n.js';
+import { useLoopyModal } from '~/composables/useLoopyModal.js';
 
 useHead({
   link: [
@@ -266,6 +271,7 @@ useHead({
 
 const gameStore = useGameStore();
 const shopStore = useShopStore();
+const loopyModal = useLoopyModal();
 const { t, te } = useI18n();
 
 function nomProducte(item) {
@@ -352,7 +358,7 @@ async function executarCompra() {
     await nextTick();
     startFlyAnimation(itemPerAnimacio);
   } catch (e) {
-    alert(e && e.message ? e.message : 'Error');
+    await loopyModal.error('Error', e && e.message ? e.message : 'Error');
   } finally {
     comprant.value = null;
   }

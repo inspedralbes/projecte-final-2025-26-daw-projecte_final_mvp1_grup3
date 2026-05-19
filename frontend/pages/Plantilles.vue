@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: plantilles.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div class="templates-page min-h-screen bg-transparent p-6">
     <div class="max-w-7xl mx-auto">

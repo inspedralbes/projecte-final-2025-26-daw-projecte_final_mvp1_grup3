@@ -1,6 +1,14 @@
 <?php
 
+
+/**
+ * Capa Laravel: UserFactory.
+ * Comentaris: agents/backend/AgentLaravel.md
+ */
+
 namespace Database\Factories;
+
+//================================ NAMESPACES / IMPORTS ============
 
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -9,6 +17,8 @@ use Illuminate\Support\Facades\Hash;
 /**
  * @extends Factory<User>
  */
+//================================ MÈTODES / FUNCIONS ===========
+
 class UserFactory extends Factory
 {
     protected $model = User::class;

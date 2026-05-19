@@ -1,3 +1,9 @@
+/**
+ * Modul JavaScript ES5: perfil.cy.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
 describe('Perfil', function () {
   beforeEach(function () {
     cy.login();

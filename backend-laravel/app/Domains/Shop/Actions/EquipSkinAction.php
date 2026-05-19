@@ -6,8 +6,10 @@ namespace App\Domains\Shop\Actions;
 
 //================================ NAMESPACES / IMPORTS ============
 
+use App\Domains\Calendar\Services\SnapshotService;
+use App\Domains\Shared\Services\RedisFeedbackService;
+use App\Models\User;
 use App\Models\UsuariItem;
-use App\Services\RedisFeedbackService;
 use Illuminate\Support\Facades\DB;
 
 //================================ PROPIETATS / ATRIBUTS ==========
@@ -19,9 +21,12 @@ class EquipSkinAction
 {
     private RedisFeedbackService $feedback;
 
-    public function __construct(RedisFeedbackService $feedback)
+    private SnapshotService $snapshotService;
+
+    public function __construct(RedisFeedbackService $feedback, SnapshotService $snapshotService)
     {
         $this->feedback = $feedback;
+        $this->snapshotService = $snapshotService;
     }
 
     //================================ MÈTODES / FUNCIONS ===========
@@ -65,6 +70,11 @@ class EquipSkinAction
 
         $usuariItem->refresh()->load('item');
 
+        $usuari = User::find($userId);
+        if ($usuari !== null) {
+            $this->snapshotService->refreshMascotaCosmeticsForUser($usuari);
+        }
+
         $kind = 'equipped';
         if ($estavaEquipat) {
             $kind = 'unequipped';
@@ -90,3 +100,4 @@ class EquipSkinAction
         ];
     }
 }
+

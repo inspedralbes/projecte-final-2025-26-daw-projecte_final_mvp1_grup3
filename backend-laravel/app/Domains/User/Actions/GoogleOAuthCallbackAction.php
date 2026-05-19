@@ -9,8 +9,8 @@ namespace App\Domains\User\Actions;
 use App\Domains\User\Services\JwtCookieResponseService;
 use App\Models\Ratxa;
 use App\Models\User;
-use App\Services\UserProhibitionService;
-use App\Services\WelcomeEmailService;
+use App\Domains\Admin\Services\UserProhibitionService;
+use App\Domains\User\Services\WelcomeEmailService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use Laravel\Socialite\Facades\Socialite;
@@ -129,3 +129,4 @@ class GoogleOAuthCallbackAction
         ], 403);
     }
 }
+

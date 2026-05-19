@@ -1,3 +1,9 @@
+/**
+ * Modul JavaScript ES5: habitExternal.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
 var PROVIDER_BY_CATEGORY = {
   1: "wger",
   2: "api_ninjas",

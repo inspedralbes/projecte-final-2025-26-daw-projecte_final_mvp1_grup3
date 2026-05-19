@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: HomeHabitsSection.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div class="space-y-0 lg:space-y-6">
     <div class="hidden lg:flex items-center justify-between">
@@ -17,7 +21,7 @@
       </div>
       <template v-else>
         <div class="daily-progress-card">
-          <p class="daily-progress-card__title">Progrés Diari</p>
+          <p class="daily-progress-card__title">{{ $t('home.daily_progress_title') }}</p>
           <div class="daily-progress-card__bars" role="presentation" aria-hidden="true">
             <span
               v-for="index in barresProgress"
@@ -36,12 +40,12 @@
               <path d="M4.33333 1H13M4.33333 5H13M4.33333 9H13M1 1H1.00667M1 5H1.00667M1 9H1.00667" stroke="#FAF9F9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </span>
-          <span class="daily-progress-card__remaining">{{ habitsRestants }} habits restants!</span>
+          <span class="daily-progress-card__remaining">{{ $t('home.daily_progress_remaining', { count: habitsRestants }) }}</span>
         </div>
 
         <div class="moment-divider" role="presentation">
           <span class="moment-divider__line" aria-hidden="true"></span>
-          <span class="moment-divider__text">durant tot el dia</span>
+          <span class="moment-divider__text">{{ $t('home.moment_all_day') }}</span>
           <span class="moment-divider__line" aria-hidden="true"></span>
         </div>
         <HomeCreateHabitDropdown v-if="!readOnly" ref="createHabitDropdown" @habit-creat="$emit('habit-creat')" />
@@ -73,14 +77,14 @@
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M7 2.41421H2.33333C1.97971 2.41421 1.64057 2.55469 1.39052 2.80474C1.14048 3.05479 1 3.39392 1 3.74755V13.0809C1 13.4345 1.14048 13.7736 1.39052 14.0237C1.64057 14.2737 1.97971 14.4142 2.33333 14.4142H11.6667C12.0203 14.4142 12.3594 14.2737 12.6095 14.0237C12.8595 13.7736 13 13.4345 13 13.0809V8.41421M12 1.41421C12.2652 1.149 12.6249 1 13 1C13.3751 1 13.7348 1.149 14 1.41421C14.2652 1.67943 14.4142 2.03914 14.4142 2.41421C14.4142 2.78929 14.2652 3.149 14 3.41421L7.66667 9.74755L5 10.4142L5.66667 7.74755L12 1.41421Z" stroke="#FAF9F9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                   </svg>
-                  <span>Editar Habit</span>
+                  <span>{{ $t('home.edit_habit_short') }}</span>
                 </button>
               </div>
               <div class="habit-expand-panel">
                 <Transition name="habit-done">
                   <div v-if="isJustCompleted(h.id) || habitCompletatAvui(h.id)" class="habit-done-overlay">
                     <span class="habit-done-check">✓</span>
-                    <span class="habit-done-text">Completat!</span>
+                    <span class="habit-done-text">{{ $t('home.completed_exclamation') }}</span>
                     <span class="habit-done-label">+{{ recompensaXP }} XP &nbsp; +{{ recompensaMonedes }} monedes</span>
                     <span v-if="isJustCompleted(h.id)" class="habit-done-burst habit-done-burst--1"></span>
                     <span v-if="isJustCompleted(h.id)" class="habit-done-burst habit-done-burst--2"></span>
@@ -94,7 +98,7 @@
                     <p><span class="meta-icon" :style="{ color: colorHabitExpandit }">☆</span>{{ textDificultatHabit }}</p>
                     <button class="meta-priority" type="button" @click="togglePrioritari(habitExpanditActual)">
                       <span class="meta-icon" :style="{ color: colorHabitExpandit }">{{ esPrioritari(habitExpanditActual) ? '♥' : '♡' }}</span>
-                      <span>Prioritari</span>
+                      <span>{{ $t('home.priority') }}</span>
                     </button>
                     <p>
                       <span class="meta-icon" :style="{ color: colorHabitExpandit }">◎</span>
@@ -116,7 +120,7 @@
                   <img :src="contextExternImatge" alt="" class="habit-expand-extern__img" @error="$event.target.style.display='none'" />
                   <span v-if="contextExternTitol" class="habit-expand-extern__titol">{{ contextExternTitol }}</span>
                 </div>
-                <button v-if="!habitCompletatAvui(habitExpanditActual.id)" class="focus-btn" type="button" @click="$emit('start-focus-habit', habitExpanditActual)">Mode Focus</button>
+                <button v-if="!habitCompletatAvui(habitExpanditActual.id)" class="focus-btn" type="button" @click="$emit('start-focus-habit', habitExpanditActual)">{{ $t('home.focus_mode') }}</button>
                 <div class="habit-expand-controls">
                   <button type="button" class="habit-expand-action" :disabled="habitCompletatAvui(habitExpanditActual.id)" @click="$emit('decrementar-habit', habitExpanditActual)">−</button>
                   <span class="habit-expand-count">{{ obtenirProgres(habitExpanditActual.id) }}</span>
@@ -129,7 +133,7 @@
         <template v-if="habitsMatins.length > 0">
           <div class="moment-divider" role="presentation">
             <span class="moment-divider__line" aria-hidden="true"></span>
-            <span class="moment-divider__text">per començar el dia</span>
+            <span class="moment-divider__text">{{ $t('home.moment_morning') }}</span>
             <span class="moment-divider__line" aria-hidden="true"></span>
           </div>
           <div
@@ -155,14 +159,14 @@
                 </button>
                 <button class="habit-expand-edit" type="button" @click="editarHabitExpandit">
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 2.41421H2.33333C1.97971 2.41421 1.64057 2.55469 1.39052 2.80474C1.14048 3.05479 1 3.39392 1 3.74755V13.0809C1 13.4345 1.14048 13.7736 1.39052 14.0237C1.64057 14.2737 1.97971 14.4142 2.33333 14.4142H11.6667C12.0203 14.4142 12.3594 14.2737 12.6095 14.0237C12.8595 13.7736 13 13.4345 13 13.0809V8.41421M12 1.41421C12.2652 1.149 12.6249 1 13 1C13.3751 1 13.7348 1.149 14 1.41421C14.2652 1.67943 14.4142 2.03914 14.4142 2.41421C14.4142 2.78929 14.2652 3.149 14 3.41421L7.66667 9.74755L5 10.4142L5.66667 7.74755L12 1.41421Z" stroke="#FAF9F9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                  <span>Editar Habit</span>
+                  <span>{{ $t('home.edit_habit_short') }}</span>
                 </button>
               </div>
               <div class="habit-expand-panel">
                 <Transition name="habit-done">
                   <div v-if="isJustCompleted(h.id) || habitCompletatAvui(h.id)" class="habit-done-overlay">
                     <span class="habit-done-check">✓</span>
-                    <span class="habit-done-text">Completat!</span>
+                    <span class="habit-done-text">{{ $t('home.completed_exclamation') }}</span>
                     <span class="habit-done-label">+{{ recompensaXP }} XP &nbsp; +{{ recompensaMonedes }} monedes</span>
                     <span v-if="isJustCompleted(h.id)" class="habit-done-burst habit-done-burst--1"></span>
                     <span v-if="isJustCompleted(h.id)" class="habit-done-burst habit-done-burst--2"></span>
@@ -176,7 +180,7 @@
                     <p><span class="meta-icon" :style="{ color: colorHabitExpandit }">☆</span>{{ textDificultatHabit }}</p>
                     <button class="meta-priority" type="button" @click="togglePrioritari(habitExpanditActual)">
                       <span class="meta-icon" :style="{ color: colorHabitExpandit }">{{ esPrioritari(habitExpanditActual) ? '♥' : '♡' }}</span>
-                      <span>Prioritari</span>
+                      <span>{{ $t('home.priority') }}</span>
                     </button>
                     <p>
                       <span class="meta-icon" :style="{ color: colorHabitExpandit }">◎</span>
@@ -198,7 +202,7 @@
                   <img :src="contextExternImatge" alt="" class="habit-expand-extern__img" @error="$event.target.style.display='none'" />
                   <span v-if="contextExternTitol" class="habit-expand-extern__titol">{{ contextExternTitol }}</span>
                 </div>
-                <button v-if="!habitCompletatAvui(habitExpanditActual.id)" class="focus-btn" type="button" @click="$emit('start-focus-habit', habitExpanditActual)">Mode Focus</button>
+                <button v-if="!habitCompletatAvui(habitExpanditActual.id)" class="focus-btn" type="button" @click="$emit('start-focus-habit', habitExpanditActual)">{{ $t('home.focus_mode') }}</button>
                 <div class="habit-expand-controls">
                   <button type="button" class="habit-expand-action" :disabled="habitCompletatAvui(habitExpanditActual.id)" @click="$emit('decrementar-habit', habitExpanditActual)">−</button>
                   <span class="habit-expand-count">{{ obtenirProgres(habitExpanditActual.id) }}</span>
@@ -212,7 +216,7 @@
         <template v-if="habitsTarda.length > 0">
           <div class="moment-divider" role="presentation">
             <span class="moment-divider__line" aria-hidden="true"></span>
-            <span class="moment-divider__text">el focus del dia</span>
+            <span class="moment-divider__text">{{ $t('home.moment_afternoon') }}</span>
             <span class="moment-divider__line" aria-hidden="true"></span>
           </div>
           <div
@@ -234,13 +238,13 @@
             <div v-if="isHabitExpandit(h)" class="habit-expand-inline">
               <div class="habit-expand-top">
                 <button class="habit-expand-close" type="button" @click="tancarHabitExpandit"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11.2917 6.54167L6.54167 11.2917M6.54167 6.54167L11.2917 11.2917M16.8333 8.91667C16.8333 13.2889 13.2889 16.8333 8.91667 16.8333C4.54441 16.8333 1 13.2889 1 8.91667C1 4.54441 4.54441 1 8.91667 1C13.2889 1 16.8333 4.54441 16.8333 8.91667Z" stroke="#FAF9F9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-                <button class="habit-expand-edit" type="button" @click="editarHabitExpandit"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 2.41421H2.33333C1.97971 2.41421 1.64057 2.55469 1.39052 2.80474C1.14048 3.05479 1 3.39392 1 3.74755V13.0809C1 13.4345 1.14048 13.7736 1.39052 14.0237C1.64057 14.2737 1.97971 14.4142 2.33333 14.4142H11.6667C12.0203 14.4142 12.3594 14.2737 12.6095 14.0237C12.8595 13.7736 13 13.4345 13 13.0809V8.41421M12 1.41421C12.2652 1.149 12.6249 1 13 1C13.3751 1 13.7348 1.149 14 1.41421C14.2652 1.67943 14.4142 2.03914 14.4142 2.41421C14.4142 2.78929 14.2652 3.149 14 3.41421L7.66667 9.74755L5 10.4142L5.66667 7.74755L12 1.41421Z" stroke="#FAF9F9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Editar Habit</span></button>
+                <button class="habit-expand-edit" type="button" @click="editarHabitExpandit"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 2.41421H2.33333C1.97971 2.41421 1.64057 2.55469 1.39052 2.80474C1.14048 3.05479 1 3.39392 1 3.74755V13.0809C1 13.4345 1.14048 13.7736 1.39052 14.0237C1.64057 14.2737 1.97971 14.4142 2.33333 14.4142H11.6667C12.0203 14.4142 12.3594 14.2737 12.6095 14.0237C12.8595 13.7736 13 13.4345 13 13.0809V8.41421M12 1.41421C12.2652 1.149 12.6249 1 13 1C13.3751 1 13.7348 1.149 14 1.41421C14.2652 1.67943 14.4142 2.03914 14.4142 2.41421C14.4142 2.78929 14.2652 3.149 14 3.41421L7.66667 9.74755L5 10.4142L5.66667 7.74755L12 1.41421Z" stroke="#FAF9F9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>{{ $t('home.edit_habit_short') }}</span></button>
               </div>
               <div class="habit-expand-panel">
                 <Transition name="habit-done">
                   <div v-if="isJustCompleted(h.id) || habitCompletatAvui(h.id)" class="habit-done-overlay">
                     <span class="habit-done-check">✓</span>
-                    <span class="habit-done-text">Completat!</span>
+                    <span class="habit-done-text">{{ $t('home.completed_exclamation') }}</span>
                     <span class="habit-done-label">+{{ recompensaXP }} XP &nbsp; +{{ recompensaMonedes }} monedes</span>
                     <span v-if="isJustCompleted(h.id)" class="habit-done-burst habit-done-burst--1"></span>
                     <span v-if="isJustCompleted(h.id)" class="habit-done-burst habit-done-burst--2"></span>
@@ -254,7 +258,7 @@
                     <p><span class="meta-icon" :style="{ color: colorHabitExpandit }">☆</span>{{ textDificultatHabit }}</p>
                     <button class="meta-priority" type="button" @click="togglePrioritari(habitExpanditActual)">
                       <span class="meta-icon" :style="{ color: colorHabitExpandit }">{{ esPrioritari(habitExpanditActual) ? '♥' : '♡' }}</span>
-                      <span>Prioritari</span>
+                      <span>{{ $t('home.priority') }}</span>
                     </button>
                     <p>
                       <span class="meta-icon" :style="{ color: colorHabitExpandit }">◎</span>
@@ -276,7 +280,7 @@
                   <img :src="contextExternImatge" alt="" class="habit-expand-extern__img" @error="$event.target.style.display='none'" />
                   <span v-if="contextExternTitol" class="habit-expand-extern__titol">{{ contextExternTitol }}</span>
                 </div>
-                <button v-if="!habitCompletatAvui(habitExpanditActual.id)" class="focus-btn" type="button" @click="$emit('start-focus-habit', habitExpanditActual)">Mode Focus</button>
+                <button v-if="!habitCompletatAvui(habitExpanditActual.id)" class="focus-btn" type="button" @click="$emit('start-focus-habit', habitExpanditActual)">{{ $t('home.focus_mode') }}</button>
                 <div class="habit-expand-controls">
                   <button type="button" class="habit-expand-action" :disabled="habitCompletatAvui(habitExpanditActual.id)" @click="$emit('decrementar-habit', habitExpanditActual)">−</button>
                   <span class="habit-expand-count">{{ obtenirProgres(habitExpanditActual.id) }}</span>
@@ -290,7 +294,7 @@
         <template v-if="habitsNit.length > 0">
           <div class="moment-divider" role="presentation">
             <span class="moment-divider__line" aria-hidden="true"></span>
-            <span class="moment-divider__text">tancar el dia</span>
+            <span class="moment-divider__text">{{ $t('home.moment_night') }}</span>
             <span class="moment-divider__line" aria-hidden="true"></span>
           </div>
           <div
@@ -312,13 +316,13 @@
             <div v-if="isHabitExpandit(h)" class="habit-expand-inline">
               <div class="habit-expand-top">
                 <button class="habit-expand-close" type="button" @click="tancarHabitExpandit"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11.2917 6.54167L6.54167 11.2917M6.54167 6.54167L11.2917 11.2917M16.8333 8.91667C16.8333 13.2889 13.2889 16.8333 8.91667 16.8333C4.54441 16.8333 1 13.2889 1 8.91667C1 4.54441 4.54441 1 8.91667 1C13.2889 1 16.8333 4.54441 16.8333 8.91667Z" stroke="#FAF9F9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-                <button class="habit-expand-edit" type="button" @click="editarHabitExpandit"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 2.41421H2.33333C1.97971 2.41421 1.64057 2.55469 1.39052 2.80474C1.14048 3.05479 1 3.39392 1 3.74755V13.0809C1 13.4345 1.14048 13.7736 1.39052 14.0237C1.64057 14.2737 1.97971 14.4142 2.33333 14.4142H11.6667C12.0203 14.4142 12.3594 14.2737 12.6095 14.0237C12.8595 13.7736 13 13.4345 13 13.0809V8.41421M12 1.41421C12.2652 1.149 12.6249 1 13 1C13.3751 1 13.7348 1.149 14 1.41421C14.2652 1.67943 14.4142 2.03914 14.4142 2.41421C14.4142 2.78929 14.2652 3.149 14 3.41421L7.66667 9.74755L5 10.4142L5.66667 7.74755L12 1.41421Z" stroke="#FAF9F9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Editar Habit</span></button>
+                <button class="habit-expand-edit" type="button" @click="editarHabitExpandit"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 2.41421H2.33333C1.97971 2.41421 1.64057 2.55469 1.39052 2.80474C1.14048 3.05479 1 3.39392 1 3.74755V13.0809C1 13.4345 1.14048 13.7736 1.39052 14.0237C1.64057 14.2737 1.97971 14.4142 2.33333 14.4142H11.6667C12.0203 14.4142 12.3594 14.2737 12.6095 14.0237C12.8595 13.7736 13 13.4345 13 13.0809V8.41421M12 1.41421C12.2652 1.149 12.6249 1 13 1C13.3751 1 13.7348 1.149 14 1.41421C14.2652 1.67943 14.4142 2.03914 14.4142 2.41421C14.4142 2.78929 14.2652 3.149 14 3.41421L7.66667 9.74755L5 10.4142L5.66667 7.74755L12 1.41421Z" stroke="#FAF9F9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>{{ $t('home.edit_habit_short') }}</span></button>
               </div>
               <div class="habit-expand-panel">
                 <Transition name="habit-done">
                   <div v-if="isJustCompleted(h.id) || habitCompletatAvui(h.id)" class="habit-done-overlay">
                     <span class="habit-done-check">✓</span>
-                    <span class="habit-done-text">Completat!</span>
+                    <span class="habit-done-text">{{ $t('home.completed_exclamation') }}</span>
                     <span class="habit-done-label">+{{ recompensaXP }} XP &nbsp; +{{ recompensaMonedes }} monedes</span>
                     <span v-if="isJustCompleted(h.id)" class="habit-done-burst habit-done-burst--1"></span>
                     <span v-if="isJustCompleted(h.id)" class="habit-done-burst habit-done-burst--2"></span>
@@ -332,7 +336,7 @@
                     <p><span class="meta-icon" :style="{ color: colorHabitExpandit }">☆</span>{{ textDificultatHabit }}</p>
                     <button class="meta-priority" type="button" @click="togglePrioritari(habitExpanditActual)">
                       <span class="meta-icon" :style="{ color: colorHabitExpandit }">{{ esPrioritari(habitExpanditActual) ? '♥' : '♡' }}</span>
-                      <span>Prioritari</span>
+                      <span>{{ $t('home.priority') }}</span>
                     </button>
                     <p>
                       <span class="meta-icon" :style="{ color: colorHabitExpandit }">◎</span>
@@ -354,7 +358,7 @@
                   <img :src="contextExternImatge" alt="" class="habit-expand-extern__img" @error="$event.target.style.display='none'" />
                   <span v-if="contextExternTitol" class="habit-expand-extern__titol">{{ contextExternTitol }}</span>
                 </div>
-                <button v-if="!habitCompletatAvui(habitExpanditActual.id)" class="focus-btn" type="button" @click="$emit('start-focus-habit', habitExpanditActual)">Mode Focus</button>
+                <button v-if="!habitCompletatAvui(habitExpanditActual.id)" class="focus-btn" type="button" @click="$emit('start-focus-habit', habitExpanditActual)">{{ $t('home.focus_mode') }}</button>
                 <div class="habit-expand-controls">
                   <button type="button" class="habit-expand-action" :disabled="habitCompletatAvui(habitExpanditActual.id)" @click="$emit('decrementar-habit', habitExpanditActual)">−</button>
                   <span class="habit-expand-count">{{ obtenirProgres(habitExpanditActual.id) }}</span>
@@ -409,6 +413,8 @@ function bucketMomentDelDia(habit) {
   return "nit";
 }
 
+import { useGameStore } from '~/stores/gameStore.js';
+
 export default {
   name: 'HomeHabitsSection',
   components: {
@@ -435,7 +441,17 @@ export default {
     weatherGlobal:      { type: Object,   default: null },
     readOnly:           { type: Boolean,  default: false }
   },
+  watch: {
+    habitAnimacioCompletatId: function (habitId) {
+      if (habitId) {
+        this.marcarAnimacioCompletat(habitId);
+      }
+    }
+  },
   computed: {
+    habitAnimacioCompletatId: function () {
+      return useGameStore().habitAnimacioCompletatId;
+    },
     barresProgress: function () {
       return this.habits.length;
     },
@@ -590,20 +606,25 @@ export default {
       var progresActual = self.obtenirProgres(habit.id);
       var objectiu = habit.objectiuVegades || 1;
       var willComplete = (progresActual + 1 >= objectiu);
-      self.$emit('incrementar-habit', habit);
       if (willComplete) {
-        self.completedAnimHabitId = habit.id;
-        if (self._completedAnimTimer) {
-          clearTimeout(self._completedAnimTimer);
-        }
-        self._completedAnimTimer = setTimeout(function () {
-          self.completedAnimHabitId = null;
-          self._completedAnimTimer = null;
-        }, 2200);
-        setTimeout(function () {
-          self.$emit('completar-habit', habit);
-        }, 350);
+        self.$emit('completar-habit', habit);
+        return;
       }
+      self.$emit('incrementar-habit', habit);
+    },
+    marcarAnimacioCompletat: function (habitId) {
+      var self = this;
+      if (!habitId) {
+        return;
+      }
+      self.completedAnimHabitId = habitId;
+      if (self._completedAnimTimer) {
+        clearTimeout(self._completedAnimTimer);
+      }
+      self._completedAnimTimer = setTimeout(function () {
+        self.completedAnimHabitId = null;
+        self._completedAnimTimer = null;
+      }, 2200);
     },
     isJustCompleted: function (habitId) {
       return this.completedAnimHabitId === habitId;

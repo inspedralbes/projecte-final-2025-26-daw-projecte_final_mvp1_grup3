@@ -139,7 +139,11 @@
         "name": "Fondo Casa",
         "description": "Un fondo acogedor de salón para personalizar la app"
       }
-    }
+    },
+    "sheet_total": "Total:",
+    "sheet_back": "Atrás",
+    "purchase_error": "Error en la compra",
+    "equip_error": "Error al equipar el objeto"
   },
   "inventory": {
     "title": "Inventario",
@@ -183,7 +187,17 @@
     "online": "En línea",
     "no_messages": "No tienes mensajes",
     "no_results": "No se han encontrado usuarios",
-    "search_hint": "Escribe para buscar usuarios"
+    "search_hint": "Escribe para buscar usuarios",
+    "no_users": "No se han encontrado usuarios",
+    "message": "Mensaje",
+    "report": "Reportar",
+    "remove_title": "Eliminar amigo",
+    "remove_message": "¿Seguro que quieres eliminar a {name} de tu lista de amigos?",
+    "level_short": "Nivel {n}",
+    "close_search": "Cerrar búsqueda",
+    "open_search": "Abrir búsqueda",
+    "filter": "Filtrar",
+    "expand": "Desplegar"
   },
   "chat": {
     "placeholder": "Escribe un mensaje...",
@@ -242,7 +256,36 @@
     "mission_completed_text": "¡Has completado tu misión diaria! +10 monedas y +20 XP",
     "confirm": "Confirmar",
     "cancel": "Cancelar",
-    "back": "Atrás"
+    "back": "Atrás",
+    "streak_broken_title": "Racha rota",
+    "streak_broken_text": "Tu racha de {days} días se ha roto.",
+    "streak_celebration_title": "¡Racha aumentada!",
+    "streak_celebration_text": "¡Has completado tu primer hábito de hoy y la llama sigue viva!",
+    "streak_flame_alt": "Llama de racha",
+    "daily_progress_title": "Progreso diario",
+    "daily_progress_remaining": "¡{count} hábitos restantes!",
+    "moment_all_day": "durante todo el día",
+    "moment_morning": "para empezar el día",
+    "moment_afternoon": "el foco del día",
+    "moment_night": "cerrar el día",
+    "edit_habit_short": "Editar hábito",
+    "completed_exclamation": "¡Completado!",
+    "priority": "Prioritario",
+    "focus_mode": "Modo focus",
+    "habit_details_title": "Detalles",
+    "habit_label": "Hábito",
+    "reward": "Recompensa",
+    "manual_goal": "Objetivo manual",
+    "api_block": "Bloque API",
+    "no_title": "Sin título",
+    "weather_context": "Contexto clima (Hogar)",
+    "weather_unavailable": "No se ha podido obtener el clima en tiempo real.",
+    "weather_favorable": "Condiciones favorables: {desc}",
+    "weather_unfavorable": "Condiciones no ideales: {desc}",
+    "focus_session_completed": "Hábito completado hoy",
+    "focus_session_start": "Iniciar sesión de focus",
+    "every_day": "Cada día",
+    "no_specific_days": "Sin días específicos"
   },
   "habits": {
     "title": "Crear Hábito",
@@ -410,6 +453,9 @@
     "achievements": "Logros y Medallas",
     "blocked": "Bloqueado",
     "no_achievements": "Aún no has obtenido ningún logro",
+    "medals": "Medallas",
+    "no_medals_title": "Sin medallas",
+    "no_history_title": "Sin historial",
     "history": "Historial Diario",
     "no_history": "Aún no hay registros diarios.",
     "pet_title": "Tu Mascota",
@@ -517,7 +563,16 @@
     "templates": "Plantillas",
     "cancel": "Cancelar",
     "add_attachment": "Adjuntar hábito o plantilla",
-    "no_templates": "No tienes plantillas"
+    "no_templates": "No tienes plantillas",
+    "divider_compose": "comparte un mensaje",
+    "divider_feed": "mensajes de la comunidad",
+    "forum_empty": "Aún no hay publicaciones en el foro. ¡Sé el primero en compartir tu experiencia!",
+    "medals": "Medallas",
+    "no_achievements_profile": "Sin logros",
+    "more_count": "+{n} más",
+    "report_post": "Reportar publicación",
+    "delete_post": "Eliminar publicación",
+    "delete_comment": "Eliminar comentario"
   },
   "onboarding": {
     "progress": "Paso {current} de {total}",
@@ -588,5 +643,52 @@
       "connection": "Error de conexión.",
       "save": "No se han podido guardar los hábitos."
     }
+  },
+  "common": {
+    "got_it": "Entendido",
+    "level_label": "Nivel {n}",
+    "are_you_sure": "¿Estás seguro?",
+    "offline": "Desconectado"
+  },
+  "monster": {
+    "evolution_title": "¡Evolución!",
+    "evolution_ok": "¡Genial!",
+    "evolution_message": "¡Tu monstruo ahora es {etapa}!",
+    "choose_error": "Error de conexión al elegir el monstruo",
+    "level_tooltip": "Nivel {n} - {etapa}",
+    "stage_baby": "Bebé",
+    "stage_child": "Niño",
+    "stage_teen": "Adolescente",
+    "stage_adult": "Adulto",
+    "profile_alt": "Monstruo del perfil"
+  },
+  "clans": {
+    "loading": "Cargando...",
+    "insufficient_level_title": "¡Falta nivel!",
+    "insufficient_level_text": "Debes ser Nivel 5 o superior para acceder a los clanes. ¡Sigue completando hábitos para subir de nivel!",
+    "redirecting": "Ya estás en un clan. Redirigiendo...",
+    "leave_clan": "Abandonar clan",
+    "search_placeholder": "Buscar clanes...",
+    "all_clans": "Todos los clanes",
+    "create_new": "Crear nuevo clan",
+    "edit_clan": "Editar clan",
+    "clan_name": "Nombre del clan",
+    "clan_public": "Clan público",
+    "members_count": "{n} miembros",
+    "create": "Crear",
+    "no_description": "Sin descripción",
+    "public": "Público",
+    "private": "Privado",
+    "invite_friend": "Invitar amigo",
+    "leave": "Salir del clan",
+    "members_of": "miembros del clan",
+    "leader": "Líder",
+    "member": "Miembro",
+    "kick_title": "¿Eliminar miembro?",
+    "kick_confirm": "Eliminar",
+    "back_to_chat": "Volver al chat",
+    "chat_members_hint": "miembros · Toca para ver info",
+    "no_messages": "No hay mensajes",
+    "write_message": "Escribe un mensaje..."
   }
 }

@@ -1,10 +1,20 @@
 <?php
 
+
+/**
+ * Capa Laravel: SnapshotSchemaVerificationTest.
+ * Comentaris: agents/backend/AgentLaravel.md
+ */
+
 namespace Tests\Feature;
+
+//================================ NAMESPACES / IMPORTS ============
 
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
+
+//================================ MÈTODES / FUNCIONS ===========
 
 class SnapshotSchemaVerificationTest extends TestCase
 {

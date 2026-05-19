@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: HabitListItem.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex items-center justify-between">
     <div class="flex-1 min-w-0 mr-4">

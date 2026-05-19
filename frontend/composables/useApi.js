@@ -1,4 +1,10 @@
 /**
+ * Modul JavaScript ES5: useApi.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
+/**
  * Capa d'API unificada per a peticions autenticades.
  * Única referència per fetch amb refresh 401, useFetch amb auth i baseURL.
  */

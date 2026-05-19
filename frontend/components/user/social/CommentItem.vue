@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: CommentItem.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div :class="['comment-item', depth > 0 ? 'comment-item--nested' : '']">
     <div class="comment-item__avatar">

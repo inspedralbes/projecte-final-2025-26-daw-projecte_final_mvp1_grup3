@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: contingut.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <script setup>
 /**
  * Reports de posts i comentaris: editar o eliminar contingut.

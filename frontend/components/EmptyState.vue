@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: EmptyState.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div class="empty-state-card max-w-md mx-auto my-6 text-center bg-white p-8 rounded-[32px] border-4 border-gray-100 shadow-xl transition-transform duration-300 hover:scale-[1.02]">
     <img :src="iconUrl" class="w-24 h-auto mx-auto mb-4 drop-shadow-md pixelated" :alt="title" />

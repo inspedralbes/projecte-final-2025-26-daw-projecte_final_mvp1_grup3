@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: inventari.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div class="inventari-page" :class="{ 'inventari-page--fons-platja': fonsPlatjaActiu }">
     <header class="inventari-page__topbar">
@@ -202,7 +206,8 @@ const processant = ref(null);
 
 /** Mateix to que la botiga (#2b2d42) quan el fons platja està equipat */
 const fonsPlatjaActiu = computed(function () {
-  return shopStore.fonsEquipat === 'fons_platja';
+  var fonsKey = shopStore.fonsEquipat || gameStore.fonsKey;
+  return fonsKey === 'fons_platja';
 });
 
 const loading = computed(function () { return shopStore.loading; });

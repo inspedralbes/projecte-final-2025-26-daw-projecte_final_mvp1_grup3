@@ -1,3 +1,9 @@
+/**
+ * Modul JavaScript ES5: useSocketUiCallbacks.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
 import { defineStore } from 'pinia';
 
 /**

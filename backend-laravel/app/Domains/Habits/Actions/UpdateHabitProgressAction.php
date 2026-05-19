@@ -56,11 +56,19 @@ class UpdateHabitProgressAction
             return null;
         }
 
-        $ara = Carbon::now();
+        $timezone = config('app.timezone', 'Europe/Madrid');
+        $ara = Carbon::now($timezone);
         $progresActual = $this->progressReader->obtenirProgresDiari($habitId, $ara);
         $objectiu = (int) ($habit->objectiu_vegades ?? 1);
         if ($objectiu <= 0) {
             $objectiu = 1;
+        }
+
+        if ($delta > 0 && $this->progressReader->habitCompletatAvui($habitId, $ara)) {
+            return [
+                'progress' => $objectiu,
+                'completed_today' => true,
+            ];
         }
 
         if ($delta < 0 && $progresActual <= 0) {

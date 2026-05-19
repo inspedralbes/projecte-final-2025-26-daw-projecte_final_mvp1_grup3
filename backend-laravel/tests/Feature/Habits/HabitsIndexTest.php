@@ -1,10 +1,20 @@
 <?php
 
+
+/**
+ * Capa Laravel: HabitsIndexTest.
+ * Comentaris: agents/backend/AgentLaravel.md
+ */
+
 namespace Tests\Feature\Habits;
+
+//================================ NAMESPACES / IMPORTS ============
 
 use App\Models\User;
 use Database\Factories\HabitFactory;
 use Tests\TestCase;
+
+//================================ MÈTODES / FUNCIONS ===========
 
 class HabitsIndexTest extends TestCase
 {

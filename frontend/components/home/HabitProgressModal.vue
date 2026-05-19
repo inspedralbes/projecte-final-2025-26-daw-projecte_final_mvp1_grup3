@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: HabitProgressModal.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
     <div
@@ -88,8 +92,8 @@
           <button
             data-testid="habit-progress-confirm"
             class="w-full py-3 rounded-xl font-bold text-white transition-all"
-            :class="potCompletar ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-300 cursor-not-allowed'"
-            :disabled="!potCompletar"
+            :class="isCompletedToday ? 'bg-gray-300 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'"
+            :disabled="isCompletedToday"
             @click="completar"
           >
             {{ $t('habits.complete_habit') }}
@@ -190,10 +194,6 @@ export default {
       this.$emit("decrement");
     },
     completar: function () {
-      if (!this.potCompletar) {
-        this.$emit("invalid-complete");
-        return;
-      }
       this.$emit("confirm");
     }
   }

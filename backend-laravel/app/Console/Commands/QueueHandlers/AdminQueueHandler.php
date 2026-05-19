@@ -4,7 +4,7 @@ namespace App\Console\Commands\QueueHandlers;
 
 //================================ NAMESPACES / IMPORTS ============
 
-use App\Services\AdminActionService;
+use App\Domains\Admin\Services\AdminActionService;
 
 //================================ PROPIETATS / ATRIBUTS ==========
 
@@ -36,3 +36,4 @@ class AdminQueueHandler
         $this->adminActionService->processarAccio($dades);
     }
 }
+

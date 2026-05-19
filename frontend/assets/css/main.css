@@ -435,6 +435,16 @@
         background-attachment: scroll;
     }
 
+    /* Mentre es carrega fons_key des de Laravel: sense fons verd per defecte */
+    .global-app-container.global-app-container--cosmetics-pending {
+        background-color: #faf9f9;
+        background-image: none;
+    }
+
+    .global-app-container.global-app-container--cosmetics-pending::before {
+        display: none;
+    }
+
     .global-app-container::before {
         content: "";
         position: absolute;

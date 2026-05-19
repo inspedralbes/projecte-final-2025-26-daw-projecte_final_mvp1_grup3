@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: perfil.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div class="home-page-root perfil-page relative w-full min-h-screen pb-24 lg:pb-12 overflow-y-auto">
     <div class="max-w-7xl mx-auto px-3 sm:px-6 flex flex-col gap-8 lg:gap-6 pb-16 lg:pb-20">
@@ -315,8 +319,10 @@ import { getDefaultColorForCategoryId } from "~/utils/habitCategoryColor.js";
 import { normalizeHex } from "~/utils/colorSpace.js";
 import { useAuthStore } from "~/stores/useAuthStore";
 import { authFetch, getBaseUrl } from "~/composables/useApi.js";
+import { useLoopyModal } from "~/composables/useLoopyModal.js";
 
 const authStore = useAuthStore();
+const loopyModal = useLoopyModal();
 const { locale, setLocale } = useI18n();
 const currentLocale = ref(locale.value);
 watch(locale, (newLoc) => {
@@ -326,7 +332,13 @@ const onLocaleChange = () => {
   setLocale(currentLocale.value);
 };
 const handleLogout = async () => {
-  if (confirm("Vols tancar la sessió?")) {
+  var ok = await loopyModal.confirm({
+    title: "Tancar sessió",
+    message: "Vols tancar la sessió?",
+    confirmText: "Sí, sortir",
+    cancelText: "Enrere"
+  });
+  if (ok) {
     await authStore.logout();
     await navigateTo("/auth/login");
   }
@@ -469,15 +481,7 @@ function guardarCompte() {
         user.value.nom = res.d.data.nom;
         user.value.email = res.d.data.email;
         syncFormFromUser();
-        if (nuxtApp.$swal) {
-          nuxtApp.$swal.fire({
-            icon: "success",
-            title: t("perfil.save_success_title"),
-            text: t("perfil.save_success_text"),
-          });
-        } else {
-          alert(t("perfil.save_success_text"));
-        }
+        loopyModal.success(t("perfil.save_success_title"), t("perfil.save_success_text"));
         return;
       }
       var errMsg = t("perfil.save_error_generic");
@@ -493,20 +497,12 @@ function guardarCompte() {
           errMsg = t("perfil.save_error_required");
         }
       }
-      if (nuxtApp.$swal) {
-        nuxtApp.$swal.fire({ icon: "error", title: t("perfil.save_error_title"), text: errMsg });
-      } else {
-        alert(errMsg);
-      }
+      loopyModal.error(t("perfil.save_error_title"), errMsg);
     })
     .catch(function(err) {
       guardantCompte.value = false;
       console.error("Error guardant compte:", err);
-      if (nuxtApp.$swal) {
-        nuxtApp.$swal.fire({ icon: "error", title: t("perfil.save_error_title"), text: t("perfil.save_error_generic") });
-      } else {
-        alert(t("perfil.save_error_generic"));
-      }
+      loopyModal.error(t("perfil.save_error_title"), t("perfil.save_error_generic"));
     });
 }
 

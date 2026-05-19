@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: MissionCompletedModal.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <Teleport to="body">
     <div v-if="isOpen" class="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-[#1a6b3a]/90 backdrop-blur-sm transition-all duration-500" @click="tancar">

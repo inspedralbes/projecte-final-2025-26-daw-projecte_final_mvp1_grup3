@@ -1,5 +1,13 @@
 'use strict';
 
+
+/**
+ * Modul JavaScript ES5: socialHandlers.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
+
 /**
  * Pont de compatibilitat: registra els 4 handlers Social dividits.
  */

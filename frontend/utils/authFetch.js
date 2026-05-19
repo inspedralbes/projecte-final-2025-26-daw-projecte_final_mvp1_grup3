@@ -1,4 +1,10 @@
 /**
+ * Modul JavaScript ES5: authFetch.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
+/**
  * Fetch amb cookies i refresh automàtic.
  * Inclou lock singleton: si múltiples peticions reben 401 simultàniament,
  * només una fa el refresh i les altres esperen el resultat.

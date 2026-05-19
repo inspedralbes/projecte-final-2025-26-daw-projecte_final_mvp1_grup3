@@ -15,7 +15,9 @@
         "id": 1,
         "titol": "Completa 2 hàbits avui",
         "completada": false
-      }
+      },
+      "skin_key": null,
+      "fons_key": null
     },
     "habits": [
       {

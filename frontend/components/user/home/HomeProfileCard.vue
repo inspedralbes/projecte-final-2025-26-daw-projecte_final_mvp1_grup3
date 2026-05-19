@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: HomeProfileCard.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div class="text-center">
     <div class="w-16 h-16 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 mx-auto mb-3 flex items-center justify-center">

@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: HabitFormDetails.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div class="habit-form bento-card rounded-3xl border border-gray-100 bg-white p-4 shadow-sm">
     <div class="space-y-5">

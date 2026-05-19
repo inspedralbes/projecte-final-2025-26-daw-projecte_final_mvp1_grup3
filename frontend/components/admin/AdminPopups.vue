@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: AdminPopups.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <Transition
     enter-active-class="transition ease-out duration-300"

@@ -1,16 +1,26 @@
 <?php
 
+
+/**
+ * Capa Laravel: HabitMetadataQueueActionTest.
+ * Comentaris: agents/backend/AgentLaravel.md
+ */
+
 namespace Tests\Feature;
+
+//================================ NAMESPACES / IMPORTS ============
 
 use App\Models\Habit;
 use App\Models\User;
-use App\Services\HabitService;
-use App\Services\LogroService;
-use App\Services\MissionService;
-use App\Services\RedisFeedbackService;
+use App\Domains\Habits\Services\HabitService;
+use App\Domains\Gamification\Services\LogroService;
+use App\Domains\Gamification\Services\MissionService;
+use App\Domains\Shared\Services\RedisFeedbackService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery;
 use Tests\TestCase;
+
+//================================ MÈTODES / FUNCIONS ===========
 
 class HabitMetadataQueueActionTest extends TestCase
 {
@@ -162,3 +172,4 @@ class HabitMetadataQueueActionTest extends TestCase
         $this->assertEquals(7, (int) $habit->categoria_id);
     }
 }
+

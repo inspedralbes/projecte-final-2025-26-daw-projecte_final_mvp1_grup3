@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: HomeCreateHabitDropdown.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <section class="lg:hidden">
     <button

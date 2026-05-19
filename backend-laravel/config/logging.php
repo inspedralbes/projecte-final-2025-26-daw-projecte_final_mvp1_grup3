@@ -1,5 +1,13 @@
 <?php
 
+
+/**
+ * Capa Laravel: logging.
+ * Comentaris: agents/backend/AgentLaravel.md
+ */
+
+//================================ NAMESPACES / IMPORTS ============
+
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 

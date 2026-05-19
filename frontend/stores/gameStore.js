@@ -1,3 +1,9 @@
+/**
+ * Modul JavaScript ES5: gameStore.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
 import { defineStore } from "pinia";
 import { authFetch, getBaseUrl } from "~/composables/useApi.js";
 import { useHabitStore } from "./useHabitStore.js";
@@ -5,6 +11,11 @@ import {
   mapGameStateFromApi,
   mapHabitProgressListToMap
 } from "~/utils/mappers/apiMappers.js";
+import {
+  carregarCosmeticsDesDeStorage,
+  desarCosmeticsAStorage,
+} from "~/utils/cosmeticsStorage.js";
+import { useAuthStore } from "~/stores/useAuthStore.js";
 
 // Constants de configuració
 var TEMPS_ESPERA_MS = 5000;
@@ -27,16 +38,26 @@ export var useGameStore = defineStore("game", {
       xpActualNivel: 0,
       xpObjetivoNivel: 1000,
       habitProgress: {},
+      /** ID d'hàbit per disparar animació de completat (watch a HomeHabitsSection). */
+      habitAnimacioCompletatId: null,
       missioDiaria: null,
       missioCompletada: false,
       missioProgres: 0,
       missioObjectiu: 1,
       monstre_tipus: null,
+      /** Skin equipada (p.ex. gorra_monster); prové de game_state /api. */
+      skinKey: null,
+      /** Fons equipat (p.ex. fons_platja); prové de game_state /api. */
+      fonsKey: null,
+      /** True quan s'ha hidratat cache o rebut game_state del backend. */
+      cosmeticsReady: false,
       streakIncrementedAvui: false,
       /** Bloqueja xp_update mentre la ruleta gira (espera l'animació). */
       ruletaAnimant: false,
       xpUpdatePendent: null,
       historicOverrides: null,
+      /** Cosmètics del dia històric (calendari → home?date=). */
+      historicCosmetics: null,
     };
   },
 
@@ -48,6 +69,85 @@ export var useGameStore = defineStore("game", {
       var base = getBaseUrl();
       var camiNorm = cami.indexOf('/') === 0 ? cami : '/' + cami;
       return base + camiNorm;
+    },
+
+    /**
+     * Aplica camps de game_state al store (XP, ratxa, cosmetics, etc.).
+     */
+    aplicarGameStateDesDeMap: function (gs) {
+      if (!gs) {
+        return;
+      }
+      if (gs.xp_total !== undefined) this.xpTotal = gs.xp_total;
+      if (gs.nivell !== undefined) this.nivell = gs.nivell;
+      if (gs.xp_actual_nivel !== undefined) this.xpActualNivel = gs.xp_actual_nivel;
+      if (gs.xp_objetivo_nivel !== undefined) this.xpObjetivoNivel = gs.xp_objetivo_nivel;
+      if (gs.ratxa_actual !== undefined) this.ratxa = gs.ratxa_actual;
+      if (gs.ratxa_maxima !== undefined) this.ratxaMaxima = gs.ratxa_maxima;
+      if (gs.monedes !== undefined) this.monedes = gs.monedes;
+      if (gs.can_spin_roulette !== undefined) this.canSpinRoulette = gs.can_spin_roulette;
+      if (gs.ruleta_ultima_tirada !== undefined) this.ruletaUltimaTirada = gs.ruleta_ultima_tirada;
+      if (gs.missio_diaria !== undefined) this.missioDiaria = gs.missio_diaria;
+      if (gs.missio_completada !== undefined) this.missioCompletada = gs.missio_completada;
+      if (gs.missio_progres !== undefined) this.missioProgres = gs.missio_progres;
+      if (gs.missio_objectiu !== undefined) this.missioObjectiu = gs.missio_objectiu;
+      if (gs.monstre_tipus !== undefined) this.monstre_tipus = gs.monstre_tipus;
+      if (gs.streak_incremented !== undefined) this.streakIncrementedAvui = gs.streak_incremented;
+      if (gs.skin_key !== undefined) {
+        this.skinKey = gs.skin_key;
+      }
+      if (gs.fons_key !== undefined) {
+        this.fonsKey = gs.fons_key;
+      }
+      this.cosmeticsReady = true;
+      this.persistirCosmetics();
+    },
+
+    /**
+     * Hidrata skin/fons des del cache local (síncron, abans del fetch API).
+     */
+    hidratarCosmeticsDesDeStorage: function () {
+      var authStore = useAuthStore();
+      var usuari = authStore.user;
+      if (!usuari || usuari.id == null) {
+        return;
+      }
+      var cache = carregarCosmeticsDesDeStorage(usuari.id);
+      if (!cache) {
+        return;
+      }
+      if (cache.skinKey !== undefined) {
+        this.skinKey = cache.skinKey;
+      }
+      if (cache.fonsKey !== undefined) {
+        this.fonsKey = cache.fonsKey;
+      }
+    },
+
+    /**
+     * Desa skin/fons al localStorage per al refresh sense flash.
+     */
+    persistirCosmetics: function () {
+      var authStore = useAuthStore();
+      var usuari = authStore.user;
+      if (!usuari || usuari.id == null) {
+        return;
+      }
+      desarCosmeticsAStorage(usuari.id, this.skinKey, this.fonsKey);
+    },
+
+    /**
+     * Actualitza skin/fons equipats (p.ex. després d'equipar a la botiga).
+     */
+    establirCosmeticsEquipats: function (skinKey, fonsKey) {
+      if (skinKey !== undefined) {
+        this.skinKey = skinKey;
+      }
+      if (fonsKey !== undefined) {
+        this.fonsKey = fonsKey;
+      }
+      this.cosmeticsReady = true;
+      this.persistirCosmetics();
     },
 
     /**
@@ -78,6 +178,22 @@ export var useGameStore = defineStore("game", {
         return mapa[habitId].progress || 0;
       }
       return 0;
+    },
+
+    /**
+     * Dispara l'animació de tick verd a la targeta de l'hàbit.
+     */
+    marcarAnimacioHabitCompletat: function (habitId) {
+      var self = this;
+      if (!habitId) {
+        return;
+      }
+      self.habitAnimacioCompletatId = habitId;
+      setTimeout(function () {
+        if (self.habitAnimacioCompletatId === habitId) {
+          self.habitAnimacioCompletatId = null;
+        }
+      }, 2200);
     },
 
     /**
@@ -348,29 +464,18 @@ export var useGameStore = defineStore("game", {
         }
 
         dades = await resposta.json();
+        if (dades && dades.data && typeof dades.data === "object") {
+          dades = dades.data;
+        }
         if (dades) {
-          var gs = mapGameStateFromApi(dades);
-          if (gs) {
-            if (gs.xp_total !== undefined) self.xpTotal = gs.xp_total;
-            if (gs.nivell !== undefined) self.nivell = gs.nivell;
-            if (gs.xp_actual_nivel !== undefined) self.xpActualNivel = gs.xp_actual_nivel;
-            if (gs.xp_objetivo_nivel !== undefined) self.xpObjetivoNivel = gs.xp_objetivo_nivel;
-            if (gs.ratxa_actual !== undefined) self.ratxa = gs.ratxa_actual;
-            if (gs.ratxa_maxima !== undefined) self.ratxaMaxima = gs.ratxa_maxima;
-            if (gs.monedes !== undefined) self.monedes = gs.monedes;
-            if (gs.can_spin_roulette !== undefined) self.canSpinRoulette = gs.can_spin_roulette;
-            if (gs.ruleta_ultima_tirada !== undefined) self.ruletaUltimaTirada = gs.ruleta_ultima_tirada;
-            if (gs.missio_diaria !== undefined) self.missioDiaria = gs.missio_diaria;
-            if (gs.missio_completada !== undefined) self.missioCompletada = gs.missio_completada;
-            if (gs.missio_progres !== undefined) self.missioProgres = gs.missio_progres;
-            if (gs.missio_objectiu !== undefined) self.missioObjectiu = gs.missio_objectiu;
-            if (gs.monstre_tipus !== undefined) self.monstre_tipus = gs.monstre_tipus;
-            if (gs.streak_incremented !== undefined) self.streakIncrementedAvui = gs.streak_incremented;
-          }
+          self.aplicarGameStateDesDeMap(mapGameStateFromApi(dades));
+        } else {
+          self.cosmeticsReady = true;
         }
         return dades;
       } catch (error) {
         console.error("Error fetching game-state:", error);
+        self.cosmeticsReady = true;
         return null;
       }
     },
@@ -410,22 +515,7 @@ export var useGameStore = defineStore("game", {
 
         gs = dades.game_state || {};
         if (gs) {
-          var gsMap = mapGameStateFromApi(gs);
-          if (gsMap.xp_total !== undefined) self.xpTotal = gsMap.xp_total;
-          if (gsMap.nivell !== undefined) self.nivell = gsMap.nivell;
-          if (gsMap.xp_actual_nivel !== undefined) self.xpActualNivel = gsMap.xp_actual_nivel;
-          if (gsMap.xp_objetivo_nivel !== undefined) self.xpObjetivoNivel = gsMap.xp_objetivo_nivel;
-          if (gsMap.ratxa_actual !== undefined) self.ratxa = gsMap.ratxa_actual;
-          if (gsMap.ratxa_maxima !== undefined) self.ratxaMaxima = gsMap.ratxa_maxima;
-          if (gsMap.monedes !== undefined) self.monedes = gsMap.monedes;
-          if (gsMap.can_spin_roulette !== undefined) self.canSpinRoulette = gsMap.can_spin_roulette;
-          if (gsMap.ruleta_ultima_tirada !== undefined) self.ruletaUltimaTirada = gsMap.ruleta_ultima_tirada;
-          if (gsMap.missio_diaria !== undefined) self.missioDiaria = gsMap.missio_diaria;
-          if (gsMap.missio_completada !== undefined) self.missioCompletada = gsMap.missio_completada;
-          if (gsMap.missio_progres !== undefined) self.missioProgres = gsMap.missio_progres;
-          if (gsMap.missio_objectiu !== undefined) self.missioObjectiu = gsMap.missio_objectiu;
-          if (gsMap.monstre_tipus !== undefined) self.monstre_tipus = gsMap.monstre_tipus;
-          if (gsMap.streak_incremented !== undefined) self.streakIncrementedAvui = gsMap.streak_incremented;
+          self.aplicarGameStateDesDeMap(mapGameStateFromApi(gs));
         }
 
         h = dades.habits || [];

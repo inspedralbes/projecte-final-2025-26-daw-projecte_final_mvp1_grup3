@@ -1,5 +1,11 @@
 <?php
 
+
+/**
+ * Capa Laravel: database.
+ * Comentaris: agents/backend/AgentLaravel.md
+ */
+
 /**
  * Configuració de connexions a base de dades.
  * Laravel 11 + PostgreSQL 16.2. Usuari per defecte: id 1.

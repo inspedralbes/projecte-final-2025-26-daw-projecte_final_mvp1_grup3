@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: [id].
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div class="clan-detail-page min-h-screen bg-transparent overflow-x-hidden pb-24 lg:pb-20">
     <div class="max-w-5xl mx-auto px-3 sm:px-6 pt-2 sm:pt-3">
@@ -293,7 +297,7 @@ export default {
       var clanId = this.clanId;
       store.getClan(clanId).then(function() {
         return store.fetchMembers(clanId);
-      }).then(function() {
+      }).then(async function() {
         var isMember = store.clanMembers.some(function(m) {
           return Number(m.usuari_id) === Number(authStore.user.id);
         });
@@ -302,7 +306,7 @@ export default {
         }
         if (!isMember && !self.alreadyExpelled) {
           self.alreadyExpelled = true;
-          alert("Has estat expulsat del clan.");
+          await self.$loopyModal.warning("Clan", "Has estat expulsat del clan.");
           self.$router.push("/clans");
           return;
         }
@@ -331,7 +335,7 @@ export default {
         }
         this.$router.push("/clans");
       } else {
-        alert(store.error || "Error al sortir del clan");
+        await this.$loopyModal.error("Error", store.error || "Error al sortir del clan");
       }
     },
     removeMember: function(userId) {
@@ -353,7 +357,7 @@ export default {
         this.memberExpanditId = null;
         await store.fetchMembers(this.clanId);
       } else {
-        alert(store.error || "Error al expulsar membre");
+        await this.$loopyModal.error("Error", store.error || "Error al expulsar membre");
       }
       this.kickMemberId = null;
     },
@@ -377,21 +381,21 @@ export default {
       this.reportUserId = userId;
       this.showReportModal = true;
     },
-    handleReportSubmit: function() {
+    handleReportSubmit: async function() {
       this.showReportModal = false;
-      alert("Gràcies! L'usuari ha sigut reportat i ho revisarem.");
+      await this.$loopyModal.success("Report", "Gràcies! L'usuari ha sigut reportat i ho revisarem.");
     },
     sendFriendRequest: async function(userId) {
       try {
         var resp = await authFetch("/api/friends/request", { method: "POST", body: JSON.stringify({ addressee_id: userId }) });
         if (resp.ok) {
-          alert("Sol·licitud d'amistat enviada!");
+          await this.$loopyModal.success("Amistat", "Sol·licitud d'amistat enviada!");
         } else {
           var data = await resp.json();
-          alert(data.error || data.message || "Error enviant sol·licitud");
+          await this.$loopyModal.error("Error", data.error || data.message || "Error enviant sol·licitud");
         }
       } catch(e) {
-        alert("Error de connexio");
+        await this.$loopyModal.error("Error", "Error de connexio");
       }
     },
     setupSocketListener: function() {
@@ -400,11 +404,11 @@ export default {
         var nuxtApp = useNuxtApp();
         var authStore = useAuthStore();
         if (nuxtApp.$socket && nuxtApp.$socket.connected) {
-          nuxtApp.$socket.on("clan_member_left", function(data) {
+          nuxtApp.$socket.on("clan_member_left", async function(data) {
             if (Number(data.clan_id) === Number(self.clanId)) {
               if (Number(data.user_id) === Number(authStore.user.id) && !self.alreadyExpelled) {
                 self.alreadyExpelled = true;
-                alert("Has estat expulsat del clan.");
+                await self.$loopyModal.warning("Clan", "Has estat expulsat del clan.");
                 self.$router.push("/clans");
               } else {
                 useClanStore().fetchMembers(self.clanId);

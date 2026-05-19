@@ -1,6 +1,14 @@
 <?php
 
+
+/**
+ * Capa Laravel: CreatesApplication.
+ * Comentaris: agents/backend/AgentLaravel.md
+ */
+
 namespace Tests;
+
+//================================ NAMESPACES / IMPORTS ============
 
 use Illuminate\Contracts\Console\Kernel;
 

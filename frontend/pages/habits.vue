@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: habits.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div class="relative w-full min-h-screen pb-12 overflow-y-auto">
     <div class="max-w-4xl mx-auto px-6 pt-4 pb-4 space-y-6">

@@ -1,3 +1,9 @@
+/**
+ * Modul JavaScript ES5: home.cy.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
 describe('Home / Hàbits', function () {
   beforeEach(function () {
     cy.login();

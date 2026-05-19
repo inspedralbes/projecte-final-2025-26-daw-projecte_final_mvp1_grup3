@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: ChatWindow.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div class="chat-overlay" @click.self="$emit('close')">
     <div class="chat-window">
@@ -238,7 +242,7 @@ export default {
         }
         await this.loadMessages();
       } catch (e) {
-        alert(e.message);
+        await this.$loopyModal.error("Error", e.message);
       } finally {
         this.sending = false;
       }

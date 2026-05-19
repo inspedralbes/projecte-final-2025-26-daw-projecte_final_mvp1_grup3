@@ -1,15 +1,25 @@
 <?php
 
+
+/**
+ * Capa Laravel: AdminReportController.
+ * Comentaris: agents/backend/AgentLaravel.md
+ */
+
 namespace App\Http\Controllers\Api\Admin;
+
+//================================ NAMESPACES / IMPORTS ============
 
 use App\Http\Controllers\Controller;
 use App\Models\Report;
 use App\Models\SocialComment;
 use App\Models\SocialPost;
 use App\Models\UserReport;
-use App\Services\AdminReportBroadcastService;
+use App\Domains\Admin\Services\AdminReportBroadcastService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
+
+//================================ MÈTODES / FUNCIONS ===========
 
 class AdminReportController extends Controller
 {
@@ -190,3 +200,4 @@ class AdminReportController extends Controller
         ]);
     }
 }
+

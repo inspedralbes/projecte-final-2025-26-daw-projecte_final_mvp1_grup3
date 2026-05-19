@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: habits.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <script setup>
 /**
  * Gestió d'Hàbits (Admin).

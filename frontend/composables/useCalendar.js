@@ -1,4 +1,10 @@
 /**
+ * Modul JavaScript ES5: useCalendar.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
+/**
  * Composable amb helpers de navegació temporal pel calendari.
  */
 export function useCalendar() {

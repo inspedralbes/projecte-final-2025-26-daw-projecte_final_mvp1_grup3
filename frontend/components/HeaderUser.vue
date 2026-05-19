@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: HeaderUser.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <!-- Top header (ocult a /calendar i /social) -->
   <header v-if="!isCalendarRoute && !isSocialRoute && !isInventariRoute" class="w-full p-3">

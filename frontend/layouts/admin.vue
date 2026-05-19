@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: admin.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div class="global-app-container flex">
     <!-- Sidebar Redesign -->

@@ -1,4 +1,10 @@
 /**
+ * Modul JavaScript ES5: commands.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
+/**
  * Injects user auth session into localStorage and intercepts common API calls.
  */
 Cypress.Commands.add('login', function (overrides) {

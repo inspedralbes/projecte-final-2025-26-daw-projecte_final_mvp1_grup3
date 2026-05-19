@@ -1,11 +1,21 @@
 <?php
 
+
+/**
+ * Capa Laravel: CalendarSnapshotApiTest.
+ * Comentaris: agents/backend/AgentLaravel.md
+ */
+
 namespace Tests\Feature;
+
+//================================ NAMESPACES / IMPORTS ============
 
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
+
+//================================ MÈTODES / FUNCIONS ===========
 
 class CalendarSnapshotApiTest extends TestCase
 {
@@ -115,6 +125,13 @@ class CalendarSnapshotApiTest extends TestCase
 
         $this->assertSame(100, (int) $json['economia_json']['xp_guanyada_avui']);
         $this->assertSame(2, (int) $json['economia_json']['monedes_guanyades_avui']);
+
+        $this->assertArrayHasKey('skin_key', $json['mascota_json']);
+        $this->assertArrayHasKey('fons_key', $json['mascota_json']);
+        $this->assertArrayHasKey('te_gorra', $json['mascota_json']);
+        $this->assertArrayHasKey('te_fons', $json['mascota_json']);
+        $this->assertIsBool($json['mascota_json']['te_gorra']);
+        $this->assertIsBool($json['mascota_json']['te_fons']);
     }
 
     public function test_month_endpoint_returns_category_colors_for_completed_habits(): void
@@ -142,6 +159,12 @@ class CalendarSnapshotApiTest extends TestCase
         $this->assertNotNull($diaTrobat);
         $this->assertTrue($diaTrobat['has_snapshot']);
         $this->assertContains('#112233', $diaTrobat['category_colors']);
+        $this->assertArrayHasKey('skin_key', $diaTrobat);
+        $this->assertArrayHasKey('fons_key', $diaTrobat);
+        $this->assertArrayHasKey('te_gorra', $diaTrobat);
+        $this->assertArrayHasKey('te_fons', $diaTrobat);
+        $this->assertIsBool($diaTrobat['te_gorra']);
+        $this->assertIsBool($diaTrobat['te_fons']);
     }
 
     public function test_month_endpoint_returns_all_days_as_empty_when_no_snapshots(): void

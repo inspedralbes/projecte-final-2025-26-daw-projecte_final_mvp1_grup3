@@ -1,4 +1,10 @@
 /**
+ * Modul JavaScript ES5: useSocket.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
+/**
  * Fachada d'usuari: re-exporta useSocketBridge (compatibilitat AgentSocket).
  */
 import { useSocketBridge } from '~/composables/socket/useSocketBridge.js';

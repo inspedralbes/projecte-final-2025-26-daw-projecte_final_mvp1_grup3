@@ -1,18 +1,28 @@
 <?php
 
+
+/**
+ * Capa Laravel: AdminSocialModerationController.
+ * Comentaris: agents/backend/AgentLaravel.md
+ */
+
 namespace App\Http\Controllers\Api\Admin;
+
+//================================ NAMESPACES / IMPORTS ============
 
 use App\Http\Controllers\Controller;
 use App\Models\SocialComment;
 use App\Models\SocialPost;
-use App\Services\AdminReportBroadcastService;
-use App\Services\RedisFeedbackService;
+use App\Domains\Admin\Services\AdminReportBroadcastService;
+use App\Domains\Shared\Services\RedisFeedbackService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**
  * Moderació de posts i comentaris socials des del panell admin.
  */
+//================================ MÈTODES / FUNCIONS ===========
+
 class AdminSocialModerationController extends Controller
 {
     public function __construct(
@@ -142,3 +152,4 @@ class AdminSocialModerationController extends Controller
         ]);
     }
 }
+

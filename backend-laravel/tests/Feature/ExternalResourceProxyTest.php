@@ -1,9 +1,19 @@
 <?php
 
+
+/**
+ * Capa Laravel: ExternalResourceProxyTest.
+ * Comentaris: agents/backend/AgentLaravel.md
+ */
+
 namespace Tests\Feature;
+
+//================================ NAMESPACES / IMPORTS ============
 
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
+
+//================================ MÈTODES / FUNCIONS ===========
 
 class ExternalResourceProxyTest extends TestCase
 {

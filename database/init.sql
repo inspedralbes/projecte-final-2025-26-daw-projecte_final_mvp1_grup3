@@ -1,3 +1,8 @@
+-- AGENT_DATABASE: database/init.sql
+-- SQL (estructura o dades): init.
+-- Comentaris: agents/database/AgentDatabase.md
+-- GET via API Laravel | CUD via Node -> Redis -> Laravel
+
 -- ==========================================================
 -- ESTRUCTURA FINAL DE LA BASE DE DATOS (ESENCIAL)
 -- S'executa només en crear el volum Postgres (docker-entrypoint-initdb.d).

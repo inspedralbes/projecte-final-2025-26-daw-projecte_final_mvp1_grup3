@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 //================================ NAMESPACES / IMPORTS ============
 
-use App\Services\CalendarService;
+use App\Domains\Calendar\Services\CalendarService;
 use Illuminate\Http\JsonResponse;
 
 //================================ PROPIETATS / ATRIBUTS ==========
@@ -45,3 +45,4 @@ class CalendarController extends Controller
         return response()->json($resultat);
     }
 }
+

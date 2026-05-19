@@ -1,3 +1,9 @@
+/**
+ * Modul JavaScript ES5: habit-external-details.spec.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
 import { expect, test } from '@playwright/test';
 
 const apiUrl = process.env.E2E_API_URL || 'http://localhost:8000';

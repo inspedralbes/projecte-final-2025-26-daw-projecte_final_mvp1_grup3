@@ -1,3 +1,9 @@
+/**
+ * Modul JavaScript ES5: colorSpace.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
 /** Utilitats RGB/HSV/hex per al selector de color del formulari d'hàbits. */
 
 export function normalizeHex (hex) {

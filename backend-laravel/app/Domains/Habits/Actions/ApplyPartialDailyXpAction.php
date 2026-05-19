@@ -11,7 +11,7 @@ use App\Domains\Habits\Support\UserLevelCalculator;
 use App\Models\Habit;
 use App\Models\RegistreActivitat;
 use App\Models\User;
-use App\Services\RedisFeedbackService;
+use App\Domains\Shared\Services\RedisFeedbackService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -146,3 +146,4 @@ class ApplyPartialDailyXpAction
         return $processats;
     }
 }
+

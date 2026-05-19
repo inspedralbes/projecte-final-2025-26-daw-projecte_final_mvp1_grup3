@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: HabitList.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div class="space-y-4">
     <h3 class="text-lg font-bold text-gray-800">{{ $t('habits.my_habits') }}</h3>

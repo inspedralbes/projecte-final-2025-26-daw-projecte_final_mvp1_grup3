@@ -7,8 +7,8 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Admin\AdminHabitResource;
 use App\Models\Habit;
-use App\Services\AdminLogService;
-use App\Services\RedisFeedbackService;
+use App\Domains\Admin\Services\AdminLogService;
+use App\Domains\Shared\Services\RedisFeedbackService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -244,3 +244,4 @@ class AdminHabitController extends Controller
         return response()->json(['success' => true, 'data' => ['id' => $id]]);
     }
 }
+

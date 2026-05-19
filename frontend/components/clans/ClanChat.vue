@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: ClanChat.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div class="clan-chat-inline">
     <div class="clan-chat-header" @click="$emit('open-info')">
@@ -249,7 +253,7 @@ export default {
             });
           }
         } else {
-          alert(store.error || "Error al enviar missatge");
+          await this.$loopyModal.error("Error", store.error || "Error al enviar missatge");
         }
       } catch(e) {
         console.error(e);
@@ -299,12 +303,20 @@ export default {
     importHabit: async function(msgId) {
       var store = useClanChatStore();
       var result = await store.importHabit(msgId);
-      alert(result ? "Habit importat!" : (store.error || "Error"));
+      if (result) {
+        await this.$loopyModal.success("Importat", "Hàbit importat!");
+      } else {
+        await this.$loopyModal.error("Error", store.error || "Error");
+      }
     },
     importPlantilla: async function(msgId) {
       var store = useClanChatStore();
       var result = await store.importPlantilla(msgId);
-      alert(result ? "Plantilla importada!" : (store.error || "Error"));
+      if (result) {
+        await this.$loopyModal.success("Importat", "Plantilla importada!");
+      } else {
+        await this.$loopyModal.error("Error", store.error || "Error");
+      }
     },
     getMonsterImage: function(msg) {
       if (!msg || msg.is_system) return null;

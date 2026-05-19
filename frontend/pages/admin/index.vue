@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: index.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <script setup>
 /**
  * Loopy Admin Dashboard.

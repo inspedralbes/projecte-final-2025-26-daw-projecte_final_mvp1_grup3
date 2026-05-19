@@ -1,3 +1,9 @@
+/**
+ * Modul JavaScript ES5: login.cy.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
 function esborrarSessioLoopy(win) {
   var claus = [
     'loopy_token',

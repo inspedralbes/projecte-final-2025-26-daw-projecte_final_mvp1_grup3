@@ -1,3 +1,9 @@
+/**
+ * Modul JavaScript ES5: mode-focus.spec.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
 import { expect, test } from '@playwright/test';
 import { execSync } from 'child_process';
 import path from 'path';

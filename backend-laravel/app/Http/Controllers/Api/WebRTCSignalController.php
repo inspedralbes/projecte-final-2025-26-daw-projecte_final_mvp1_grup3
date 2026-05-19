@@ -1,12 +1,22 @@
 <?php
 
+
+/**
+ * Capa Laravel: WebRTCSignalController.
+ * Comentaris: agents/backend/AgentLaravel.md
+ */
+
 namespace App\Http\Controllers\Api;
+
+//================================ NAMESPACES / IMPORTS ============
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redis;
+
+//================================ MÈTODES / FUNCIONS ===========
 
 class WebRTCSignalController extends Controller
 {

@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: onboarding.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div
     class="global-app-container onboarding-page onboarding-container"

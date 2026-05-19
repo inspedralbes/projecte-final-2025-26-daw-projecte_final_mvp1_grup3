@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: ClanSettings.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div class="clan-settings-panel habit-form">
     <h2 class="habit-form-label text-center" style="font-size: 24px; margin-bottom: 1.25rem;">{{ isEditing ? 'Editar Clan' : 'Crear Nou Clan' }}</h2>

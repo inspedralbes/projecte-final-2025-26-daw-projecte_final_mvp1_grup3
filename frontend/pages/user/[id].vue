@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: [id].
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div class="home-page-root perfil-page relative w-full min-h-screen pb-24 lg:pb-12 overflow-y-auto">
     <div class="max-w-7xl mx-auto px-3 sm:px-6 flex flex-col gap-8 lg:gap-6 pb-16 lg:pb-20">

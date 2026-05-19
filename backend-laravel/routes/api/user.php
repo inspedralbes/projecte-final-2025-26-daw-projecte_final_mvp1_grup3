@@ -1,5 +1,13 @@
 <?php
 
+
+/**
+ * Capa Laravel: user.
+ * Comentaris: agents/backend/AgentLaravel.md
+ */
+
+//================================ NAMESPACES / IMPORTS ============
+
 use App\Http\Controllers\Api\ChatController;
 use App\Http\Controllers\Api\FriendshipController;
 use App\Http\Controllers\Api\GameStateReadController;
@@ -21,7 +29,6 @@ use App\Http\Controllers\Api\UserProfileReadController;
 use App\Http\Controllers\Api\ClanController;
 use App\Http\Controllers\Api\ClanRequestController;
 use App\Http\Controllers\Api\UserSearchController;
-use App\Http\Controllers\WebRTCSignalController;
 use Illuminate\Support\Facades\Route;
 
 /*

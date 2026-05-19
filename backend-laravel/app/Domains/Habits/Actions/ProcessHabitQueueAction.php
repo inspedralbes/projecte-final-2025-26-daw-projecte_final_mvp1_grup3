@@ -8,7 +8,7 @@ namespace App\Domains\Habits\Actions;
 
 use App\Domains\Habits\Support\HabitQueueFeedbackAssembler;
 use App\Models\Habit;
-use App\Services\MissionService;
+use App\Domains\Gamification\Services\MissionService;
 use Carbon\Carbon;
 
 //================================ PROPIETATS / ATRIBUTS ==========
@@ -233,11 +233,21 @@ class ProcessHabitQueueAction
 
         if (($resultat['success'] ?? false) !== true) {
             $estat['message'] = $resultat['message'] ?? 'No s\'ha pogut completar l\'hàbit.';
+            if (isset($resultat['progress'])) {
+                $estat['progress'] = (int) $resultat['progress'];
+            }
+            if (isset($resultat['completed_today'])) {
+                $estat['completed_today'] = (bool) $resultat['completed_today'];
+            }
 
             return $estat;
         }
 
         $estat['success'] = true;
+        $habitModel = $estat['habit_model'];
+        if ($habitModel instanceof Habit) {
+            $estat['progress'] = (int) ($habitModel->objectiu_vegades ?? 1);
+        }
         if (isset($resultat['xp_update'])) {
             $estat['xp_update'] = $resultat['xp_update'];
         }
@@ -248,7 +258,12 @@ class ProcessHabitQueueAction
             $estat['level_up'] = $resultat['level_up'];
         }
 
-        $dataMissio = isset($dades['data']) ? Carbon::parse($dades['data']) : Carbon::now();
+        $timezone = config('app.timezone', 'Europe/Madrid');
+        if (isset($dades['data']) && $dades['data'] !== null) {
+            $dataMissio = Carbon::parse($dades['data'])->setTimezone($timezone);
+        } else {
+            $dataMissio = Carbon::now($timezone);
+        }
 
         return $this->afegirMissio($usuariId, $habitId, $dataMissio, $estat);
     }
@@ -319,3 +334,4 @@ class ProcessHabitQueueAction
         ];
     }
 }
+

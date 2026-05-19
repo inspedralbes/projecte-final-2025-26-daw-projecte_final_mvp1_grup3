@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: TemplatePublicSwitch.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div class="template-public-switch">
     <input

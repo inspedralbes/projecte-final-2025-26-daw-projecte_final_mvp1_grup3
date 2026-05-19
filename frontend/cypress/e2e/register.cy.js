@@ -1,3 +1,9 @@
+/**
+ * Modul JavaScript ES5: register.cy.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
 describe('Registro', function () {
   beforeEach(function () {
     cy.viewport(1280, 800);

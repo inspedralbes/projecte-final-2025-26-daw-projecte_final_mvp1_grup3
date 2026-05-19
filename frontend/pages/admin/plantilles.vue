@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: plantilles.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <script setup>
 /**
  * Gestió de Plantilles (Admin).

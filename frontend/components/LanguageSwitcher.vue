@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: LanguageSwitcher.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <script setup>
 import { ref, computed } from 'vue'
 const { locale, locales, setLocale } = useI18n()

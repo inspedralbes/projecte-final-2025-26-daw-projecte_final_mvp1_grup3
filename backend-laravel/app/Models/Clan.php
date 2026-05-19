@@ -1,9 +1,19 @@
 <?php
 
+
+/**
+ * Capa Laravel: Clan.
+ * Comentaris: agents/backend/AgentLaravel.md
+ */
+
 namespace App\Models;
+
+//================================ NAMESPACES / IMPORTS ============
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+
+//================================ MÈTODES / FUNCIONS ===========
 
 class Clan extends Model
 {

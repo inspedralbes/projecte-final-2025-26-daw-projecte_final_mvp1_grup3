@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: ConfirmModal.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div v-if="show" class="confirm-overlay" @click.self="$emit('cancel')">
     <div class="confirm-sheet">

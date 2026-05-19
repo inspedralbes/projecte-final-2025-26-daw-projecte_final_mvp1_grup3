@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: LevelUpCelebrationModal.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <Teleport to="body">
     <div v-if="isOpen" class="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-[#2563eb] transition-all duration-500" @click="tancar">

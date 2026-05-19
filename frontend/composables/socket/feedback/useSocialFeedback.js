@@ -1,3 +1,9 @@
+/**
+ * Modul JavaScript ES5: useSocialFeedback.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
 import { useSocialStore } from '~/stores/useSocialStore.js';
 import { useFriendshipStore } from '~/stores/useFriendshipStore.js';
 import { useChatStore } from '~/stores/useChatStore.js';

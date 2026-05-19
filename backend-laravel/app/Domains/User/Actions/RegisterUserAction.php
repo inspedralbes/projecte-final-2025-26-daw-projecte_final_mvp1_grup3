@@ -9,7 +9,7 @@ namespace App\Domains\User\Actions;
 use App\Domains\User\Services\JwtCookieResponseService;
 use App\Models\Ratxa;
 use App\Models\User;
-use App\Services\WelcomeEmailService;
+use App\Domains\User\Services\WelcomeEmailService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -73,3 +73,4 @@ class RegisterUserAction
         return $resposta->setStatusCode(201);
     }
 }
+

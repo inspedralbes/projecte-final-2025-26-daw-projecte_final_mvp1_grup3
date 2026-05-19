@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: HomeStreakSection.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div class="text-right">
     <p class="text-lg lg:text-2xl font-bold">{{ $t('home.streak') }}: {{ ratxa }}</p>

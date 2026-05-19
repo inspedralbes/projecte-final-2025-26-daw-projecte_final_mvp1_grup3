@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: MonsterDisplay.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div class="monster-display" :class="{ 'monster-display--animate': animate }">
     <img
@@ -71,11 +75,12 @@ export default {
       return (colorNames[this.colorCode] || 'Monster') + ' ' + this.stageLabel;
     },
     tooltipText: function () {
-      return 'Nivell ' + this.nivell + ' - ' + this.stageLabel;
+      return this.$t('monster.level_tooltip', { n: this.nivell, etapa: this.stageLabel });
     },
     stageLabel: function () {
-      var labels = { B: 'Bebè', N: 'Nen', A: 'Adolescent', M: 'Mamat' };
-      return labels[this.etapa] || this.etapa;
+      var keys = { B: 'monster.stage_baby', N: 'monster.stage_child', A: 'monster.stage_teen', M: 'monster.stage_adult' };
+      var key = keys[this.etapa];
+      return key ? this.$t(key) : this.etapa;
     },
   },
   methods: {

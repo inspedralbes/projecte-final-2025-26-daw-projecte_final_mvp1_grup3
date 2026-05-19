@@ -1,4 +1,10 @@
 /**
+ * Modul JavaScript ES5: require-onboarding.global.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
+/**
  * Middleware global: redirigeix a onboarding només quan hi ha onboarding pendent.
  * Exclou les rutes d'onboarding i auth.
  */

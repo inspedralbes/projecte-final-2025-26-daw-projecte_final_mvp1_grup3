@@ -1,3 +1,9 @@
+/**
+ * Modul JavaScript ES5: monsterImage.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
 import m11 from '~/assets/img/Monstres/1.1-MonstrePetit.png';
 import m12 from '~/assets/img/Monstres/1.2-MonstreMitja.png';
 import m13 from '~/assets/img/Monstres/1.3-MonstreGran.png';

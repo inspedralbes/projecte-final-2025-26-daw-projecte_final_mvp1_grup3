@@ -1,33 +1,45 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api;
 
+//================================ NAMESPACES / IMPORTS ============
+
+use App\Domains\Social\Actions\CreateSocialCommentAction;
+use App\Domains\Social\Actions\DeleteSocialCommentAction;
+use App\Domains\Social\Queries\ListSocialCommentsQuery;
 use App\Http\Controllers\Controller;
-use App\Models\SocialComment;
-use App\Services\RedisFeedbackService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+//================================ CONTROLLER ====================
+
+/**
+ * SocialCommentController (thin).
+ */
 class SocialCommentController extends Controller
 {
-    protected RedisFeedbackService $redisFeedback;
+    private ListSocialCommentsQuery $listCommentsQuery;
 
-    public function __construct(RedisFeedbackService $redisFeedback)
-    {
-        $this->redisFeedback = $redisFeedback;
+    private CreateSocialCommentAction $createCommentAction;
+
+    private DeleteSocialCommentAction $deleteCommentAction;
+
+    public function __construct(
+        ListSocialCommentsQuery $listCommentsQuery,
+        CreateSocialCommentAction $createCommentAction,
+        DeleteSocialCommentAction $deleteCommentAction
+    ) {
+        $this->listCommentsQuery = $listCommentsQuery;
+        $this->createCommentAction = $createCommentAction;
+        $this->deleteCommentAction = $deleteCommentAction;
     }
 
     public function index(Request $request, int $postId): JsonResponse
     {
-        $userId = $request->user_id;
-        $comments = SocialComment::with('user')
-            ->withCount('likes')
-            ->withExists(['likes as liked_by_current_user' => function ($query) use ($userId) {
-            $query->where('user_id', $userId);
-        }])
-            ->where('post_id', $postId)
-            ->orderBy('created_at', 'asc')
-            ->get();
+        $userId = (int) $request->user_id;
+        $comments = $this->listCommentsQuery->executar($userId, $postId);
 
         return response()->json($comments);
     }
@@ -40,46 +52,20 @@ class SocialCommentController extends Controller
             'content' => 'required|string|max:1000',
         ]);
 
-        $depthLevel = 0;
-        if (!empty($validated['parent_id'])) {
-            $parent = SocialComment::findOrFail($validated['parent_id']);
-            if ($parent->depth_level >= 3) {
-                return response()->json([
-                    'message' => 'No es pot respondre a un comentari de profunditat 3',
-                ], 422);
-            }
-            $depthLevel = $parent->depth_level + 1;
+        $userId = (int) $request->user_id;
+        $resultat = $this->createCommentAction->executar($userId, $validated);
+
+        if (!$resultat['success']) {
+            return response()->json(['message' => $resultat['error']], $resultat['status'] ?? 422);
         }
 
-        $comment = SocialComment::create([
-            'post_id' => $validated['post_id'],
-            'user_id' => $request->user_id,
-            'parent_id' => $validated['parent_id'] ?? null,
-            'content' => $validated['content'],
-            'depth_level' => $depthLevel,
-        ]);
-
-        $comment->load('user');
-        $comment->loadCount('likes');
-        $comment->loadExists(['likes as liked_by_current_user' => function ($query) use ($request) {
-            $query->where('user_id', $request->user_id);
-        }]);
-
-        $this->redisFeedback->publicarPayload([
-            'social_event' => 'new_comment',
-            'comment' => $comment
-        ]);
-
-        return response()->json($comment, 201);
+        return response()->json($resultat['comment'], 201);
     }
 
     public function destroy(Request $request, int $id): JsonResponse
     {
-        $comment = SocialComment::where('id', $id)
-            ->where('user_id', $request->user_id)
-            ->firstOrFail();
-
-        $comment->delete();
+        $userId = (int) $request->user_id;
+        $this->deleteCommentAction->executar($userId, $id);
 
         return response()->json(['message' => 'Comentari eliminat']);
     }

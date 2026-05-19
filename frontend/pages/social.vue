@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: social.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div class="social-page min-h-screen bg-transparent pb-24 lg:pb-8">
     <div class="max-w-2xl mx-auto px-3 sm:px-6 pt-2 sm:pt-3">
@@ -5,7 +9,7 @@
 
       <div class="moment-divider mt-4 mb-4" role="presentation">
         <span class="moment-divider__line" aria-hidden="true"></span>
-        <span class="moment-divider__text">comparteix un missatge</span>
+        <span class="moment-divider__text">{{ $t('social.divider_compose') }}</span>
         <span class="moment-divider__line" aria-hidden="true"></span>
       </div>
 
@@ -70,7 +74,7 @@
 
       <div class="moment-divider mt-6 mb-4" role="presentation">
         <span class="moment-divider__line" aria-hidden="true"></span>
-        <span class="moment-divider__text">missatges de la comunitat</span>
+        <span class="moment-divider__text">{{ $t('social.divider_feed') }}</span>
         <span class="moment-divider__line" aria-hidden="true"></span>
       </div>
 
@@ -80,7 +84,7 @@
       </div>
 
       <div v-else-if="posts.length === 0" class="social-empty w-full text-center py-10">
-        <p class="social-empty__text">Encara no hi ha cap publicació al fòrum. Sigues el primer a compartir els teus èxits!</p>
+        <p class="social-empty__text">{{ $t('social.forum_empty') }}</p>
       </div>
 
       <div v-else class="social-feed">
@@ -277,22 +281,22 @@ export default {
 
         if (resposta.ok) {
           this.showReportModal = false;
-          if (this.$swal) {
-            this.$swal.fire({
-              icon: "success",
-              title: "Report enviat",
-              text: "El report s'ha enviat correctament per a la seva revisió.",
-              confirmButtonColor: "#79D45D"
-            });
-          } else {
-            alert("El report s'ha enviat correctament.");
-          }
+          await this.$loopyModal.success(
+            "Report enviat",
+            "El report s'ha enviat correctament per a la seva revisió."
+          );
         } else {
-          alert("Error a l'enviar el report. Si us plau, torna-ho a provar.");
+          await this.$loopyModal.error(
+            "Error",
+            "Error a l'enviar el report. Si us plau, torna-ho a provar."
+          );
         }
       } catch (e) {
         console.error("Error reportant usuari:", e);
-        alert("Error de connexió a l'enviar el report.");
+        await this.$loopyModal.error(
+          "Error",
+          "Error de connexió a l'enviar el report."
+        );
       }
     }
   }

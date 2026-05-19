@@ -140,6 +140,7 @@ export var useShopStore = defineStore("shop", {
         }
         self.items = normalitzarLlistaApi(dades.items);
         self.inventari = normalitzarLlistaApi(dades.inventari);
+        self.syncCosmeticsToGameStore();
         if (typeof dades.monedes === "number") {
           try {
             var gameStore = useGameStore();
@@ -260,7 +261,43 @@ export var useShopStore = defineStore("shop", {
       if (!data) {
         return;
       }
+      if (data.slot === "fons") {
+        try {
+          var gameStore = useGameStore();
+          if (gameStore) {
+            if (data.kind === "unequipped") {
+              gameStore.establirCosmeticsEquipats(undefined, null);
+            } else if (data.skin_key) {
+              gameStore.establirCosmeticsEquipats(undefined, data.skin_key);
+            }
+          }
+        } catch (_) {}
+      } else if (data.skin_key) {
+        try {
+          var gs = useGameStore();
+          if (gs) {
+            if (data.kind === "unequipped") {
+              gs.establirCosmeticsEquipats(null, undefined);
+            } else {
+              gs.establirCosmeticsEquipats(data.skin_key, undefined);
+            }
+          }
+        } catch (_) {}
+      }
       this.carregarBotiga();
+    },
+
+    /**
+     * Sincronitza skin/fons equipats amb gameStore (font backend via inventari).
+     */
+    syncCosmeticsToGameStore: function () {
+      try {
+        var gameStore = useGameStore();
+        if (!gameStore) {
+          return;
+        }
+        gameStore.establirCosmeticsEquipats(this.skinEquipat, this.fonsEquipat);
+      } catch (_) {}
     },
   },
 });

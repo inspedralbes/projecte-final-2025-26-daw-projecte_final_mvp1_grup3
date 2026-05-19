@@ -6,6 +6,7 @@ namespace App\Domains\Habits\Support;
 
 //================================ NAMESPACES / IMPORTS ============
 
+use App\Support\DificultatNormalizer;
 use App\Support\GamificationConstants;
 
 //================================ PROPIETATS / ATRIBUTS ==========
@@ -27,10 +28,10 @@ class HabitRewardCalculator
             return GamificationConstants::XP_DEFECTE;
         }
 
-        $clau = strtolower(trim($dificultat));
+        $clau = DificultatNormalizer::normalitzar($dificultat);
         $mapXp = GamificationConstants::XP_PER_DIFICULTAT;
 
-        if (array_key_exists($clau, $mapXp)) {
+        if ($clau !== '' && array_key_exists($clau, $mapXp)) {
             return $mapXp[$clau];
         }
 
@@ -46,10 +47,10 @@ class HabitRewardCalculator
             return GamificationConstants::MONEDES_DEFECTE;
         }
 
-        $clau = strtolower(trim($dificultat));
+        $clau = DificultatNormalizer::normalitzar($dificultat);
         $mapMonedes = GamificationConstants::MONEDES_PER_DIFICULTAT;
 
-        if (array_key_exists($clau, $mapMonedes)) {
+        if ($clau !== '' && array_key_exists($clau, $mapMonedes)) {
             return $mapMonedes[$clau];
         }
 

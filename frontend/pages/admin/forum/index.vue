@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: index.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <script setup>
 /**
  * Hub de moderació del fòrum: reports d'usuaris vs contingut.

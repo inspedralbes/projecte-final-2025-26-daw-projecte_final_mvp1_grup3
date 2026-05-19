@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: eggReveal.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div class="egg-reveal-container" :style="{ backgroundImage: `url(${fonsAplicacio})` }" @click="handleClick" @keydown.enter.prevent="handleClick" tabindex="0" role="button" aria-label="Continuar a la home">
     <div class="egg-reveal-content">

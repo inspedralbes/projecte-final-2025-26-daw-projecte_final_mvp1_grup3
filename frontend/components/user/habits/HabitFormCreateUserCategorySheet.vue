@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: HabitFormCreateUserCategorySheet.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <Teleport to="body">
     <Transition name="create-cat-backdrop">

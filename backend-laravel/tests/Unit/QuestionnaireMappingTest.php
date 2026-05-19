@@ -1,8 +1,18 @@
 <?php
 
+
+/**
+ * Capa Laravel: QuestionnaireMappingTest.
+ * Comentaris: agents/backend/AgentLaravel.md
+ */
+
 namespace Tests\Unit;
 
+//================================ NAMESPACES / IMPORTS ============
+
 use PHPUnit\Framework\TestCase;
+
+//================================ MÈTODES / FUNCIONS ===========
 
 class QuestionnaireMappingTest extends TestCase
 {

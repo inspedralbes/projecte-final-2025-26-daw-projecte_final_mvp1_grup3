@@ -1,5 +1,10 @@
+<!--
+  Component o pagina Nuxt: app.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div class="app-transition-host">
+    <LoopyModalHost />
     <NuxtLayout>
       <NuxtPage :key="route.fullPath" :transition="pageTransition" />
     </NuxtLayout>
@@ -7,6 +12,7 @@
 </template>
 
 <script setup>
+import LoopyModalHost from "~/components/shared/LoopyModalHost.vue";
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useState } from '#imports';

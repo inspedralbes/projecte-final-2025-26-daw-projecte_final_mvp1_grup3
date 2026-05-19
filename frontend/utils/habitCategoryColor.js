@@ -1,4 +1,10 @@
 /**
+ * Modul JavaScript ES5: habitCategoryColor.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
+/**
  * Color per defecte associat a cada categoria de l'app (id 1–8),
  * alineat amb la llista de colors del formulari d'hàbits.
  */

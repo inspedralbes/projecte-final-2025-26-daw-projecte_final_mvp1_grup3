@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: CommentList.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div class="comment-list">
     <h4 class="comment-list__title">

@@ -1,4 +1,10 @@
 /**
+ * Modul JavaScript ES5: apiMappers.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
+/**
  * Mappers centralitzats per transformar respostes de l'API al format del frontend.
  * Única font de veritat per al mapeig de models.
  */
@@ -155,6 +161,8 @@ function mapGameStateFromApi(gs) {
   if (gs.missio_objectiu !== undefined) result.missio_objectiu = gs.missio_objectiu;
   if (gs.monstre_tipus !== undefined) result.monstre_tipus = gs.monstre_tipus;
   if (gs.streak_incremented !== undefined) result.streak_incremented = !!gs.streak_incremented;
+  if (gs.skin_key !== undefined) result.skin_key = gs.skin_key;
+  if (gs.fons_key !== undefined) result.fons_key = gs.fons_key;
   return result;
 }
 

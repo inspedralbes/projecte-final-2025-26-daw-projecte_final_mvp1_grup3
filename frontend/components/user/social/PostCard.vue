@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: PostCard.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div class="post-card-wrapper">
     <div

@@ -1,3 +1,9 @@
+/**
+ * Modul JavaScript ES5: useHabitFeedback.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
 import { useGameStore } from '~/stores/gameStore.js';
 import { useSocketUiCallbacks } from '~/stores/useSocketUiCallbacks.js';
 
@@ -13,8 +19,24 @@ function processarHabitActionConfirmed(payload) {
     if (payload && payload.message) {
       msg = payload.message;
     }
-    if (msg) {
-      uiCallbacks.invocarHabitError(msg);
+    if (payload && payload.action === 'COMPLETE') {
+      var habitIdFail = payload.habit_id;
+      if (payload.habit && payload.habit.id) {
+        habitIdFail = payload.habit.id;
+      }
+      if (habitIdFail) {
+        var progFail = payload.progress;
+        if (progFail === undefined) {
+          progFail = gameStore.obtenirProgresValor(habitIdFail);
+        }
+        var completatFail = payload.completed_today === true;
+        gameStore.actualitzarProgresHabit(habitIdFail, progFail, completatFail);
+      }
+    }
+    if (msg && msg.indexOf('objectiu abans') < 0) {
+      if (payload.action !== 'COMPLETE' || payload.completed_today !== true) {
+        uiCallbacks.invocarHabitError(msg);
+      }
     }
     return;
   }
@@ -31,15 +53,22 @@ function processarHabitActionConfirmed(payload) {
     gameStore.actualitzarProgresHabit(habitIdProgress, payload.progress, payload.completed_today);
   }
 
-  if (payload.action === 'COMPLETE') {
+  if (payload.action === 'COMPLETE' && payload.success === true) {
+    var habitIdOk = payload.habit_id;
     if (payload.habit && payload.habit.id) {
-      var prog = gameStore.obtenirProgresValor(payload.habit.id);
-      gameStore.actualitzarProgresHabit(payload.habit.id, prog, true);
+      habitIdOk = payload.habit.id;
+      var progComplete = payload.progress;
+      if (progComplete === undefined) {
+        progComplete = gameStore.obtenirProgresValor(payload.habit.id);
+      }
+      gameStore.actualitzarProgresHabit(payload.habit.id, progComplete, true);
     }
-    if (payload.xp_update && typeof payload.xp_update === 'object') {
-      gameStore.actualitzarDesDeXpUpdate(payload.xp_update);
+    if (habitIdOk) {
+      gameStore.marcarAnimacioHabitCompletat(habitIdOk);
     }
     uiCallbacks.invocarHabitCompleteAlert();
+    gameStore.obtenirProgresHabits();
+    gameStore.obtenirEstatJoc();
   }
 
   if (payload.action === 'FOCUS_UPDATE' && payload.completed_today === true) {

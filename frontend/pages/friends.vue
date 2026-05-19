@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: friends.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div class="friends-page min-h-screen overflow-x-hidden pb-24 lg:pb-8 bg-transparent">
     <div class="max-w-7xl mx-auto min-w-0 px-3 sm:px-6 pt-2 sm:pt-3">
@@ -10,7 +14,7 @@
             <button
               type="button"
               class="templates-filter-decor"
-              :aria-label="searchVisible ? 'Tancar cerca' : 'Obrir cerca'"
+              :aria-label="searchVisible ? $t('friends.close_search') : $t('friends.open_search')"
               @click="toggleSearch"
             >
               <svg
@@ -41,7 +45,7 @@
           </div>
 
           <div class="templates-filter-card">
-            <label for="filterFriends" class="sr-only">Filtrar</label>
+            <label for="filterFriends" class="sr-only">{{ $t('friends.filter') }}</label>
             <select
               id="filterFriends"
               v-model="activeTab"
@@ -80,7 +84,7 @@
                 <div class="template-card__content relative" style="z-index: 2; pointer-events: none;">
                   <p class="template-card__title pointer-events-auto inline-block">{{ friendObj.friend.nom }}</p>
                   <div class="template-card__meta">
-                    <span class="template-card__meta-item">Nivell {{ friendObj.friend.nivell || 1 }}</span>
+                    <span class="template-card__meta-item">{{ $t('friends.level_short', { n: friendObj.friend.nivell || 1 }) }}</span>
                   </div>
                 </div>
               </div>
@@ -94,9 +98,9 @@
                 <div class="template-expand-panel">
                   <div class="template-spec-card">
                     <div class="grid grid-cols-3 gap-2 w-full">
-                      <button type="button" class="template-expand-btn w-full text-center px-1" style="background:#5B9CE6; border: 2px solid #4A83C4; color: white;" @click="openChat(friendObj.friend.id, friendObj.friend.nom)">Missatge</button>
-                      <button type="button" class="template-expand-btn w-full text-center px-1" style="background:#D14D6B; border: 2px solid #B03A55; color: white;" @click="removeFriend(friendObj.friend.id, friendObj.friend.nom)">Eliminar</button>
-                      <button type="button" class="template-expand-btn w-full text-center px-1" style="background:#FF8DA6; border: 2px solid #E6778F; color: white;" @click="reportUser(friendObj.friend.id)">Reportar</button>
+                      <button type="button" class="template-expand-btn w-full text-center px-1" style="background:#5B9CE6; border: 2px solid #4A83C4; color: white;" @click="openChat(friendObj.friend.id, friendObj.friend.nom)">{{ $t('friends.message') }}</button>
+                      <button type="button" class="template-expand-btn w-full text-center px-1" style="background:#D14D6B; border: 2px solid #B03A55; color: white;" @click="removeFriend(friendObj.friend.id, friendObj.friend.nom)">{{ $t('social.delete') }}</button>
+                      <button type="button" class="template-expand-btn w-full text-center px-1" style="background:#FF8DA6; border: 2px solid #E6778F; color: white;" @click="reportUser(friendObj.friend.id)">{{ $t('friends.report') }}</button>
                     </div>
                   </div>
                 </div>
@@ -133,7 +137,7 @@
                 <div class="template-card__content relative" style="z-index: 2; pointer-events: none;">
                   <p class="template-card__title pointer-events-auto inline-block">{{ req.requester.nom }}</p>
                   <div class="template-card__meta">
-                    <span class="template-card__meta-item">Nivell {{ req.requester.nivell || 1 }}</span>
+                    <span class="template-card__meta-item">{{ $t('friends.level_short', { n: req.requester.nivell || 1 }) }}</span>
                   </div>
                 </div>
               </div>
@@ -147,9 +151,9 @@
                 <div class="template-expand-panel">
                   <div class="template-spec-card">
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full">
-                      <button type="button" class="template-expand-btn template-expand-btn--primary w-full text-center px-0.5" @click="acceptRequest(req.id)">Acceptar</button>
-                      <button type="button" class="template-expand-btn w-full text-center px-0.5" style="background:#5B9CE6; border: 2px solid #4A83C4; color: white;" @click="openChat(req.requester.id, req.requester.nom)">Missatge</button>
-                      <button type="button" class="template-expand-btn w-full text-center px-0.5" style="background:#D14D6B; border: 2px solid #B03A55; color: white;" @click="rejectRequest(req.id)">Rebutjar</button>
+                      <button type="button" class="template-expand-btn template-expand-btn--primary w-full text-center px-0.5" @click="acceptRequest(req.id)">{{ $t('friends.accept') }}</button>
+                      <button type="button" class="template-expand-btn w-full text-center px-0.5" style="background:#5B9CE6; border: 2px solid #4A83C4; color: white;" @click="openChat(req.requester.id, req.requester.nom)">{{ $t('friends.message') }}</button>
+                      <button type="button" class="template-expand-btn w-full text-center px-0.5" style="background:#D14D6B; border: 2px solid #B03A55; color: white;" @click="rejectRequest(req.id)">{{ $t('friends.reject') }}</button>
                       <button type="button" class="template-expand-btn w-full text-center px-0.5" style="background:#FF8DA6; border: 2px solid #E6778F; color: white;" @click="reportUser(req.requester.id)">Reportar</button>
                     </div>
                   </div>
@@ -177,7 +181,7 @@
                 <div class="template-card__content relative" style="z-index: 2; pointer-events: none;">
                   <p class="template-card__title pointer-events-auto inline-block">{{ user.nom }}</p>
                   <div class="template-card__meta">
-                    <span class="template-card__meta-item">Nivell {{ user.nivell || 1 }}</span>
+                    <span class="template-card__meta-item">{{ $t('friends.level_short', { n: user.nivell || 1 }) }}</span>
                   </div>
                 </div>
               </div>
@@ -202,12 +206,12 @@
                           <svg class="friend-req-btn__tick shrink-0" width="10" height="10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
                           </svg>
-                          Enviada
+                          {{ $t('friends.request_sent') }}
                         </span>
-                        <span v-else>Sol·licitar</span>
+                        <span v-else>{{ $t('friends.send_request') }}</span>
                       </button>
-                      <button type="button" class="template-expand-btn w-full text-center px-0.5" style="background:#5B9CE6; border: 2px solid #4A83C4; color: white;" @click="openChat(user.id, user.nom)">Missatge</button>
-                      <button type="button" class="template-expand-btn w-full text-center px-0.5" style="background:#FF8DA6; border: 2px solid #E6778F; color: white;" @click="reportUser(user.id)">Reportar</button>
+                      <button type="button" class="template-expand-btn w-full text-center px-0.5" style="background:#5B9CE6; border: 2px solid #4A83C4; color: white;" @click="openChat(user.id, user.nom)">{{ $t('friends.message') }}</button>
+                      <button type="button" class="template-expand-btn w-full text-center px-0.5" style="background:#FF8DA6; border: 2px solid #E6778F; color: white;" @click="reportUser(user.id)">{{ $t('friends.report') }}</button>
                     </div>
                   </div>
                 </div>
@@ -248,9 +252,9 @@
 
       <UserSocialConfirmModal
         :show="showRemoveFriendConfirm"
-        title="Eliminar amic"
-        :message="'Segur que vols eliminar ' + (removeFriendName || 'aquest amic') + '? Deixàreu de ser amics.'"
-        confirm-text="Eliminar"
+        :title="$t('friends.remove_title')"
+        :message="$t('friends.remove_message', { name: removeFriendName || '' })"
+        :confirm-text="$t('social.delete')"
         @confirm="confirmRemoveFriend"
         @cancel="showRemoveFriendConfirm = false"
       />
@@ -464,7 +468,7 @@ export default {
         await this.friendshipStore.sendFriendRequest(addresseeId);
         this.sentRequests = Object.assign({}, this.sentRequests, { [addresseeId]: true });
       } catch (e) {
-        alert(e.message);
+        await this.$loopyModal.error("Error", e.message);
       } finally {
         this.sending = false;
       }
@@ -486,7 +490,7 @@ export default {
     confirmRemoveFriend: async function () {
       this.showRemoveFriendConfirm = false;
       // TODO: connectar al backend
-      alert("Aquesta funcionalitat (Eliminar amic) encara no està implementada.");
+      await this.$loopyModal.info("Amistat", "Aquesta funcionalitat (Eliminar amic) encara no està implementada.");
     },
     reportUser: function (id) {
       this.reportUserId = id;
@@ -519,15 +523,16 @@ export default {
         });
         if (resposta.ok) {
           this.showReportModal = false;
-          setTimeout(() => {
-            alert("Gràcies! L'usuari ha sigut reportat i ho revisarem.");
+          var self = this;
+          setTimeout(function () {
+            self.$loopyModal.success("Report", "Gràcies! L'usuari ha sigut reportat i ho revisarem.");
           }, 300);
         } else {
-          alert("Error a l'enviar el report. Si us plau, torna-ho a provar.");
+          await this.$loopyModal.error("Error", "Error a l'enviar el report. Si us plau, torna-ho a provar.");
         }
       } catch (e) {
         console.error("Error reportant usuari:", e);
-        alert("Error de connexió a l'enviar el report.");
+        await this.$loopyModal.error("Error", "Error de connexió a l'enviar el report.");
       }
     },
     openChat: function (friendId, friendNom) {

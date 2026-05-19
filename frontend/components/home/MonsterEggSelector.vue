@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: MonsterEggSelector.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div class="monster-egg-selector">
     <div class="egg-grid">
@@ -110,15 +114,11 @@ export default {
           this.$emit('confirmed', data.monstre);
         } else {
           var errMsg = data.error || 'Error al triar el monstre';
-          if (typeof window !== 'undefined' && window.alert) {
-            alert(errMsg);
-          }
+          await this.$loopyModal.error('Error', errMsg);
         }
       } catch (err) {
         console.error('Error confirming monster choice:', err);
-        if (typeof window !== 'undefined' && window.alert) {
-          alert('Error de connexió en triar el monstre');
-        }
+        await this.$loopyModal.error('Error', 'Error de connexió en triar el monstre');
       } finally {
         this.isConfirming = false;
       }

@@ -1,5 +1,11 @@
 <?php
 
+
+/**
+ * Capa Laravel: GamificationConstants.
+ * Comentaris: agents/backend/AgentLaravel.md
+ */
+
 namespace App\Support;
 
 /**
@@ -11,12 +17,16 @@ final class GamificationConstants
     public const XP_PER_DIFICULTAT = [
         'facil' => 100,
         'media' => 250,
+        'mitja' => 250,
+        'mitjana' => 250,
         'dificil' => 400,
     ];
 
     public const MONEDES_PER_DIFICULTAT = [
         'facil' => 2,
         'media' => 5,
+        'mitja' => 5,
+        'mitjana' => 5,
         'dificil' => 10,
     ];
 

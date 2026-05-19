@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: registre.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div class="global-app-container login-container register-page-auth">
     <div class="login-lang-switch">

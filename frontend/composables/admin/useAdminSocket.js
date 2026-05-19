@@ -1,4 +1,10 @@
 /**
+ * Modul JavaScript ES5: useAdminSocket.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
+/**
  * Composable per esdeveniments socket d'admin.
  * admin_join, admin:request_connected, admin:connected_users, admin_action.
  */

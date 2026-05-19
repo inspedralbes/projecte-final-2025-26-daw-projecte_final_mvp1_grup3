@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: ClanList.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div class="clan-catalog-panel">
     <div class="clan-filter-wrap" :class="{ 'clan-filter-wrap--searching': searchVisible }">
@@ -641,7 +645,7 @@ export default {
       var authStore = useAuthStore();
       var result = await store.joinPublic(id);
       if (result) {
-        alert("T'has unit al clan amb èxit!");
+        await this.$loopyModal.success("Clan", "T'has unit al clan amb èxit!");
         var nuxtApp = useNuxtApp();
         if (nuxtApp.$socket && nuxtApp.$socket.connected) {
           nuxtApp.$socket.emit("join_clan_room", { clan_id: id });
@@ -657,7 +661,7 @@ export default {
         }
         this.$router.push('/clans/' + id);
       } else {
-        alert(store.error || "Error al unir-se al clan");
+        await this.$loopyModal.error("Error", store.error || "Error al unir-se al clan");
       }
     },
     requestJoinClan: async function(id) {
@@ -666,7 +670,7 @@ export default {
       var clan = this.clans.find(function(c) { return c.id === id; });
       var result = await store.requestJoin(id);
       if (result) {
-        alert("S'ha enviat la sol·licitud per unir-se al clan.");
+        await this.$loopyModal.success("Sol·licitud", "S'ha enviat la sol·licitud per unir-se al clan.");
         var nuxtApp = useNuxtApp();
         if (nuxtApp.$socket && nuxtApp.$socket.connected && clan) {
           nuxtApp.$socket.emit("clan_request_notify", {
@@ -677,7 +681,7 @@ export default {
           });
         }
       } else {
-        alert(store.error || "Error en enviar la sol·licitud");
+        await this.$loopyModal.error("Error", store.error || "Error en enviar la sol·licitud");
       }
     }
   }

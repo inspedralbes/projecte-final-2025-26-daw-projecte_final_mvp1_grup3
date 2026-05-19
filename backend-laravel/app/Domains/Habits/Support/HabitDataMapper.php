@@ -2,7 +2,15 @@
 
 declare(strict_types=1);
 
+
+/**
+ * Capa Laravel: HabitDataMapper.
+ * Comentaris: agents/backend/AgentLaravel.md
+ */
+
 namespace App\Domains\Habits\Support;
+
+use App\Support\DificultatNormalizer;
 
 //================================ PROPIETATS / ATRIBUTS ==========
 
@@ -39,7 +47,8 @@ class HabitDataMapper
         }
 
         if (isset($habitData['dificultat'])) {
-            $dades['dificultat'] = $habitData['dificultat'];
+            $normalitzada = DificultatNormalizer::normalitzar((string) $habitData['dificultat']);
+            $dades['dificultat'] = $normalitzada !== '' ? $normalitzada : $habitData['dificultat'];
         }
 
         if (isset($habitData['frequencia_tipus'])) {

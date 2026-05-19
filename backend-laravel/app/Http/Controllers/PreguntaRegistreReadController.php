@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 //================================ NAMESPACES / IMPORTS ============
 
 use App\Http\Resources\PreguntaRegistreResource;
-use App\Services\PreguntaRegistreService;
+use App\Domains\Onboarding\Services\PreguntaRegistreService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -63,3 +63,4 @@ class PreguntaRegistreReadController extends Controller
         }
     }
 }
+

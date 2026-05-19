@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: StreakBrokenModal.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
     <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="tancar"></div>
@@ -10,15 +14,15 @@
         <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center text-2xl">
           💔
         </div>
-        <h2 class="text-lg font-bold text-gray-800">Racha rota</h2>
+        <h2 class="text-lg font-bold text-gray-800">{{ $t('home.streak_broken_title') }}</h2>
         <p class="text-sm text-gray-600">
-          Tu racha de {{ ratxaAnterior }} días se ha roto.
+          {{ $t('home.streak_broken_text', { days: ratxaAnterior }) }}
         </p>
         <button
           class="w-full py-3 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-all"
           @click="tancar"
         >
-          Entendido
+          {{ $t('common.got_it') }}
         </button>
       </div>
     </div>

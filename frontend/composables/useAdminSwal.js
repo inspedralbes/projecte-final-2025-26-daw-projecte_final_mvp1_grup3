@@ -1,90 +1,39 @@
 /**
- * Alertes modal centradas per al panell admin (SweetAlert2 estil Loopy).
- * Evita alert()/confirm() del navegador i toasts superiors.
+ * Alertes del panell admin via modals Loopy (fulla rosa).
  */
+import { useLoopyModal } from "~/composables/useLoopyModal.js";
+
 export function useAdminSwal() {
-  var nuxtApp = useNuxtApp();
-  var swal = nuxtApp.$swal;
-
-  var customClass = {
-    popup: 'loopy-swal-popup loopy-admin-swal-popup',
-    title: 'loopy-swal-title loopy-admin-swal-title',
-    htmlContainer: 'loopy-admin-swal-text',
-    confirmButton: 'loopy-swal-confirm loopy-admin-swal-confirm',
-    cancelButton: 'loopy-swal-cancel loopy-admin-swal-cancel'
-  };
-
-  var base = {
-    toast: false,
-    position: 'center',
-    buttonsStyling: false,
-    customClass: customClass,
-    backdrop: 'rgba(15, 23, 42, 0.55)',
-    allowOutsideClick: true,
-    heightAuto: false
-  };
+  var modal = useLoopyModal();
 
   function adminSuccess(title, text) {
-    if (!swal) {
-      return Promise.resolve();
-    }
-    return swal.fire(Object.assign({}, base, {
-      icon: 'success',
-      title: title,
-      text: text || undefined,
-      showConfirmButton: true,
-      confirmButtonText: "D'acord",
-      timer: text ? undefined : 2200,
-      timerProgressBar: !text
-    }));
+    return modal.success(title, text);
   }
 
   function adminError(title, text) {
-    if (!swal) {
-      return Promise.resolve();
-    }
-    return swal.fire(Object.assign({}, base, {
-      icon: 'error',
-      title: title,
-      text: text || undefined,
-      showConfirmButton: true,
-      confirmButtonText: "D'acord"
-    }));
+    return modal.error(title, text);
   }
 
   function adminWarning(title, text) {
-    if (!swal) {
-      return Promise.resolve();
-    }
-    return swal.fire(Object.assign({}, base, {
-      icon: 'warning',
-      title: title,
-      text: text || undefined,
-      showConfirmButton: true,
-      confirmButtonText: "D'acord"
-    }));
+    return modal.warning(title, text);
   }
 
   function adminConfirm(options) {
-    if (!swal) {
-      return Promise.resolve({ isConfirmed: false });
-    }
-    var opts = typeof options === 'string' ? { title: options } : (options || {});
-    return swal.fire(Object.assign({}, base, {
-      icon: opts.icon || 'question',
-      title: opts.title || 'Confirmar',
-      text: opts.text,
-      showCancelButton: true,
-      confirmButtonText: opts.confirmText || 'Sí',
-      cancelButtonText: opts.cancelText || 'Cancel·lar',
-      reverseButtons: true
-    }));
+    var opts = typeof options === "string" ? { title: options } : (options || {});
+    return modal.confirm({
+      title: opts.title || "Confirmar",
+      message: opts.text,
+      confirmText: opts.confirmText || "Sí",
+      cancelText: opts.cancelText || "Cancel·lar",
+    }).then(function (confirmed) {
+      return { isConfirmed: confirmed, isDismissed: !confirmed };
+    });
   }
 
   return {
     adminSuccess: adminSuccess,
     adminError: adminError,
     adminWarning: adminWarning,
-    adminConfirm: adminConfirm
+    adminConfirm: adminConfirm,
   };
 }

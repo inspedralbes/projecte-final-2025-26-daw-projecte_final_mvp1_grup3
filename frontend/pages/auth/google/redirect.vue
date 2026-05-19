@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: redirect.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div class="flex items-center justify-center min-h-screen bg-gray-100">
     <div class="p-8 bg-white rounded-xl shadow-lg text-center">

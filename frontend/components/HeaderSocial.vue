@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: HeaderSocial.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <header class="social-switcher">
     <button

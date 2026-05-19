@@ -10,8 +10,8 @@ use App\Http\Resources\HabitProgressTodayResource;
 use App\Http\Resources\HabitResource;
 use App\Models\Habit;
 use App\Models\UsuariHabit;
-use App\Services\HabitService;
-use App\Services\MissionService;
+use App\Domains\Habits\Services\HabitService;
+use App\Domains\Gamification\Services\MissionService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -184,21 +184,28 @@ class HabitReadController extends Controller
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
 
-        if ($resultat['success'] !== true) {
+        $jaCompletatAvui = ($resultat['completed_today'] ?? false) === true;
+        if (($resultat['success'] ?? false) !== true && ! $jaCompletatAvui) {
             return response()->json($resultat, 400);
         }
 
         $xpUpdate = $resultat['xp_update'] ?? null;
         $missionCompleted = null;
 
+        $timezone = config('app.timezone', 'Europe/Madrid');
         $dataStr = $request->input('data');
-        $timestamp = $dataStr ? Carbon::parse($dataStr) : Carbon::now();
+        if ($dataStr) {
+            $timestamp = Carbon::parse($dataStr)->setTimezone($timezone);
+        } else {
+            $timestamp = Carbon::now($timezone);
+        }
+
         $resultatMissio = $this->missionService->comprovarMissioCompletada(
             $usuariId,
             $habitId,
             $timestamp
         );
-        if ($resultatMissio !== null && $resultatMissio['completada'] === true) {
+        if ($resultatMissio !== null && ($resultatMissio['completada'] ?? false) === true) {
             $missionCompleted = ['success' => true];
             if (isset($resultatMissio['missio_objectiu'])) {
                 $missionCompleted['missio_objectiu'] = (int) $resultatMissio['missio_objectiu'];
@@ -208,9 +215,12 @@ class HabitReadController extends Controller
             }
         }
 
+        $resultat['success'] = true;
+        $resultat['completed_today'] = true;
         $resultat['xp_update'] = $xpUpdate;
         $resultat['mission_completed'] = $missionCompleted;
 
         return response()->json($resultat);
     }
 }
+

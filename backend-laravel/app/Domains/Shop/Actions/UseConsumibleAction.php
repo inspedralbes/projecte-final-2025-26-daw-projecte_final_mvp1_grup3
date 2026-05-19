@@ -8,7 +8,7 @@ namespace App\Domains\Shop\Actions;
 
 use App\Models\Ratxa;
 use App\Models\UsuariItem;
-use App\Services\RedisFeedbackService;
+use App\Domains\Shared\Services\RedisFeedbackService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -116,3 +116,4 @@ class UseConsumibleAction
         ];
     }
 }
+

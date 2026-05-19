@@ -2,15 +2,25 @@
 
 declare(strict_types=1);
 
+
+/**
+ * Capa Laravel: ResetRatxesDiariesCommand.
+ * Comentaris: agents/backend/AgentLaravel.md
+ */
+
 namespace App\Console\Commands;
 
-use App\Services\HabitService;
+//================================ NAMESPACES / IMPORTS ============
+
+use App\Domains\Habits\Services\HabitService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 
 /**
  * Command per resetar ratxes diàries per inactivitat.
  */
+//================================ MÈTODES / FUNCIONS ===========
+
 class ResetRatxesDiariesCommand extends Command
 {
     /**
@@ -54,3 +64,4 @@ class ResetRatxesDiariesCommand extends Command
         return self::SUCCESS;
     }
 }
+

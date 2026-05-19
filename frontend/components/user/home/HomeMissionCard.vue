@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: HomeMissionCard.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div class="mission-card" :class="{ 'mission-card--completada': estaCompletada }">
     <template v-if="!estaCompletada">
@@ -22,15 +26,15 @@
 
     <template v-else>
       <div class="mission-card__completada-inner">
+        <div class="mission-card__check" aria-hidden="true">
+          <MissionStyleCheckIcon :selected="true" :size="43" />
+        </div>
         <div class="mission-card__text mission-card__text--completada">
           <p class="mission-card__title">Missió Diaria</p>
           <p class="mission-card__subtitle">
             <template v-if="missioDiaria && missioDiaria.titol">{{ missioDiaria.titol }}</template>
             <template v-else>{{ $t('home.loading') }}</template>
           </p>
-        </div>
-        <div class="mission-card__check" aria-hidden="true">
-          <MissionStyleCheckIcon :selected="true" :size="43" />
         </div>
       </div>
     </template>
@@ -87,8 +91,7 @@ export default {
 .mission-card__completada-inner {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 14px;
+  gap: 12px;
   width: 100%;
   min-width: 0;
 }

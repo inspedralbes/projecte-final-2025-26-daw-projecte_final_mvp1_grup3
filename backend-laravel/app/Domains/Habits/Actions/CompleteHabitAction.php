@@ -14,8 +14,8 @@ use App\Models\Habit;
 use App\Models\Ratxa;
 use App\Models\RegistreActivitat;
 use App\Models\User;
-use App\Services\GamificationService;
-use App\Services\LogroService;
+use App\Domains\Gamification\Services\GamificationService;
+use App\Domains\Gamification\Services\LogroService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -78,28 +78,52 @@ class CompleteHabitAction
             $usuariId = (int) ($habit->usuari_id);
         }
 
+        $timezone = config('app.timezone', 'Europe/Madrid');
         if (isset($dades['data']) && $dades['data'] !== null) {
-            $timestampComplet = Carbon::parse($dades['data']);
+            $timestampComplet = Carbon::parse($dades['data'])->setTimezone($timezone);
         } else {
-            $timestampComplet = Carbon::now();
+            $timestampComplet = Carbon::now($timezone);
         }
 
-        $timezone = config('app.timezone', 'Europe/Madrid');
-        $dataActivitat = $timestampComplet->copy()->setTimezone($timezone)->startOfDay();
+        $dataActivitat = $timestampComplet->copy()->startOfDay();
 
         if (!$this->accessGuard->usuariTeAccesHabit($habitId, $usuariId)) {
-            return ['success' => false, 'message' => 'No autoritzat per completar aquest hàbit.'];
+            return [
+                'success' => false,
+                'message' => 'No autoritzat per completar aquest hàbit.',
+                'progress' => $this->progressReader->obtenirProgresDiari($habitId, $dataActivitat),
+            ];
+        }
+
+        $objectiu = (int) ($habit->objectiu_vegades ?? 1);
+        if ($objectiu <= 0) {
+            $objectiu = 1;
         }
 
         $progresAvui = $this->progressReader->obtenirProgresDiari($habitId, $dataActivitat);
-        if ($progresAvui < (int) $habit->objectiu_vegades) {
-            return ['success' => false, 'message' => 'Has de completar l\'objectiu abans de finalitzar l\'hàbit.'];
+        if ($progresAvui < $objectiu) {
+            // Race PROGRESS/COMPLETE des del socket: assegurar progrés abans de marcar acabado.
+            $habit->registresActivitat()->create([
+                'data' => $timestampComplet,
+                'valor' => $objectiu - $progresAvui,
+                'acabado' => false,
+                'xp_guanyada' => 0,
+            ]);
         }
 
+        $iniciDia = $dataActivitat->copy()->startOfDay();
+        $fiDia = $dataActivitat->copy()->endOfDay();
         $jaCompletat = RegistreActivitat::where('habit_id', $habitId)
-            ->whereDate('data', $dataActivitat)->where('acabado', true)->exists();
+            ->whereBetween('data', [$iniciDia, $fiDia])
+            ->where('acabado', true)
+            ->exists();
         if ($jaCompletat) {
-            return ['success' => false, 'message' => 'Aquest hàbit ja s\'ha completat avui.'];
+            return [
+                'success' => false,
+                'message' => 'Aquest hàbit ja s\'ha completat avui.',
+                'progress' => $objectiu,
+                'completed_today' => true,
+            ];
         }
 
         $xpGuanyada = $this->rewardCalculator->calcularXPSegonsDificultat($habit->dificultat);
@@ -158,3 +182,4 @@ class CompleteHabitAction
         ];
     }
 }
+

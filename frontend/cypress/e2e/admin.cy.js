@@ -1,3 +1,9 @@
+/**
+ * Modul JavaScript ES5: admin.cy.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
 describe('Admin Panel', function () {
   beforeEach(function () {
     cy.loginAdmin();

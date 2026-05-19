@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: HomeMonsterPanel.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div
     class="bento-card bg-white/95 backdrop-blur-md rounded-3xl p-8 shadow-2xl border border-white/50 flex flex-col items-center relative min-h-[500px]"
@@ -81,6 +85,7 @@
 import UserHomeHomeStreakSection from "~/components/user/home/HomeStreakSection.vue";
 import bosqueImg from "~/assets/img/Fons/Fons_Bosc.png";
 import mascotaImg from "~/assets/img/Monstres/Mascota_Defecte.png";
+import { useGameStore } from "~/stores/gameStore.js";
 import { useShopStore } from "~/stores/useShopStore.js";
 import { getMonsterGorraImage } from "~/utils/monsterImage.js";
 import { useAuthStore } from "~/stores/useAuthStore.js";
@@ -213,7 +218,16 @@ export default {
       } catch (_) {
         return this.imatgeMascota;
       }
-      var skinKey = shopStore && shopStore.skinEquipat ? shopStore.skinEquipat : null;
+      var skinKey = null;
+      try {
+        var gameStore = useGameStore();
+        if (gameStore && gameStore.skinKey) {
+          skinKey = gameStore.skinKey;
+        }
+      } catch (_) {}
+      if (!skinKey && shopStore && shopStore.skinEquipat) {
+        skinKey = shopStore.skinEquipat;
+      }
       if (skinKey === "gorra_monster") {
         try {
           var authStore = useAuthStore();

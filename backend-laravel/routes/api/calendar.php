@@ -1,5 +1,13 @@
 <?php
 
+
+/**
+ * Capa Laravel: calendar.
+ * Comentaris: agents/backend/AgentLaravel.md
+ */
+
+//================================ NAMESPACES / IMPORTS ============
+
 use App\Http\Controllers\CalendarController;
 use Illuminate\Support\Facades\Route;
 

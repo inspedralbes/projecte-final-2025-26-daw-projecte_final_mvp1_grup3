@@ -1,5 +1,13 @@
 <?php
 
+
+/**
+ * Capa Laravel: admin.
+ * Comentaris: agents/backend/AgentLaravel.md
+ */
+
+//================================ NAMESPACES / IMPORTS ============
+
 use App\Http\Controllers\Api\Admin\AdminConfiguracioController;
 use App\Http\Controllers\Api\Admin\AdminDashboardController;
 use App\Http\Controllers\Api\Admin\AdminHabitController;

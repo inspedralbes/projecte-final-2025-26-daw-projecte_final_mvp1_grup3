@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: usuaris.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <script setup>
 /**
  * Reports d'usuaris: prohibir / desprohibir comptes.

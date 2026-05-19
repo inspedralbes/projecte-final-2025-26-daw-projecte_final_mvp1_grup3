@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: HomeDailyRouletteCard.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <button
     type="button"

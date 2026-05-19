@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: index.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div class="clans-page min-h-screen bg-transparent overflow-x-hidden pb-24 lg:pb-8">
     <div class="max-w-5xl mx-auto px-3 sm:px-6 pt-2 sm:pt-3">
@@ -6,22 +10,22 @@
       <div class="clans-content-area">
         <div v-if="loading" class="text-center py-10">
           <div class="clans-spinner"></div>
-          <p class="clans-loading-text">Carregant...</p>
+          <p class="clans-loading-text">{{ $t('clans.loading') }}</p>
         </div>
 
         <div v-if="insufficientLevel" class="max-w-md mx-auto mt-10">
           <div class="text-center bg-white p-8 rounded-[32px] border-4 border-gray-100 shadow-xl">
             <img src="~/assets/img/Icones/Icona_Logo_Perfil.png" class="w-32 h-auto mx-auto mb-6 drop-shadow-md pixelated" alt="Loopy" />
-            <h2 class="text-2xl font-black text-gray-800 mb-4 tracking-tight font-['Bricolage_Grotesque',sans-serif]">Falta nivell!</h2>
+            <h2 class="text-2xl font-black text-gray-800 mb-4 tracking-tight font-['Bricolage_Grotesque',sans-serif]">{{ $t('clans.insufficient_level_title') }}</h2>
             <p class="text-gray-500 mb-2 font-semibold text-[15px] leading-snug font-['Comfortaa',sans-serif]">
-              Has de ser <strong class="text-emerald-500 text-lg">Nivell 5</strong> o superior per poder accedir a l'apartat de Clans. Segueix completant hàbits per pujar de nivell!
+              {{ $t('clans.insufficient_level_text') }}
             </p>
           </div>
         </div>
 
         <template v-else>
           <div v-if="userClanId" class="text-center py-12">
-            <p class="clans-redirect-text">Ja estàs en un clan. Redirigint...</p>
+            <p class="clans-redirect-text">{{ $t('clans.redirecting') }}</p>
           </div>
           <ClanList v-else @clan-created="onClanCreated" />
 
@@ -31,7 +35,7 @@
             @click="leaveClan"
             class="clans-btn clans-btn--danger mt-4 w-full"
           >
-            Abandonar Clan
+            {{ $t('clans.leave_clan') }}
           </button>
         </template>
       </div>
@@ -84,7 +88,7 @@ export default {
            if (nuxtApp.$socket && nuxtApp.$socket.connected) {
               nuxtApp.$socket.on("clan_request_accepted", function(data) {
                  if (Number(data.usuari_id) === Number(authStore.user.id)) {
-                    alert("La teva sol·licitud d'unió al clan ha estat acceptada!");
+                    self.$loopyModal.success("Clan", "La teva sol·licitud d'unió al clan ha estat acceptada!");
                     var store = useClanStore();
                     store.getMyClan().then(function() {
                        if (store.currentClan && store.currentClan.id) {
@@ -98,7 +102,7 @@ export default {
               });
               nuxtApp.$socket.on("clan_request_rejected", function(data) {
                  if (Number(data.usuari_id) === Number(authStore.user.id)) {
-                    alert("La teva sol·licitud d'unió al clan ha estat rebutjada.");
+                    self.$loopyModal.info("Clan", "La teva sol·licitud d'unió al clan ha estat rebutjada.");
                  }
               });
            } else {
@@ -130,7 +134,11 @@ export default {
         }
      },
      leaveClan: async function() {
-        if (!confirm("Vols abandonar el clan?")) return;
+        var ok = await this.$loopyModal.confirm({
+          title: "Abandonar clan",
+          message: "Vols abandonar el clan?"
+        });
+        if (!ok) return;
         var store = useClanStore();
         if (this.userClanId) {
            var result = await store.leaveClan(this.userClanId);

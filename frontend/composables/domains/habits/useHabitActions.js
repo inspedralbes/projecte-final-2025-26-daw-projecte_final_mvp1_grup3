@@ -1,13 +1,21 @@
+/**
+ * Modul JavaScript ES5: useHabitActions.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
 import { useGameStore } from '~/stores/gameStore.js';
 import { useSocketBridge } from '~/composables/socket/useSocketBridge.js';
+import { useSocketUiCallbacks } from '~/stores/useSocketUiCallbacks.js';
 import { authFetch, getBaseUrl } from '~/composables/useApi.js';
 
 /**
- * Accions CUD d'hàbits amb UI optimista + socket.
+ * Accions CUD d'hàbits: progrés via socket; completar via API (persistència + missió).
  */
 export function useHabitActions() {
   var gameStore = useGameStore();
   var socketBridge = useSocketBridge();
+  var uiCallbacks = useSocketUiCallbacks();
 
   function crearSnapshotProgres(habitId) {
     var mapa = gameStore.habitProgress || {};
@@ -51,32 +59,46 @@ export function useHabitActions() {
     }
   }
 
+  function aplicarMissioCompletada(dadesMissio) {
+    if (!dadesMissio) {
+      return;
+    }
+    gameStore.missioCompletada = true;
+    if (dadesMissio.missio_objectiu !== undefined) {
+      gameStore.missioProgres = dadesMissio.missio_objectiu;
+      gameStore.missioObjectiu = dadesMissio.missio_objectiu;
+    }
+    if (dadesMissio.xp_update && typeof dadesMissio.xp_update === 'object') {
+      gameStore.actualitzarDesDeXpUpdate(dadesMissio.xp_update);
+    }
+    uiCallbacks.invocarMissionComplete(dadesMissio);
+  }
+
+  /**
+   * Confirma el completat al backend (API) abans de marcar completed_today a la UI.
+   */
   async function confirmarCompletat(habitId, objectiu) {
     if (!habitId) {
       return false;
     }
     var snapshot = crearSnapshotProgres(habitId);
     var obj = objectiu || 1;
-    aplicarProgresOptimista(habitId, obj, true);
+    var missioAbans = gameStore.missioCompletada === true;
 
-    if (socketBridge.estaConnectat()) {
-      socketBridge.emitir('habit_complete', {
-        habit_id: habitId,
-        data: new Date().toISOString()
-      });
-      return true;
-    }
-
-    var ok = await completarViaApi(habitId);
+    var ok = await completarViaApi(habitId, obj, missioAbans);
     if (!ok) {
       revertirProgres(habitId, snapshot);
+      return false;
     }
-    return ok;
+    return true;
   }
 
-  async function completarViaApi(habitId) {
+  async function completarViaApi(habitId, objectiu, missioAbans) {
     var base = getBaseUrl();
     var url = base + '/api/habits/complete';
+    var obj = objectiu || 1;
+    var missioJaEraCompletada = missioAbans === true;
+
     try {
       var resposta = await authFetch(url, {
         method: 'POST',
@@ -88,15 +110,45 @@ export function useHabitActions() {
         mode: 'cors'
       });
       var dades = await resposta.json();
-      if (dades.success === true) {
-        if (dades.xp_update) {
-          gameStore.actualitzarDesDeXpUpdate(dades.xp_update);
-        }
-        return true;
+      if (dades && dades.data && typeof dades.data === 'object') {
+        dades = dades.data;
       }
-      return false;
+
+      var exit = (dades.success === true || dades.completed_today === true);
+      if (!exit) {
+        if (dades.message && dades.message.indexOf('objectiu abans') < 0) {
+          uiCallbacks.invocarHabitError(dades.message);
+        }
+        return false;
+      }
+
+      gameStore.actualitzarProgresHabit(habitId, obj, true);
+      if (dades.xp_update) {
+        gameStore.actualitzarDesDeXpUpdate(dades.xp_update);
+      }
+      if (dades.mission_completed && dades.mission_completed.success === true) {
+        aplicarMissioCompletada(dades.mission_completed);
+        missioJaEraCompletada = true;
+      }
+
+      try {
+        await gameStore.obtenirProgresHabits();
+        await gameStore.obtenirEstatJoc();
+      } catch (syncErr) {
+        console.warn('No s\'ha pogut sincronitzar estat després de completar:', syncErr);
+      }
+
+      if (!missioJaEraCompletada && gameStore.missioCompletada === true) {
+        aplicarMissioCompletada({ success: true });
+      }
+
+      gameStore.marcarAnimacioHabitCompletat(habitId);
+      uiCallbacks.invocarHabitCompleteAlert();
+
+      return true;
     } catch (e) {
       console.error('Error completar hàbit via API:', e);
+      uiCallbacks.invocarHabitError('No s\'ha pogut completar l\'hàbit. Torna-ho a provar.');
       return false;
     }
   }

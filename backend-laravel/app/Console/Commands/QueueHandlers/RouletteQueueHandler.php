@@ -4,7 +4,7 @@ namespace App\Console\Commands\QueueHandlers;
 
 //================================ NAMESPACES / IMPORTS ============
 
-use App\Services\RouletteService;
+use App\Domains\Gamification\Services\RouletteService;
 
 //================================ PROPIETATS / ATRIBUTS ==========
 
@@ -36,3 +36,4 @@ class RouletteQueueHandler
         $this->rouletteService->processarTirada($dades);
     }
 }
+

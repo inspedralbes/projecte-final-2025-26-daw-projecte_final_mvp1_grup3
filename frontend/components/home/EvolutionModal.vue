@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: EvolutionModal.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <Teleport to="body">
     <Transition name="modal-fade">
@@ -109,15 +113,18 @@ export default {
       return this.$t('monster.evolution_message', { etapa: this.etapaLabelActual }) || 'El teu monstre ara és ' + this.etapaLabelActual + '!';
     },
     etapaLabelAnterior: function () {
-      var labels = { B: 'Bebè', N: 'Nen', A: 'Adolescent', M: 'Mamat' };
-      return labels[this.etapaAnterior] || this.etapaAnterior;
+      return this.etapaLabel(this.etapaAnterior);
     },
     etapaLabelActual: function () {
-      var labels = { B: 'Bebè', N: 'Nen', A: 'Adolescent', M: 'Mamat' };
-      return labels[this.etapaActual] || this.etapaActual;
+      return this.etapaLabel(this.etapaActual);
     },
   },
   methods: {
+    etapaLabel: function (etapa) {
+      var keys = { B: 'monster.stage_baby', N: 'monster.stage_child', A: 'monster.stage_teen', M: 'monster.stage_adult' };
+      var key = keys[etapa];
+      return key ? this.$t(key) : etapa;
+    },
     closeModal: function () {
       this.$emit('close');
     },

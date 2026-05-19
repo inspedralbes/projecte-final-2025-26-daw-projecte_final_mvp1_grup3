@@ -1,5 +1,13 @@
 <?php
 
+
+/**
+ * Capa Laravel: backfill monsters.
+ * Comentaris: agents/backend/AgentLaravel.md
+ */
+
+//================================ NAMESPACES / IMPORTS ============
+
 use App\Models\User;
 use Carbon\Carbon;
 

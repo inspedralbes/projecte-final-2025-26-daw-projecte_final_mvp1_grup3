@@ -1,4 +1,10 @@
 /**
+ * Modul JavaScript ES5: useAdminList.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
+/**
  * Composable genèric per llistats paginats d'admin.
  * Usuaris, habits, plantilles, logros, missions, notificacions.
  */

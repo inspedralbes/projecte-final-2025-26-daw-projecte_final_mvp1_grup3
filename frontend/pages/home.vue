@@ -1,6 +1,18 @@
+<!--
+  Component o pagina Nuxt: home.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div class="home-page-root relative w-full min-h-screen pb-24 lg:pb-12 overflow-y-auto">
     <!-- El header ja el proporciona el layout default.vue -->
+
+    <p
+      v-if="vistaHistorialDia && etiquetaCosmeticsHistoric"
+      class="max-w-7xl mx-auto px-3 sm:px-6 mb-3 text-center text-sm font-semibold text-gray-700 bg-white/80 backdrop-blur-sm rounded-2xl py-2 border border-white/60 shadow-sm"
+      role="status"
+    >
+      {{ etiquetaCosmeticsHistoric }}
+    </p>
 
     <!-- Contenedor Principal Bento -->
     <div class="max-w-7xl mx-auto px-3 sm:px-6 grid grid-cols-12 gap-3 lg:gap-6 lg:items-start lg:content-start pb-16 lg:pb-20">
@@ -159,6 +171,7 @@
           />
         </div>
         <UserHomeHomeHabitsSection
+          ref="habitsSection"
           :habits="habitsDelDia"
           :esta-carregant="habitsSectionCarregant"
           :error-missatge="errorMissatge"
@@ -206,7 +219,6 @@
       @increment="incrementarHabit"
       @decrement="decrementarHabit"
       @confirm="confirmarHabit"
-      @invalid-complete="mostrarAvisIncomplet"
     />
     <HabitDetailsModal
       :is-open="esObertModalDetalls"
@@ -278,6 +290,7 @@ import { authFetch } from "~/composables/useApi.js";
 import { useCalendar } from "~/composables/useCalendar.js";
 import { useCalendarStore } from "~/stores/calendar.js";
 import { getMonsterImageFromUser } from "~/utils/monsterImage.js";
+import { cosmeticsFromMascotaJson } from "~/utils/snapshotCosmetics.js";
 import { useHabitsPage } from "~/composables/domains/habits/useHabitsPage.js";
 import { useHabitActions } from "~/composables/domains/habits/useHabitActions.js";
 import { useHomeSocketUi } from "~/composables/domains/game/useHomeSocketUi.js";
@@ -420,6 +433,25 @@ export default {
       var xpO = this.xpObjetivoMostrat || 1000;
       return Math.round(Math.min(100, Math.max(0, (xpA / xpO) * 100)));
     },
+    etiquetaCosmeticsHistoric: function () {
+      if (!this.vistaHistorialDia || !this.snapshotHistoric || !this.snapshotHistoric.mascota_json) {
+        return "";
+      }
+      var c = cosmeticsFromMascotaJson(this.snapshotHistoric.mascota_json);
+      var gorra = c.te_gorra
+        ? (this.$t("home.historic_hat_yes") || "Gorra equipada")
+        : (this.$t("home.historic_hat_no") || "Sense gorra");
+      var fons;
+      if (c.te_fons && c.fons_key) {
+        var clauItem = "shop.items." + c.fons_key + ".title";
+        var traduit = this.$t(clauItem);
+        fons = traduit !== clauItem ? traduit : c.fons_key;
+      } else {
+        fons = this.$t("home.historic_bg_default") || "Fons per defecte";
+      }
+      var dataLabel = this.dataHistorialDia || "";
+      return (this.$t("home.historic_cosmetics_day", { date: dataLabel }) || "Aquest dia") + ": " + gorra + " · " + fons;
+    },
     habitsDelDia: function () {
       if (this.dataHistorialDia) {
         if (this.snapshotHistoric && this.snapshotHistoric.habits_json) {
@@ -502,6 +534,7 @@ export default {
       this._homeSocketUiNetejar();
     }
     this.gameStore.historicOverrides = null;
+    this.gameStore.historicCosmetics = null;
     if (typeof window !== "undefined" && this._onLoopyWeatherCity) {
       window.removeEventListener("loopy-weather-city-changed", this._onLoopyWeatherCity);
     }
@@ -703,6 +736,7 @@ export default {
       self.snapshotHistoric = null;
       self.errorSnapshotHistoric = "";
       self.gameStore.historicOverrides = null;
+      self.gameStore.historicCosmetics = null;
       var q = self.$route && self.$route.query ? self.$route.query.date : null;
       if (!q || typeof q !== "string") {
         return;
@@ -730,6 +764,7 @@ export default {
         self.snapshotHistoric = snap;
         var m = snap.mascota_json || {};
         var eco = snap.economia_json || {};
+        self.gameStore.historicCosmetics = cosmeticsFromMascotaJson(m);
         self.gameStore.historicOverrides = {
           xpActualNivel: m.xp_actual_nivel != null ? Number(m.xp_actual_nivel) : 0,
           xpObjetivoNivel: m.xp_objetivo_nivel != null ? Number(m.xp_objetivo_nivel) : 1000,
@@ -747,6 +782,7 @@ export default {
     },
     tornarHistorialCalendari: async function () {
       this.gameStore.historicOverrides = null;
+      this.gameStore.historicCosmetics = null;
       var store = useCalendarStore();
       var q = this.dataHistorialDia || (this.$route.query && this.$route.query.date);
       if (q && typeof q === "string") {
@@ -886,14 +922,27 @@ export default {
       this.habitSeleccionat = habit;
       this.incrementarHabit();
     },
-    completarHabitInline: function (habit) {
-      if (this.vistaHistorialDia) return;
+    completarHabitInline: async function (habit) {
+      var self = this;
+      if (self.vistaHistorialDia) return;
       if (!habit) return;
       var id = habit.id;
       var objectiu = habit.objectiuVegades || 1;
-      this.habitSeleccionat = habit;
+      self.habitSeleccionat = habit;
+      if (self.procesantHabits.indexOf(id) >= 0) {
+        return;
+      }
+      self.procesantHabits.push(id);
+      self.errorMissatge = "";
       var habitActions = useHabitActions();
-      habitActions.confirmarCompletat(id, objectiu);
+      try {
+        await habitActions.confirmarCompletat(id, objectiu);
+      } catch (err) {
+        console.error("Error completant hàbit:", err);
+        self.errorMissatge = "No s'ha pogut completar l'hàbit.";
+      } finally {
+        self.procesantHabits = self.procesantHabits.filter(function (hid) { return hid !== id; });
+      }
     },
 
     /**
@@ -939,24 +988,16 @@ export default {
       self.procesantHabits.push(habitId);
       self.errorMissatge = "";
       try {
-        await habitActions.confirmarCompletat(habitId, objectiu);
-        self.tancarModalHabit();
+        var okModal = await habitActions.confirmarCompletat(habitId, objectiu);
+        if (okModal) {
+          self.tancarModalHabit();
+        }
       } catch (err) {
         console.error("Error completant hàbit:", err);
         self.errorMissatge = "Error inesperat en completar l'hàbit.";
       } finally {
         self.procesantHabits = self.procesantHabits.filter(function (id) { return id !== habitId; });
       }
-      setTimeout(function () {
-        self.gameStore.obtenirEstatJoc();
-      }, 1200);
-    },
-
-    /**
-     * Mostra avís quan l'hàbit no està completat.
-     */
-    mostrarAvisIncomplet: function () {
-      this.mostrarAvis("Has de completar l'objectiu abans de finalitzar l'hàbit.");
     },
 
     /**
@@ -1188,6 +1229,7 @@ export default {
      * Mostra SweetAlert quan es completa un hàbit.
      */
     mostrarAlertaHabitCompletat: function () {
+      /* Animació de tick: gameStore.marcarAnimacioHabitCompletat des de useHabitActions / socket. */
     },
 
     /**

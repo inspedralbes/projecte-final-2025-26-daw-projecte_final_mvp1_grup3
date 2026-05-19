@@ -1,4 +1,10 @@
 /**
+ * Modul JavaScript ES5: useSocketBridge.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
+/**
  * Pont fin cap a $socket injectat pel plugin Nuxt.
  */
 export function useSocketBridge() {

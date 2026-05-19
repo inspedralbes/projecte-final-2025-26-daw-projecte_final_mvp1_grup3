@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: day.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div class="min-h-[40vh] flex items-center justify-center text-gray-500 text-sm font-medium px-4">
     {{ $t("home.loading") }}

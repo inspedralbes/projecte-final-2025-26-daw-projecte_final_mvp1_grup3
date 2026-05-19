@@ -1,3 +1,9 @@
+/**
+ * Modul JavaScript ES5: navigation.cy.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
 describe('Navegación y Auth Guards', function () {
   it('redirige a /auth/login cuando no hay sesión y se accede a /home', function () {
     cy.visit('/home');

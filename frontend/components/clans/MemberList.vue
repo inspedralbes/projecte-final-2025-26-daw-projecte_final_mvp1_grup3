@@ -1,3 +1,7 @@
+<!--
+  Component o pagina Nuxt: MemberList.
+  Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
+-->
 <template>
   <div class="bg-white rounded-xl shadow p-6 border">
     <h3 class="text-lg font-bold mb-4">Membres ({{ members.length }})</h3>
@@ -127,7 +131,11 @@ export default {
       }
     },
     removeMember: async function(userId) {
-      if (!confirm("Vols expulsar aquest membre?")) return;
+      var ok = await this.$loopyModal.confirm({
+        title: "Expulsar membre",
+        message: "Vols expulsar aquest membre?"
+      });
+      if (!ok) return;
       
       try {
         var store = useClanStore();
@@ -147,7 +155,7 @@ export default {
            this.$emit('member-removed');
            this.loadMembers();
         } else {
-           alert(store.error || "Error al expulsar membre");
+           await this.$loopyModal.error("Error", store.error || "Error al expulsar membre");
         }
       } catch(e) {
         console.error(e);

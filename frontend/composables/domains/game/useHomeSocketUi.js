@@ -1,3 +1,9 @@
+/**
+ * Modul JavaScript ES5: useHomeSocketUi.
+ * Comentaris: agents/backend/AgentNode.md, agents/frontend/AgentJavascript.md
+ * Regles: var, function, sense arrow functions; passos A/B/C dins funcions complexes.
+ */
+
 import { useSocketUiCallbacks } from '~/stores/useSocketUiCallbacks.js';
 import { useSocketBridge } from '~/composables/socket/useSocketBridge.js';
 import { useAuthStore } from '~/stores/useAuthStore.js';
@@ -45,6 +51,12 @@ export function useHomeSocketUi(homeVm) {
   }
 
   function onHabitError(message) {
+    if (!message || typeof message !== 'string') {
+      return;
+    }
+    if (message.indexOf('objectiu abans') >= 0) {
+      return;
+    }
     if (homeVm.mostrarAvis) {
       homeVm.mostrarAvis(message);
     }

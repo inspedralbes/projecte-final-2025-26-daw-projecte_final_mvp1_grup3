@@ -33,6 +33,9 @@ export var useGameStore = defineStore("game", {
       missioObjectiu: 1,
       monstre_tipus: null,
       streakIncrementedAvui: false,
+      /** Bloqueja xp_update mentre la ruleta gira (espera l'animació). */
+      ruletaAnimant: false,
+      xpUpdatePendent: null,
     };
   },
 
@@ -153,6 +156,10 @@ export var useGameStore = defineStore("game", {
       if (!dades) {
         return;
       }
+      if (this.ruletaAnimant) {
+        this.xpUpdatePendent = dades;
+        return;
+      }
       if (dades.xp_total !== undefined) {
         this.xpTotal = dades.xp_total;
       }
@@ -179,6 +186,19 @@ export var useGameStore = defineStore("game", {
       }
       if (dades.streak_incremented !== undefined) {
         this.streakIncrementedAvui = dades.streak_incremented;
+      }
+    },
+
+    iniciarAnimacioRuleta: function () {
+      this.ruletaAnimant = true;
+      this.xpUpdatePendent = null;
+    },
+
+    finalitzarAnimacioRuleta: function () {
+      this.ruletaAnimant = false;
+      if (this.xpUpdatePendent) {
+        this.actualitzarDesDeXpUpdate(this.xpUpdatePendent);
+        this.xpUpdatePendent = null;
       }
     },
 

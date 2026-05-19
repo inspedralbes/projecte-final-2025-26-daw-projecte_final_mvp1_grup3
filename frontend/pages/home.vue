@@ -216,6 +216,8 @@
       @close="tancarModalLogros"
     />
 
+    <RouletteDailySpinHost ref="ruletaDailySpin" />
+
   </div>
 </template>
 
@@ -244,6 +246,7 @@ import { flushPendingFocusEvents } from "~/composables/user/useFocusEventQueue.j
 import { getMonsterImageFromUser } from "~/utils/monsterImage.js";
 import calendarImg from "~/assets/img/calendar-loopy.png";
 import UserHomeHomeStreakSection from "~/components/user/home/HomeStreakSection.vue";
+import RouletteDailySpinHost from "~/components/roulette/RouletteDailySpinHost.vue";
 
 export default {
   components: {
@@ -259,7 +262,8 @@ export default {
     UserHomeHomeRouletteSection,
     UserHomeHomeHabitsSection,
     UserHomeHomeStreakSection,
-    WeatherWidget
+    WeatherWidget,
+    RouletteDailySpinHost
   },
   data: function () {
     return {
@@ -1001,7 +1005,10 @@ export default {
       if (!this.canSpinRoulette) {
         return;
       }
-      navigateTo("/roulette");
+      var host = this.$refs.ruletaDailySpin;
+      if (host && typeof host.iniciarTirada === 'function') {
+        host.iniciarTirada();
+      }
     },
 
     /**
@@ -1161,6 +1168,12 @@ export default {
      */
     gestionarResultatRuleta: function (data) {
       var self = this;
+      if (self.$route && self.$route.path === '/roulette') {
+        return;
+      }
+      if (self.gameStore.ruletaAnimant) {
+        return;
+      }
       self.aturarSpinRuleta();
       self.ruletaProcessant = false;
       if (!data) return;

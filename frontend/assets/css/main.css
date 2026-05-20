@@ -388,6 +388,31 @@
         }
     }
 
+    /* Ha d'anar després de max-height 842px per no ser sobreescrit per pt-2/pb-4 mòbil */
+    @media (max-width: 706px) {
+        .login-page-auth .login-form-area {
+            padding-top: 0.5rem;
+            padding-bottom: 1rem;
+            height: calc(100vh - 10rem);
+            min-height: calc(100vh - 10rem);
+        }
+
+        .login-page-auth .login-header {
+            margin-top: 2.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .login-page-auth .login-register-section {
+            padding-top: 0.75rem;
+            padding-bottom: max(1.25rem, env(safe-area-inset-bottom, 0px));
+        }
+
+        .login-page-auth .login-divider {
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+    }
+
     .login-bg-pattern {
         @apply absolute inset-0 opacity-[0.03] pointer-events-none;
         background-image: radial-gradient(#3a5826 1px, transparent 1px), radial-gradient(#3a5826 1px, transparent 1px);

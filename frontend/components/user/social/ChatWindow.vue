@@ -103,13 +103,15 @@
       <AttachmentSelector :show="showAttach" @close="showAttach = false" @selected="onAttachSelected" />
     </div>
 
-    <PlantillaHabitsImportModal
-      :show="showPlantillaImport"
-      :plantilla-id="plantillaImportId"
-      :plantilla-titol="plantillaImportTitol"
-      @close="tancarImportPlantilla"
-      @imported="onPlantillaImportada"
-    />
+    <Teleport to="body">
+      <PlantillaHabitsImportModal
+        :show="showPlantillaImport"
+        :plantilla-id="plantillaImportId"
+        :plantilla-titol="plantillaImportTitol"
+        @close="tancarImportPlantilla"
+        @imported="onPlantillaImportada"
+      />
+    </Teleport>
   </div>
 </template>
 
@@ -293,30 +295,80 @@ export default {
       }
     },
     hasAttachments: function(msg) {
-      return msg.contingut && /\[(habit|plantilla):\d+\]/.test(msg.contingut);
+      return msg.contingut && /\[(habit|plantilla|template):\s*\d+\]/i.test(msg.contingut);
     },
     parseAttachments: function(msg) {
       var text = msg.contingut || "";
       var results = [];
-      var regex = /(📋 Hàbit|📁 Plantilla): (.+?) \[(habit|plantilla):(\d+)\]/g;
+      var seen = {};
+      var regexAmbTitol = /(?:(?:📋\s*)?Hàbit|(?:📁\s*)?Plantilla):\s*(.+?)\s*\[(habit|plantilla|template):(\d+)\]/gi;
+      var regexNomésTag = /\[(habit|plantilla|template):(\d+)\]/gi;
       var m;
-      while ((m = regex.exec(text)) !== null) {
-        results.push({ type: m[3], titol: m[2], id: parseInt(m[4]) });
+      var afegir = function (type, titol, id) {
+        var tipus = String(type || "").toLowerCase();
+        if (tipus === "template") {
+          tipus = "plantilla";
+        }
+        var clau = tipus + ":" + id;
+        if (seen[clau]) {
+          return;
+        }
+        seen[clau] = true;
+        results.push({ type: tipus, titol: titol || (tipus === "habit" ? "Hàbit" : "Plantilla"), id: id });
+      };
+      while ((m = regexAmbTitol.exec(text)) !== null) {
+        afegir(m[2], (m[1] || "").trim(), parseInt(m[3], 10));
+      }
+      while ((m = regexNomésTag.exec(text)) !== null) {
+        var tipusTag = String(m[1] || "").toLowerCase();
+        afegir(tipusTag, tipusTag === "habit" ? "Hàbit" : "Plantilla", parseInt(m[2], 10));
       }
       return results;
     },
     getPlainText: function(msg) {
       var text = msg.contingut || "";
-      return text.replace(/(📋 Hàbit|📁 Plantilla): .+? \[(habit|plantilla):\d+\]/g, "").trim();
+      return text
+        .replace(/(?:(?:📋\s*)?Hàbit|(?:📁\s*)?Plantilla):\s*.+?\s*\[(habit|plantilla|template):\d+\]/gi, "")
+        .replace(/\[(habit|plantilla|template):\d+\]/gi, "")
+        .trim();
     },
-    importAttachment: function (att) {
-      if (att.type === "habit") {
-        this.$router.push("/habits?import=" + att.id);
+    esAdjuntPlantilla: function (att) {
+      if (!att) {
+        return false;
+      }
+      var tipus = String(att.type || "").toLowerCase();
+      return tipus === "plantilla" || tipus === "template";
+    },
+    obrirImportPlantilla: function (id, titol) {
+      var self = this;
+      var plantillaId = parseInt(String(id), 10);
+      if (Number.isNaN(plantillaId)) {
         return;
       }
-      this.plantillaImportId = att.id;
-      this.plantillaImportTitol = att.titol || "";
-      this.showPlantillaImport = true;
+      self.plantillaImportId = plantillaId;
+      self.plantillaImportTitol = titol || "";
+      self.showPlantillaImport = false;
+      self.$nextTick(function () {
+        self.showPlantillaImport = true;
+      });
+    },
+    importAttachment: function (att) {
+      if (!att || att.id === undefined || att.id === null) {
+        return;
+      }
+      var id = parseInt(String(att.id), 10);
+      if (Number.isNaN(id)) {
+        return;
+      }
+      if (String(att.type || "").toLowerCase() === "habit") {
+        this.$router.push("/habits?import=" + id);
+        return;
+      }
+      if (this.esAdjuntPlantilla(att)) {
+        this.obrirImportPlantilla(id, att.titol || "");
+        return;
+      }
+      this.obrirImportPlantilla(id, att.titol || "");
     },
     tancarImportPlantilla: function () {
       this.showPlantillaImport = false;

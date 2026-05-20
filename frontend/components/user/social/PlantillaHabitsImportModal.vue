@@ -4,7 +4,7 @@
 <template>
   <div
     v-if="show"
-    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[120] p-4"
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[200] p-4"
     @click.self="tancar"
   >
     <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
@@ -79,7 +79,7 @@ export default {
   name: "PlantillaHabitsImportModal",
   props: {
     show: { type: Boolean, default: false },
-    plantillaId: { type: Number, default: null },
+    plantillaId: { type: [Number, String], default: null },
     plantillaTitol: { type: String, default: "" }
   },
   emits: ["close", "imported"],
@@ -136,9 +136,17 @@ export default {
         this.selectedHabitIds.splice(pos, 1);
       }
     },
+    plantillaIdNumeric: function () {
+      if (this.plantillaId === null || this.plantillaId === undefined || this.plantillaId === "") {
+        return null;
+      }
+      var id = parseInt(String(this.plantillaId), 10);
+      return Number.isNaN(id) ? null : id;
+    },
     carregarPlantilla: async function () {
       var self = this;
-      if (!self.plantillaId) {
+      var plantillaId = self.plantillaIdNumeric;
+      if (!plantillaId) {
         return;
       }
       self.carregant = true;
@@ -147,7 +155,7 @@ export default {
       self.selectedHabitIds = [];
       self.exit = false;
       try {
-        var resposta = await authFetch("/api/plantilles/" + self.plantillaId);
+        var resposta = await authFetch("/api/plantilles/" + plantillaId);
         if (!resposta.ok) {
           throw new Error(self.$t("social.error_import"));
         }
@@ -167,13 +175,14 @@ export default {
     },
     confirmarImport: async function () {
       var self = this;
-      if (!self.plantillaId || self.selectedHabitIds.length === 0) {
+      var plantillaId = self.plantillaIdNumeric;
+      if (!plantillaId || self.selectedHabitIds.length === 0) {
         return;
       }
       self.enviant = true;
       self.error = null;
       try {
-        var resposta = await authFetch("/api/plantilles/" + self.plantillaId + "/import-habits", {
+        var resposta = await authFetch("/api/plantilles/" + plantillaId + "/import-habits", {
           method: "POST",
           body: JSON.stringify({ habit_ids: self.selectedHabitIds })
         });

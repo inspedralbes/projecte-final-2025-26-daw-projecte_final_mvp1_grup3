@@ -120,6 +120,28 @@ export var useFriendshipStore = defineStore("friendship", {
       }
     },
 
+    removeFriend: async function (friendshipId) {
+      this.loading = true;
+      this.error = null;
+
+      try {
+        var resposta = await authFetch("/api/friends/" + friendshipId, {
+          method: "DELETE",
+        });
+        if (!resposta.ok) {
+          var errorData = await resposta.json();
+          throw new Error(errorData.error || "Error en eliminar amic");
+        }
+        await this.fetchFriendsList(this.friendsPage);
+        return await resposta.json();
+      } catch (e) {
+        this.error = e.message;
+        throw e;
+      } finally {
+        this.loading = false;
+      }
+    },
+
     fetchFriendsList: async function (page) {
       this.loading = true;
       this.error = null;

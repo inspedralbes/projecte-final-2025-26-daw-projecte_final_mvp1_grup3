@@ -96,6 +96,7 @@ Route::middleware('ensure.user')->group(function () {
     Route::post('/friends/request', [FriendshipController::class, 'sendRequest']);
     Route::put('/friends/accept/{id}', [FriendshipController::class, 'acceptRequest']);
     Route::put('/friends/reject/{id}', [FriendshipController::class, 'rejectRequest']);
+    Route::delete('/friends/{id}', [FriendshipController::class, 'removeFriend']);
     Route::get('/friends', [FriendshipController::class, 'getFriendsList']);
     Route::get('/friends/pending', [FriendshipController::class, 'getPendingRequests']);
 

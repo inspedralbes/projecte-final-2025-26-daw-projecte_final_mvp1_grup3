@@ -99,7 +99,7 @@
                   <div class="template-spec-card">
                     <div class="grid grid-cols-3 gap-2 w-full">
                       <button type="button" class="template-expand-btn w-full text-center px-1" style="background:#5B9CE6; border: 2px solid #4A83C4; color: white;" @click="openChat(friendObj.friend.id, friendObj.friend.nom)">{{ $t('friends.message') }}</button>
-                      <button type="button" class="template-expand-btn w-full text-center px-1" style="background:#D14D6B; border: 2px solid #B03A55; color: white;" @click="removeFriend(friendObj.friend.id, friendObj.friend.nom)">{{ $t('social.delete') }}</button>
+                      <button type="button" class="template-expand-btn w-full text-center px-1" style="background:#D14D6B; border: 2px solid #B03A55; color: white;" @click="removeFriend(friendObj.id, friendObj.friend.nom)">{{ $t('social.delete') }}</button>
                       <button type="button" class="template-expand-btn w-full text-center px-1" style="background:#FF8DA6; border: 2px solid #E6778F; color: white;" @click="reportUser(friendObj.friend.id)">{{ $t('friends.report') }}</button>
                     </div>
                   </div>
@@ -488,9 +488,19 @@ export default {
       this.tancarUserExpandida();
     },
     confirmRemoveFriend: async function () {
+      var friendshipId = this.removeFriendId;
       this.showRemoveFriendConfirm = false;
-      // TODO: connectar al backend
-      await this.$loopyModal.info("Amistat", "Aquesta funcionalitat (Eliminar amic) encara no està implementada.");
+      this.removeFriendId = null;
+      this.removeFriendName = null;
+      if (!friendshipId) {
+        return;
+      }
+      try {
+        await this.friendshipStore.removeFriend(friendshipId);
+        this.tancarUserExpandida();
+      } catch (e) {
+        await this.$loopyModal.error("Error", e.message || "No s'ha pogut eliminar l'amic");
+      }
     },
     reportUser: function (id) {
       this.reportUserId = id;

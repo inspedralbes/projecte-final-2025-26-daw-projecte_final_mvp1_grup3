@@ -8,6 +8,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Domains\Social\Actions\AcceptFriendRequestAction;
 use App\Domains\Social\Actions\RejectFriendRequestAction;
+use App\Domains\Social\Actions\RemoveFriendAction;
 use App\Domains\Social\Actions\SendFriendRequestAction;
 use App\Domains\Social\Queries\ListFriendsQuery;
 use App\Domains\Social\Queries\ListPendingFriendRequestsQuery;
@@ -28,6 +29,8 @@ class FriendshipController extends Controller
 
     private RejectFriendRequestAction $rejectRequestAction;
 
+    private RemoveFriendAction $removeFriendAction;
+
     private ListFriendsQuery $listFriendsQuery;
 
     private ListPendingFriendRequestsQuery $listPendingQuery;
@@ -36,12 +39,14 @@ class FriendshipController extends Controller
         SendFriendRequestAction $sendRequestAction,
         AcceptFriendRequestAction $acceptRequestAction,
         RejectFriendRequestAction $rejectRequestAction,
+        RemoveFriendAction $removeFriendAction,
         ListFriendsQuery $listFriendsQuery,
         ListPendingFriendRequestsQuery $listPendingQuery
     ) {
         $this->sendRequestAction = $sendRequestAction;
         $this->acceptRequestAction = $acceptRequestAction;
         $this->rejectRequestAction = $rejectRequestAction;
+        $this->removeFriendAction = $removeFriendAction;
         $this->listFriendsQuery = $listFriendsQuery;
         $this->listPendingQuery = $listPendingQuery;
     }
@@ -96,6 +101,22 @@ class FriendshipController extends Controller
         }
 
         return response()->json($resultat['friendship']);
+    }
+
+    public function removeFriend(int $id, Request $request): JsonResponse
+    {
+        $userId = (int) ($request->user_id ?? 0);
+        if ($userId === 0) {
+            return response()->json(['error' => 'No autentificat'], 401);
+        }
+
+        $resultat = $this->removeFriendAction->executar($userId, $id);
+
+        if (!$resultat['success']) {
+            return response()->json(['error' => $resultat['error']], $resultat['status'] ?? 400);
+        }
+
+        return response()->json(['success' => true]);
     }
 
     public function getFriendsList(Request $request): JsonResponse

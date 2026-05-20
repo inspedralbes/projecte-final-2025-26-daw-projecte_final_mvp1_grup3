@@ -10,6 +10,7 @@ use App\Http\Resources\HabitProgressTodayResource;
 use App\Http\Resources\HabitResource;
 use App\Models\Habit;
 use App\Models\UsuariHabit;
+use App\Domains\Habits\Actions\ImportHabitFromShareAction;
 use App\Domains\Habits\Services\HabitService;
 use App\Domains\Gamification\Services\MissionService;
 use Carbon\Carbon;
@@ -43,15 +44,53 @@ class HabitReadController extends Controller
      */
     protected MissionService $missionService;
 
+    protected ImportHabitFromShareAction $importHabitFromShareAction;
+
     //================================ MÈTODES / FUNCIONS ===========
 
     /**
      * Constructor. Injecció dels serveis.
      */
-    public function __construct(HabitService $habitService, MissionService $missionService)
-    {
+    public function __construct(
+        HabitService $habitService,
+        MissionService $missionService,
+        ImportHabitFromShareAction $importHabitFromShareAction
+    ) {
         $this->habitService = $habitService;
         $this->missionService = $missionService;
+        $this->importHabitFromShareAction = $importHabitFromShareAction;
+    }
+
+    /**
+     * Importa un hàbit compartit per un amic (xat privat, etc.).
+     */
+    public function importShared(Request $request, int $id): JsonResponse
+    {
+        $usuariId = $request->user_id;
+        if (!$usuariId) {
+            return response()->json(['message' => 'No autoritzat'], 401);
+        }
+
+        $validated = $request->validate([
+            'dies_setmana' => 'required|array|min:1',
+            'dies_setmana.*' => 'integer|min:1|max:7',
+        ]);
+
+        $resultat = $this->importHabitFromShareAction->executar((int) $usuariId, $id, $validated);
+
+        if (empty($resultat['success'])) {
+            $payload = ['message' => $resultat['message'] ?? 'Error en importar hàbit'];
+            if (isset($resultat['error'])) {
+                $payload['error'] = $resultat['error'];
+            }
+
+            return response()->json($payload, $resultat['status'] ?? 422);
+        }
+
+        return response()->json([
+            'success' => true,
+            'habit' => $resultat['habit'],
+        ]);
     }
 
     /**

@@ -338,6 +338,20 @@ export default {
         .replace(/\[(habit|plantilla|template):\d+\]/gi, "")
         .trim();
     },
+    esAdjuntHabit: function (att, msg) {
+      if (!att) {
+        return false;
+      }
+      var tipus = String(att.type || "").toLowerCase();
+      if (tipus === "habit") {
+        return true;
+      }
+      if (!msg || !msg.contingut || att.id === undefined || att.id === null) {
+        return false;
+      }
+      var idStr = String(att.id);
+      return new RegExp("\\[habit:\\s*" + idStr + "\\]", "i").test(msg.contingut);
+    },
     esAdjuntPlantilla: function (att, msg) {
       if (!att) {
         return false;
@@ -351,6 +365,22 @@ export default {
       }
       var idStr = String(att.id);
       return new RegExp("\\[(?:plantilla|template):\\s*" + idStr + "\\]", "i").test(msg.contingut);
+    },
+    obrirImportHabit: function (id, titol) {
+      var self = this;
+      var habitId = parseInt(String(id), 10);
+      if (Number.isNaN(habitId)) {
+        return;
+      }
+      self.importWizardAttachment = {
+        type: "habit",
+        id: habitId,
+        titol: titol || ""
+      };
+      self.showImportWizard = false;
+      self.$nextTick(function () {
+        self.showImportWizard = true;
+      });
     },
     obrirImportPlantilla: async function (id, titol) {
       var self = this;
@@ -394,11 +424,11 @@ export default {
         this.obrirImportPlantilla(id, att.titol || "");
         return;
       }
-      if (String(att.type || "").toLowerCase() === "habit") {
-        this.$router.push("/habits?import=" + id);
+      if (this.esAdjuntHabit(att, msg)) {
+        this.obrirImportHabit(id, att.titol || "");
         return;
       }
-      this.obrirImportPlantilla(id, att.titol || "");
+      this.obrirImportHabit(id, att.titol || "");
     },
     tancarImportWizard: function () {
       this.showImportWizard = false;

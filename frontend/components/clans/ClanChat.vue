@@ -66,7 +66,7 @@
                 <div v-for="(att, ai) in parseAttachments(msg)" :key="ai" class="clan-chat-import-card">
                   <span class="clan-chat-import-card__badge">{{ att.type === 'habit' ? 'HÀBIT' : 'PLANTILLA' }}</span>
                   <span class="clan-chat-import-card__name">{{ att.titol }}</span>
-                  <button type="button" class="clan-chat-import-card__btn" @click="importAttachment(att)">Importar</button>
+                  <button type="button" class="clan-chat-import-card__btn" @click.stop.prevent="importAttachment(att, msg)">Importar</button>
                 </div>
               </div>
               <p v-else class="clan-chat-bubble__text">{{ msg.contingut }}</p>
@@ -111,13 +111,14 @@
 
       <AttachmentSelector :show="showAttach" @close="showAttach = false" @selected="onAttachSelected" />
 
-    <PlantillaHabitsImportModal
-      :show="showPlantillaImport"
-      :plantilla-id="plantillaImportId"
-      :plantilla-titol="plantillaImportTitol"
-      @close="tancarImportPlantilla"
-      @imported="onPlantillaImportada"
-    />
+    <Teleport to="body">
+      <ImportWizard
+        :show="showImportWizard"
+        :attachment="importWizardAttachment"
+        :standalone="true"
+        @close="tancarImportWizard"
+      />
+    </Teleport>
   </div>
 </template>
 
@@ -130,11 +131,13 @@ import { useClanChatStore } from "~/stores/useClanChatStore.js";
 import { useClanStore } from "~/stores/useClanStore.js";
 import { useAuthStore } from "~/stores/useAuthStore.js";
 import AttachmentSelector from "~/components/user/social/AttachmentSelector.vue";
-import PlantillaHabitsImportModal from "~/components/user/social/PlantillaHabitsImportModal.vue";
+import ImportWizard from "~/components/user/social/ImportWizard.vue";
+import { authFetch } from "~/composables/useApi.js";
+import { mapPlantillaFromApi, mapHabitFromApi } from "~/utils/mappers/apiMappers.js";
 
 export default {
   name: "ClanChat",
-  components: { AttachmentSelector, PlantillaHabitsImportModal },
+  components: { AttachmentSelector, ImportWizard },
   props: {
     clanId: { type: [Number, String], required: true },
     isLeader: { type: Boolean, default: false }
@@ -148,9 +151,8 @@ export default {
       sending: false,
       showAttach: false,
       attachments: [],
-      showPlantillaImport: false,
-      plantillaImportId: null,
-      plantillaImportTitol: ""
+      showImportWizard: false,
+      importWizardAttachment: null
     }
   },
   computed: {
@@ -333,9 +335,10 @@ export default {
       if (!msg || !msg.plantilla_id) {
         return;
       }
-      this.plantillaImportId = msg.plantilla_id;
-      this.plantillaImportTitol = msg.plantilla && msg.plantilla.nom ? msg.plantilla.nom : "";
-      this.showPlantillaImport = true;
+      this.obrirImportPlantilla(
+        msg.plantilla_id,
+        msg.plantilla && msg.plantilla.nom ? msg.plantilla.nom : (msg.plantilla && msg.plantilla.titol ? msg.plantilla.titol : "")
+      );
     },
     getMonsterImage: function(msg) {
       if (!msg || msg.is_system) return null;
@@ -353,41 +356,145 @@ export default {
       }
     },
     hasAttachments: function(msg) {
-      return msg.contingut && /\[(habit|plantilla):\d+\]/.test(msg.contingut);
+      return msg.contingut && /\[(habit|plantilla|template):\s*\d+\]/i.test(msg.contingut);
     },
     parseAttachments: function(msg) {
       var text = msg.contingut || "";
       var results = [];
-      var regex = /(📋 Hàbit|📁 Plantilla): (.+?) \[(habit|plantilla):(\d+)\]/g;
+      var seen = {};
+      var regexAmbTitol = /(?:(?:📋\s*)?Hàbit|(?:📁\s*)?Plantilla):\s*(.+?)\s*\[(habit|plantilla|template):(\d+)\]/gi;
+      var regexNomésTag = /\[(habit|plantilla|template):(\d+)\]/gi;
       var m;
-      while ((m = regex.exec(text)) !== null) {
-        results.push({ type: m[3], titol: m[2], id: parseInt(m[4]) });
+      var afegir = function (type, titol, id) {
+        var tipus = String(type || "").toLowerCase();
+        if (tipus === "template") {
+          tipus = "plantilla";
+        }
+        var clau = tipus + ":" + id;
+        if (seen[clau]) {
+          return;
+        }
+        seen[clau] = true;
+        results.push({ type: tipus, titol: titol || (tipus === "habit" ? "Hàbit" : "Plantilla"), id: id });
+      };
+      while ((m = regexAmbTitol.exec(text)) !== null) {
+        var tipusBracket = String(m[2] || "").toLowerCase();
+        var linia = (m[0] || "").split("[")[0];
+        if (/Plantilla/i.test(linia)) {
+          tipusBracket = "plantilla";
+        } else if (/Hàbit|Habit/i.test(linia)) {
+          tipusBracket = "habit";
+        }
+        afegir(tipusBracket, (m[1] || "").trim(), parseInt(m[3], 10));
+      }
+      while ((m = regexNomésTag.exec(text)) !== null) {
+        var tipusTag = String(m[1] || "").toLowerCase();
+        afegir(tipusTag, tipusTag === "habit" ? "Hàbit" : "Plantilla", parseInt(m[2], 10));
       }
       return results;
     },
     getPlainText: function(msg) {
       var text = msg.contingut || "";
-      return text.replace(/(📋 Hàbit|📁 Plantilla): .+? \[(habit|plantilla):\d+\]/g, "").trim();
+      return text
+        .replace(/(?:(?:📋\s*)?Hàbit|(?:📁\s*)?Plantilla):\s*.+?\s*\[(habit|plantilla|template):\d+\]/gi, "")
+        .replace(/\[(habit|plantilla|template):\d+\]/gi, "")
+        .trim();
     },
-    importAttachment: function (att) {
-      if (att.type === "habit") {
-        this.$router.push("/habits?import=" + att.id);
+    esAdjuntHabit: function (att, msg) {
+      if (!att) {
+        return false;
+      }
+      var tipus = String(att.type || "").toLowerCase();
+      if (tipus === "habit") {
+        return true;
+      }
+      if (!msg || !msg.contingut || att.id === undefined || att.id === null) {
+        return false;
+      }
+      var idStr = String(att.id);
+      return new RegExp("\\[habit:\\s*" + idStr + "\\]", "i").test(msg.contingut);
+    },
+    esAdjuntPlantilla: function (att, msg) {
+      if (!att) {
+        return false;
+      }
+      var tipus = String(att.type || "").toLowerCase();
+      if (tipus === "plantilla" || tipus === "template") {
+        return true;
+      }
+      if (!msg || !msg.contingut || att.id === undefined || att.id === null) {
+        return false;
+      }
+      var idStr = String(att.id);
+      return new RegExp("\\[(?:plantilla|template):\\s*" + idStr + "\\]", "i").test(msg.contingut);
+    },
+    obrirImportHabit: function (id, titol) {
+      var self = this;
+      var habitId = parseInt(String(id), 10);
+      if (Number.isNaN(habitId)) {
         return;
       }
-      this.plantillaImportId = att.id;
-      this.plantillaImportTitol = att.titol || "";
-      this.showPlantillaImport = true;
+      self.importWizardAttachment = {
+        type: "habit",
+        id: habitId,
+        titol: titol || ""
+      };
+      self.showImportWizard = false;
+      self.$nextTick(function () {
+        self.showImportWizard = true;
+      });
     },
-    tancarImportPlantilla: function () {
-      this.showPlantillaImport = false;
-      this.plantillaImportId = null;
-      this.plantillaImportTitol = "";
-    },
-    onPlantillaImportada: async function () {
-      this.tancarImportPlantilla();
-      if (this.$loopyModal && typeof this.$loopyModal.success === "function") {
-        await this.$loopyModal.success("Importat", this.$t("social.import_success"));
+    obrirImportPlantilla: async function (id, titol) {
+      var self = this;
+      var plantillaId = parseInt(String(id), 10);
+      if (Number.isNaN(plantillaId)) {
+        return;
       }
+      try {
+        var resposta = await authFetch("/api/plantilles/" + plantillaId);
+        if (!resposta.ok) {
+          throw new Error(self.$t("social.error_import"));
+        }
+        var json = await resposta.json();
+        var dades = json.data || json;
+        var plantilla = mapPlantillaFromApi(dades, mapHabitFromApi);
+        self.importWizardAttachment = {
+          type: "plantilla",
+          id: plantilla.id,
+          titol: plantilla.titol || titol || "",
+          plantilla: plantilla
+        };
+        self.showImportWizard = false;
+        self.$nextTick(function () {
+          self.showImportWizard = true;
+        });
+      } catch (e) {
+        if (self.$loopyModal && typeof self.$loopyModal.error === "function") {
+          await self.$loopyModal.error("Error", e.message || self.$t("social.error_import"));
+        }
+      }
+    },
+    importAttachment: function (att, msg) {
+      if (!att || att.id === undefined || att.id === null) {
+        return;
+      }
+      var id = parseInt(String(att.id), 10);
+      if (Number.isNaN(id)) {
+        return;
+      }
+      if (this.esAdjuntPlantilla(att, msg)) {
+        this.obrirImportPlantilla(id, att.titol || "");
+        return;
+      }
+      if (this.esAdjuntHabit(att, msg)) {
+        this.obrirImportHabit(id, att.titol || "");
+        return;
+      }
+      this.obrirImportHabit(id, att.titol || "");
+    },
+    tancarImportWizard: function () {
+      this.showImportWizard = false;
+      this.importWizardAttachment = null;
     }
   }
 }

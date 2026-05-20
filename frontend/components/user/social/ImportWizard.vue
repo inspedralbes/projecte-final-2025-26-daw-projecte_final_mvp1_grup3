@@ -3,7 +3,7 @@
   Comentaris de codi: agents/frontend/AgentNuxt.md + AgentJavascript.md
 -->
 <template>
-  <div v-if="show" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+  <div v-if="show" :class="['fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4', standalone ? 'z-[200]' : 'z-50']" @click.self="close">
     <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
       <div class="flex flex-col items-center border-b border-gray-100 pb-2">
         <div class="w-12 h-1.5 bg-gray-300 rounded-full mb-4"></div>
@@ -117,14 +117,15 @@
 
 <script>
 import { useSocialStore } from "~/stores/useSocialStore.js";
-import { useHabitStore } from "~/stores/useHabitStore.js";
+import { authFetch } from "~/composables/useApi.js";
 
 export default {
   name: "ImportWizard",
   props: {
     show: { type: Boolean, default: false },
     post: { type: Object, default: null },
-    attachment: { type: Object, default: null }
+    attachment: { type: Object, default: null },
+    standalone: { type: Boolean, default: false }
   },
   emits: ["close"],
   data: function () {
@@ -214,36 +215,84 @@ export default {
       }
     },
     confirmHabitImport: async function () {
-      this.loading = true;
-      this.error = null;
+      var self = this;
+      self.loading = true;
+      self.error = null;
 
-      var habitId = this.attachment ? this.attachment.id : (this.post?.habit?.id);
-      var socialStore = useSocialStore();
-      var result = await socialStore.importHabit(this.post.id, this.selectedDays, habitId);
+      var habitId = self.attachment ? self.attachment.id : (self.post && self.post.habit ? self.post.habit.id : null);
+      var result = null;
 
-      if (result && result.success) {
-        this.step = 3;
-      } else {
-        this.error = result?.message || this.$t('social.error_import');
+      try {
+        if (self.standalone) {
+          if (!habitId || self.selectedDays.length === 0) {
+            throw new Error(self.$t("social.error_import"));
+          }
+          var resposta = await authFetch("/api/habits/" + habitId + "/import-shared", {
+            method: "POST",
+            body: JSON.stringify({ dies_setmana: self.selectedDays })
+          });
+          var json = await resposta.json().catch(function () {
+            return {};
+          });
+          if (!resposta.ok || !json.success) {
+            throw new Error(json.message || self.$t("social.error_import"));
+          }
+          result = { success: true };
+        } else {
+          var socialStore = useSocialStore();
+          result = await socialStore.importHabit(self.post.id, self.selectedDays, habitId);
+        }
+
+        if (result && result.success) {
+          self.step = 3;
+        } else {
+          self.error = (result && result.message) || self.$t("social.error_import");
+        }
+      } catch (e) {
+        self.error = e.message || self.$t("social.error_import");
+      } finally {
+        self.loading = false;
       }
-
-      this.loading = false;
     },
     confirmPlantillaImport: async function () {
-      this.loading = true;
-      this.error = null;
+      var self = this;
+      self.loading = true;
+      self.error = null;
 
-      var plantillaId = this.attachment ? this.attachment.id : (this.post?.plantilla?.id);
-      var socialStore = useSocialStore();
-      var result = await socialStore.importPlantilla(this.post.id, this.selectedHabitIds, plantillaId);
+      var plantillaId = self.attachment ? self.attachment.id : (self.post && self.post.plantilla ? self.post.plantilla.id : null);
+      var result = null;
 
-      if (result && result.success) {
-        this.step = 3;
-      } else {
-        this.error = result?.message || this.$t('social.error_import');
+      try {
+        if (self.standalone) {
+          if (!plantillaId || self.selectedHabitIds.length === 0) {
+            throw new Error(self.$t("social.error_import"));
+          }
+          var resposta = await authFetch("/api/plantilles/" + plantillaId + "/import-habits", {
+            method: "POST",
+            body: JSON.stringify({ habit_ids: self.selectedHabitIds })
+          });
+          var json = await resposta.json().catch(function () {
+            return {};
+          });
+          if (!resposta.ok || !json.success) {
+            throw new Error(json.message || self.$t("social.error_import"));
+          }
+          result = { success: true };
+        } else {
+          var socialStore = useSocialStore();
+          result = await socialStore.importPlantilla(self.post.id, self.selectedHabitIds, plantillaId);
+        }
+
+        if (result && result.success) {
+          self.step = 3;
+        } else {
+          self.error = (result && result.message) || self.$t("social.error_import");
+        }
+      } catch (e) {
+        self.error = e.message || self.$t("social.error_import");
+      } finally {
+        self.loading = false;
       }
-
-      this.loading = false;
     }
   }
 };

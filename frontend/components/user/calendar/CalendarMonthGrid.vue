@@ -32,6 +32,9 @@
         :te-gorra="dia.teGorra"
         :te-fons="dia.teFons"
         :fons-key="dia.fonsKey"
+        :skin-key="dia.skinKey"
+        :monstre-tipus="dia.monstreTipus"
+        :nivell="dia.nivell"
         @click="onSelectDay"
       />
 
@@ -91,6 +94,9 @@ export default {
           teGorra: cosmetics.te_gorra,
           teFons: cosmetics.te_fons,
           fonsKey: cosmetics.fons_key,
+          skinKey: cosmetics.skin_key,
+          monstreTipus: info.monstre_tipus || null,
+          nivell: info.nivell != null ? info.nivell : null,
         });
       }
       return resultat;

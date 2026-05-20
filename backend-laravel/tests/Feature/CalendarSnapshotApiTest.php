@@ -163,6 +163,8 @@ class CalendarSnapshotApiTest extends TestCase
         $this->assertArrayHasKey('fons_key', $diaTrobat);
         $this->assertArrayHasKey('te_gorra', $diaTrobat);
         $this->assertArrayHasKey('te_fons', $diaTrobat);
+        $this->assertArrayHasKey('monstre_tipus', $diaTrobat);
+        $this->assertArrayHasKey('nivell', $diaTrobat);
         $this->assertIsBool($diaTrobat['te_gorra']);
         $this->assertIsBool($diaTrobat['te_fons']);
     }
@@ -185,8 +187,16 @@ class CalendarSnapshotApiTest extends TestCase
             $this->assertArrayHasKey('day', $element);
             $this->assertArrayHasKey('has_snapshot', $element);
             $this->assertArrayHasKey('category_colors', $element);
+            $this->assertArrayHasKey('skin_key', $element);
+            $this->assertArrayHasKey('fons_key', $element);
+            $this->assertArrayHasKey('te_gorra', $element);
+            $this->assertArrayHasKey('te_fons', $element);
+            $this->assertArrayHasKey('monstre_tipus', $element);
+            $this->assertArrayHasKey('nivell', $element);
             $this->assertFalse($element['has_snapshot']);
             $this->assertSame([], $element['category_colors']);
+            $this->assertNull($element['monstre_tipus']);
+            $this->assertNull($element['nivell']);
         }
     }
 }

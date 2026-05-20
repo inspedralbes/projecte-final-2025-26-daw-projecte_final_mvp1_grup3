@@ -67,6 +67,11 @@ class CalendarService
 
                 $mascotaJson = is_array($snapshot->mascota_json) ? $snapshot->mascota_json : [];
                 $cosmetics = SnapshotCosmetics::fromMascotaJson($mascotaJson);
+                $monstreTipus = isset($mascotaJson['monstre_tipus']) ? (string) $mascotaJson['monstre_tipus'] : null;
+                if ($monstreTipus !== null && trim($monstreTipus) === '') {
+                    $monstreTipus = null;
+                }
+                $nivellMascota = isset($mascotaJson['nivell']) ? (int) $mascotaJson['nivell'] : null;
 
                 $element = [
                     'day' => $dia,
@@ -76,6 +81,8 @@ class CalendarService
                     'fons_key' => $cosmetics['fons_key'],
                     'te_gorra' => $cosmetics['te_gorra'],
                     'te_fons' => $cosmetics['te_fons'],
+                    'monstre_tipus' => $monstreTipus,
+                    'nivell' => $nivellMascota,
                 ];
             } else {
                 $element = [
@@ -86,6 +93,8 @@ class CalendarService
                     'fons_key' => null,
                     'te_gorra' => false,
                     'te_fons' => false,
+                    'monstre_tipus' => null,
+                    'nivell' => null,
                 ];
             }
             $resultat[] = $element;

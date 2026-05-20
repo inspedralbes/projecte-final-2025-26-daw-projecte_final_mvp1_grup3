@@ -16,7 +16,27 @@
     :title="ariaTitle"
     @click="handleClick"
   >
+    <img
+      v-if="day && hasSnapshot && monsterThumbSrc"
+      :src="monsterThumbSrc"
+      alt=""
+      class="calendar-day-cell__monster"
+      width="26"
+      height="26"
+    >
     <span v-if="day" class="calendar-day-cell__num">{{ day }}</span>
+    <span
+      v-if="day && hasSnapshot && categoryColors.length"
+      class="calendar-day-cell__category-dots"
+      aria-hidden="true"
+    >
+      <span
+        v-for="(col, idx) in categoryColors"
+        :key="'cc-' + idx"
+        class="calendar-day-cell__category-dot"
+        :style="{ background: col }"
+      />
+    </span>
     <span
       v-if="day && hasSnapshot && (teGorra || teFons)"
       class="calendar-day-cell__cosmetics"
@@ -39,6 +59,7 @@
 
 <script>
 import { fonsDotClassFromKey } from "~/utils/snapshotCosmetics.js";
+import { getMonsterImageFromUser } from "~/utils/monsterImage.js";
 
 export default {
   name: "CalendarDayCell",
@@ -50,9 +71,22 @@ export default {
     teGorra: { type: Boolean, default: false },
     teFons: { type: Boolean, default: false },
     fonsKey: { type: String, default: null },
+    skinKey: { type: String, default: null },
+    monstreTipus: { type: String, default: null },
+    nivell: { type: Number, default: null },
   },
   emits: ["click"],
   computed: {
+    monsterThumbSrc: function () {
+      if (!this.monstreTipus) {
+        return null;
+      }
+      var n = this.nivell != null && !isNaN(Number(this.nivell)) ? Number(this.nivell) : 1;
+      return getMonsterImageFromUser(
+        { monstre_tipus: this.monstreTipus, nivell: n },
+        this.skinKey || null
+      );
+    },
     isToday: function () {
       if (!this.dateStr) return false;
       var parts = String(this.dateStr).split("-");
@@ -123,8 +157,10 @@ export default {
   background: #faf9f9;
   box-shadow: 0 0 0 1px rgba(31, 41, 55, 0.08);
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 1px;
   cursor: pointer;
   transition: background-color 0.15s ease, box-shadow 0.15s ease;
   position: relative;
@@ -182,10 +218,39 @@ export default {
   }
 }
 
+.calendar-day-cell__monster {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  flex-shrink: 0;
+  pointer-events: none;
+  image-rendering: crisp-edges;
+  margin-top: 2px;
+}
+
+.calendar-day-cell__category-dots {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  max-width: 90%;
+  pointer-events: none;
+  margin-bottom: 1px;
+}
+
+.calendar-day-cell__category-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.12);
+}
+
 .calendar-day-cell__num {
   font-family: "Bricolage Grotesque", system-ui, sans-serif;
   font-weight: 600;
-  font-size: clamp(13px, 3.8vw, 16px);
+  font-size: clamp(11px, 3.2vw, 14px);
   line-height: 1;
   color: #1f2937;
 }
@@ -197,7 +262,7 @@ export default {
 .calendar-day-cell__cosmetics {
   position: absolute;
   right: 2px;
-  bottom: 2px;
+  bottom: 1px;
   display: flex;
   align-items: center;
   gap: 1px;

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 //================================ NAMESPACES / IMPORTS ============
 
+use App\Domains\User\Actions\GetCurrentUserSessionAction;
 use App\Domains\User\Actions\GoogleOAuthCallbackAction;
 use App\Domains\User\Actions\LoginUserAction;
 use App\Domains\User\Actions\RefreshTokenAction;
@@ -35,18 +36,22 @@ class UserAuthController extends Controller
 
     private GoogleOAuthCallbackAction $googleCallbackAction;
 
+    private GetCurrentUserSessionAction $currentUserSessionAction;
+
     public function __construct(
         LoginUserAction $loginAction,
         RegisterUserAction $registerAction,
         RefreshTokenAction $refreshAction,
         JwtCookieResponseService $jwtResponse,
-        GoogleOAuthCallbackAction $googleCallbackAction
+        GoogleOAuthCallbackAction $googleCallbackAction,
+        GetCurrentUserSessionAction $currentUserSessionAction
     ) {
         $this->loginAction = $loginAction;
         $this->registerAction = $registerAction;
         $this->refreshAction = $refreshAction;
         $this->jwtResponse = $jwtResponse;
         $this->googleCallbackAction = $googleCallbackAction;
+        $this->currentUserSessionAction = $currentUserSessionAction;
     }
 
     //================================ MÈTODES / FUNCIONS ===========
@@ -64,6 +69,11 @@ class UserAuthController extends Controller
     public function refresh(Request $request): JsonResponse
     {
         return $this->refreshAction->executar($request);
+    }
+
+    public function me(Request $request): JsonResponse
+    {
+        return $this->currentUserSessionAction->executar($request);
     }
 
     public function logout(Request $request): JsonResponse

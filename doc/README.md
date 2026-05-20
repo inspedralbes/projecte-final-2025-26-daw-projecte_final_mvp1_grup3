@@ -8,7 +8,8 @@ Aquesta carpeta conté tota la documentació oficial i tècnica del projecte **L
 
 | Document | Descripció |
 | :--- | :--- |
-| **[Manual d'Usuari i Documentació Tècnica](./ManualUsuari.md)** | **La veritable documentació oficial demanada per al projecte.** Conté la introducció completa, requisits del sistema, gestió de comptes, taula de rols (Visitant, Client, Admin), guia de navegació, fluxos pas a pas de les funcionalitats clau (Habit Loop, IA Gemini, Dashboard gamificat, Catàleg), funcionament del Backoffice d'administració (arquitectura híbrida REST + WebSockets) i resolució de problemes freqüents (FAQ). |
+| **[Documentació Tècnica — Apartat E](./E_DOCUMENTACIO_TECNICA.md)** | **Document principal de l'Apartat E (DAW):** arquitectura, onboarding, model de dades, API, seguretat JWT i desplegament amb Docker i CI/CD. |
+| **[Manual d'Usuari](./MANUAL_USUARI.md)** | Introducció, requisits, rols, navegació, fluxos d'ús (Habit Loop, IA Gemini, gamificació, social) i FAQ. |
 
 ---
 

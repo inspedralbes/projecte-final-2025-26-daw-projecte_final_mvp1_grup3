@@ -68,6 +68,14 @@ Qualsevol altre camp extern no forma part del contracte i no s'ha de persistir.
 - Monitoritza errors 5xx de `/api/external/*` i percentatge d'ús del mode manual.
 - Si una API té límits estrictes, limita consultes al frontend (mínim 2 caràcters + acció explícita de cerca) i aplica cache curt al backend si cal.
 
+## 📂 Documentació Disponible
+
+Per veure el detall tècnic de l'aplicació, el codi, el model de dades i com arrencar el projecte en local, consulta el document principal de l'Apartat E:
+
+👉 **[Llegir la Documentació Tècnica (Apartat E)](./doc/E_DOCUMENTACIO_TECNICA.md)**
+
+També disponible: [Manual d'usuari](./doc/MANUAL_USUARI.md) · [Guia Docker](./docker/README.md)
+
 ## 🔗 Enllaços d’Interès
 
 - 🎨 [Disseny a Figma](https://www.figma.com/design/XyO3s84xWpSUEjQk2fwktb/Aplicaci%C3%B3-habits?node-id=0-1&t=D6xaYpsrqnb5eyuY-1)

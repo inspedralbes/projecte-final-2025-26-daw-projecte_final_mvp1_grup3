@@ -4,6 +4,7 @@ namespace App\Domains\Gamification\Services;
 
 //================================ NAMESPACES / IMPORTS ============
 
+use App\Domains\Shared\Services\RedisFeedbackService;
 use App\Models\Ratxa;
 use App\Models\User;
 use Carbon\Carbon;

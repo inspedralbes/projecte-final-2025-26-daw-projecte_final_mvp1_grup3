@@ -102,6 +102,14 @@
 
       <AttachmentSelector :show="showAttach" @close="showAttach = false" @selected="onAttachSelected" />
     </div>
+
+    <PlantillaHabitsImportModal
+      :show="showPlantillaImport"
+      :plantilla-id="plantillaImportId"
+      :plantilla-titol="plantillaImportTitol"
+      @close="tancarImportPlantilla"
+      @imported="onPlantillaImportada"
+    />
   </div>
 </template>
 
@@ -114,6 +122,7 @@ import bosqueImg from "~/assets/img/Fons/Fons_Bosc.png";
 import fonsPlatjaImg from "~/assets/img/Fons/Fons_Platja.png";
 import fonsCasaImg from "~/assets/img/Fons/Fons_Casa.png";
 import AttachmentSelector from "~/components/user/social/AttachmentSelector.vue";
+import PlantillaHabitsImportModal from "~/components/user/social/PlantillaHabitsImportModal.vue";
 
 export default {
   name: "ChatWindow",
@@ -124,7 +133,7 @@ export default {
     friendNivell: { type: [Number, String], default: null },
   },
   emits: ["close"],
-  components: { AttachmentSelector },
+  components: { AttachmentSelector, PlantillaHabitsImportModal },
   data: function () {
     return {
       newMessage: "",
@@ -132,6 +141,9 @@ export default {
       pollInterval: null,
       showAttach: false,
       attachments: [],
+      showPlantillaImport: false,
+      plantillaImportId: null,
+      plantillaImportTitol: "",
     };
   },
   computed: {
@@ -297,11 +309,24 @@ export default {
       var text = msg.contingut || "";
       return text.replace(/(📋 Hàbit|📁 Plantilla): .+? \[(habit|plantilla):\d+\]/g, "").trim();
     },
-    importAttachment: function(att) {
-      if (att.type === 'habit') {
+    importAttachment: function (att) {
+      if (att.type === "habit") {
         this.$router.push("/habits?import=" + att.id);
-      } else {
-        this.$router.push("/Plantilles?import=" + att.id);
+        return;
+      }
+      this.plantillaImportId = att.id;
+      this.plantillaImportTitol = att.titol || "";
+      this.showPlantillaImport = true;
+    },
+    tancarImportPlantilla: function () {
+      this.showPlantillaImport = false;
+      this.plantillaImportId = null;
+      this.plantillaImportTitol = "";
+    },
+    onPlantillaImportada: async function () {
+      this.tancarImportPlantilla();
+      if (this.$loopyModal && typeof this.$loopyModal.success === "function") {
+        await this.$loopyModal.success("Importat", this.$t("social.import_success"));
       }
     },
   },

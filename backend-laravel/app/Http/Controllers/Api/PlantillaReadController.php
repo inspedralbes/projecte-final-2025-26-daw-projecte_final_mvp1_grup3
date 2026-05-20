@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\PlantillaResource;
-use App\Models\Plantilla;
+use App\Domains\Habits\Services\HabitService;
 use App\Domains\Plantilla\Services\PlantillaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -29,12 +29,15 @@ class PlantillaReadController extends Controller
      */
     protected PlantillaService $plantillaService;
 
+    protected HabitService $habitService;
+
     /**
      * Constructor. Injecció del servei.
      */
-    public function __construct(PlantillaService $plantillaService)
+    public function __construct(PlantillaService $plantillaService, HabitService $habitService)
     {
         $this->plantillaService = $plantillaService;
+        $this->habitService = $habitService;
     }
 
     //================================ MÈTODES / FUNCIONS ===========
@@ -57,7 +60,7 @@ class PlantillaReadController extends Controller
     }
 
     /**
-     * READ. Retorna una plantilla per ID (propia o pública).
+     * READ. Retorna una plantilla per ID (propia, pública o d'un amic).
      */
     public function show(Request $request, int $id): JsonResponse
     {
@@ -66,13 +69,7 @@ class PlantillaReadController extends Controller
             return response()->json(['message' => 'No autoritzat'], 401);
         }
 
-        $plantilla = Plantilla::where('id', $id)
-            ->where(function ($query) use ($usuariId) {
-                $query->where('creador_id', $usuariId)
-                    ->orWhere('es_publica', true);
-            })
-            ->with('habits')
-            ->first();
+        $plantilla = $this->plantillaService->getPlantillaVisiblePerUsuari($id, $usuariId);
 
         if ($plantilla === null) {
             return response()->json(['error' => 'Plantilla no trobada'], 404);
@@ -80,5 +77,55 @@ class PlantillaReadController extends Controller
 
         return (new PlantillaResource($plantilla))->toResponse($request);
     }
-}
 
+    /**
+     * Importa hàbits seleccionats d'una plantilla (p. ex. compartida per xat d'amics).
+     */
+    public function importHabits(Request $request, int $id): JsonResponse
+    {
+        $usuariId = $request->user_id;
+        if (!$usuariId) {
+            return response()->json(['message' => 'No autoritzat'], 401);
+        }
+
+        $validated = $request->validate([
+            'habit_ids' => 'required|array|min:1',
+            'habit_ids.*' => 'integer',
+        ]);
+
+        $plantilla = $this->plantillaService->getPlantillaVisiblePerUsuari($id, (int) $usuariId);
+        if ($plantilla === null) {
+            return response()->json(['message' => 'Plantilla no trobada'], 404);
+        }
+
+        $permessos = $plantilla->habits->pluck('id')->map(function ($habitId) {
+            return (int) $habitId;
+        })->all();
+
+        $seleccionats = [];
+        foreach ($validated['habit_ids'] as $habitId) {
+            $hid = (int) $habitId;
+            if (in_array($hid, $permessos, true) && !in_array($hid, $seleccionats, true)) {
+                $seleccionats[] = $hid;
+            }
+        }
+
+        if ($seleccionats === []) {
+            return response()->json(['message' => 'Cap hàbit vàlid seleccionat'], 422);
+        }
+
+        $resultat = $this->habitService->exportarHabitsDePlantilla((int) $usuariId, $id, $seleccionats);
+
+        if (empty($resultat['success'])) {
+            return response()->json([
+                'success' => false,
+                'message' => $resultat['message'] ?? 'Error en importar hàbits',
+            ], 500);
+        }
+
+        return response()->json([
+            'success' => true,
+            'habits' => $resultat['habits'] ?? [],
+        ]);
+    }
+}

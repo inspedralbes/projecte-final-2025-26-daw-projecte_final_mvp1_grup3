@@ -281,7 +281,7 @@
             top: 0;
             left: 0;
             right: 0;
-            height: calc(100vh - 8.5rem);
+            height: calc(100dvh - 7.25rem);
             z-index: 0;
             pointer-events: none;
             background-image: url('../img/Fons/Fons_Calendari.png');
@@ -303,8 +303,8 @@
 
         .login-page-auth .login-form-area {
             @apply relative z-10 flex flex-col justify-start w-full px-8 pt-4 pb-6;
-            height: calc(100vh - 8.5rem);
-            min-height: calc(100vh - 8.5rem);
+            height: calc(100dvh - 7.25rem);
+            min-height: calc(100dvh - 7.25rem);
         }
 
         .login-page-auth .login-register-section {
@@ -394,9 +394,10 @@
         .long-page-auth .login-form-area {
             padding-top: 0.5rem;
             padding-bottom: 1rem;
-            min-height: 0;
-            height: calc(100vh - 21rem);
-            max-height: calc(100vh - 21rem);
+            /* Mateixa alçada que mòbil general: més fons visible, espai suficient pel registre */
+            height: calc(100dvh - 7.25rem);
+            min-height: calc(100dvh - 7.25rem);
+            max-height: calc(100dvh - 7.25rem);
             overflow-y: auto;
         }
 

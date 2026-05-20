@@ -390,11 +390,12 @@
 
     /* Ha d'anar després de max-height 842px per no ser sobreescrit per pt-2/pb-4 mòbil */
     @media (max-width: 706px) {
-        .login-page-auth .login-form-area {
+        .login-page-auth .login-form-area,
+        .long-page-auth .login-form-area {
             padding-top: 0.5rem;
             padding-bottom: 1rem;
-            height: calc(100vh - 10rem);
-            min-height: calc(100vh - 10rem);
+            height: calc(100vh - 11rem);
+            min-height: calc(100vh - 11rem);
         }
 
         .login-page-auth .login-header {

@@ -79,6 +79,7 @@ Route::middleware('ensure.user')->group(function () {
     Route::post('/habits/assign', [OnboardingHabitAssignController::class, 'assign']);
     Route::get('/plantilles', [PlantillaReadController::class, 'index']);
     Route::get('/plantilles/{id}', [PlantillaReadController::class, 'show']);
+    Route::post('/plantilles/{id}/import-habits', [PlantillaReadController::class, 'importHabits']);
     Route::get('/game-state', [GameStateReadController::class, 'show']);
     Route::get('/user/home', [UserHomeReadController::class, 'index']);
     Route::get('/logros', [LogroReadController::class, 'index']);

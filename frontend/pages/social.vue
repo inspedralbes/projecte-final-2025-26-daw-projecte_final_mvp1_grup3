@@ -107,9 +107,9 @@
 
       <ReportUserModal
         :show="showReportModal"
-        :report-type="reportTarget.type"
+        :report-type="reportModalType"
         :content-id="reportTarget.id"
-        @close="showReportModal = false"
+        @close="tancarReportModal"
         @submit="handleReportSubmit"
       />
 
@@ -147,12 +147,19 @@ export default {
       showAttachmentSelector: false,
       selectedAttachments: [],
       showReportModal: false,
-      reportTarget: { type: "post", id: null }
+      reportTarget: { type: null, id: null }
     };
   },
   computed: {
     posts: function () {
       return useSocialStore().posts;
+    },
+    reportModalType: function () {
+      var t = this.reportTarget && this.reportTarget.type;
+      if (t === "post" || t === "comment" || t === "user") {
+        return t;
+      }
+      return "user";
     }
   },
   mounted: function () {
@@ -236,14 +243,18 @@ export default {
       });
     },
     openReportModal: function (payload) {
-      if (payload && typeof payload === "object" && payload.type && payload.id) {
-        this.reportTarget = { type: payload.type, id: payload.id };
+      if (payload && typeof payload === "object" && payload.type && (payload.id !== undefined && payload.id !== null && payload.id !== "")) {
+        this.reportTarget = { type: payload.type, id: Number(payload.id) };
       } else if (typeof payload === "number" || typeof payload === "string") {
         this.reportTarget = { type: "user", id: payload };
       } else {
         return;
       }
       this.showReportModal = true;
+    },
+    tancarReportModal: function () {
+      this.showReportModal = false;
+      this.reportTarget = { type: null, id: null };
     },
     handleReportSubmit: async function (reportData) {
       const motiusMap = {
@@ -255,8 +266,26 @@ export default {
       };
       const motiuText = motiusMap[reportData.motiu] || reportData.motiu;
       const reasonText = "[" + motiuText + "]" + (reportData.detalls ? " - " + reportData.detalls : "");
-      const contentType = reportData.reportType || "user";
-      const contentId = reportData.contentId;
+      var tipusPersistit = this.reportTarget && this.reportTarget.type;
+      var tipusEmes = reportData && reportData.reportType;
+      var rawType = tipusPersistit;
+      if (rawType !== "post" && rawType !== "comment") {
+        rawType = tipusEmes;
+      }
+      var contentType = "user";
+      if (rawType === "post" || rawType === "comment") {
+        contentType = rawType;
+      }
+      var contentId =
+        this.reportTarget && this.reportTarget.id !== undefined && this.reportTarget.id !== null
+          ? Number(this.reportTarget.id)
+          : reportData && reportData.contentId != null
+            ? Number(reportData.contentId)
+            : null;
+      if (contentId === null || contentId === "" || Number.isNaN(contentId)) {
+        await this.$loopyModal.error("Error", "Falta informació del report. Torna-ho a obrir des del fòrum.");
+        return;
+      }
 
       var body = {
         content_type: contentType,
@@ -280,7 +309,7 @@ export default {
         });
 
         if (resposta.ok) {
-          this.showReportModal = false;
+          this.tancarReportModal();
           await this.$loopyModal.success(
             "Report enviat",
             "El report s'ha enviat correctament per a la seva revisió."

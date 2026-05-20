@@ -394,8 +394,10 @@
         .long-page-auth .login-form-area {
             padding-top: 0.5rem;
             padding-bottom: 1rem;
-            height: calc(100vh - 11rem);
-            min-height: calc(100vh - 11rem);
+            min-height: 0;
+            height: calc(100vh - 21rem);
+            max-height: calc(100vh - 21rem);
+            overflow-y: auto;
         }
 
         .login-page-auth .login-header {

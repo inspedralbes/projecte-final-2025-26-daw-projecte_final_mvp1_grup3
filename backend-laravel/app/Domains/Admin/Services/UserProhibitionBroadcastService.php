@@ -4,6 +4,7 @@ namespace App\Domains\Admin\Services;
 
 //================================ NAMESPACES / IMPORTS ============
 
+use App\Domains\Shared\Services\RedisFeedbackService;
 use App\Models\User;
 
 //================================ PROPIETATS / ATRIBUTS ==========

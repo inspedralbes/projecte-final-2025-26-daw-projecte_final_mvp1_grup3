@@ -38,6 +38,12 @@ class SocialReportController extends Controller
         $userId = (int) $request->user_id;
         $report = $this->createReportAction->executar($userId, $validated);
 
-        return response()->json(['success' => true, 'report' => $report], 201);
+        return response()->json([
+            'success' => true,
+            'report' => [
+                'id' => $report->id,
+                'estat' => $report->estat ?? 'pendent',
+            ],
+        ], 201);
     }
 }

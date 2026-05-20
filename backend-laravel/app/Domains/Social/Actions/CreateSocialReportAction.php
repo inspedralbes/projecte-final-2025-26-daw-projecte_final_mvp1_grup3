@@ -7,6 +7,7 @@ namespace App\Domains\Social\Actions;
 //================================ NAMESPACES / IMPORTS ============
 
 use App\Domains\Admin\Services\AdminReportBroadcastService;
+use Illuminate\Support\Facades\Log;
 use App\Models\Report;
 use App\Models\SocialComment;
 use App\Models\SocialPost;
@@ -48,7 +49,7 @@ class CreateSocialReportAction
                 'detalls' => $validated['detalls'] ?? '',
                 'estat' => 'pendent',
             ]);
-            $this->reportBroadcast->notificarUserReportCreat($report);
+            $this->notificarSiCal($report, true);
 
             return $report;
         }
@@ -66,8 +67,23 @@ class CreateSocialReportAction
             'post_id' => $contentId,
             'estat' => 'pendent',
         ]);
-        $this->reportBroadcast->notificarReportCreat($report);
+        $this->notificarSiCal($report, false);
 
         return $report;
+    }
+
+    private function notificarSiCal(Report|UserReport $report, bool $esUsuari): void
+    {
+        try {
+            if ($esUsuari && $report instanceof UserReport) {
+                $this->reportBroadcast->notificarUserReportCreat($report);
+            } elseif ($report instanceof Report) {
+                $this->reportBroadcast->notificarReportCreat($report);
+            }
+        } catch (\Throwable $e) {
+            Log::warning('CreateSocialReportAction: no s\'ha pogut notificar l\'admin', [
+                'message' => $e->getMessage(),
+            ]);
+        }
     }
 }

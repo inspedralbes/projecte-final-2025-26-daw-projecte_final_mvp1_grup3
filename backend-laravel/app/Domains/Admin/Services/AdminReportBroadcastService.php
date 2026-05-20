@@ -10,6 +10,7 @@ namespace App\Domains\Admin\Services;
 
 //================================ NAMESPACES / IMPORTS ============
 
+use App\Domains\Shared\Services\RedisFeedbackService;
 use App\Models\Report;
 use App\Models\UserReport;
 use Carbon\Carbon;

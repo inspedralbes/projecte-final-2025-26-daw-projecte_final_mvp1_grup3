@@ -4,6 +4,7 @@ namespace App\Domains\Plantilla\Services;
 
 //================================ NAMESPACES / IMPORTS ============
 
+use App\Domains\Shared\Services\RedisFeedbackService;
 use App\Models\Plantilla;
 use App\Models\Habit;
 use Illuminate\Database\Eloquent\Collection;

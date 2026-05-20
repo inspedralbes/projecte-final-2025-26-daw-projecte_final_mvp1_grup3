@@ -66,7 +66,7 @@
                 <div v-for="(att, ai) in parseAttachments(msg)" :key="ai" class="clan-chat-import-card">
                   <span class="clan-chat-import-card__badge">{{ att.type === 'habit' ? 'HÀBIT' : 'PLANTILLA' }}</span>
                   <span class="clan-chat-import-card__name">{{ att.titol }}</span>
-                  <button type="button" class="clan-chat-import-card__btn" @click="importAttachment(att)">Importar</button>
+                  <button type="button" class="clan-chat-import-card__btn" @click.stop.prevent="importAttachment(att, msg)">Importar</button>
                 </div>
               </div>
               <p v-else class="clan-chat-bubble__text">{{ msg.contingut }}</p>
@@ -112,12 +112,11 @@
       <AttachmentSelector :show="showAttach" @close="showAttach = false" @selected="onAttachSelected" />
 
     <Teleport to="body">
-      <PlantillaHabitsImportModal
-        :show="showPlantillaImport"
-        :plantilla-id="plantillaImportId"
-        :plantilla-titol="plantillaImportTitol"
-        @close="tancarImportPlantilla"
-        @imported="onPlantillaImportada"
+      <ImportWizard
+        :show="showImportWizard"
+        :attachment="importWizardAttachment"
+        :standalone="true"
+        @close="tancarImportWizard"
       />
     </Teleport>
   </div>
@@ -132,11 +131,13 @@ import { useClanChatStore } from "~/stores/useClanChatStore.js";
 import { useClanStore } from "~/stores/useClanStore.js";
 import { useAuthStore } from "~/stores/useAuthStore.js";
 import AttachmentSelector from "~/components/user/social/AttachmentSelector.vue";
-import PlantillaHabitsImportModal from "~/components/user/social/PlantillaHabitsImportModal.vue";
+import ImportWizard from "~/components/user/social/ImportWizard.vue";
+import { authFetch } from "~/composables/useApi.js";
+import { mapPlantillaFromApi, mapHabitFromApi } from "~/utils/mappers/apiMappers.js";
 
 export default {
   name: "ClanChat",
-  components: { AttachmentSelector, PlantillaHabitsImportModal },
+  components: { AttachmentSelector, ImportWizard },
   props: {
     clanId: { type: [Number, String], required: true },
     isLeader: { type: Boolean, default: false }
@@ -150,9 +151,8 @@ export default {
       sending: false,
       showAttach: false,
       attachments: [],
-      showPlantillaImport: false,
-      plantillaImportId: null,
-      plantillaImportTitol: ""
+      showImportWizard: false,
+      importWizardAttachment: null
     }
   },
   computed: {
@@ -337,7 +337,7 @@ export default {
       }
       this.obrirImportPlantilla(
         msg.plantilla_id,
-        msg.plantilla && msg.plantilla.nom ? msg.plantilla.nom : ""
+        msg.plantilla && msg.plantilla.nom ? msg.plantilla.nom : (msg.plantilla && msg.plantilla.titol ? msg.plantilla.titol : "")
       );
     },
     getMonsterImage: function(msg) {
@@ -378,7 +378,14 @@ export default {
         results.push({ type: tipus, titol: titol || (tipus === "habit" ? "Hàbit" : "Plantilla"), id: id });
       };
       while ((m = regexAmbTitol.exec(text)) !== null) {
-        afegir(m[2], (m[1] || "").trim(), parseInt(m[3], 10));
+        var tipusBracket = String(m[2] || "").toLowerCase();
+        var linia = (m[0] || "").split("[")[0];
+        if (/Plantilla/i.test(linia)) {
+          tipusBracket = "plantilla";
+        } else if (/Hàbit|Habit/i.test(linia)) {
+          tipusBracket = "habit";
+        }
+        afegir(tipusBracket, (m[1] || "").trim(), parseInt(m[3], 10));
       }
       while ((m = regexNomésTag.exec(text)) !== null) {
         var tipusTag = String(m[1] || "").toLowerCase();
@@ -393,27 +400,51 @@ export default {
         .replace(/\[(habit|plantilla|template):\d+\]/gi, "")
         .trim();
     },
-    esAdjuntPlantilla: function (att) {
+    esAdjuntPlantilla: function (att, msg) {
       if (!att) {
         return false;
       }
       var tipus = String(att.type || "").toLowerCase();
-      return tipus === "plantilla" || tipus === "template";
+      if (tipus === "plantilla" || tipus === "template") {
+        return true;
+      }
+      if (!msg || !msg.contingut || att.id === undefined || att.id === null) {
+        return false;
+      }
+      var idStr = String(att.id);
+      return new RegExp("\\[(?:plantilla|template):\\s*" + idStr + "\\]", "i").test(msg.contingut);
     },
-    obrirImportPlantilla: function (id, titol) {
+    obrirImportPlantilla: async function (id, titol) {
       var self = this;
       var plantillaId = parseInt(String(id), 10);
       if (Number.isNaN(plantillaId)) {
         return;
       }
-      self.plantillaImportId = plantillaId;
-      self.plantillaImportTitol = titol || "";
-      self.showPlantillaImport = false;
-      self.$nextTick(function () {
-        self.showPlantillaImport = true;
-      });
+      try {
+        var resposta = await authFetch("/api/plantilles/" + plantillaId);
+        if (!resposta.ok) {
+          throw new Error(self.$t("social.error_import"));
+        }
+        var json = await resposta.json();
+        var dades = json.data || json;
+        var plantilla = mapPlantillaFromApi(dades, mapHabitFromApi);
+        self.importWizardAttachment = {
+          type: "plantilla",
+          id: plantilla.id,
+          titol: plantilla.titol || titol || "",
+          plantilla: plantilla
+        };
+        self.showImportWizard = false;
+        self.$nextTick(function () {
+          self.showImportWizard = true;
+        });
+      } catch (e) {
+        if (self.$loopyModal && typeof self.$loopyModal.error === "function") {
+          await self.$loopyModal.error("Error", e.message || self.$t("social.error_import"));
+        }
+      }
     },
-    importAttachment: function (att) {
+    importAttachment: function (att, msg) {
       if (!att || att.id === undefined || att.id === null) {
         return;
       }
@@ -421,26 +452,19 @@ export default {
       if (Number.isNaN(id)) {
         return;
       }
+      if (this.esAdjuntPlantilla(att, msg)) {
+        this.obrirImportPlantilla(id, att.titol || "");
+        return;
+      }
       if (String(att.type || "").toLowerCase() === "habit") {
         this.$router.push("/habits?import=" + id);
         return;
       }
-      if (this.esAdjuntPlantilla(att)) {
-        this.obrirImportPlantilla(id, att.titol || "");
-        return;
-      }
       this.obrirImportPlantilla(id, att.titol || "");
     },
-    tancarImportPlantilla: function () {
-      this.showPlantillaImport = false;
-      this.plantillaImportId = null;
-      this.plantillaImportTitol = "";
-    },
-    onPlantillaImportada: async function () {
-      this.tancarImportPlantilla();
-      if (this.$loopyModal && typeof this.$loopyModal.success === "function") {
-        await this.$loopyModal.success("Importat", this.$t("social.import_success"));
-      }
+    tancarImportWizard: function () {
+      this.showImportWizard = false;
+      this.importWizardAttachment = null;
     }
   }
 }

@@ -9,6 +9,9 @@
 | **Repositori** | `projecte-final-2025-26-daw-projecte_final_mvp1_grup3` |
 | **Gestió del projecte** | [Taiga](https://tree.taiga.io/project/ikerlopezgomez-projecte_final_mvp1_grup5/timeline) |
 | **Disseny UI** | [Figma](https://www.figma.com/design/XyO3s84xWpSUEjQk2fwktb/Aplicaci%C3%B3-habits?node-id=0-1&t=D6xaYpsrqnb5eyuY-1) |
+| **Fitxers addicionals** | [Google Drive](https://drive.google.com/drive/folders/18586370i0PieVKQJAxCSoq1ayt89av0j?usp=sharing) — la resta de documentació i materials del projecte (presentacions, annexos, etc.) |
+
+> **Nota:** Aquest repositori conté el codi font i la documentació tècnica principal. Els **demés fitxers** del lliurament (PDFs, presentacions, captures addicionals, etc.) es troben a la carpeta compartida de [Google Drive](https://drive.google.com/drive/folders/18586370i0PieVKQJAxCSoq1ayt89av0j?usp=sharing).
 
 ---
 
@@ -646,7 +649,9 @@ docker compose logs -f frontend
 
 | Document | Ubicació |
 | :--- | :--- |
-| Manual d'usuari | `doc/MANUAL_USUARI.md` |
+| **Fitxers addicionals del projecte** | [Google Drive](https://drive.google.com/drive/folders/18586370i0PieVKQJAxCSoq1ayt89av0j?usp=sharing) |
+| Manual d'usuari | `doc/I_MANUAL_USUARI.md` |
+| Presentació tècnica (contingut) | `doc/presentació_tecnica.md` |
 | Guia Docker | `docker/README.md` |
 | Arquitectura backend (detall) | `doc/arquitectura_backend/` |
 | Setup des de zero | `doc/setup_migracions/01-SETUP-DESDE-CERO.md` |

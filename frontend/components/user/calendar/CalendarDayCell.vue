@@ -112,8 +112,10 @@ export default {
 <style scoped>
 .calendar-day-cell {
   box-sizing: border-box;
-  width: 40px;
-  height: 40px;
+  width: 100%;
+  min-width: 0;
+  height: auto;
+  aspect-ratio: 1;
   padding: 0;
   margin: 0;
   border: none;
@@ -183,7 +185,7 @@ export default {
 .calendar-day-cell__num {
   font-family: "Bricolage Grotesque", system-ui, sans-serif;
   font-weight: 600;
-  font-size: 16px;
+  font-size: clamp(13px, 3.8vw, 16px);
   line-height: 1;
   color: #1f2937;
 }

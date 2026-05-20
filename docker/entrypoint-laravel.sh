@@ -25,5 +25,10 @@ fi
 rm -f bootstrap/cache/packages.php bootstrap/cache/services.php
 php artisan package:discover --ansi
 
+if [ $# -gt 0 ]; then
+    echo "Iniciando: $*"
+    exec "$@"
+fi
+
 echo "Iniciando servidor PHP-FPM..."
 exec php-fpm

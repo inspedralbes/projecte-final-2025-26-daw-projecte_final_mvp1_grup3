@@ -92,7 +92,7 @@ export var useGameStore = defineStore("game", {
       if (gs.missio_progres !== undefined) this.missioProgres = gs.missio_progres;
       if (gs.missio_objectiu !== undefined) this.missioObjectiu = gs.missio_objectiu;
       if (gs.monstre_tipus !== undefined) this.monstre_tipus = gs.monstre_tipus;
-      if (gs.streak_incremented !== undefined) this.streakIncrementedAvui = gs.streak_incremented;
+      if (gs.streak_incremented !== undefined) this.streakIncrementedAvui = !!gs.streak_incremented;
       if (gs.skin_key !== undefined) {
         this.skinKey = gs.skin_key;
       }
@@ -328,7 +328,7 @@ export var useGameStore = defineStore("game", {
         this.monstre_tipus = dades.monstre_tipus;
       }
       if (dades.streak_incremented !== undefined) {
-        this.streakIncrementedAvui = dades.streak_incremented;
+        this.streakIncrementedAvui = !!dades.streak_incremented;
       }
     },
 

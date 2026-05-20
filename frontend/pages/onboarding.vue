@@ -909,9 +909,11 @@ async function generateHabits() {
   width: 524px;
   height: 628px;
   left: -149px;
-  top: 468px;
+  top: 508px;
   pointer-events: none;
   z-index: 1;
+  transform: scale(1.15);
+  transform-origin: left bottom;
 }
 
 .onboarding-intro-loopy-img {
@@ -943,7 +945,10 @@ async function generateHabits() {
   .onboarding-intro-loopy-img--entrance {
     animation: none;
     opacity: 1;
-    transform: none;
+  }
+
+  .onboarding-intro-loopy {
+    transform: scale(1.15);
   }
 
   .onboarding-quiz-body--intro-slide {
@@ -965,19 +970,24 @@ async function generateHabits() {
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 707px), (max-height: 707px) {
   .onboarding-intro-loopy {
-    width: min(524px, 135vw);
+    width: min(400px, 88vw);
     height: auto;
     aspect-ratio: 524 / 628;
-    left: max(-149px, -22vw);
-    top: clamp(320px, 52vh, 468px);
+    left: max(-112px, -16vw);
+    top: calc(clamp(200px, 36vh, 320px) + 40px);
+    transform: scale(1.15);
+    transform-origin: left bottom;
   }
 }
 
-@media (max-height: 700px) {
+@media (max-width: 480px) {
   .onboarding-intro-loopy {
-    transform: scale(0.72);
+    width: min(340px, 92vw);
+    left: max(-96px, -20vw);
+    top: calc(clamp(180px, 34vh, 280px) + 40px);
+    transform: scale(1.15);
     transform-origin: left bottom;
   }
 }

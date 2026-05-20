@@ -66,11 +66,7 @@ class GamificationService
         // B. Reset diari i assignació de nova missió si cal
         $this->comprovarResetIAssignarMissio($usuari);
 
-        // B2. Actualitzar ratxa per entrar a l'app
-        $streakIncremented = $this->actualitzarRatxa($usuariId);
-
-        // C. Recuperar ratxa (reload usuari per si s'ha actualitzat)
-        $usuari = $usuari->fresh();
+        // C. Recuperar ratxa (només lectura; la ratxa s'actualitza en completar un hàbit)
         $ratxa = Ratxa::where('usuari_id', $usuariId)->first();
 
         if ($ratxa === null) {
@@ -142,7 +138,7 @@ class GamificationService
             'missio_progres' => $missioProgres,
             'missio_objectiu' => $missioObjectiu,
             'monstre_tipus' => $usuari->monstre_tipus,
-            'streak_incremented' => $streakIncremented,
+            'streak_incremented' => false,
             'skin_key' => $usuari->skin_key,
             'fons_key' => $usuari->fons_key,
         ];
@@ -197,10 +193,9 @@ class GamificationService
     }
 
     /**
-     * Actualitza la ratxa de l'usuari. 
-     * Si és un dia nou consecutiu, incrementa la ratxa.
-     * Si ha passat més d'un dia, la reseteja a 1 (comença de nou).
-     * Si és el mateix dia, no fa res.
+     * Actualitza la ratxa quan l'usuari completa un hàbit.
+     * Dia consecutiu: +1. Forat >1 dia o primera vegada: comença a 1.
+     * Mateix dia: no modifica (ja s'ha comptat avui).
      *
      * @param int $usuariId
      */
@@ -218,7 +213,6 @@ class GamificationService
             ]
         );
 
-        // A. Si hi ha data prèvia, parsejar-la
         $ultimaData = null;
         if ($ratxa->ultima_data !== null) {
             $ultimaData = Carbon::parse($ratxa->ultima_data, $timezone)->startOfDay();
@@ -227,16 +221,16 @@ class GamificationService
         $ratxaActual = (int) $ratxa->ratxa_actual;
         $ratxaMaxima = (int) $ratxa->ratxa_maxima;
 
-        // B. Si és el mateix dia, no modifiquem la ratxa
-        if ($ultimaData !== null && $ultimaData->isSameDay($avui)) {
+        // Mateix dia ja comptat: no tornar a sumar. Si ratxa és 0 amb ultima_data avui
+        // (p. ex. DEFAULT de BD o registre antic), permet iniciar la ratxa a 1.
+        if ($ultimaData !== null && $ultimaData->isSameDay($avui) && $ratxaActual > 0) {
             return false;
         }
 
-        // C. Si és el dia següent, incrementem
-        if ($ultimaData !== null && $avui->diffInDays($ultimaData) === 1) {
+        $ahir = $avui->copy()->subDay();
+        if ($ultimaData !== null && $ultimaData->isSameDay($ahir)) {
             $ratxaActual++;
         } else {
-            // Gap o primera vegada: racha 1
             $ratxaActual = 1;
         }
 

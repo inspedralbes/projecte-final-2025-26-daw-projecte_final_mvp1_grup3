@@ -75,6 +75,7 @@ class GoogleOAuthCallbackAction
                         'usuari_id' => $usuari->id,
                         'ratxa_actual' => 0,
                         'ratxa_maxima' => 0,
+                        'ultima_data' => null,
                     ]);
                 }
             }

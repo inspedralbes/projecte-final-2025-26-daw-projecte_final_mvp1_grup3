@@ -129,8 +129,9 @@ class CompleteHabitAction
         $xpGuanyada = $this->rewardCalculator->calcularXPSegonsDificultat($habit->dificultat);
         $monedesGuanyades = $this->rewardCalculator->calcularMonedesSegonsDificultat($habit->dificultat);
         $levelUpData = null;
+        $streakIncremented = false;
 
-        DB::transaction(function () use ($habit, $usuariId, $timestampComplet, $xpGuanyada, $monedesGuanyades, &$levelUpData) {
+        DB::transaction(function () use ($habit, $usuariId, $timestampComplet, $xpGuanyada, $monedesGuanyades, &$levelUpData, &$streakIncremented) {
             $usuari = User::where('id', $usuariId)->lockForUpdate()->first();
             if ($usuari === null) {
                 throw new \RuntimeException('Usuari no trobat.');
@@ -159,7 +160,7 @@ class CompleteHabitAction
                 ['usuari_id' => $usuariId],
                 ['ratxa_actual' => 0, 'ratxa_maxima' => 0, 'ultima_data' => null]
             );
-            $this->gamificationService->actualitzarRatxa($usuariId);
+            $streakIncremented = $this->gamificationService->actualitzarRatxa($usuariId);
             $habit->registresActivitat()->create([
                 'data' => $timestampComplet,
                 'valor' => 0,
@@ -174,10 +175,13 @@ class CompleteHabitAction
         $ratxaActual = $ratxa ? (int) $ratxa->ratxa_actual : 0;
         $ratxaMaxima = $ratxa ? (int) $ratxa->ratxa_maxima : 0;
 
+        $xpUpdate = $this->levelCalculator->construirXpUpdateAmbRatxa($usuari, $ratxaActual, $ratxaMaxima);
+        $xpUpdate['streak_incremented'] = $streakIncremented;
+
         return [
             'success' => true,
             'completed_today' => true,
-            'xp_update' => $this->levelCalculator->construirXpUpdateAmbRatxa($usuari, $ratxaActual, $ratxaMaxima),
+            'xp_update' => $xpUpdate,
             'level_up' => $levelUpData,
         ];
     }

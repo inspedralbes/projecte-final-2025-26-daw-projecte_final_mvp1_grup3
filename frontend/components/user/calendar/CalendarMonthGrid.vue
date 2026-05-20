@@ -121,6 +121,9 @@ export default {
 <style scoped>
 .calendar-month-grid {
   width: 100%;
+  max-width: 100%;
+  --cal-cell: 40px;
+  --cal-col-gap: 15px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -128,15 +131,19 @@ export default {
 
 .calendar-month-grid__weekdays {
   display: grid;
-  grid-template-columns: repeat(7, 40px);
-  column-gap: 15px;
+  width: 100%;
+  max-width: calc(7 * var(--cal-cell) + 6 * var(--cal-col-gap));
+  grid-template-columns: repeat(7, var(--cal-cell));
+  column-gap: var(--cal-col-gap);
   justify-content: center;
 }
 
 .calendar-month-grid__days {
   display: grid;
-  grid-template-columns: repeat(7, 40px);
-  column-gap: 15px;
+  width: 100%;
+  max-width: calc(7 * var(--cal-cell) + 6 * var(--cal-col-gap));
+  grid-template-columns: repeat(7, var(--cal-cell));
+  column-gap: var(--cal-col-gap);
   row-gap: 50px;
   justify-content: center;
   margin-top: 68px;
@@ -144,8 +151,10 @@ export default {
 
 .calendar-month-grid__wd {
   box-sizing: border-box;
-  width: 40px;
-  height: 40px;
+  width: 100%;
+  min-width: 0;
+  height: auto;
+  aspect-ratio: 1;
   border-radius: 10px;
   background: #faf9f9;
   box-shadow: 0 0 0 1px rgba(31, 41, 55, 0.08);
@@ -162,7 +171,27 @@ export default {
 }
 
 .calendar-month-grid__pad {
-  width: 40px;
-  height: 40px;
+  width: 100%;
+  min-width: 0;
+  height: auto;
+  aspect-ratio: 1;
+}
+
+@media (max-width: 431px) {
+  .calendar-month-grid {
+    --cal-col-gap: max(4px, calc((100% - 7 * 40px) / 6));
+    --cal-cell: calc((100% - 6 * var(--cal-col-gap)) / 7);
+  }
+
+  .calendar-month-grid__weekdays,
+  .calendar-month-grid__days {
+    max-width: 100%;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    column-gap: var(--cal-col-gap);
+  }
+
+  .calendar-month-grid__wd {
+    font-size: clamp(8px, 2.4vw, 10px);
+  }
 }
 </style>

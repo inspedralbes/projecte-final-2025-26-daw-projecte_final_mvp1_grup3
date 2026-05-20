@@ -68,7 +68,6 @@ function processarHabitActionConfirmed(payload) {
     }
     uiCallbacks.invocarHabitCompleteAlert();
     gameStore.obtenirProgresHabits();
-    gameStore.obtenirEstatJoc();
   }
 
   if (payload.action === 'FOCUS_UPDATE' && payload.completed_today === true) {

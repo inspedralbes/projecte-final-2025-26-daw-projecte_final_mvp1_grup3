@@ -106,7 +106,7 @@ services:
     depends_on:
       - postgres
       - redis
-    command: [ "php", "artisan", "habits:redis-worker" ]
+    command: [ "php", "artisan", "redis:unified-worker" ]
 
   backend-laravel-scheduler:
     build:

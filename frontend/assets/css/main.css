@@ -340,6 +340,54 @@
         @apply hidden lg:block;
     }
 
+    @media (max-height: 842px) {
+        .login-page-auth .login-header {
+            margin-top: clamp(1.25rem, 3.5vh, 2.25rem);
+            margin-bottom: calc(0.75rem + 1.5vh);
+        }
+
+        .login-page-auth .login-form {
+            gap: clamp(1rem, 2.5vh, 1.75rem);
+        }
+
+        .login-page-auth .login-divider {
+            @apply my-2;
+        }
+
+        .register-page-auth .login-header,
+        .register-page-auth .register-header-desktop {
+            margin-bottom: calc(0.75rem + 1.5vh);
+        }
+
+        .register-page-auth .login-form {
+            @apply space-y-3;
+        }
+
+        .register-page-auth .register-form-shell {
+            padding-top: max(1.25rem, env(safe-area-inset-top));
+            padding-bottom: max(1rem, env(safe-area-inset-bottom));
+        }
+
+        @media (max-width: 1023px) {
+            .login-page-auth .login-form-area {
+                @apply pt-2 pb-4;
+            }
+
+            .login-page-auth .login-register-section {
+                @apply pt-1 pb-5;
+            }
+
+            .login-page-auth .register-form-shell {
+                padding-top: max(1.25rem, env(safe-area-inset-top));
+                padding-bottom: max(1rem, env(safe-area-inset-bottom));
+            }
+
+            .login-page-auth .auth-m-panel-register .login-form {
+                @apply mt-4 space-y-3;
+            }
+        }
+    }
+
     .login-bg-pattern {
         @apply absolute inset-0 opacity-[0.03] pointer-events-none;
         background-image: radial-gradient(#3a5826 1px, transparent 1px), radial-gradient(#3a5826 1px, transparent 1px);

@@ -9,11 +9,13 @@
  */
 definePageMeta({ layout: 'admin' });
 
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { authFetch, getBaseUrl } from '~/composables/useApi.js';
+import { useAdminSocket } from '~/composables/admin/useAdminSocket.js';
 
 // 1. DADES REACTIVES (VAR)
 var { $socket } = useNuxtApp();
+var adminSocket = useAdminSocket();
 var config = useRuntimeConfig();
 
 // Estadístiques reals via API
@@ -85,9 +87,8 @@ var titolPopup = computed(function() {
 
 // 3. LIFECYCLE
 onMounted(function() {
+  adminSocket.ensureAdminJoin();
   if ($socket) {
-    $socket.emit('admin_join', {});
-    
     $socket.on('admin:connected_users', function(llista) {
       usuarisRealTime.value = llista;
     });

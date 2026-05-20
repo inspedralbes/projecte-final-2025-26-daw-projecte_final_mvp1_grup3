@@ -11,6 +11,7 @@ definePageMeta({ layout: 'admin' });
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { authFetch } from '~/composables/useApi.js';
 import { useAdminSwal } from '~/composables/useAdminSwal.js';
+import { useAdminReportsRealtime } from '~/composables/admin/useAdminReportsRealtime.js';
 
 var { $socket } = useNuxtApp();
 var { adminSuccess, adminError, adminConfirm } = useAdminSwal();
@@ -39,30 +40,29 @@ function tipusLabel(tipus) {
   return tipus === 'social_post' ? 'Post' : 'Comentari';
 }
 
-function onAdminReportUpdated(payload) {
-  if (!payload || !payload.success) {
+function onModeracioContingut(payload) {
+  if (payload.entity !== 'content_moderation' || !reportActiu.value || !payload.data) {
     return;
   }
-  var cat = payload.data && payload.data.categoria;
-  if (cat && cat !== categoriaSocket) {
+  var rep = reportActiu.value;
+  var mateixContingut = rep.tipus === payload.data.tipus && rep.post_id === payload.data.post_id;
+  if (!mateixContingut) {
     return;
   }
-
-  if (payload.entity === 'content_moderation' && reportActiu.value && payload.data) {
-    var rep = reportActiu.value;
-    var mateixContingut = rep.tipus === payload.data.tipus && rep.post_id === payload.data.post_id;
-    if (mateixContingut) {
-      if (payload.action === 'DELETED') {
-        rep.eliminat = true;
-      } else if (payload.action === 'UPDATED' && payload.data.target_contingut) {
-        rep.target_contingut = payload.data.target_contingut;
-        textEdicio.value = payload.data.target_contingut;
-      }
-    }
+  if (payload.action === 'DELETED') {
+    rep.eliminat = true;
+  } else if (payload.action === 'UPDATED' && payload.data.target_contingut) {
+    rep.target_contingut = payload.data.target_contingut;
+    textEdicio.value = payload.data.target_contingut;
   }
-
-  refreshReports();
 }
+
+useAdminReportsRealtime({
+  categoria: categoriaSocket,
+  reportsData: reportsData,
+  refreshReports: refreshReports,
+  onPayload: onModeracioContingut
+});
 
 function onPostUpdatedSocket(post) {
   if (!post || !post.id) {
@@ -103,8 +103,6 @@ function onCommentDeletedSocket(data) {
 
 onMounted(function () {
   if ($socket) {
-    $socket.emit('admin_join', {});
-    $socket.on('admin_report_updated', onAdminReportUpdated);
     $socket.on('post_updated', onPostUpdatedSocket);
     $socket.on('post_deleted', onPostDeletedSocket);
     $socket.on('comment_updated', onCommentUpdatedSocket);
@@ -114,7 +112,6 @@ onMounted(function () {
 
 onBeforeUnmount(function () {
   if ($socket) {
-    $socket.off('admin_report_updated', onAdminReportUpdated);
     $socket.off('post_updated', onPostUpdatedSocket);
     $socket.off('post_deleted', onPostDeletedSocket);
     $socket.off('comment_updated', onCommentUpdatedSocket);

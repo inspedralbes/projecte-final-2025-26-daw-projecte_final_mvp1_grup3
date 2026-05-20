@@ -8,11 +8,10 @@
  */
 definePageMeta({ layout: 'admin' });
 
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+import { ref, computed } from 'vue';
 import { authFetch } from '~/composables/useApi.js';
 import { useAdminSwal } from '~/composables/useAdminSwal.js';
-
-var { $socket } = useNuxtApp();
+import { useAdminReportsRealtime } from '~/composables/admin/useAdminReportsRealtime.js';
 var { adminSuccess, adminError, adminConfirm } = useAdminSwal();
 var perPage = ref(50);
 var categoriaSocket = 'usuaris';
@@ -49,28 +48,10 @@ function tancaPopup() {
   usuariSeleccionat.value = null;
 }
 
-function onAdminReportUpdated(payload) {
-  if (!payload || !payload.success) {
-    return;
-  }
-  var cat = payload.data && payload.data.categoria;
-  if (cat && cat !== categoriaSocket) {
-    return;
-  }
-  refreshReports();
-}
-
-onMounted(function () {
-  if ($socket) {
-    $socket.emit('admin_join', {});
-    $socket.on('admin_report_updated', onAdminReportUpdated);
-  }
-});
-
-onBeforeUnmount(function () {
-  if ($socket) {
-    $socket.off('admin_report_updated', onAdminReportUpdated);
-  }
+useAdminReportsRealtime({
+  categoria: categoriaSocket,
+  reportsData: reportsData,
+  refreshReports: refreshReports
 });
 
 async function resoldreReport(reportId) {

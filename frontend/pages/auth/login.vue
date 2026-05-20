@@ -425,6 +425,9 @@ export default {
           }
           try {
             await authStore.loginAdmin(email, contrasenya);
+            if (nuxtApp.$updateSocketAuth) {
+              nuxtApp.$updateSocketAuth();
+            }
             await navigateTo("/admin");
           } catch (errAdmin) {
             self.errorMissatge = errAdmin.message || this.$t('error_credentials');

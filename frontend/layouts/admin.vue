@@ -76,8 +76,10 @@
  * Layout d'Administració (Desktop).
  */
 import { onBeforeUnmount, onMounted } from 'vue';
+import { useAdminSocket } from '~/composables/admin/useAdminSocket.js';
 
 var nuxtApp = useNuxtApp();
+var adminSocket = useAdminSocket();
 
 async function sortir() {
   try {
@@ -97,10 +99,7 @@ onMounted(function () {
   if (typeof window !== 'undefined') {
     window.__loopyAdminSortir = sortir;
   }
-  var sock = nuxtApp.$socket;
-  if (sock && typeof sock.emit === 'function') {
-    sock.emit('admin_join', {});
-  }
+  adminSocket.ensureAdminJoin();
 });
 
 onBeforeUnmount(function () {

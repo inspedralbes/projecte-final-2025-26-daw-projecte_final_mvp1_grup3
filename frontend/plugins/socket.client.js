@@ -51,8 +51,16 @@ export default defineNuxtPlugin(function (nuxtApp) {
     }
   });
 
+  function emitAdminJoinSiCal() {
+    var auth = useAuthStore();
+    if (auth.isAdmin && auth.isAuthenticated && socket.connected) {
+      socket.emit('admin_join', {});
+    }
+  }
+
   socket.on('connect', function () {
     authRefreshRetried = false;
+    emitAdminJoinSiCal();
   });
 
   function onTypingIndicator(callback) {
@@ -74,6 +82,8 @@ export default defineNuxtPlugin(function (nuxtApp) {
     if (auth.token && auth.isAuthenticated && !socket.connected) {
       socket.auth = { token: auth.token };
       socket.connect();
+    } else if (auth.token && auth.isAuthenticated && socket.connected) {
+      emitAdminJoinSiCal();
     }
   }
 

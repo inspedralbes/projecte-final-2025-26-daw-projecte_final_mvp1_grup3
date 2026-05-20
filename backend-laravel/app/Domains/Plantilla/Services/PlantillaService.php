@@ -5,6 +5,7 @@ namespace App\Domains\Plantilla\Services;
 //================================ NAMESPACES / IMPORTS ============
 
 use App\Domains\Shared\Services\RedisFeedbackService;
+use App\Models\Friendship;
 use App\Models\Plantilla;
 use App\Models\Habit;
 use Illuminate\Database\Eloquent\Collection;
@@ -65,6 +66,47 @@ class PlantillaService
 
         // C. Execució de la consulta i retorn dels resultats
         return $query->get();
+    }
+
+    /**
+     * Plantilla visible per l'usuari (pròpia, pública o d'un amic acceptat).
+     */
+    public function getPlantillaVisiblePerUsuari(int $id, int $usuariId): ?Plantilla
+    {
+        $plantilla = Plantilla::with('habits')->find($id);
+        if ($plantilla === null) {
+            return null;
+        }
+        if ($this->usuariPotVeurePlantilla($usuariId, $plantilla)) {
+            return $plantilla;
+        }
+
+        return null;
+    }
+
+    /**
+     * Comprova si l'usuari pot veure/importar una plantilla.
+     */
+    public function usuariPotVeurePlantilla(int $usuariId, Plantilla $plantilla): bool
+    {
+        if ((int) $plantilla->creador_id === $usuariId) {
+            return true;
+        }
+        if ($plantilla->es_publica) {
+            return true;
+        }
+
+        $creadorId = (int) $plantilla->creador_id;
+
+        return Friendship::where('status', 'accepted')
+            ->where(function ($query) use ($usuariId, $creadorId) {
+                $query->where(function ($q) use ($usuariId, $creadorId) {
+                    $q->where('requester_id', $usuariId)->where('addressee_id', $creadorId);
+                })->orWhere(function ($q) use ($usuariId, $creadorId) {
+                    $q->where('requester_id', $creadorId)->where('addressee_id', $usuariId);
+                });
+            })
+            ->exists();
     }
 
     /**

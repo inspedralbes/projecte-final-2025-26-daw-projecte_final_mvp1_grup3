@@ -110,6 +110,14 @@
       </div>
 
       <AttachmentSelector :show="showAttach" @close="showAttach = false" @selected="onAttachSelected" />
+
+    <PlantillaHabitsImportModal
+      :show="showPlantillaImport"
+      :plantilla-id="plantillaImportId"
+      :plantilla-titol="plantillaImportTitol"
+      @close="tancarImportPlantilla"
+      @imported="onPlantillaImportada"
+    />
   </div>
 </template>
 
@@ -122,10 +130,11 @@ import { useClanChatStore } from "~/stores/useClanChatStore.js";
 import { useClanStore } from "~/stores/useClanStore.js";
 import { useAuthStore } from "~/stores/useAuthStore.js";
 import AttachmentSelector from "~/components/user/social/AttachmentSelector.vue";
+import PlantillaHabitsImportModal from "~/components/user/social/PlantillaHabitsImportModal.vue";
 
 export default {
   name: "ClanChat",
-  components: { AttachmentSelector },
+  components: { AttachmentSelector, PlantillaHabitsImportModal },
   props: {
     clanId: { type: [Number, String], required: true },
     isLeader: { type: Boolean, default: false }
@@ -138,7 +147,10 @@ export default {
       loading: true,
       sending: false,
       showAttach: false,
-      attachments: []
+      attachments: [],
+      showPlantillaImport: false,
+      plantillaImportId: null,
+      plantillaImportTitol: ""
     }
   },
   computed: {
@@ -309,14 +321,21 @@ export default {
         await this.$loopyModal.error("Error", store.error || "Error");
       }
     },
-    importPlantilla: async function(msgId) {
-      var store = useClanChatStore();
-      var result = await store.importPlantilla(msgId);
-      if (result) {
-        await this.$loopyModal.success("Importat", "Plantilla importada!");
-      } else {
-        await this.$loopyModal.error("Error", store.error || "Error");
+    importPlantilla: function (msgId) {
+      var msg = null;
+      var i;
+      for (i = 0; i < this.messages.length; i++) {
+        if (this.messages[i].id === msgId) {
+          msg = this.messages[i];
+          break;
+        }
       }
+      if (!msg || !msg.plantilla_id) {
+        return;
+      }
+      this.plantillaImportId = msg.plantilla_id;
+      this.plantillaImportTitol = msg.plantilla && msg.plantilla.nom ? msg.plantilla.nom : "";
+      this.showPlantillaImport = true;
     },
     getMonsterImage: function(msg) {
       if (!msg || msg.is_system) return null;
@@ -350,11 +369,24 @@ export default {
       var text = msg.contingut || "";
       return text.replace(/(📋 Hàbit|📁 Plantilla): .+? \[(habit|plantilla):\d+\]/g, "").trim();
     },
-    importAttachment: function(att) {
-      if (att.type === 'habit') {
+    importAttachment: function (att) {
+      if (att.type === "habit") {
         this.$router.push("/habits?import=" + att.id);
-      } else {
-        this.$router.push("/Plantilles?import=" + att.id);
+        return;
+      }
+      this.plantillaImportId = att.id;
+      this.plantillaImportTitol = att.titol || "";
+      this.showPlantillaImport = true;
+    },
+    tancarImportPlantilla: function () {
+      this.showPlantillaImport = false;
+      this.plantillaImportId = null;
+      this.plantillaImportTitol = "";
+    },
+    onPlantillaImportada: async function () {
+      this.tancarImportPlantilla();
+      if (this.$loopyModal && typeof this.$loopyModal.success === "function") {
+        await this.$loopyModal.success("Importat", this.$t("social.import_success"));
       }
     }
   }

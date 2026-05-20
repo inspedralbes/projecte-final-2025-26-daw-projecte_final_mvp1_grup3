@@ -931,6 +931,8 @@
 <script>
 import { usePlantillaStore } from "../stores/usePlantillaStore";
 import { useHabitStore } from "../stores/useHabitStore";
+import { authFetch } from "~/composables/useApi.js";
+import { mapPlantillaFromApi, mapHabitFromApi } from "~/utils/mappers/apiMappers.js";
 import { useGameStore } from "../stores/gameStore";
 import { useSocketConfig } from "../composables/useSocketConfig";
 import { watch } from 'vue';
@@ -1055,6 +1057,7 @@ export default {
     self.initSocket();
     // C. Carregar els hàbits disponibles per a la selecció.
     self.carregarHabits();
+    self.aplicarImportDesDeQuery();
 
     // Watch for changes in selectedFilter and re-carregarPlantilles
     this.$watch('selectedFilter', function (newFilter, oldFilter) {
@@ -1103,6 +1106,34 @@ export default {
       var userId = this.gameStore.userId; // Get userId from gameStore
       console.log("Fetching plantilles with userId:", userId); // Debug log
       await this.plantillaStore.obtenirPlantillesDesDeApi('all', userId);
+    },
+    aplicarImportDesDeQuery: async function () {
+      var self = this;
+      var q = self.$route && self.$route.query ? self.$route.query.import : null;
+      if (q === undefined || q === null || q === "") {
+        return;
+      }
+      var id = parseInt(String(q), 10);
+      if (Number.isNaN(id)) {
+        return;
+      }
+      try {
+        var resposta = await authFetch("/api/plantilles/" + id);
+        if (!resposta.ok) {
+          return;
+        }
+        var json = await resposta.json();
+        var dades = json.data || json;
+        var plantilla = mapPlantillaFromApi(dades, mapHabitFromApi);
+        if (plantilla && plantilla.habits && plantilla.habits.length > 0) {
+          self.obrirModalImportarHabits(plantilla);
+          if (self.$router && typeof self.$router.replace === "function") {
+            self.$router.replace({ path: self.$route.path, query: {} });
+          }
+        }
+      } catch (e) {
+        console.error("Error obrint importació des de query:", e);
+      }
     },
     togglePlantillaExpandida: function (id) {
       if (this.plantillaExpandidaId === id) {

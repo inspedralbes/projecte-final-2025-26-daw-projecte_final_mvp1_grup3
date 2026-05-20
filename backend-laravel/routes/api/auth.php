@@ -14,6 +14,10 @@ use App\Http\Controllers\Api\UserAuthController;
 use App\Http\Controllers\PreguntaRegistreReadController;
 use Illuminate\Support\Facades\Route;
 
+Route::middleware('ensure.user')->group(function () {
+    Route::get('/auth/me', [UserAuthController::class, 'me']);
+});
+
 /*
 |--------------------------------------------------------------------------
 | Rutes públiques (sense autenticació): auth, onboarding, preguntes

@@ -212,12 +212,14 @@ export var useAuthStore = defineStore('auth', {
     logout: async function () {
       var base = getApiBase();
       var url = base + '/api/auth/logout';
+      var headers = { Accept: 'application/json' };
+      if (this.token) {
+        headers['Authorization'] = 'Bearer ' + this.token;
+      }
       try {
         await fetch(url, {
           method: 'POST',
-          headers: {
-            Accept: 'application/json'
-          },
+          headers: headers,
           credentials: 'include'
         });
       } catch (e) {
@@ -372,6 +374,44 @@ export var useAuthStore = defineStore('auth', {
       }
       var pendentPer = localStorage.getItem('loopy_requires_onboarding_user_id');
       this.requiresOnboarding = pendentPer === String(this.user.id);
+    },
+
+    /**
+     * Completa la sessió després del redirect OAuth de Google (sense rotar el JWT).
+     */
+    completarSessioGoogle: async function (tokenBrut, onboardingQuery) {
+      var token = tokenBrut;
+      if (typeof token === 'string') {
+        try {
+          token = decodeURIComponent(token.replace(/ /g, '+'));
+        } catch (e) {
+          token = tokenBrut;
+        }
+      }
+      if (!token) {
+        throw new Error("No s'ha rebut el token de Google.");
+      }
+      this.aplicarSessio({ token: token, role: 'user' });
+      var base = getApiBase();
+      var resposta = await fetch(base + '/api/auth/me', {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          Authorization: 'Bearer ' + token
+        },
+        credentials: 'include'
+      });
+      if (!resposta.ok) {
+        throw new Error("No s'ha pogut validar la sessió de Google.");
+      }
+      var dades = await resposta.json();
+      this.aplicarSessio(dades);
+      if (onboardingQuery === '1') {
+        this.marcarOnboardingComPendent();
+      } else if (onboardingQuery === '0') {
+        this.desmarcarOnboardingPendent();
+      }
+      return dades;
     },
 
     /**

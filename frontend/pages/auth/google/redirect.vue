@@ -25,6 +25,17 @@ const route = useRoute();
 const authStore = useAuthStore();
 const error = ref(null);
 
+function getApiBase() {
+  try {
+    var config = useRuntimeConfig();
+    var url = config.public.apiUrl;
+    if (url && typeof url === 'string' && url.startsWith('http')) {
+      return url.replace(/\/$/, '');
+    }
+  } catch (e) {}
+  return 'http://localhost:8000';
+}
+
 onMounted(async () => {
   try {
     const token = Array.isArray(route.query.token) ? route.query.token[0] : route.query.token;
@@ -32,26 +43,18 @@ onMounted(async () => {
     const onboarding = Array.isArray(route.query.onboarding) ? route.query.onboarding[0] : route.query.onboarding;
 
     if (token) {
-      // Flux actual del backend: retorna al frontend amb ?token=...
-      authStore.aplicarSessio({ token, role: "user" });
-      const sessioOk = await authStore.refrescarSessio();
-      if (!sessioOk) {
-        throw new Error("No s'ha pogut validar la sessió de Google.");
-      }
-      if (onboarding === "1") {
-        authStore.marcarOnboardingComPendent();
-      } else if (onboarding === "0") {
-        authStore.desmarcarOnboardingPendent();
-      }
+      await authStore.completarSessioGoogle(token, onboarding);
     } else if (code) {
-      window.location.href = `http://localhost:8000/api/auth/google/callback?code=${encodeURIComponent(code)}`;
+      window.location.href = getApiBase() + '/api/auth/google/callback?code=' + encodeURIComponent(code);
       return;
     } else {
       throw new Error("No s'ha rebut token ni codi de Google.");
     }
 
     const nuxtApp = useNuxtApp();
-    if (nuxtApp.$updateSocketAuth) nuxtApp.$updateSocketAuth();
+    if (nuxtApp.$updateSocketAuth) {
+      nuxtApp.$updateSocketAuth();
+    }
     if (authStore.requiresOnboarding) {
       authStore.reiniciarEstatOnboarding();
       const habitStore = useHabitStore();
@@ -61,7 +64,7 @@ onMounted(async () => {
       await navigateTo('/home');
     }
   } catch (err) {
-    error.value = err.message || "Error al processar el login.";
+    error.value = err.message || 'Error al processar el login.';
   }
 });
 </script>

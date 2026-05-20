@@ -1417,13 +1417,17 @@ async function generateHabits() {
 .onboarding-options--monsters {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
+  gap: 0.75rem;
   justify-items: center;
+  padding: 0.5rem;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .onboarding-monster-card {
-  width: 180px;
-  height: 220px;
+  width: 100%;
+  max-width: 150px;
+  aspect-ratio: 3 / 4;
   border-radius: 1rem;
   background: transparent;
   cursor: pointer;
@@ -1435,19 +1439,11 @@ async function generateHabits() {
 }
 
 .onboarding-monster-card:hover {
-  transform: scale(1.08);
+  transform: scale(1.05);
 }
 
 .onboarding-monster-card:hover .onboarding-monster-egg {
   animation: eggShake 0.5s ease-in-out;
-}
-
-@keyframes eggShake {
-  0%, 100% { transform: translateX(0) rotate(0); }
-  20% { transform: translateX(-5px) rotate(-3deg); }
-  40% { transform: translateX(5px) rotate(3deg); }
-  60% { transform: translateX(-3px) rotate(-2deg); }
-  80% { transform: translateX(3px) rotate(2deg); }
 }
 
 .onboarding-monster-card--selected {
@@ -1461,14 +1457,50 @@ async function generateHabits() {
   justify-content: center;
   width: 100%;
   height: 100%;
-  padding: 1rem;
+  padding: 0.5rem;
 }
 
 .onboarding-monster-egg {
-  width: 140px;
-  height: 180px;
+  width: 80%;
+  height: 80%;
   object-fit: contain;
   transition: transform 0.3s ease;
+}
+
+@media (min-width: 640px) {
+  .onboarding-options--monsters {
+    gap: 1rem;
+  }
+  .onboarding-monster-card {
+    max-width: 180px;
+  }
+}
+
+@media (min-width: 768px) {
+  .onboarding-options--monsters {
+    gap: 1.5rem;
+    padding: 1rem;
+  }
+  .onboarding-monster-card {
+    max-width: 200px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .onboarding-options--monsters {
+    gap: 2rem;
+  }
+  .onboarding-monster-card {
+    max-width: 220px;
+  }
+}
+
+@keyframes eggShake {
+  0%, 100% { transform: translateX(0) rotate(0); }
+  20% { transform: translateX(-5px) rotate(-3deg); }
+  40% { transform: translateX(5px) rotate(3deg); }
+  60% { transform: translateX(-3px) rotate(-2deg); }
+  80% { transform: translateX(3px) rotate(2deg); }
 }
 
 .loading-section {

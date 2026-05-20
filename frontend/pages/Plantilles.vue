@@ -58,6 +58,16 @@
             </select>
             <span class="templates-filter-chevron" aria-hidden="true"></span>
           </div>
+
+          <button
+            type="button"
+            class="templates-create-btn"
+            :aria-expanded="plantillaSheetObert ? 'true' : 'false'"
+            @click="obrirSheetCrearPlantilla"
+          >
+            <span class="templates-create-btn__icon" aria-hidden="true">+</span>
+            <span class="templates-create-btn__label">{{ $t('templates.create_new') }}</span>
+          </button>
         </div>
       </div>
 
@@ -318,15 +328,12 @@
             <span class="moment-divider__line" aria-hidden="true"></span>
           </div>
 
-          <div v-if="plantillesPersonals.length === 0" class="text-center py-6 text-white text-sm">
-            No tens plantilles personals creades.
-          </div>
-          <div v-else class="templates-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+          <div class="templates-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
             <button
-              v-if="selectedFilter === 'personals'"
               type="button"
               class="create-category-trigger create-category-trigger--grid"
               :aria-expanded="plantillaSheetObert ? 'true' : 'false'"
+              :aria-label="$t('templates.create_new')"
               @click="obrirSheetCrearPlantilla"
             >
               <span class="create-category-trigger__icon" aria-hidden="true">
@@ -412,6 +419,10 @@
                 </div>
               </div>
             </div>
+
+            <p v-if="plantillesPersonals.length === 0" class="col-span-full text-center py-4 text-white text-sm">
+              {{ $t('templates.create_first') }}
+            </p>
           </div>
         </div>
 
@@ -1868,6 +1879,45 @@ export default {
   gap: 10px;
   width: 100%;
   flex-wrap: wrap;
+}
+
+.templates-create-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex: 1 1 auto;
+  min-width: 160px;
+  height: 58px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 10px;
+  background: #79d45d;
+  color: #1a1a1a;
+  font-family: "Comfortaa", system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.templates-create-btn:hover {
+  background: #6bc44f;
+}
+
+.templates-create-btn:active {
+  transform: scale(0.98);
+}
+
+.templates-create-btn__icon {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.templates-create-btn__label {
+  white-space: nowrap;
 }
 
 .templates-filter-search {

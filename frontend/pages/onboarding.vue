@@ -1422,11 +1422,10 @@ async function generateHabits() {
 }
 
 .onboarding-monster-card {
-  width: 140px;
-  height: 180px;
+  width: 180px;
+  height: 220px;
   border-radius: 1rem;
-  background: #ffffff;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background: transparent;
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
@@ -1436,13 +1435,24 @@ async function generateHabits() {
 }
 
 .onboarding-monster-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  transform: scale(1.08);
+}
+
+.onboarding-monster-card:hover .onboarding-monster-egg {
+  animation: eggShake 0.5s ease-in-out;
+}
+
+@keyframes eggShake {
+  0%, 100% { transform: translateX(0) rotate(0); }
+  20% { transform: translateX(-5px) rotate(-3deg); }
+  40% { transform: translateX(5px) rotate(3deg); }
+  60% { transform: translateX(-3px) rotate(-2deg); }
+  80% { transform: translateX(3px) rotate(2deg); }
 }
 
 .onboarding-monster-card--selected {
   border-color: #79d45d;
-  background: #f0fff0;
+  background: rgba(121, 212, 93, 0.15);
 }
 
 .onboarding-monster-card-content {
@@ -1455,9 +1465,10 @@ async function generateHabits() {
 }
 
 .onboarding-monster-egg {
-  width: 100px;
-  height: 140px;
+  width: 140px;
+  height: 180px;
   object-fit: contain;
+  transition: transform 0.3s ease;
 }
 
 .loading-section {

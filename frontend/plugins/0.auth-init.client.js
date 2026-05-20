@@ -10,6 +10,9 @@
  * abans de peticions API o connexió socket.
  */
 export default defineNuxtPlugin(function () {
+  if (typeof window !== 'undefined' && window.location.pathname.indexOf('/auth/google/redirect') === 0) {
+    return;
+  }
   var authStore = useAuthStore();
   authStore.loadFromStorage();
   if (authStore.role === "user" && authStore.user) {

@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 //================================ NAMESPACES / IMPORTS ============
 
+use App\Domains\User\Support\JwtRequestTokenSupport;
 use Closure;
 use Illuminate\Http\Request;
 use PHPOpenSourceSaver\JWTAuth\Exceptions\JWTException;
@@ -19,8 +20,13 @@ class EnsureUserToken
 {
     public function handle(Request $request, Closure $next): Response
     {
+        $token = JwtRequestTokenSupport::fromRequest($request);
+        if ($token === null || $token === '') {
+            return response()->json(['message' => 'Token invàlid o expirat'], 401);
+        }
+
         try {
-            $payload = JWTAuth::parseToken()->getPayload();
+            $payload = JWTAuth::setToken($token)->getPayload();
         } catch (JWTException $e) {
             return response()->json(['message' => 'Token invàlid o expirat'], 401);
         }

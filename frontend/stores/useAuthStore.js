@@ -391,7 +391,6 @@ export var useAuthStore = defineStore('auth', {
       if (!token) {
         throw new Error("No s'ha rebut el token de Google.");
       }
-      this.aplicarSessio({ token: token, role: 'user' });
       var base = getApiBase();
       var resposta = await fetch(base + '/api/auth/me', {
         method: 'GET',

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domains\User\Actions;
 
 use App\Domains\User\Services\JwtCookieResponseService;
+use App\Domains\User\Support\JwtRequestTokenSupport;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -33,7 +34,7 @@ class GetCurrentUserSessionAction
             return response()->json(['message' => 'Usuari no trobat'], 404);
         }
 
-        $token = $this->extreureToken($request);
+        $token = JwtRequestTokenSupport::fromRequest($request);
         if ($token === null || $token === '') {
             return response()->json(['message' => 'Token invàlid o expirat'], 401);
         }
@@ -45,17 +46,5 @@ class GetCurrentUserSessionAction
             'monstre_tipus' => $usuari->monstre_tipus,
             'nivell' => $usuari->nivell,
         ], $token);
-    }
-
-    private function extreureToken(Request $request): ?string
-    {
-        $authHeader = $request->header('Authorization');
-        if (is_string($authHeader) && str_starts_with($authHeader, 'Bearer ')) {
-            return substr($authHeader, 7);
-        }
-
-        $cookieNom = (string) config('jwt.cookie', 'loopy_token');
-
-        return $request->cookie($cookieNom);
     }
 }

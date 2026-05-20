@@ -44,6 +44,9 @@ onMounted(async () => {
 
     if (token) {
       await authStore.completarSessioGoogle(token, onboarding);
+      if (typeof window !== 'undefined') {
+        window.history.replaceState({}, '', '/auth/google/redirect');
+      }
     } else if (code) {
       window.location.href = getApiBase() + '/api/auth/google/callback?code=' + encodeURIComponent(code);
       return;

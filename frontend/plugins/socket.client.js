@@ -28,8 +28,18 @@ export default defineNuxtPlugin(function (nuxtApp) {
 
   inicialitzarFeedbackGlobal(socket, nuxtApp);
 
+  function esPaginaOAuthGoogle() {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+    return window.location.pathname.indexOf('/auth/google/redirect') === 0;
+  }
+
   socket.on('connect_error', function (err) {
     console.error('[Socket] Error de connexió:', err.message);
+    if (esPaginaOAuthGoogle()) {
+      return;
+    }
     if (err.message === 'Authentication required' && !authRefreshRetried) {
       authRefreshRetried = true;
       authStore.refrescarSessio().then(function (ok) {
@@ -57,6 +67,9 @@ export default defineNuxtPlugin(function (nuxtApp) {
   }
 
   function tryConnect() {
+    if (esPaginaOAuthGoogle()) {
+      return;
+    }
     var auth = useAuthStore();
     if (auth.token && auth.isAuthenticated && !socket.connected) {
       socket.auth = { token: auth.token };

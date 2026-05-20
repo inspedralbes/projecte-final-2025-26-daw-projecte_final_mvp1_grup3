@@ -7,6 +7,7 @@ namespace App\Domains\User\Actions;
 //================================ NAMESPACES / IMPORTS ============
 
 use App\Domains\User\Services\JwtCookieResponseService;
+use App\Domains\User\Support\JwtRequestTokenSupport;
 use App\Models\Administrador;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -32,15 +33,7 @@ class RefreshTokenAction
 
     public function executar(Request $request): JsonResponse
     {
-        $token = null;
-        $authHeader = $request->header('Authorization');
-        if (is_string($authHeader) && str_starts_with($authHeader, 'Bearer ')) {
-            $token = substr($authHeader, 7);
-        }
-        if ($token === null || $token === '') {
-            $cookieNom = (string) config('jwt.cookie', 'loopy_token');
-            $token = $request->cookie($cookieNom);
-        }
+        $token = JwtRequestTokenSupport::fromRequest($request);
         if ($token === null || $token === '') {
             return response()->json(['message' => 'Token invàlid o expirat'], 401);
         }
